@@ -16,10 +16,18 @@ However currently the code is located at github to allow faster and wider collab
 
 ![Early Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/early2.png)
 
-
-### How to run
+### How to try
 
 We plan to publish the plugin in the IDEA plugin manager, so you can install the plugin from IDEA.
+
+Currently the plugin is editing Java endpoints which are defined in Camel endpoints only.
+
+You can open a Camel example such as `camel-example-spring-boot` and then add the following source code to the route class
+
+    @EndpointInject(uri = "seda:foo?")
+    private Endpoint foo;
+    
+and then position the cursor after the `?` mark and press `ctrl + space` to see a list of options.
 
 
 ### Building from source
@@ -34,15 +42,20 @@ how to hook into various IDEA APIs which is massive and takes longer time to fig
 Jetbrains are not very good at documenting their APIs with neither javadoc, or documentation to their own plugins.
 However with some trial and run you can find out bit by bit.
 
+I have put screenshots of how I have setup IDEA for plugin development. There is a couple of fields
+which you must configure with an absolute file location to a directory, and why its important to
+setup this correctly. Those fields has been marked with red rectangle in the screenshots.
+
+The screen shots are in the [img/setup directory](https://github.com/davsclaus/camel-idea-plugin/tree/master/img/setup).
+
+### Running and debugging the plugin from source
+
 If everything is setup correctly, then you can launch the plugin, by running "Apache Camel IDEA plugin"
-from the run menu in IDEA. Then a 2nd instance of IDEA is launched where you can open a Camel project
-such as `camel-example-spring-boot` and then add the following source code to the route class
+from the run menu in IDEA. Then a 2nd instance of IDEA is launched where you can open a Camel project.
 
-
-    @EndpointInject(uri = "seda:foo?")
-    private Endpoint foo;
-    
-And then position the cursor after the `?` mark and press ctrl + space to see a list of options.
+You can also launch the plugin in debug mode where you can put breakpoints in the source code.
+This is very handy to debug the code and find issues. However for code changes you need to stop and
+start the plugin again.
 
 
 ### Contributing / Hacking on the code
