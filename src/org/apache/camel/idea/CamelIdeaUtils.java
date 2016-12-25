@@ -16,42 +16,23 @@
  */
 package org.apache.camel.idea;
 
-import com.intellij.openapi.components.ProjectComponent;
-import com.intellij.openapi.project.Project;
-import org.jetbrains.annotations.NotNull;
+/**
+ * Various utility methods.
+ */
+public final class CamelIdeaUtils {
 
-public class CamelProjectComponent implements ProjectComponent {
-
-    private Project project;
-
-    public CamelProjectComponent(Project project) {
-        this.project = project;
+    private CamelIdeaUtils() {
     }
 
-    @Override
-    public void projectOpened() {
-        // noop
+    public static boolean hasQuestionMark(String val) {
+        return val.indexOf('?') > 0;
     }
 
-    @Override
-    public void projectClosed() {
-        // noop
+    public static String asComponentName(String val) {
+        int pos = val.indexOf(':');
+        if (pos > 0) {
+            return val.substring(0, pos);
+        }
+        return null;
     }
-
-    @Override
-    public void initComponent() {
-        // noop
-    }
-
-    @Override
-    public void disposeComponent() {
-        // noop
-    }
-
-    @NotNull
-    @Override
-    public String getComponentName() {
-        return "CamelPlugin";
-    }
-
 }
