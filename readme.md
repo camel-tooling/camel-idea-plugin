@@ -14,8 +14,7 @@ to Apache Software Foundation to be included out of the box at Apache Camel.
  
 However currently the code is located at github to allow faster and wider collaboration in the community.
 
-![Early Screenshot](https://octodex.github.com/images/yaktocat.png)
-
+![Early Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/early2.png)
 
 
 ### How to run
@@ -28,6 +27,12 @@ We plan to publish the plugin in the IDEA plugin manager, so you can install the
 You can build the plugin from source code, which requires to setup IDEA for plugin development.
 
 You can follow the guide from Jetbrains here: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/setting_up_environment.html
+
+To be able to browse the IDEA SDK source code you can clone the IDEA community source code, as described
+in the guide above. I did this so I can peak inside their source code, because you need this to find out
+how to hook into various IDEA APIs which is massive and takes longer time to figure out to use. Sadly
+Jetbrains are not very good at documenting their APIs with neither javadoc, or documentation to their own plugins.
+However with some trial and run you can find out bit by bit.
 
 If everything is setup correctly, then you can launch the plugin, by running "Apache Camel IDEA plugin"
 from the run menu in IDEA. Then a 2nd instance of IDEA is launched where you can open a Camel project
@@ -65,4 +70,6 @@ Also we love feedback and you are welcome to log tickets about issues, ideas, et
 
 ### Screenshots
 
-We will post various screenshots of the plugin in the img directory which you can browse.
+We will post various screen shots of the plugin in the
+[img directory](https://github.com/davsclaus/camel-idea-plugin/tree/master/img)
+which you can browse.
