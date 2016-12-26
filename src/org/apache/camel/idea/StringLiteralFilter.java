@@ -16,30 +16,24 @@
  */
 package org.apache.camel.idea;
 
-import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteral;
-import com.intellij.psi.PsiMember;
-import com.intellij.psi.PsiNameValuePair;
-import com.intellij.psi.PsiStatement;
+import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.PsiType;
 import com.intellij.psi.filters.ElementFilter;
-import com.intellij.psi.util.PsiTreeUtil;
 
 /**
- * {@link ElementFilter} to discover Camel annotations.
- *
- * @deprecated we use {@link StringLiteralFilter} to find among all String values
+ * {@link ElementFilter} to discover String literals.
  */
-@Deprecated
-class CamelAnnotationFilter implements ElementFilter {
+class StringLiteralFilter implements ElementFilter {
 
     public boolean isAcceptable(Object element, PsiElement context) {
-        PsiNameValuePair pair = PsiTreeUtil.getParentOfType(context, PsiNameValuePair.class, false, PsiMember.class, PsiStatement.class);
-        if (null == pair) return false;
-        PsiAnnotation annotation = PsiTreeUtil.getParentOfType(pair, PsiAnnotation.class);
-        if (annotation == null) return false;
-        String fqn = annotation.getQualifiedName();
-        return fqn != null && fqn.startsWith("org.apache.camel");
+        if (context instanceof PsiLiteralExpression) {
+            PsiType type = ((PsiLiteralExpression) context).getType();
+            String txt = type.getCanonicalText();
+            return "java.lang.String".equals(txt);
+        }
+        return false;
     }
 
     public boolean isClassAcceptable(Class hintClass) {

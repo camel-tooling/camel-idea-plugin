@@ -40,7 +40,7 @@ public class CamelSmartCompletionEndpointOptions {
                 if (existing == null || !existing.containsKey(name)) {
                     // the lookup should prepare for the new option
                     String lookup;
-                    if (existing == null) {
+                    if (!val.contains("?")) {
                         // none existing options so we need to start with a ? mark
                         lookup = val + "?" + name + "=";
                     } else {

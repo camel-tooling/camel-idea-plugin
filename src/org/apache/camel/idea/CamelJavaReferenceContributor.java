@@ -37,11 +37,10 @@ import com.intellij.util.ProcessingContext;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
 import org.apache.camel.catalog.JSonSchemaHelper;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.*;
+import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestions;
 import static org.apache.camel.idea.CamelSmartCompletionEndpointValue.addSmartCompletionForSingleValue;
 
 /**
@@ -63,7 +62,7 @@ public class CamelJavaReferenceContributor extends PsiReferenceContributor {
     }
 
     private static PsiElementPattern.Capture<PsiLiteral> getElementPattern() {
-        return PlatformPatterns.psiElement(PsiLiteral.class).and(new FilterPattern(new CamelAnnotationFilter()));
+        return PlatformPatterns.psiElement(PsiLiteral.class).and(new FilterPattern(new StringLiteralFilter()));
     }
 
     /**
@@ -95,49 +94,51 @@ public class CamelJavaReferenceContributor extends PsiReferenceContributor {
         public Object[] getVariants() {
             List<Object> answer = null;
 
-            @NonNls String val = getValue();
+            // special IDEA hack which is really needed (yes they do this)
+            String val = getValue();
             int hackIndex = val.indexOf(CompletionUtil.DUMMY_IDENTIFIER);
+            if (hackIndex == -1) {
+                hackIndex = val.indexOf(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED);
+            }
             if (hackIndex > -1) {
                 val = val.substring(0, hackIndex);
             }
 
-            // is it after ? mark as we only do completion until
-            // is it a Camel component
-            if (CamelIdeaUtils.hasQuestionMark(val)) {
-                String componentName = CamelIdeaUtils.asComponentName(val);
-                if (componentName != null && camelCatalog.findComponentNames().contains(componentName)) {
-                    // is it a known Camel component
-                    String json = camelCatalog.componentJSonSchema(componentName);
+            // is this a possible Camel endpoint uri which we know
+            String componentName = CamelIdeaUtils.asComponentName(val);
+            if (componentName != null && camelCatalog.findComponentNames().contains(componentName)) {
 
-                    // gather list of names
-                    List<Map<String, String>> rows = JSonSchemaHelper.parseJsonSchema("properties", json, true);
+                // it is a known Camel component
+                String json = camelCatalog.componentJSonSchema(componentName);
 
-                    // grab all existing parameters
-                    String query = val;
-                    // strip up ending incomplete parameter
-                    if (query.endsWith("&") || query.endsWith("?")) {
-                        query = query.substring(0, query.length() - 1);
-                    }
+                // gather list of names
+                List<Map<String, String>> rows = JSonSchemaHelper.parseJsonSchema("properties", json, true);
 
-                    Map<String, String> existing = null;
-                    try {
-                        existing = camelCatalog.endpointProperties(query);
-                    } catch (Exception e) {
-                        // ignore
-                    }
+                // grab all existing parameters
+                String query = val;
+                // strip up ending incomplete parameter
+                if (query.endsWith("&") || query.endsWith("?")) {
+                    query = query.substring(0, query.length() - 1);
+                }
 
-                    // are we editing an existing parameter value
-                    // or are we having a list of suggested parameters to choose among
-                    boolean editSingle = val.endsWith("=");
-                    if (editSingle) {
-                        // parameter name is before = and & or ?
-                        int pos = Math.max(val.lastIndexOf('&'), val.lastIndexOf('?'));
-                        String name = val.substring(pos + 1);
-                        name = name.substring(0, name.length() - 1); // remove =
-                        answer = addSmartCompletionForSingleValue(val, rows, name);
-                    } else {
-                        answer = addSmartCompletionSuggestions(val, rows, existing);
-                    }
+                Map<String, String> existing = null;
+                try {
+                    existing = camelCatalog.endpointProperties(query);
+                } catch (Exception e) {
+                    // ignore
+                }
+
+                // are we editing an existing parameter value
+                // or are we having a list of suggested parameters to choose among
+                boolean editSingle = val.endsWith("=");
+                if (editSingle) {
+                    // parameter name is before = and & or ?
+                    int pos = Math.max(val.lastIndexOf('&'), val.lastIndexOf('?'));
+                    String name = val.substring(pos + 1);
+                    name = name.substring(0, name.length() - 1); // remove =
+                    answer = addSmartCompletionForSingleValue(val, rows, name);
+                } else {
+                    answer = addSmartCompletionSuggestions(val, rows, existing);
                 }
             }
             if (answer != null) {
