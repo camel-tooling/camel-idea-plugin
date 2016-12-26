@@ -17,21 +17,21 @@
 package org.apache.camel.idea;
 
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiLiteral;
-import com.intellij.psi.filters.ElementFilter;
+import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.PsiType;
 
-import static org.apache.camel.idea.IdeaUtils.isStringLiteral;
+public final class IdeaUtils {
 
-/**
- * {@link ElementFilter} to discover String literals.
- */
-class StringLiteralFilter implements ElementFilter {
-
-    public boolean isAcceptable(Object element, PsiElement context) {
-        return isStringLiteral(context);
+    private IdeaUtils() {
     }
 
-    public boolean isClassAcceptable(Class hintClass) {
-        return PsiLiteral.class.isAssignableFrom(hintClass);
+    public static boolean isStringLiteral(PsiElement element) {
+        if (element instanceof PsiLiteralExpression) {
+            PsiType type = ((PsiLiteralExpression) element).getType();
+            String txt = type.getCanonicalText();
+            return "java.lang.String".equals(txt);
+        }
+        return false;
     }
+
 }

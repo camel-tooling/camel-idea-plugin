@@ -19,9 +19,9 @@ package org.apache.camel.idea;
 /**
  * Various utility methods.
  */
-public final class CamelIdeaUtils {
+public final class StringUtils {
 
-    private CamelIdeaUtils() {
+    private StringUtils() {
     }
 
     public static boolean hasQuestionMark(String val) {

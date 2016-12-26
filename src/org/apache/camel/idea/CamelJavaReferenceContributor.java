@@ -105,7 +105,7 @@ public class CamelJavaReferenceContributor extends PsiReferenceContributor {
             }
 
             // is this a possible Camel endpoint uri which we know
-            String componentName = CamelIdeaUtils.asComponentName(val);
+            String componentName = StringUtils.asComponentName(val);
             if (componentName != null && camelCatalog.findComponentNames().contains(componentName)) {
 
                 // it is a known Camel component

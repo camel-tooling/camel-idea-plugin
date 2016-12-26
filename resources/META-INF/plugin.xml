@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>org.apache.camel</id>
   <name>Camel IDEA Plugin</name>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -10,6 +10,7 @@
 
   <change-notes><![CDATA[
       0.1.0 - Early prototype.
+      0.1.1 - Smart completion for Java DSL
     ]]>
   </change-notes>
 
@@ -23,7 +24,12 @@
   -->
 
   <extensions defaultExtensionNs="com.intellij">
+    <!-- hook into IDEA to allow smart completion of Camel endpoints in Java code -->
     <psi.referenceContributor language="JAVA" implementation="org.apache.camel.idea.CamelJavaReferenceContributor"/>
+
+    <!-- hook into IDEA to include Camel endpoint documentation in various popups -->
+    <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.CamelDocumentationProvider"/>
+
   </extensions>
 
 </idea-plugin>
