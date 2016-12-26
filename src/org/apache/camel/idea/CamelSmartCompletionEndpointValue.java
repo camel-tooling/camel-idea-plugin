@@ -42,65 +42,91 @@ public class CamelSmartCompletionEndpointValue {
             String defaultValue = found.get("defaultValue");
 
             if (enums != null) {
-                String[] parts = enums.split(",");
-                for (String part : parts) {
-                    String lookup = val + part;
-                    LookupElementBuilder builder = LookupElementBuilder.create(lookup);
-                    // only show the option in the UI
-                    builder = builder.withPresentableText(part);
-                    builder = builder.withBoldness(true);
-                    if ("true".equals(deprecated)) {
-                        // mark as deprecated
-                        builder = builder.withStrikeoutness(true);
-                    }
-                    boolean isDefaultValue = defaultValue != null && part.equals(defaultValue);
-                    if (isDefaultValue) {
-                        builder = builder.withTailText(" (default value)");
-                        // add default value first in the list
-                        answer.add(0, builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
-                    } else {
-                        answer.add(builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
-                    }
-                }
+                addEnumSuggestions(val, answer, deprecated, enums, defaultValue);
             } else if ("java.lang.Boolean".equals(javaType) || "boolean".equals(javaType)) {
-                // for boolean types then give a choice between true|false
-                String lookup = val + "true";
-                LookupElementBuilder builder = LookupElementBuilder.create(lookup);
-                // only show the option in the UI
-                builder = builder.withPresentableText("true");
-                if ("true".equals(deprecated)) {
-                    // mark as deprecated
-                    builder = builder.withStrikeoutness(true);
-                }
-                boolean isDefaultValue = defaultValue != null && "true".equals(defaultValue);
-                if (isDefaultValue) {
-                    builder = builder.withTailText(" (default value)");
-                    // add default value first in the list
-                    answer.add(0, builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
-                } else {
-                    answer.add(builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
-                }
-
-                lookup = val + "false";
-                builder = LookupElementBuilder.create(lookup);
-                // only show the option in the UI
-                builder = builder.withPresentableText("false");
-                if ("true".equals(deprecated)) {
-                    // mark as deprecated
-                    builder = builder.withStrikeoutness(true);
-                }
-                isDefaultValue = defaultValue != null && "false".equals(defaultValue);
-                if (isDefaultValue) {
-                    builder = builder.withTailText(" (default value)");
-                    // add default value first in the list
-                    answer.add(0, builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
-                } else {
-                    answer.add(builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
-                }
+                addBooleanSuggestions(val, answer, deprecated, defaultValue);
+            } else if (defaultValue != null) {
+                // for any other kind of type and if there is a default value then add that as a suggestion
+                // so its easy to see what the default value is
+                addDefaultValueSuggestions(val, answer, deprecated, defaultValue);
             }
         }
 
         return answer;
+    }
+
+    private static void addEnumSuggestions(String val, List<Object> answer, String deprecated, String enums, String defaultValue) {
+        String[] parts = enums.split(",");
+        for (String part : parts) {
+            String lookup = val + part;
+            LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+            // only show the option in the UI
+            builder = builder.withPresentableText(part);
+            builder = builder.withBoldness(true);
+            if ("true".equals(deprecated)) {
+                // mark as deprecated
+                builder = builder.withStrikeoutness(true);
+            }
+            boolean isDefaultValue = defaultValue != null && part.equals(defaultValue);
+            if (isDefaultValue) {
+                builder = builder.withTailText(" (default value)");
+                // add default value first in the list
+                answer.add(0, builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
+            } else {
+                answer.add(builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
+            }
+        }
+    }
+
+    private static void addBooleanSuggestions(String val, List<Object> answer, String deprecated, String defaultValue) {
+        // for boolean types then give a choice between true|false
+        String lookup = val + "true";
+        LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+        // only show the option in the UI
+        builder = builder.withPresentableText("true");
+        if ("true".equals(deprecated)) {
+            // mark as deprecated
+            builder = builder.withStrikeoutness(true);
+        }
+        boolean isDefaultValue = defaultValue != null && "true".equals(defaultValue);
+        if (isDefaultValue) {
+            builder = builder.withTailText(" (default value)");
+            // add default value first in the list
+            answer.add(0, builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
+        } else {
+            answer.add(builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
+        }
+
+        lookup = val + "false";
+        builder = LookupElementBuilder.create(lookup);
+        // only show the option in the UI
+        builder = builder.withPresentableText("false");
+        if ("true".equals(deprecated)) {
+            // mark as deprecated
+            builder = builder.withStrikeoutness(true);
+        }
+        isDefaultValue = defaultValue != null && "false".equals(defaultValue);
+        if (isDefaultValue) {
+            builder = builder.withTailText(" (default value)");
+            // add default value first in the list
+            answer.add(0, builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
+        } else {
+            answer.add(builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
+        }
+    }
+
+    private static void addDefaultValueSuggestions(String val, List<Object> answer, String deprecated, String defaultValue) {
+        String lookup = val + defaultValue;
+        LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+        // only show the option in the UI
+        builder = builder.withPresentableText(defaultValue);
+        if ("true".equals(deprecated)) {
+            // mark as deprecated
+            builder = builder.withStrikeoutness(true);
+        }
+        builder = builder.withTailText(" (default value)");
+        // there is only one value in the list and its the default value, so never auto complete it but show as suggestion
+        answer.add(0, builder.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE));
     }
 
 }
