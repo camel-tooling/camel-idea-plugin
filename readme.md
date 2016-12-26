@@ -20,14 +20,14 @@ However currently the code is located at github to allow faster and wider collab
 
 We plan to publish the plugin in the IDEA plugin manager, so you can install the plugin from IDEA.
 
-Currently the plugin is editing Java endpoints which are defined in Camel endpoints only.
+Currently the plugin is editing Java endpoints in Java source code.
 
-You can open a Camel example such as `camel-example-spring-boot` and then add the following source code to the route class
+You can open any Camel example which uses Java code, such as `camel-example-spring-boot` an
+select the `MySpringBootRouter` route class and position the cursor on any of the Camel endpoints
+after the '?' mark and press `ctrl + space`. 
 
-    @EndpointInject(uri = "seda:foo?")
-    private Endpoint foo;
-    
-and then position the cursor after the `?` mark and press `ctrl + space` to see a list of options.
+Currently its only endpoint options in the URI query section which can be edited. Its planned to add
+support for editing the options in the URI context-path section as well.
 
 
 ### Building from source
@@ -42,7 +42,7 @@ how to hook into various IDEA APIs which is massive and takes longer time to fig
 Jetbrains are not very good at documenting their APIs with neither javadoc, or documentation to their own plugins.
 However with some trial and run you can find out bit by bit.
 
-I have put screenshots of how I have setup IDEA for plugin development. There is a couple of fields
+I have put screen shots of how I have setup IDEA for plugin development. There is a couple of fields
 which you must configure with an absolute file location to a directory, and why its important to
 setup this correctly. Those fields has been marked with red rectangle in the screenshots.
 

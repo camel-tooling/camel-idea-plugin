@@ -44,7 +44,7 @@ import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmart
 import static org.apache.camel.idea.CamelSmartCompletionEndpointValue.addSmartCompletionForSingleValue;
 
 /**
- * Plugin to hook into the IDEA Java language.
+ * Plugin to hook into the IDEA Java language, to setup Camel smart completion for editing Java source code.
  */
 public class CamelJavaReferenceContributor extends PsiReferenceContributor {
 

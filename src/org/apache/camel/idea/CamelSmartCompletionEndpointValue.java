@@ -23,6 +23,11 @@ import java.util.Map;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 
+/**
+ * Smart completion for editing a single value in a Camel endpoint uri, such as
+ * <tt>jms:queue?acknowledgementModeName=_CURSOR_HERE_</tt>. Which presents the user
+ * with a list of possible values for the <tt>acknowledgementModeName</tt> option.
+ */
 public class CamelSmartCompletionEndpointValue {
 
     public static List<Object> addSmartCompletionForSingleValue(String val, List<Map<String, String>> rows, String name) {

@@ -35,9 +35,13 @@ class CamelAnnotationFilter implements ElementFilter {
 
     public boolean isAcceptable(Object element, PsiElement context) {
         PsiNameValuePair pair = PsiTreeUtil.getParentOfType(context, PsiNameValuePair.class, false, PsiMember.class, PsiStatement.class);
-        if (null == pair) return false;
+        if (null == pair) {
+            return false;
+        }
         PsiAnnotation annotation = PsiTreeUtil.getParentOfType(pair, PsiAnnotation.class);
-        if (annotation == null) return false;
+        if (annotation == null) {
+            return false;
+        }
         String fqn = annotation.getQualifiedName();
         return fqn != null && fqn.startsWith("org.apache.camel");
     }

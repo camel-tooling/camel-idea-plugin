@@ -23,6 +23,11 @@ import java.util.Map;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 
+/**
+ * Smart completion for editing a Camel endpoint uri, to show a list of possible endpoint options which can be added.
+ * For example editing <tt>jms:queue?_CURSOR_HERE_</tt>. Which presents the user
+ * with a list of possible options for the JMS endpoint.
+ */
 public class CamelSmartCompletionEndpointOptions {
 
     public static List<Object> addSmartCompletionSuggestions(String val, List<Map<String, String>> rows, Map<String, String> existing) {
