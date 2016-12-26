@@ -22,6 +22,7 @@ import java.util.Map;
 
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.icons.AllIcons;
 
 /**
  * Smart completion for editing a Camel endpoint uri, to show a list of possible endpoint options which can be added.
@@ -40,6 +41,9 @@ public class CamelSmartCompletionEndpointOptions {
             String deprecated = row.get("deprecated");
             String group = row.get("group");
             String javaType = row.get("javaType");
+            String required = row.get("required");
+            String enums = row.get("enum");
+            String secret = row.get("secret");
             if ("parameter".equals(kind)) {
                 // only add if not already used
                 if (existing == null || !existing.containsKey(name)) {
@@ -64,7 +68,15 @@ public class CamelSmartCompletionEndpointOptions {
                         // mark as deprecated
                         builder = builder.withStrikeoutness(true);
                     }
-                    // TODO: we could nice with an icon for producer vs consumer etc or for secret, or required
+                    // add icons for various options
+                    if ("true".equals(required)) {
+                        builder = builder.withIcon(AllIcons.Toolwindows.ToolWindowFavorites);
+                    } else if ("true".equals(secret)) {
+                        builder = builder.withIcon(AllIcons.Nodes.SecurityRole);
+                    } else if (enums != null && !enums.isEmpty()) {
+                        builder = builder.withIcon(AllIcons.Nodes.Enum);
+                    }
+                    // TODO: we could nice with an icon for producer vs consumer etc
                     answer.add(builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
                 }
             }
