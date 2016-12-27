@@ -18,17 +18,15 @@ package org.apache.camel.idea;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
-import com.intellij.lang.documentation.CodeDocumentationProvider;
-import com.intellij.openapi.util.Pair;
-import com.intellij.psi.PsiComment;
+import com.intellij.lang.documentation.DocumentationProvider;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
 import org.apache.camel.catalog.JSonSchemaHelper;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static org.apache.camel.idea.IdeaUtils.isStringLiteral;
@@ -36,29 +34,16 @@ import static org.apache.camel.idea.IdeaUtils.isStringLiteral;
 /**
  * Camel documentation provider to hook into IDEA to show Camel endpoint documentation in popups and various other places.
  */
-public class CamelDocumentationProvider implements CodeDocumentationProvider {
+public class CamelDocumentationProvider implements DocumentationProvider {
 
     // TODO: implement the other methods for more documentation such as F1
 
     private final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
 
-    @Nullable
-    @Override
-    public PsiComment findExistingDocComment(PsiComment contextElement) {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public Pair<PsiElement, PsiComment> parseContext(@NotNull PsiElement startPoint) {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public String generateDocumentationContentStub(PsiComment contextComment) {
-        return null;
-    }
+    // we need to store a reference to the component docs if you from the smart completion lookup
+    // press ctrl + j to show documentation about a given option, then we need to know the
+    // name of the selected option, when IDEA calls generateDoc afterwards
+    private final AtomicReference<ComponentDocs> lookupDocs = new AtomicReference<>();
 
     @Nullable
     @Override
@@ -126,12 +111,53 @@ public class CamelDocumentationProvider implements CodeDocumentationProvider {
     @Nullable
     @Override
     public String generateDoc(PsiElement element, @Nullable PsiElement originalElement) {
-        return null;
+        String html = null;
+
+        // if we have specialized lookup document then find information from that
+        ComponentDocs docs = lookupDocs.getAndSet(null);
+        if (docs != null) {
+            html = docs.getHtmlDoc();
+            String selected = docs.getSelectedOption();
+            // TODO: highlight information about this selected option
+        }
+        if (html == null && isStringLiteral(element)) {
+            PsiLiteralExpression literal = (PsiLiteralExpression) element;
+            String val = (String) literal.getValue();
+            String componentName = StringUtils.asComponentName(val);
+            if (componentName != null) {
+                html = camelCatalog.componentHtmlDoc(componentName);
+            }
+        }
+
+        return html;
     }
 
     @Nullable
     @Override
     public PsiElement getDocumentationElementForLookupItem(PsiManager psiManager, Object object, PsiElement element) {
+        if (object != null && object instanceof String && isStringLiteral(element)) {
+            String val = (String) object;
+            String componentName = StringUtils.asComponentName(val);
+            if (componentName != null && camelCatalog.findComponentNames().contains(componentName)) {
+                // it is a known Camel component
+
+                // find the last value
+                int pos = Math.max(val.lastIndexOf('?'), val.lastIndexOf('&'));
+                if (pos > 0) {
+                    String name = val.substring(pos + 1);
+                    // remove ending =
+                    if (name.endsWith("=")) {
+                        name = name.substring(0, name.length() - 1);
+                    }
+
+                    String json = camelCatalog.componentJSonSchema(componentName);
+                    String adoc = camelCatalog.componentAsciiDoc(componentName);
+                    String html = camelCatalog.componentHtmlDoc(componentName);
+                    lookupDocs.set(new ComponentDocs(json, adoc, html, name));
+                }
+            }
+        }
+
         return null;
     }
 
@@ -140,4 +166,39 @@ public class CamelDocumentationProvider implements CodeDocumentationProvider {
     public PsiElement getDocumentationElementForLink(PsiManager psiManager, String link, PsiElement context) {
         return null;
     }
+
+    /**
+     * Documentation about a Camel component
+     */
+    private static final class ComponentDocs {
+
+        private final String json;
+        private final String asciiDoc;
+        private final String htmlDoc;
+        private final String selectedOption;
+
+        ComponentDocs(String json, String asciiDoc, String htmlDoc, String selectedOption) {
+            this.json = json;
+            this.asciiDoc = asciiDoc;
+            this.htmlDoc = htmlDoc;
+            this.selectedOption = selectedOption;
+        }
+
+        public String getJson() {
+            return json;
+        }
+
+        public String getAsciiDoc() {
+            return asciiDoc;
+        }
+
+        public String getHtmlDoc() {
+            return htmlDoc;
+        }
+
+        public String getSelectedOption() {
+            return selectedOption;
+        }
+    }
+
 }
