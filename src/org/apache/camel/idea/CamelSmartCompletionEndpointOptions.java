@@ -44,6 +44,8 @@ public class CamelSmartCompletionEndpointOptions {
             String required = row.get("required");
             String enums = row.get("enum");
             String secret = row.get("secret");
+            String type = row.get("type");
+
             if ("parameter".equals(kind)) {
                 // only add if not already used
                 if (existing == null || !existing.containsKey(name)) {
@@ -75,7 +77,10 @@ public class CamelSmartCompletionEndpointOptions {
                         builder = builder.withIcon(AllIcons.Nodes.SecurityRole);
                     } else if (enums != null && !enums.isEmpty()) {
                         builder = builder.withIcon(AllIcons.Nodes.Enum);
+                    } else if ("object".equals(type)) {
+                        builder = builder.withIcon(AllIcons.Nodes.Class);
                     }
+
                     // TODO: we could nice with an icon for producer vs consumer etc
                     answer.add(builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
                 }
