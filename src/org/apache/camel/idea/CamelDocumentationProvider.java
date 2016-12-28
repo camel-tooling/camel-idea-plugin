@@ -18,7 +18,6 @@ package org.apache.camel.idea;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.intellij.lang.documentation.DocumentationProvider;
 import com.intellij.psi.PsiElement;
@@ -38,11 +37,6 @@ import static org.apache.camel.idea.IdeaUtils.isStringLiteral;
 public class CamelDocumentationProvider implements DocumentationProvider {
 
     private final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
-
-    // we need to store a reference to the component docs if you from the smart completion lookup
-    // press ctrl + j to show documentation about a given option, then we need to know the
-    // name of the selected option, when IDEA calls generateDoc afterwards
-    private final AtomicReference<ComponentDocs> lookupDocs = new AtomicReference<>();
 
     @Nullable
     @Override
@@ -156,53 +150,21 @@ public class CamelDocumentationProvider implements DocumentationProvider {
     @Nullable
     @Override
     public String generateDoc(PsiElement element, @Nullable PsiElement originalElement) {
-        String html = null;
-
-        // if we have specialized lookup document then find information from that
-        ComponentDocs docs = lookupDocs.getAndSet(null);
-        if (docs != null) {
-            html = docs.getHtmlDoc();
-            String selected = docs.getSelectedOption();
-            // TODO: highlight information about this selected option
-        }
-        if (html == null && isStringLiteral(element)) {
+        if (isStringLiteral(element)) {
             PsiLiteralExpression literal = (PsiLiteralExpression) element;
             String val = (String) literal.getValue();
             String componentName = StringUtils.asComponentName(val);
             if (componentName != null) {
-                html = camelCatalog.componentHtmlDoc(componentName);
+                return camelCatalog.componentHtmlDoc(componentName);
             }
         }
 
-        return html;
+        return null;
     }
 
     @Nullable
     @Override
     public PsiElement getDocumentationElementForLookupItem(PsiManager psiManager, Object object, PsiElement element) {
-        if (object != null && object instanceof String && isStringLiteral(element)) {
-            String val = (String) object;
-            String componentName = StringUtils.asComponentName(val);
-            if (componentName != null && camelCatalog.findComponentNames().contains(componentName)) {
-                // it is a known Camel component
-
-                // find the last value
-                int pos = Math.max(val.lastIndexOf('?'), val.lastIndexOf('&'));
-                if (pos > 0) {
-                    String name = val.substring(pos + 1);
-                    // remove ending =
-                    if (name.endsWith("=")) {
-                        name = name.substring(0, name.length() - 1);
-                    }
-
-                    String json = camelCatalog.componentJSonSchema(componentName);
-                    String adoc = camelCatalog.componentAsciiDoc(componentName);
-                    String html = camelCatalog.componentHtmlDoc(componentName);
-                    lookupDocs.set(new ComponentDocs(json, adoc, html, name));
-                }
-            }
-        }
-
         return null;
     }
 
@@ -210,40 +172,6 @@ public class CamelDocumentationProvider implements DocumentationProvider {
     @Override
     public PsiElement getDocumentationElementForLink(PsiManager psiManager, String link, PsiElement context) {
         return null;
-    }
-
-    /**
-     * Documentation about a Camel component
-     */
-    private static final class ComponentDocs {
-
-        private final String json;
-        private final String asciiDoc;
-        private final String htmlDoc;
-        private final String selectedOption;
-
-        ComponentDocs(String json, String asciiDoc, String htmlDoc, String selectedOption) {
-            this.json = json;
-            this.asciiDoc = asciiDoc;
-            this.htmlDoc = htmlDoc;
-            this.selectedOption = selectedOption;
-        }
-
-        public String getJson() {
-            return json;
-        }
-
-        public String getAsciiDoc() {
-            return asciiDoc;
-        }
-
-        public String getHtmlDoc() {
-            return htmlDoc;
-        }
-
-        public String getSelectedOption() {
-            return selectedOption;
-        }
     }
 
 }
