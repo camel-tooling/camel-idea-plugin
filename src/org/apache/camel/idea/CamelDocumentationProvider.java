@@ -27,6 +27,7 @@ import com.intellij.psi.PsiManager;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
 import org.apache.camel.catalog.JSonSchemaHelper;
+import org.apache.commons.lang.WordUtils;
 import org.jetbrains.annotations.Nullable;
 
 import static org.apache.camel.idea.IdeaUtils.isStringLiteral;
@@ -35,8 +36,6 @@ import static org.apache.camel.idea.IdeaUtils.isStringLiteral;
  * Camel documentation provider to hook into IDEA to show Camel endpoint documentation in popups and various other places.
  */
 public class CamelDocumentationProvider implements DocumentationProvider {
-
-    // TODO: implement the other methods for more documentation such as F1
 
     private final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
 
@@ -89,12 +88,58 @@ public class CamelDocumentationProvider implements DocumentationProvider {
                     }
                 }
 
+                Map<String, String> existing = null;
+                try {
+                    existing = camelCatalog.endpointProperties(val);
+                } catch (Throwable e) {
+                    // ignore
+                }
+
+                StringBuilder options = new StringBuilder();
+                if (existing != null && !existing.isEmpty()) {
+                    List<Map<String, String>> lines = JSonSchemaHelper.parseJsonSchema("properties", json, true);
+
+                    for (Map.Entry<String, String> entry : existing.entrySet()) {
+                        String name = entry.getKey();
+                        String value = entry.getValue();
+
+                        Map<String, String> row = JSonSchemaHelper.getRow(lines, name);
+                        if (row != null) {
+                            String kind = row.get("kind");
+
+                            String line;
+                            if ("path".equals(kind)) {
+                                line = value + "\n";
+                            } else {
+                                line = name + "=" + value + "\n";
+                            }
+                            options.append("\n");
+                            options.append("<b>").append(line).append("</b>");
+
+                            String summary = row.get("description");
+                            // must wrap summary as IDEA cannot handle very big lines
+                            String wrapped = WordUtils.wrap(summary, 120);
+                            options.append(wrapped).append("\n");
+                        }
+                    }
+                }
+
                 StringBuilder sb = new StringBuilder();
                 if (groupId != null && artifactId != null && version != null && javaType != null) {
                     sb.append("[Maven: ").append(groupId).append(":").append(artifactId).append(":").append(version).append("] ").append(javaType).append("\n");
                 }
-                sb.append(title).append(": ").append(description).append("\n");
-                sb.append("<b>").append(syntax).append("</b>\n");
+                sb.append("\n");
+                sb.append("<b>").append(title).append("</b>: ").append(syntax).append("\n");
+                sb.append(description).append("\n");
+
+                sb.append("\n");
+                // must wrap val as IDEA cannot handle very big lines
+                String wrapped = WordUtils.wrap(val, 120);
+                sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(wrapped).append("</b>\n");
+
+                if (options.length() > 0) {
+                    sb.append(options.toString());
+                }
                 return sb.toString();
             }
         }
