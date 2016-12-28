@@ -55,10 +55,10 @@ public class CamelSmartCompletionEndpointOptions {
                         // none existing options so we need to start with a ? mark
                         lookup = val + "?" + name + "=";
                     } else {
-                        if (!val.endsWith("&")) {
+                        if (!val.endsWith("&") && !val.endsWith("?")) {
                             lookup = val + "&" + name + "=";
                         } else {
-                            // avoid double &&
+                            // there is already either an ending ? or &
                             lookup = val + name + "=";
                         }
                     }
