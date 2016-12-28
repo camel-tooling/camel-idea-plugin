@@ -166,7 +166,7 @@ public class CamelDocumentationProvider implements DocumentationProvider {
             if (componentName != null) {
                 return camelCatalog.componentHtmlDoc(componentName);
             } else {
-                // its maybe a method call for a Camel language or data format
+                // its maybe a method call for a Camel language
                 // which we need to try find out using IDEA Psi which can be cumbersome and complex
                 PsiElement parent = element.getParent();
                 if (parent instanceof PsiExpressionList) {
@@ -188,7 +188,6 @@ public class CamelDocumentationProvider implements DocumentationProvider {
                                 }
                             }
                         }
-                        // TODO: add for data format
                     }
                 }
             }
