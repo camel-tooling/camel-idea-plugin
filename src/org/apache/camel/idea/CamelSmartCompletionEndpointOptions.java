@@ -55,7 +55,12 @@ public class CamelSmartCompletionEndpointOptions {
                         // none existing options so we need to start with a ? mark
                         lookup = val + "?" + name + "=";
                     } else {
-                        lookup = val + "&" + name + "=";
+                        if (!val.endsWith("&")) {
+                            lookup = val + "&" + name + "=";
+                        } else {
+                            // avoid double &&
+                            lookup = val + name + "=";
+                        }
                     }
                     LookupElementBuilder builder = LookupElementBuilder.create(lookup);
                     // only show the option in the UI
