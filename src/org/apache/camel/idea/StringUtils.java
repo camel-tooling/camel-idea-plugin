@@ -35,4 +35,14 @@ public final class StringUtils {
         }
         return null;
     }
+
+    public static String asLanguageName(String val) {
+        if (val.startsWith("tokenize")) {
+            return val;
+        } else if (val.equals("js") || val.equals("javascript")) {
+            return "javaScript";
+        }
+
+        return val;
+    }
 }
