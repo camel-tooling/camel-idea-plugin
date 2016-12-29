@@ -67,9 +67,13 @@ For people who hack more on the code, can be granted commit rights.
 
 You should be willing to provide any code changes under the ASF license and that the code later
 will be donated to Apache Software Foundation to be included out of the box at Apache Camel.
-
 If you are not willing to accept this, then we are sorry, but then any code contributions cannot be accepted.
 
+### IDEA SDK and FAQ
+
+Jetbrains provides a FAQ for the IDEA SDK which is massive and takes time to learn.
+
+- http://www.jetbrains.org/intellij/sdk/docs/faq.html
 
 ### TODOs
 
