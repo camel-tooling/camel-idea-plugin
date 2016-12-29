@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>org.apache.camel</id>
   <name>Camel IDEA Plugin</name>
-  <version>0.1.2</version>
+  <version>0.1.3</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -12,6 +12,7 @@
       0.1.0 - Early prototype.
       0.1.1 - Smart completion for Java DSL
       0.1.2 - Smart completion for property files
+      0.1.3 - Smart completion for property placeholders
     ]]>
   </change-notes>
 
