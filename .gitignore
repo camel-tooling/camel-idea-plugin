@@ -1,3 +1,8 @@
 out/*
-/.idea/
-/workspace/
+target
+*.iml
+*.ipr
+*.iws
+.idea
+.DS_Store
+workspace/*
