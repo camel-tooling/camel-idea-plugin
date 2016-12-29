@@ -41,9 +41,9 @@ import static org.apache.camel.idea.CamelSmartCompletionEndpointValue.addSmartCo
  */
 public class CamelContributor extends CompletionContributor {
 
-    private final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
+    private static final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
 
-    protected class PropertyCompletion extends CompletionProvider<CompletionParameters> {
+    static protected class PropertyCompletion extends CompletionProvider<CompletionParameters> {
 
         public void addCompletions(@NotNull CompletionParameters parameters,
                 ProcessingContext context,
@@ -51,13 +51,18 @@ public class CamelContributor extends CompletionContributor {
             // is this a possible Camel endpoint uri which we know
             String val = parameters.getPosition().getText();
             int hackIndex = val.indexOf(CompletionUtil.DUMMY_IDENTIFIER);
-            int startIdx = 1;
             if (hackIndex == -1) {
                 hackIndex = val.indexOf(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED);
-                startIdx = 0;
             }
             if (hackIndex > -1) {
-                val = val.substring(startIdx, hackIndex);
+                val = val.substring(0, hackIndex);
+            }
+
+            if (val.startsWith("\"")) {
+                val = val.substring(1);
+            }
+            if (val.endsWith("\"")) {
+                val = val.substring(0,val.length()-1);
             }
 
             String componentName = StringUtils.asComponentName(val);
