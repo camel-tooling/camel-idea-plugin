@@ -1,17 +1,27 @@
-<idea-plugin version="2">
+<idea-plugin version="2" url="https://github.com/davsclaus/camel-idea-plugin">
   <id>org.apache.camel</id>
-  <name>Camel IDEA Plugin</name>
-  <version>0.1.2</version>
+  <name>Apache Camel IDEA Plugin</name>
+  <version>0.1.3</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
-      Adds smart completion when editing Camel endpoints
+      Plugin for Intellij IDEA to provide a set of small Apache Camel related capabilities to IDEA editor.
+
+      The plugin includes:
+      <ul>
+        <li>Smart completion for Camel endpoints in Java editor</li>
+        <li>Smart completion for Camel endpoints in properties files</li>
+        <li>Quick documentation for Camel endpoints and external link to Camel component opening in web browser</li>
+      </ul>
     ]]></description>
 
   <change-notes><![CDATA[
-      0.1.0 - Early prototype.
-      0.1.1 - Smart completion for Java DSL
-      0.1.2 - Smart completion for property files
+      <ul>
+        <li>0.1.3 - Internal and external documentation for Camel endpoints</li>
+        <li>0.1.2 - Smart completion for property files</li>
+        <li>0.1.1 - Smart completion for Java DSL</li>
+        <li>0.1.0 - Early prototype</li>
+      </ul>
     ]]>
   </change-notes>
 
@@ -28,6 +38,7 @@
   <extensions defaultExtensionNs="com.intellij">
     <!-- hook into IDEA to allow smart completion of Camel endpoints in Java code -->
     <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.CamelJavaReferenceContributor"/>
+
     <!-- hook into IDEA to allow smart completion of Camel endpoints in property files -->
     <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertyReferenceContributor"/>
 
