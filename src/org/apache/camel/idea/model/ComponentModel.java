@@ -175,4 +175,12 @@ public class ComponentModel {
         endpointOptions.add(option);
     }
 
+    public ComponentOptionModel getComponentOption(String name) {
+        return componentOptions.stream().filter(o -> o.getName().equals(name)).findFirst().orElse(null);
+    }
+
+    public EndpointOptionModel getEndpointOption(String name) {
+        return endpointOptions.stream().filter(o -> o.getName().equals(name)).findFirst().orElse(null);
+    }
+
 }

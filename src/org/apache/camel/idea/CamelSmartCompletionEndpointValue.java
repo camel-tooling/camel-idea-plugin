@@ -18,11 +18,11 @@ package org.apache.camel.idea;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import org.apache.camel.idea.model.EndpointOptionModel;
 
 /**
  * Smart completion for editing a single value in a Camel endpoint uri, such as
@@ -31,31 +31,22 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
  */
 public class CamelSmartCompletionEndpointValue {
 
-    public static List<LookupElement> addSmartCompletionForSingleValue(String val, List<Map<String, String>> rows, String name) {
+    public static List<LookupElement> addSmartCompletionForSingleValue(String val, EndpointOptionModel option) {
         List<LookupElement> answer = new ArrayList<>();
 
-        Map<String, String> found = null;
-        for (Map<String, String> row : rows) {
-            if (name.equals(row.get("name"))) {
-                found = row;
-                break;
-            }
-        }
-        if (found != null) {
-            String javaType = found.get("javaType");
-            String deprecated = found.get("deprecated");
-            String enums = found.get("enum");
-            String defaultValue = found.get("defaultValue");
+        String javaType = option.getJavaType();
+        String deprecated = option.getDeprecated();
+        String enums = option.getEnums();
+        String defaultValue = option.getDefaultValue();
 
-            if (enums != null) {
-                addEnumSuggestions(val, answer, deprecated, enums, defaultValue);
-            } else if ("java.lang.Boolean".equals(javaType) || "boolean".equals(javaType)) {
-                addBooleanSuggestions(val, answer, deprecated, defaultValue);
-            } else if (defaultValue != null) {
-                // for any other kind of type and if there is a default value then add that as a suggestion
-                // so its easy to see what the default value is
-                addDefaultValueSuggestions(val, answer, deprecated, defaultValue);
-            }
+        if (!enums.isEmpty()) {
+            addEnumSuggestions(val, answer, deprecated, enums, defaultValue);
+        } else if ("java.lang.Boolean".equals(javaType) || "boolean".equals(javaType)) {
+            addBooleanSuggestions(val, answer, deprecated, defaultValue);
+        } else if (defaultValue != null) {
+            // for any other kind of type and if there is a default value then add that as a suggestion
+            // so its easy to see what the default value is
+            addDefaultValueSuggestions(val, answer, deprecated, defaultValue);
         }
 
         return answer;

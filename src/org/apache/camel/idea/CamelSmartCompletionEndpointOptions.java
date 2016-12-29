@@ -24,6 +24,8 @@ import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
+import org.apache.camel.idea.model.ComponentModel;
+import org.apache.camel.idea.model.EndpointOptionModel;
 
 /**
  * Smart completion for editing a Camel endpoint uri, to show a list of possible endpoint options which can be added.
@@ -32,22 +34,13 @@ import com.intellij.icons.AllIcons;
  */
 public class CamelSmartCompletionEndpointOptions {
 
-    public static List<LookupElement> addSmartCompletionSuggestions(String val, List<Map<String, String>> rows, Map<String, String> existing) {
+    public static List<LookupElement> addSmartCompletionSuggestions(String val, ComponentModel component, Map<String, String> existing) {
         List<LookupElement> answer = new ArrayList<>();
 
-        for (Map<String, String> row : rows) {
-            String name = row.get("name");
-            // should be uri parameters
-            String kind = row.get("kind");
-            String deprecated = row.get("deprecated");
-            String group = row.get("group");
-            String javaType = row.get("javaType");
-            String required = row.get("required");
-            String enums = row.get("enum");
-            String secret = row.get("secret");
-            String type = row.get("type");
+        for (EndpointOptionModel option : component.getEndpointOptions()) {
 
-            if ("parameter".equals(kind)) {
+            if ("parameter".equals(option.getKind())) {
+                String name = option.getName();
                 // only add if not already used
                 if (existing == null || !existing.containsKey(name)) {
                     // the lookup should prepare for the new option
@@ -67,23 +60,23 @@ public class CamelSmartCompletionEndpointOptions {
                     // only show the option in the UI
                     builder = builder.withPresentableText(name);
                     // we don't want to highlight the advanced options which should be more seldom in use
-                    boolean advanced = group != null && group.contains("advanced");
+                    boolean advanced = option.getGroup().contains("advanced");
                     builder = builder.withBoldness(!advanced);
-                    if (javaType != null) {
-                        builder = builder.withTypeText(javaType, true);
+                    if (!option.getJavaType().isEmpty()) {
+                        builder = builder.withTypeText(option.getJavaType(), true);
                     }
-                    if ("true".equals(deprecated)) {
+                    if ("true".equals(option.getDeprecated())) {
                         // mark as deprecated
                         builder = builder.withStrikeoutness(true);
                     }
                     // add icons for various options
-                    if ("true".equals(required)) {
+                    if ("true".equals(option.getRequired())) {
                         builder = builder.withIcon(AllIcons.Toolwindows.ToolWindowFavorites);
-                    } else if ("true".equals(secret)) {
+                    } else if ("true".equals(option.getSecret())) {
                         builder = builder.withIcon(AllIcons.Nodes.SecurityRole);
-                    } else if (enums != null && !enums.isEmpty()) {
+                    } else if (!option.getEnums().isEmpty()) {
                         builder = builder.withIcon(AllIcons.Nodes.Enum);
-                    } else if ("object".equals(type)) {
+                    } else if ("object".equals(option.getType())) {
                         builder = builder.withIcon(AllIcons.Nodes.Class);
                     }
 
