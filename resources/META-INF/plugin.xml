@@ -26,6 +26,7 @@
   <extensions defaultExtensionNs="com.intellij">
     <!-- hook into IDEA to allow smart completion of Camel endpoints in Java code -->
     <psi.referenceContributor language="JAVA" implementation="org.apache.camel.idea.CamelJavaReferenceContributor"/>
+    <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertyReferenceContributor"/>
 
     <!-- hook into IDEA to include Camel endpoint documentation in various popups -->
     <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.CamelDocumentationProvider"/>

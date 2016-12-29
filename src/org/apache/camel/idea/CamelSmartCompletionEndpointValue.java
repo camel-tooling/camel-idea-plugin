@@ -16,12 +16,13 @@
  */
 package org.apache.camel.idea;
 
+import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
+import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
 
 /**
  * Smart completion for editing a single value in a Camel endpoint uri, such as
@@ -30,8 +31,8 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
  */
 public class CamelSmartCompletionEndpointValue {
 
-    public static List<Object> addSmartCompletionForSingleValue(String val, List<Map<String, String>> rows, String name) {
-        List<Object> answer = new ArrayList<Object>();
+    public static List<LookupElement> addSmartCompletionForSingleValue(String val, List<Map<String, String>> rows, String name) {
+        List<LookupElement> answer = new ArrayList<>();
 
         Map<String, String> found = null;
         for (Map<String, String> row : rows) {
@@ -60,7 +61,7 @@ public class CamelSmartCompletionEndpointValue {
         return answer;
     }
 
-    private static void addEnumSuggestions(String val, List<Object> answer, String deprecated, String enums, String defaultValue) {
+    private static void addEnumSuggestions(String val, List<LookupElement> answer, String deprecated, String enums, String defaultValue) {
         String[] parts = enums.split(",");
         for (String part : parts) {
             String lookup = val + part;
@@ -83,7 +84,7 @@ public class CamelSmartCompletionEndpointValue {
         }
     }
 
-    private static void addBooleanSuggestions(String val, List<Object> answer, String deprecated, String defaultValue) {
+    private static void addBooleanSuggestions(String val, List<LookupElement> answer, String deprecated, String defaultValue) {
         // for boolean types then give a choice between true|false
         String lookup = val + "true";
         LookupElementBuilder builder = LookupElementBuilder.create(lookup);
@@ -120,7 +121,7 @@ public class CamelSmartCompletionEndpointValue {
         }
     }
 
-    private static void addDefaultValueSuggestions(String val, List<Object> answer, String deprecated, String defaultValue) {
+    private static void addDefaultValueSuggestions(String val, List<LookupElement> answer, String deprecated, String defaultValue) {
         String lookup = val + defaultValue;
         LookupElementBuilder builder = LookupElementBuilder.create(lookup);
         // only show the option in the UI

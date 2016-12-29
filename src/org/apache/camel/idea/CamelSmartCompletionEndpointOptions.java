@@ -16,13 +16,14 @@
  */
 package org.apache.camel.idea;
 
+import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
+import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.icons.AllIcons;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.icons.AllIcons;
 
 /**
  * Smart completion for editing a Camel endpoint uri, to show a list of possible endpoint options which can be added.
@@ -31,8 +32,8 @@ import com.intellij.icons.AllIcons;
  */
 public class CamelSmartCompletionEndpointOptions {
 
-    public static List<Object> addSmartCompletionSuggestions(String val, List<Map<String, String>> rows, Map<String, String> existing) {
-        List<Object> answer = new ArrayList<>();
+    public static List<LookupElement> addSmartCompletionSuggestions(String val, List<Map<String, String>> rows, Map<String, String> existing) {
+        List<LookupElement> answer = new ArrayList<>();
 
         for (Map<String, String> row : rows) {
             String name = row.get("name");
@@ -47,14 +48,7 @@ public class CamelSmartCompletionEndpointOptions {
             if ("parameter".equals(kind)) {
                 // only add if not already used
                 if (existing == null || !existing.containsKey(name)) {
-                    // the lookup should prepare for the new option
-                    String lookup;
-                    if (!val.contains("?")) {
-                        // none existing options so we need to start with a ? mark
-                        lookup = val + "?" + name + "=";
-                    } else {
-                        lookup = val + "&" + name + "=";
-                    }
+                    String lookup = val + name + "=";
                     LookupElementBuilder builder = LookupElementBuilder.create(lookup);
                     // only show the option in the UI
                     builder = builder.withPresentableText(name);
