@@ -214,6 +214,10 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     }
 
     private String fetchLiteralForCamelDocumentation(PsiElement element) {
+        if (element == null) {
+            return null;
+        }
+
         if (isStringLiteral(element)) {
             PsiLiteralExpression literal = (PsiLiteralExpression) element;
             return (String) literal.getValue();
@@ -230,8 +234,6 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     }
 
     private String generateCamelComponentDocumentation(String componentName, String val) {
-        // TODO: make this <html> so it looks better
-
         // it is a known Camel component
         String json = camelCatalog.componentJSonSchema(componentName);
         ComponentModel component = ModelHelper.generateComponentModel(json, false);
@@ -257,40 +259,36 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
                     String line;
                     if ("path".equals(kind)) {
-                        line = value + "\n";
+                        line = value + "<br/>";
                     } else {
-                        line = name + "=" + value + "\n";
+                        line = name + "=" + value + "<br/>";
                     }
-                    options.append("\n");
+                    options.append("<br/>");
                     options.append("<b>").append(line).append("</b>");
 
                     String summary = row.get("description");
-                    // must wrap summary as IDEA cannot handle very big lines
-                    String wrapped = WordUtils.wrap(summary, 120);
-                    options.append(wrapped).append("\n");
+                    options.append(summary).append("<br/>");
                 }
             }
         }
 
         StringBuilder sb = new StringBuilder();
+        sb.append("<b>").append(component.getTitle()).append(" Component</b><br/>");
+        sb.append(component.getDescription()).append("<br/><br/>");
+        sb.append("Syntax: <tt>").append(component.getSyntax()).append("?options</tt><br/>");
+        sb.append("Java class: <tt>").append(component.getJavaType()).append("</tt><br/>");
+
         String g = component.getGroupId();
         String a = component.getArtifactId();
         String v = component.getVersion();
         if (g != null && a != null && v != null) {
-            sb.append("[Maven: ").append(g).append(":").append(a).append(":").append(v).append("] ");
-            if (component.getJavaType() != null) {
-                sb.append(component.getJavaType());
-            }
-            sb.append("\n");
+            sb.append("Maven: <tt>").append(g).append(":").append(a).append(":").append(v).append("</tt><br/>");
         }
-        sb.append("\n");
-        sb.append("<b>").append(component.getTitle()).append("</b>: ").append(component.getSyntax()).append("\n");
-        sb.append(component.getDescription()).append("\n");
+        sb.append("<p/>");
 
-        sb.append("\n");
         // must wrap val as IDEA cannot handle very big lines
-        String wrapped = WordUtils.wrap(val, 120);
-        sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(wrapped).append("</b>\n");
+        String wrapped = WordUtils.wrap(val, 120, "<br/>", true);
+        sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(wrapped).append("</b><br/>");
 
         if (options.length() > 0) {
             sb.append(options.toString());
