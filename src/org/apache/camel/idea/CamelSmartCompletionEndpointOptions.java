@@ -41,8 +41,8 @@ public class CamelSmartCompletionEndpointOptions {
 
             if ("parameter".equals(option.getKind())) {
                 String name = option.getName();
-                // only add if not already used
-                if (existing == null || !existing.containsKey(name)) {
+                // only add if not already used (or if the option is multi valued then it can have many)
+                if ("true".equals(option.getMultiValue()) || existing == null || !existing.containsKey(name)) {
                     // the lookup should prepare for the new option
                     String lookup;
                     if (!val.contains("?")) {
