@@ -19,8 +19,12 @@ package org.apache.camel.idea;
 import java.util.List;
 import java.util.Map;
 
+import com.intellij.ide.BrowserUtil;
 import com.intellij.lang.documentation.DocumentationProviderEx;
+import com.intellij.lang.documentation.ExternalDocumentationHandler;
+import com.intellij.lang.documentation.ExternalDocumentationProvider;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
@@ -36,6 +40,8 @@ import com.intellij.psi.impl.source.PsiClassReferenceType;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
 import org.apache.camel.catalog.JSonSchemaHelper;
+import org.apache.camel.idea.model.ComponentModel;
+import org.apache.camel.idea.model.ModelHelper;
 import org.apache.commons.lang.WordUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,110 +53,15 @@ import static org.apache.camel.idea.StringUtils.asLanguageName;
 /**
  * Camel documentation provider to hook into IDEA to show Camel endpoint documentation in popups and various other places.
  */
-public class CamelDocumentationProvider extends DocumentationProviderEx {
+public class CamelDocumentationProvider extends DocumentationProviderEx implements ExternalDocumentationProvider, ExternalDocumentationHandler {
 
     private final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
+
+    private static final String GITHUB_EXTERNAL_DOC_URL = "https://github.com/apache/camel/blob/master";
 
     @Nullable
     @Override
     public String getQuickNavigateInfo(PsiElement element, PsiElement originalElement) {
-        if (isStringLiteral(originalElement)) {
-            PsiLiteralExpression exp = (PsiLiteralExpression) originalElement;
-            String val = (String) exp.getValue();
-            String componentName = StringUtils.asComponentName(val);
-            if (componentName != null && camelCatalog.findComponentNames().contains(componentName)) {
-                // it is a known Camel component
-                String json = camelCatalog.componentJSonSchema(componentName);
-
-                List<Map<String, String>> rows = JSonSchemaHelper.parseJsonSchema("component", json, false);
-
-                String title = "";
-                String description = "";
-                String syntax = "";
-                String groupId = null;
-                String artifactId = null;
-                String version = null;
-                String javaType = null;
-                for (Map<String, String> row : rows) {
-                    if (row.containsKey("title")) {
-                        title = row.get("title");
-                    }
-                    if (row.containsKey("description")) {
-                        description = row.get("description");
-                    }
-                    if (row.containsKey("syntax")) {
-                        syntax = row.get("syntax");
-                    }
-                    if (row.containsKey("groupId")) {
-                        groupId = row.get("groupId");
-                    }
-                    if (row.containsKey("artifactId")) {
-                        artifactId = row.get("artifactId");
-                    }
-                    if (row.containsKey("version")) {
-                        version = row.get("version");
-                    }
-                    if (row.containsKey("javaType")) {
-                        javaType = row.get("javaType");
-                    }
-                }
-
-                Map<String, String> existing = null;
-                try {
-                    existing = camelCatalog.endpointProperties(val);
-                } catch (Throwable e) {
-                    // ignore
-                }
-
-                StringBuilder options = new StringBuilder();
-                if (existing != null && !existing.isEmpty()) {
-                    List<Map<String, String>> lines = JSonSchemaHelper.parseJsonSchema("properties", json, true);
-
-                    for (Map.Entry<String, String> entry : existing.entrySet()) {
-                        String name = entry.getKey();
-                        String value = entry.getValue();
-
-                        Map<String, String> row = JSonSchemaHelper.getRow(lines, name);
-                        if (row != null) {
-                            String kind = row.get("kind");
-
-                            String line;
-                            if ("path".equals(kind)) {
-                                line = value + "\n";
-                            } else {
-                                line = name + "=" + value + "\n";
-                            }
-                            options.append("\n");
-                            options.append("<b>").append(line).append("</b>");
-
-                            String summary = row.get("description");
-                            // must wrap summary as IDEA cannot handle very big lines
-                            String wrapped = WordUtils.wrap(summary, 120);
-                            options.append(wrapped).append("\n");
-                        }
-                    }
-                }
-
-                StringBuilder sb = new StringBuilder();
-                if (groupId != null && artifactId != null && version != null && javaType != null) {
-                    sb.append("[Maven: ").append(groupId).append(":").append(artifactId).append(":").append(version).append("] ").append(javaType).append("\n");
-                }
-                sb.append("\n");
-                sb.append("<b>").append(title).append("</b>: ").append(syntax).append("\n");
-                sb.append(description).append("\n");
-
-                sb.append("\n");
-                // must wrap val as IDEA cannot handle very big lines
-                String wrapped = WordUtils.wrap(val, 120);
-                sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(wrapped).append("</b>\n");
-
-                if (options.length() > 0) {
-                    sb.append(options.toString());
-                }
-                return sb.toString();
-            }
-        }
-
         return null;
     }
 
@@ -163,14 +74,14 @@ public class CamelDocumentationProvider extends DocumentationProviderEx {
     @Nullable
     @Override
     public String generateDoc(PsiElement element, @Nullable PsiElement originalElement) {
-        String val = generateDocFor(element);
+        String val = fetchLiteralForCamelDocumentation(element);
         if (val == null) {
             return null;
         }
 
         String componentName = StringUtils.asComponentName(val);
         if (componentName != null) {
-            return camelCatalog.componentHtmlDoc(componentName);
+            return generateCamelComponentDocumentation(componentName, val);
         } else {
             // its maybe a method call for a Camel language
             // which we need to try find out using IDEA Psi which can be cumbersome and complex
@@ -201,22 +112,6 @@ public class CamelDocumentationProvider extends DocumentationProviderEx {
         return null;
     }
 
-    private String generateDocFor(PsiElement element) {
-        if (isStringLiteral(element)) {
-            PsiLiteralExpression literal = (PsiLiteralExpression) element;
-            return (String) literal.getValue();
-        }
-
-        // its maybe a property from properties file
-        String fqn = element.getClass().getName();
-        if (fqn.startsWith("com.intellij.lang.properties.psi.impl.PropertyValue")) {
-            // yes we can support this also
-            return element.getText();
-        }
-
-        return null;
-    }
-
     @Nullable
     @Override
     public PsiElement getDocumentationElementForLookupItem(PsiManager psiManager, Object object, PsiElement element) {
@@ -234,15 +129,172 @@ public class CamelDocumentationProvider extends DocumentationProviderEx {
     public PsiElement getCustomDocumentationElement(@NotNull Editor editor, @NotNull PsiFile file, @Nullable PsiElement contextElement) {
         // documentation from properties file will cause IDEA to call this method where we can tell IDEA we can provide
         // documentation for the element if we can detect its a Camel component
-        String text = generateDocFor(contextElement);
+        if (hasDocumentationForCamelComponent(contextElement)) {
+            return contextElement;
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String fetchExternalDocumentation(Project project, PsiElement element, List<String> docUrls) {
+        return null;
+    }
+
+    @Override
+    public boolean hasDocumentationFor(PsiElement element, PsiElement originalElement) {
+        return hasDocumentationForCamelComponent(element);
+    }
+
+    @Override
+    public boolean canPromptToConfigureDocumentation(PsiElement element) {
+        return false;
+    }
+
+    @Override
+    public void promptToConfigureDocumentation(PsiElement element) {
+        // noop
+    }
+
+    @Override
+    public boolean handleExternal(PsiElement element, PsiElement originalElement) {
+        String val = fetchLiteralForCamelDocumentation(element);
+        if (val == null) {
+            return false;
+        }
+
+        String name = StringUtils.asComponentName(val);
+        if (name != null && camelCatalog.findComponentNames().contains(name)) {
+
+            String json = camelCatalog.componentJSonSchema(name);
+            ComponentModel component = ModelHelper.generateComponentModel(json, false);
+
+            // to build external links which points to github
+            String a = component.getArtifactId();
+
+            String url;
+            if ("camel-core".equals(a)) {
+                url = GITHUB_EXTERNAL_DOC_URL + "/camel-core/src/main/docs/" + name + "-component.adoc";
+            } else {
+                url = GITHUB_EXTERNAL_DOC_URL + "/components/" + component.getArtifactId() + "/src/main/docs/" + name + "-component.adoc";
+            }
+
+            String hash = component.getTitle().toLowerCase().replace(' ', '-') + "-component";
+            BrowserUtil.browse(url + "#" + hash);
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean handleExternalLink(PsiManager psiManager, String link, PsiElement context) {
+        return false;
+    }
+
+    @Override
+    public boolean canFetchDocumentationLink(String link) {
+        return false;
+    }
+
+    @NotNull
+    @Override
+    public String fetchExternalDocumentation(@NotNull String link, @Nullable PsiElement element) {
+        return null;
+    }
+
+    private boolean hasDocumentationForCamelComponent(PsiElement element) {
+        String text = fetchLiteralForCamelDocumentation(element);
         if (text != null) {
             // check if its a known Camel component
             String name = asComponentName(text);
-            if (camelCatalog.findComponentNames().contains(name)) {
-                return contextElement;
+            return camelCatalog.findComponentNames().contains(name);
+        }
+        return false;
+    }
+
+    private String fetchLiteralForCamelDocumentation(PsiElement element) {
+        if (element == null) {
+            return null;
+        }
+
+        if (isStringLiteral(element)) {
+            PsiLiteralExpression literal = (PsiLiteralExpression) element;
+            return (String) literal.getValue();
+        }
+
+        // its maybe a property from properties file
+        String fqn = element.getClass().getName();
+        if (fqn.startsWith("com.intellij.lang.properties.psi.impl.PropertyValue")) {
+            // yes we can support this also
+            return element.getText();
+        }
+
+        return null;
+    }
+
+    private String generateCamelComponentDocumentation(String componentName, String val) {
+        // it is a known Camel component
+        String json = camelCatalog.componentJSonSchema(componentName);
+        ComponentModel component = ModelHelper.generateComponentModel(json, false);
+
+        Map<String, String> existing = null;
+        try {
+            existing = camelCatalog.endpointProperties(val);
+        } catch (Throwable e) {
+            // ignore
+        }
+
+        StringBuilder options = new StringBuilder();
+        if (existing != null && !existing.isEmpty()) {
+            List<Map<String, String>> lines = JSonSchemaHelper.parseJsonSchema("properties", json, true);
+
+            for (Map.Entry<String, String> entry : existing.entrySet()) {
+                String name = entry.getKey();
+                String value = entry.getValue();
+
+                Map<String, String> row = JSonSchemaHelper.getRow(lines, name);
+                if (row != null) {
+                    String kind = row.get("kind");
+
+                    String line;
+                    if ("path".equals(kind)) {
+                        line = value + "<br/>";
+                    } else {
+                        line = name + "=" + value + "<br/>";
+                    }
+                    options.append("<br/>");
+                    options.append("<b>").append(line).append("</b>");
+
+                    String summary = row.get("description");
+                    options.append(summary).append("<br/>");
+                }
             }
         }
-        return null;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<b>").append(component.getTitle()).append(" Component</b><br/>");
+        sb.append(component.getDescription()).append("<br/><br/>");
+        sb.append("Syntax: <tt>").append(component.getSyntax()).append("?options</tt><br/>");
+        sb.append("Java class: <tt>").append(component.getJavaType()).append("</tt><br/>");
+
+        String g = component.getGroupId();
+        String a = component.getArtifactId();
+        String v = component.getVersion();
+        if (g != null && a != null && v != null) {
+            sb.append("Maven: <tt>").append(g).append(":").append(a).append(":").append(v).append("</tt><br/>");
+        }
+        sb.append("<p/>");
+
+        // must wrap val as IDEA cannot handle very big lines
+        String wrapped = WordUtils.wrap(val, 120, "<br/>", true);
+        // TODO: wrap camel urls by breaking at & between options
+        sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(wrapped).append("</b><br/>");
+
+        if (options.length() > 0) {
+            sb.append(options.toString());
+        }
+        return sb.toString();
     }
 
     private boolean isPsiMethodCamelLanguage(PsiMethod method) {
@@ -298,5 +350,4 @@ public class CamelDocumentationProvider extends DocumentationProviderEx {
         // okay then go up and try super
         return isCamelExpressionOrLanguage(clazz.getSuperClass());
     }
-
 }
