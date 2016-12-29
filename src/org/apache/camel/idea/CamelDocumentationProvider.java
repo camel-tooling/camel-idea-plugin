@@ -288,6 +288,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
         // must wrap val as IDEA cannot handle very big lines
         String wrapped = WordUtils.wrap(val, 120, "<br/>", true);
+        // TODO: wrap camel urls by breaking at & between options
         sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(wrapped).append("</b><br/>");
 
         if (options.length() > 0) {
