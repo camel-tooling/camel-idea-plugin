@@ -6,7 +6,9 @@ Plugin for Intellij IDEA to provide a set of small Camel related capabilities to
 The plugin includes:
 
 - Smart completion for Camel endpoints in Java editor (in progress)
+- Smart completion for Camel endpoints in properties file (done)
 - Smart completion for Camel endpoints in XML editor (planned)
+- All of the Camel components documentation included (done)
 - Inspection for validating Camel endpoints (planned)
 
 When the plugin becomes more complete and stable then the intention is to donate the source code
