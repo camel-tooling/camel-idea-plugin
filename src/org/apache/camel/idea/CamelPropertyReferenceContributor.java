@@ -28,9 +28,8 @@ public class CamelPropertyReferenceContributor extends CamelContributor {
 
     public CamelPropertyReferenceContributor() {
         extend(CompletionType.BASIC,
-                psiElement()
-                .andNot(psiElement().inside(PsiClass.class)),
-                new PropertyCompletion()
+                psiElement().andNot(psiElement().inside(PsiClass.class)),
+                new EndpointCompletion()
         );
     }
 

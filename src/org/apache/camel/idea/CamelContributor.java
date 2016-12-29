@@ -16,6 +16,10 @@
  */
 package org.apache.camel.idea;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
@@ -28,10 +32,6 @@ import org.apache.camel.catalog.DefaultCamelCatalog;
 import org.apache.camel.catalog.JSonSchemaHelper;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestions;
 import static org.apache.camel.idea.CamelSmartCompletionEndpointValue.addSmartCompletionForSingleValue;
 
@@ -43,7 +43,10 @@ public class CamelContributor extends CompletionContributor {
 
     private static final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
 
-    static protected class PropertyCompletion extends CompletionProvider<CompletionParameters> {
+    /**
+     * Smart completion for Camel endpoints.
+     */
+    static protected class EndpointCompletion extends CompletionProvider<CompletionParameters> {
 
         public void addCompletions(@NotNull CompletionParameters parameters,
                 ProcessingContext context,

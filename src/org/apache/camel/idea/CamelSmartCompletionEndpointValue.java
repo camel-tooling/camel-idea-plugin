@@ -16,13 +16,13 @@
  */
 package org.apache.camel.idea;
 
-import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
-import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
+import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 
 /**
  * Smart completion for editing a single value in a Camel endpoint uri, such as

@@ -16,14 +16,14 @@
  */
 package org.apache.camel.idea;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Smart completion for editing a Camel endpoint uri, to show a list of possible endpoint options which can be added.

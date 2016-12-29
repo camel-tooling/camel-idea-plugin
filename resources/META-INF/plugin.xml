@@ -1,7 +1,7 @@
 <idea-plugin version="2">
   <id>org.apache.camel</id>
   <name>Camel IDEA Plugin</name>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -11,6 +11,7 @@
   <change-notes><![CDATA[
       0.1.0 - Early prototype.
       0.1.1 - Smart completion for Java DSL
+      0.1.2 - Smart completion for property files
     ]]>
   </change-notes>
 
@@ -24,7 +25,7 @@
   <extensions defaultExtensionNs="com.intellij">
     <!-- hook into IDEA to allow smart completion of Camel endpoints in Java code -->
     <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.CamelJavaReferenceContributor"/>
-      <!-- hook into IDEA to allow smart completion of Camel endpoints in property files -->
+    <!-- hook into IDEA to allow smart completion of Camel endpoints in property files -->
     <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertyReferenceContributor"/>
 
     <!-- hook into IDEA to include Camel endpoint documentation in various popups -->
