@@ -54,101 +54,102 @@ public class CamelDocumentationProvider extends DocumentationProviderEx {
     @Nullable
     @Override
     public String getQuickNavigateInfo(PsiElement element, PsiElement originalElement) {
-        if (isStringLiteral(originalElement)) {
-            PsiLiteralExpression exp = (PsiLiteralExpression) originalElement;
-            String val = (String) exp.getValue();
-            String componentName = StringUtils.asComponentName(val);
-            if (componentName != null && camelCatalog.findComponentNames().contains(componentName)) {
-                // it is a known Camel component
-                String json = camelCatalog.componentJSonSchema(componentName);
+        String val = generateDocFor(element);
+        if (val == null) {
+            return null;
+        }
 
-                List<Map<String, String>> rows = JSonSchemaHelper.parseJsonSchema("component", json, false);
+        String componentName = StringUtils.asComponentName(val);
+        if (componentName != null && camelCatalog.findComponentNames().contains(componentName)) {
+            // it is a known Camel component
+            String json = camelCatalog.componentJSonSchema(componentName);
 
-                String title = "";
-                String description = "";
-                String syntax = "";
-                String groupId = null;
-                String artifactId = null;
-                String version = null;
-                String javaType = null;
-                for (Map<String, String> row : rows) {
-                    if (row.containsKey("title")) {
-                        title = row.get("title");
-                    }
-                    if (row.containsKey("description")) {
-                        description = row.get("description");
-                    }
-                    if (row.containsKey("syntax")) {
-                        syntax = row.get("syntax");
-                    }
-                    if (row.containsKey("groupId")) {
-                        groupId = row.get("groupId");
-                    }
-                    if (row.containsKey("artifactId")) {
-                        artifactId = row.get("artifactId");
-                    }
-                    if (row.containsKey("version")) {
-                        version = row.get("version");
-                    }
-                    if (row.containsKey("javaType")) {
-                        javaType = row.get("javaType");
-                    }
+            List<Map<String, String>> rows = JSonSchemaHelper.parseJsonSchema("component", json, false);
+
+            String title = "";
+            String description = "";
+            String syntax = "";
+            String groupId = null;
+            String artifactId = null;
+            String version = null;
+            String javaType = null;
+            for (Map<String, String> row : rows) {
+                if (row.containsKey("title")) {
+                    title = row.get("title");
                 }
-
-                Map<String, String> existing = null;
-                try {
-                    existing = camelCatalog.endpointProperties(val);
-                } catch (Throwable e) {
-                    // ignore
+                if (row.containsKey("description")) {
+                    description = row.get("description");
                 }
-
-                StringBuilder options = new StringBuilder();
-                if (existing != null && !existing.isEmpty()) {
-                    List<Map<String, String>> lines = JSonSchemaHelper.parseJsonSchema("properties", json, true);
-
-                    for (Map.Entry<String, String> entry : existing.entrySet()) {
-                        String name = entry.getKey();
-                        String value = entry.getValue();
-
-                        Map<String, String> row = JSonSchemaHelper.getRow(lines, name);
-                        if (row != null) {
-                            String kind = row.get("kind");
-
-                            String line;
-                            if ("path".equals(kind)) {
-                                line = value + "\n";
-                            } else {
-                                line = name + "=" + value + "\n";
-                            }
-                            options.append("\n");
-                            options.append("<b>").append(line).append("</b>");
-
-                            String summary = row.get("description");
-                            // must wrap summary as IDEA cannot handle very big lines
-                            String wrapped = WordUtils.wrap(summary, 120);
-                            options.append(wrapped).append("\n");
-                        }
-                    }
+                if (row.containsKey("syntax")) {
+                    syntax = row.get("syntax");
                 }
-
-                StringBuilder sb = new StringBuilder();
-                if (groupId != null && artifactId != null && version != null && javaType != null) {
-                    sb.append("[Maven: ").append(groupId).append(":").append(artifactId).append(":").append(version).append("] ").append(javaType).append("\n");
+                if (row.containsKey("groupId")) {
+                    groupId = row.get("groupId");
                 }
-                sb.append("\n");
-                sb.append("<b>").append(title).append("</b>: ").append(syntax).append("\n");
-                sb.append(description).append("\n");
-
-                sb.append("\n");
-                // must wrap val as IDEA cannot handle very big lines
-                String wrapped = WordUtils.wrap(val, 120);
-                sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(wrapped).append("</b>\n");
-
-                if (options.length() > 0) {
-                    sb.append(options.toString());
+                if (row.containsKey("artifactId")) {
+                    artifactId = row.get("artifactId");
                 }
-                return sb.toString();
+                if (row.containsKey("version")) {
+                    version = row.get("version");
+                }
+                if (row.containsKey("javaType")) {
+                    javaType = row.get("javaType");
+                }
             }
+
+            Map<String, String> existing = null;
+            try {
+                existing = camelCatalog.endpointProperties(val);
+            } catch (Throwable e) {
+                // ignore
+            }
+
+            StringBuilder options = new StringBuilder();
+            if (existing != null && !existing.isEmpty()) {
+                List<Map<String, String>> lines = JSonSchemaHelper.parseJsonSchema("properties", json, true);
+
+                for (Map.Entry<String, String> entry : existing.entrySet()) {
+                    String name = entry.getKey();
+                    String value = entry.getValue();
+
+                    Map<String, String> row = JSonSchemaHelper.getRow(lines, name);
+                    if (row != null) {
+                        String kind = row.get("kind");
+
+                        String line;
+                        if ("path".equals(kind)) {
+                            line = value + "\n";
+                        } else {
+                            line = name + "=" + value + "\n";
+                        }
+                        options.append("\n");
+                        options.append("<b>").append(line).append("</b>");
+
+                        String summary = row.get("description");
+                        // must wrap summary as IDEA cannot handle very big lines
+                        String wrapped = WordUtils.wrap(summary, 120);
+                        options.append(wrapped).append("\n");
+                    }
+                }
+            }
+
+            StringBuilder sb = new StringBuilder();
+            if (groupId != null && artifactId != null && version != null && javaType != null) {
+                sb.append("[Maven: ").append(groupId).append(":").append(artifactId).append(":").append(version).append("] ").append(javaType).append("\n");
+            }
+            sb.append("\n");
+            sb.append("<b>").append(title).append("</b>: ").append(syntax).append("\n");
+            sb.append(description).append("\n");
+
+            sb.append("\n");
+            // must wrap val as IDEA cannot handle very big lines
+            String wrapped = WordUtils.wrap(val, 120);
+            sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(wrapped).append("</b>\n");
+
+            if (options.length() > 0) {
+                sb.append(options.toString());
+            }
+            return sb.toString();
         }
 
         return null;
