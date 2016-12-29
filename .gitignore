@@ -4,5 +4,6 @@ target
 *.ipr
 *.iws
 .idea
+.idea/*
 .DS_Store
 workspace/*

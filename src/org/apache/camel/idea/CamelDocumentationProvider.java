@@ -19,11 +19,13 @@ package org.apache.camel.idea;
 import java.util.List;
 import java.util.Map;
 
-import com.intellij.lang.documentation.DocumentationProvider;
+import com.intellij.lang.documentation.DocumentationProviderEx;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpressionList;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
@@ -35,15 +37,17 @@ import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
 import org.apache.camel.catalog.JSonSchemaHelper;
 import org.apache.commons.lang.WordUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static org.apache.camel.idea.IdeaUtils.isStringLiteral;
+import static org.apache.camel.idea.StringUtils.asComponentName;
 import static org.apache.camel.idea.StringUtils.asLanguageName;
 
 /**
  * Camel documentation provider to hook into IDEA to show Camel endpoint documentation in popups and various other places.
  */
-public class CamelDocumentationProvider implements DocumentationProvider {
+public class CamelDocumentationProvider extends DocumentationProviderEx {
 
     private final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
 
@@ -159,38 +163,55 @@ public class CamelDocumentationProvider implements DocumentationProvider {
     @Nullable
     @Override
     public String generateDoc(PsiElement element, @Nullable PsiElement originalElement) {
-        if (isStringLiteral(element)) {
-            PsiLiteralExpression literal = (PsiLiteralExpression) element;
-            String val = (String) literal.getValue();
-            String componentName = StringUtils.asComponentName(val);
-            if (componentName != null) {
-                return camelCatalog.componentHtmlDoc(componentName);
-            } else {
-                // its maybe a method call for a Camel language
-                // which we need to try find out using IDEA Psi which can be cumbersome and complex
-                PsiElement parent = element.getParent();
-                if (parent instanceof PsiExpressionList) {
-                    parent = parent.getParent();
-                }
-                if (parent instanceof PsiMethodCallExpression) {
-                    PsiMethodCallExpression call = (PsiMethodCallExpression) parent;
-                    PsiMethod method = call.resolveMethod();
-                    if (method != null) {
-                        // try to see if we have a Camel language with the method name
-                        String name = asLanguageName(method.getName());
-                        if (camelCatalog.findLanguageNames().contains(name)) {
-                            // okay its a potential Camel language so see if the psi method call is using
-                            // camel-core types so we know for a fact its really a Camel language
-                            if (isPsiMethodCamelLanguage(method)) {
-                                String html = camelCatalog.languageHtmlDoc(name);
-                                if (html != null) {
-                                    return html;
-                                }
+        String val = generateDocFor(element);
+        if (val == null) {
+            return null;
+        }
+
+        String componentName = StringUtils.asComponentName(val);
+        if (componentName != null) {
+            return camelCatalog.componentHtmlDoc(componentName);
+        } else {
+            // its maybe a method call for a Camel language
+            // which we need to try find out using IDEA Psi which can be cumbersome and complex
+            PsiElement parent = element.getParent();
+            if (parent instanceof PsiExpressionList) {
+                parent = parent.getParent();
+            }
+            if (parent instanceof PsiMethodCallExpression) {
+                PsiMethodCallExpression call = (PsiMethodCallExpression) parent;
+                PsiMethod method = call.resolveMethod();
+                if (method != null) {
+                    // try to see if we have a Camel language with the method name
+                    String name = asLanguageName(method.getName());
+                    if (camelCatalog.findLanguageNames().contains(name)) {
+                        // okay its a potential Camel language so see if the psi method call is using
+                        // camel-core types so we know for a fact its really a Camel language
+                        if (isPsiMethodCamelLanguage(method)) {
+                            String html = camelCatalog.languageHtmlDoc(name);
+                            if (html != null) {
+                                return html;
                             }
                         }
                     }
                 }
             }
+        }
+
+        return null;
+    }
+
+    private String generateDocFor(PsiElement element) {
+        if (isStringLiteral(element)) {
+            PsiLiteralExpression literal = (PsiLiteralExpression) element;
+            return (String) literal.getValue();
+        }
+
+        // its maybe a property from properties file
+        String fqn = element.getClass().getName();
+        if (fqn.startsWith("com.intellij.lang.properties.psi.impl.PropertyValue")) {
+            // yes we can support this also
+            return element.getText();
         }
 
         return null;
@@ -205,6 +226,22 @@ public class CamelDocumentationProvider implements DocumentationProvider {
     @Nullable
     @Override
     public PsiElement getDocumentationElementForLink(PsiManager psiManager, String link, PsiElement context) {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public PsiElement getCustomDocumentationElement(@NotNull Editor editor, @NotNull PsiFile file, @Nullable PsiElement contextElement) {
+        // documentation from properties file will cause IDEA to call this method where we can tell IDEA we can provide
+        // documentation for the element if we can detect its a Camel component
+        String text = generateDocFor(contextElement);
+        if (text != null) {
+            // check if its a known Camel component
+            String name = asComponentName(text);
+            if (camelCatalog.findComponentNames().contains(name)) {
+                return contextElement;
+            }
+        }
         return null;
     }
 

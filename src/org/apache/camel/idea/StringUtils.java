@@ -29,6 +29,10 @@ public final class StringUtils {
     }
 
     public static String asComponentName(String val) {
+        if (val == null) {
+            return null;
+        }
+
         int pos = val.indexOf(':');
         if (pos > 0) {
             return val.substring(0, pos);
@@ -37,6 +41,10 @@ public final class StringUtils {
     }
 
     public static String asLanguageName(String val) {
+        if (val == null) {
+            return null;
+        }
+
         if (val.startsWith("tokenize")) {
             return val;
         } else if (val.equals("js") || val.equals("javascript")) {

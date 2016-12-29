@@ -22,6 +22,9 @@
        on how to target different products -->
   <depends>com.intellij.modules.java</depends>
 
+  <!-- depend on the properties plugin -->
+  <depends>com.intellij.properties</depends>
+
   <extensions defaultExtensionNs="com.intellij">
     <!-- hook into IDEA to allow smart completion of Camel endpoints in Java code -->
     <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.CamelJavaReferenceContributor"/>
@@ -30,7 +33,7 @@
 
     <!-- hook into IDEA to include Camel endpoint documentation in various popups -->
     <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.CamelDocumentationProvider"/>
-
+    <lang.documentationProvider language="Properties" implementationClass="org.apache.camel.idea.CamelDocumentationProvider"/>
   </extensions>
 
 </idea-plugin>
