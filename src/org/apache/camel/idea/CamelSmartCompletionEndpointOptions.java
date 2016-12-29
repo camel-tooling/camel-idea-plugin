@@ -43,17 +43,22 @@ public class CamelSmartCompletionEndpointOptions {
                 String name = option.getName();
                 // only add if not already used (or if the option is multi valued then it can have many)
                 if ("true".equals(option.getMultiValue()) || existing == null || !existing.containsKey(name)) {
+
+                    // no tail for prefix, otherwise use = to setup for value
+                    String tail = option.getPrefix().isEmpty() ? "=" : "";
+                    String key = option.getPrefix().isEmpty() ? name : option.getPrefix();
+
                     // the lookup should prepare for the new option
                     String lookup;
                     if (!val.contains("?")) {
                         // none existing options so we need to start with a ? mark
-                        lookup = val + "?" + name + "=";
+                        lookup = val + "?" + key + tail;
                     } else {
                         if (!val.endsWith("&") && !val.endsWith("?")) {
-                            lookup = val + "&" + name + "=";
+                            lookup = val + "&" + key + tail;
                         } else {
                             // there is already either an ending ? or &
-                            lookup = val + name + "=";
+                            lookup = val + key + tail;
                         }
                     }
                     LookupElementBuilder builder = LookupElementBuilder.create(lookup);
@@ -74,6 +79,8 @@ public class CamelSmartCompletionEndpointOptions {
                         builder = builder.withIcon(AllIcons.Toolwindows.ToolWindowFavorites);
                     } else if ("true".equals(option.getSecret())) {
                         builder = builder.withIcon(AllIcons.Nodes.SecurityRole);
+                    } else if ("true".equals(option.getMultiValue())) {
+                        builder = builder.withIcon(AllIcons.Nodes.ExpandNode);
                     } else if (!option.getEnums().isEmpty()) {
                         builder = builder.withIcon(AllIcons.Nodes.Enum);
                     } else if ("object".equals(option.getType())) {
