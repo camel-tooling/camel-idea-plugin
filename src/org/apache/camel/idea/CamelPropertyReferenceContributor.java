@@ -22,14 +22,14 @@ import com.intellij.psi.PsiClass;
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
- * Plugin to hook into the IDEA Java language, to setup Camel smart completion for editing Java source code.
+ * Plugin to hook into the IDEA completion system, to setup Camel smart completion for editing Property files.
  */
-public class CamelJavaReferenceContributor extends CamelContributor {
+public class CamelPropertyReferenceContributor extends CamelContributor {
 
-    public CamelJavaReferenceContributor() {
+    public CamelPropertyReferenceContributor() {
         extend(CompletionType.BASIC,
                 psiElement()
-                        .and(psiElement().inside(PsiClass.class)),
+                .andNot(psiElement().inside(PsiClass.class)),
                 new PropertyCompletion()
         );
     }
