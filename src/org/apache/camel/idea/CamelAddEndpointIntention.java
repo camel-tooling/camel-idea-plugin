@@ -16,13 +16,25 @@
  */
 package org.apache.camel.idea;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.*;
 
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.LibraryOrderEntry;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.OrderEntry;
+import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.PopupChooserBuilder;
@@ -31,6 +43,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.util.IncorrectOperationException;
+import org.apache.camel.catalog.CamelCatalog;
+import org.apache.camel.catalog.DefaultCamelCatalog;
+import org.apache.camel.idea.model.ComponentModel;
+import org.apache.camel.idea.model.ModelHelper;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,16 +55,61 @@ import static com.intellij.xml.CommonXmlStrings.QUOT;
 
 public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction {
 
+    private static final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
+
     // TODO: Add Camel icon
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
-        // TODO: fetch which Camel JARs are on classpath and filter the component names accordingly from the camel catalog
-        Object[] data = new Object[]{"log", "seda", "timer"};
-        JList list = new JList(data);
+        // gather all libraries (JARs) from the project/classpath
+        Set<Library> processedLibraries = new HashSet<>();
 
+        // TODO: this should be cached/faster maybe?
+        Module[] modules = ModuleManager.getInstance(project).getModules();
+        for (Module module : modules) {
+            ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
+            OrderEntry[] orderEntries = moduleRootManager.getOrderEntries();
+            for (OrderEntry orderEntry : orderEntries) {
+                if (orderEntry instanceof LibraryOrderEntry) {
+                    LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) orderEntry;
+                    // skip test scope
+                    if (libraryOrderEntry.getScope().isForProductionCompile() || libraryOrderEntry.getScope().isForProductionRuntime()) {
+                        final Library library = libraryOrderEntry.getLibrary();
+                        if (library == null) {
+                            continue;
+                        }
+                        if (processedLibraries.contains(library)) {
+                            continue;
+                        }
+                        processedLibraries.add(library);
+                    }
+                }
+            }
+        }
+
+        // filter libraries to only be Camel libraries
+        Set<String> artifacts = new LinkedHashSet<>();
+        for (Library lib : processedLibraries) {
+            String name = lib.getName();
+            if (name != null && name.startsWith("Maven: org.apache.camel:")) {
+                name = name.substring(24);
+                String artifactId = name.substring(0, name.indexOf(":"));
+                artifacts.add(artifactId);
+            }
+        }
+
+        // find the camel component from those libraries
+        List<String> names = findCamelComponentsInArtifact(artifacts);
+
+        // no camel endpoints then exit
+        if (names.isEmpty()) {
+            return;
+        }
+
+        // show popup to chose the component
+        JList list = new JList(names.toArray(new String[names.size()]));
         PopupChooserBuilder builder = JBPopupFactory.getInstance().createListPopupBuilder(list);
-        builder.setAdText(data.length + " components");
+        builder.setAdText(names.size() + " components");
         builder.setTitle("Add Camel Endpoint");
         builder.setItemChoosenCallback(() -> {
             String line = (String) list.getSelectedValue();
@@ -98,6 +159,23 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction {
     @Override
     public String getFamilyName() {
         return "Apache Camel";
+    }
+
+    private static List<String> findCamelComponentsInArtifact(Set<String> artifactIds) {
+        List<String> names = new ArrayList<>();
+
+        for (String name : camelCatalog.findComponentNames()) {
+            String json = camelCatalog.componentJSonSchema(name);
+            ComponentModel model = ModelHelper.generateComponentModel(json, false);
+            if (artifactIds.contains(model.getArtifactId())) {
+                names.add(name);
+            }
+        }
+
+        // sort
+        Collections.sort(names);
+
+        return names;
     }
 
     /**
