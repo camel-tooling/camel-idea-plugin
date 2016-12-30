@@ -22,6 +22,7 @@ import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
@@ -33,7 +34,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestions;
+import javax.swing.Icon;
+
+import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
+import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
 import static org.apache.camel.idea.CamelSmartCompletionEndpointValue.addSmartCompletionForSingleValue;
 
 /**
@@ -43,6 +47,8 @@ import static org.apache.camel.idea.CamelSmartCompletionEndpointValue.addSmartCo
 public class CamelContributor extends CompletionContributor {
 
     private static final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
+
+    public static final Icon CAMEL_ICON = IconLoader.getIcon("/camel.png");
 
     /**
      * Smart completion for Camel endpoints.
@@ -91,6 +97,9 @@ public class CamelContributor extends CompletionContributor {
                 // are we editing an existing parameter value
                 // or are we having a list of suggested parameters to choose among
                 boolean editSingle = val.endsWith("=");
+                boolean editQueryParameters = val.contains("?");
+                boolean editContextPath = !editQueryParameters;
+
                 List<LookupElement> answer = null;
                 if (editSingle) {
                     // parameter name is before = and & or ?
@@ -101,9 +110,12 @@ public class CamelContributor extends CompletionContributor {
                     if (endpointOption != null) {
                         answer = addSmartCompletionForSingleValue(val, endpointOption);
                     }
-                } else {
-                    // suggest a list of options
-                    answer = addSmartCompletionSuggestions(val, componentModel, existing);
+                } else if (editQueryParameters) {
+                    // suggest a list of options for query parameters
+                    answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing);
+                } else if (editContextPath) {
+                    // suggest a list of options for context-path
+                    answer = addSmartCompletionSuggestionsContextPath(val, componentModel, existing);
                 }
 
                 // are there any results then add them

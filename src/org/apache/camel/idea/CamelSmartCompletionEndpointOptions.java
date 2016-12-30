@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -34,7 +35,7 @@ import org.apache.camel.idea.model.EndpointOptionModel;
  */
 public class CamelSmartCompletionEndpointOptions {
 
-    public static List<LookupElement> addSmartCompletionSuggestions(String val, ComponentModel component, Map<String, String> existing) {
+    public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(String val, ComponentModel component, Map<String, String> existing) {
         List<LookupElement> answer = new ArrayList<>();
 
         for (EndpointOptionModel option : component.getEndpointOptions()) {
@@ -42,7 +43,8 @@ public class CamelSmartCompletionEndpointOptions {
             if ("parameter".equals(option.getKind())) {
                 String name = option.getName();
                 // only add if not already used (or if the option is multi valued then it can have many)
-                if ("true".equals(option.getMultiValue()) || existing == null || !existing.containsKey(name)) {
+                String old = existing != null ? existing.get(name) : "";
+                if ("true".equals(option.getMultiValue()) || existing == null || old == null || old.isEmpty()) {
 
                     // no tail for prefix, otherwise use = to setup for value
                     String tail = option.getPrefix().isEmpty() ? "=" : "";
@@ -89,6 +91,82 @@ public class CamelSmartCompletionEndpointOptions {
 
                     // TODO: we could nice with an icon for producer vs consumer etc
                     answer.add(builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
+                }
+            }
+        }
+
+        return answer;
+    }
+
+    public static List<LookupElement> addSmartCompletionSuggestionsContextPath(String val, ComponentModel component, Map<String, String> existing) {
+        List<LookupElement> answer = new ArrayList<>();
+
+        // show the syntax as the only choice for now
+        LookupElementBuilder builder = LookupElementBuilder.create(val);
+        builder = builder.withIcon(CamelContributor.CAMEL_ICON);
+        builder = builder.withBoldness(true);
+        builder = builder.withPresentableText(component.getSyntax());
+
+        LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE);
+        answer.add(element);
+
+        List<LookupElement> old = addSmartCompletionContextPathEnumSuggestions(val, component, existing);
+        if (!old.isEmpty()) {
+            answer.addAll(old);
+        }
+
+        return answer;
+    }
+
+    private static List<LookupElement> addSmartCompletionContextPathEnumSuggestions(String val, ComponentModel component, Map<String, String> existing) {
+        List<LookupElement> answer = new ArrayList<>();
+
+        double priority = 100.0d;
+
+        // lets help the suggestion list if we are editing the context-path and only have 1 enum type option
+        // and the option has not been in use yet, then we can populate the list with the enum values.
+
+        long enums = component.getEndpointOptions().stream().filter(o -> "path".equals(o.getKind()) && !o.getEnums().isEmpty()).count();
+        if (enums == 1) {
+            for (EndpointOptionModel option : component.getEndpointOptions()) {
+
+                // only add support for enum in the context-path smart completion
+                if ("path".equals(option.getKind()) && !option.getEnums().isEmpty()) {
+                    String name = option.getName();
+                    // only add if not already used
+                    String old = existing != null ? existing.get(name) : "";
+                    if (existing == null || old == null || old.isEmpty()) {
+
+                        // add all enum as choices
+                        for (String choice : option.getEnums().split(",")) {
+
+                            String tail = "";
+                            String key = choice;
+                            String lookup = val + key + tail;
+
+                            LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+                            // only show the option in the UI
+                            builder = builder.withPresentableText(choice);
+                            // lets use the option name as the type so its visible
+                            builder = builder.withTypeText(name, true);
+                            builder = builder.withIcon(AllIcons.Nodes.Enum);
+
+                            if ("true".equals(option.getDeprecated())) {
+                                // mark as deprecated
+                                builder = builder.withStrikeoutness(true);
+                            }
+
+                            // its an enum so always auto complete the choices
+                            LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.ALWAYS_AUTOCOMPLETE);
+
+                            // they should be in the exact order
+                            element = PrioritizedLookupElement.withPriority(element, priority);
+
+                            priority -= 1.0d;
+
+                            answer.add(element);
+                        }
+                    }
                 }
             }
         }
