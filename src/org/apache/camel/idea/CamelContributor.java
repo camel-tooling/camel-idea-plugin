@@ -21,11 +21,8 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtil;
-import com.intellij.codeInsight.completion.PlainPrefixMatcher;
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.util.IconLoader;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
@@ -34,13 +31,8 @@ import org.apache.camel.idea.model.EndpointOptionModel;
 import org.apache.camel.idea.model.ModelHelper;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.swing.Icon;
 
@@ -55,8 +47,6 @@ import static org.apache.camel.idea.CamelSmartCompletionEndpointValue.addSmartCo
 public class CamelContributor extends CompletionContributor {
 
     private static final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
-    //TODO Allow this to be configurable
-    private static final List<String> IGNORE_PROPERTIES = Arrays.asList("java.", "Logger.", "logger", "appender.", "rootLogger.");
 
     public static final Icon CAMEL_ICON = IconLoader.getIcon("/camel.png");
 
@@ -65,6 +55,13 @@ public class CamelContributor extends CompletionContributor {
      */
     static protected class EndpointCompletion extends CompletionProvider<CompletionParameters> {
 
+        private final CamelSmartCompletionPropertyPlaceholders smartCompletionPropertyPlaceholders;
+
+        public EndpointCompletion(CamelSmartCompletionPropertyPlaceholders smartCompletionPropertyPlaceholders) {
+
+            this.smartCompletionPropertyPlaceholders = smartCompletionPropertyPlaceholders;
+        }
+
         public void addCompletions(@NotNull CompletionParameters parameters,
                                    ProcessingContext context,
                                    @NotNull CompletionResultSet resultSet) {
@@ -72,7 +69,7 @@ public class CamelContributor extends CompletionContributor {
             String val = parsePsiElement(parameters);
 
             if (val.endsWith("{{")) {
-                propertyPlaceholdersSmartCompletion(parameters, resultSet);
+                smartCompletionPropertyPlaceholders.propertyPlaceholdersSmartCompletion(parameters, resultSet);
                 return; //we are done
             }
 
@@ -154,30 +151,6 @@ public class CamelContributor extends CompletionContributor {
         return val;
     }
 
-    private static void propertyPlaceholdersSmartCompletion(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet resultSet) {
-        VfsUtil.processFilesRecursively(parameters.getOriginalFile().getManager().getProject().getBaseDir(), virtualFile -> {
-            if (virtualFile.getName().endsWith(".properties")) {
-                File file = new File(virtualFile.getPath());
-                Properties properties = new Properties();
-                try {
-                    properties.load(Files.newInputStream(file.toPath()));
-                } catch (IOException e) {
-                }//TODO : log a warning, but for now we ignore it and continue.
 
-                properties.forEach((key, value) -> {
-                            String keyStr = (String) key;
-                            boolean noneMatch = IGNORE_PROPERTIES.stream().noneMatch(s -> keyStr.startsWith(s));
-                            if (noneMatch) {
-                                LookupElementBuilder builder = LookupElementBuilder.create(keyStr+"}}")
-                                        .appendTailText((String) value, true)
-                                        .withPresentableText(keyStr + " = ");
-                                resultSet.withPrefixMatcher(new PlainPrefixMatcher("")).addElement(builder);
-                            }
-                        }
-                );
-            }
-            return true;
-        });
-    }
 
 }
