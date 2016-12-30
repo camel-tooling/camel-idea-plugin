@@ -101,6 +101,22 @@ public class CamelSmartCompletionEndpointOptions {
     public static List<LookupElement> addSmartCompletionSuggestionsContextPath(String val, ComponentModel component, Map<String, String> existing) {
         List<LookupElement> answer = new ArrayList<>();
 
+        // show the syntax as the only choice for now
+        LookupElementBuilder builder = LookupElementBuilder.create(val);
+        builder = builder.withIcon(AllIcons.Toolwindows.ToolWindowFavorites);
+        builder = builder.withBoldness(true);
+        builder = builder.withPresentableText(component.getSyntax());
+
+        LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE);
+        answer.add(element);
+
+        return answer;
+    }
+
+    @Deprecated
+    public static List<LookupElement> oldAddSmartCompletionSuggestionsContextPath(String val, ComponentModel component, Map<String, String> existing) {
+        List<LookupElement> answer = new ArrayList<>();
+
         double priority = 10.0d;
 
         for (EndpointOptionModel option : component.getEndpointOptions()) {
