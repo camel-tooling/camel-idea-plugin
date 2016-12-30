@@ -28,13 +28,14 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
-import org.apache.camel.catalog.JSonSchemaHelper;
+import org.apache.camel.idea.model.ComponentModel;
+import org.apache.camel.idea.model.EndpointOptionModel;
+import org.apache.camel.idea.model.ModelHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -74,9 +75,7 @@ public class CamelContributor extends CompletionContributor {
 
                 // it is a known Camel component
                 String json = camelCatalog.componentJSonSchema(componentName);
-
-                // gather list of names
-                List<Map<String, String>> rows = JSonSchemaHelper.parseJsonSchema("properties", json, true);
+                ComponentModel componentModel = ModelHelper.generateComponentModel(json, true);
 
                 // grab all existing parameters
                 String query = val;
@@ -95,17 +94,23 @@ public class CamelContributor extends CompletionContributor {
                 // are we editing an existing parameter value
                 // or are we having a list of suggested parameters to choose among
                 boolean editSingle = val.endsWith("=");
-                ArrayList<LookupElement> answer;
+                List<LookupElement> answer = null;
                 if (editSingle) {
                     // parameter name is before = and & or ?
                     int pos = Math.max(val.lastIndexOf('&'), val.lastIndexOf('?'));
                     String name = val.substring(pos + 1);
                     name = name.substring(0, name.length() - 1); // remove =
-                    answer = (ArrayList<LookupElement>) addSmartCompletionForSingleValue(val, rows, name);
+                    EndpointOptionModel endpointOption = componentModel.getEndpointOption(name);
+                    if (endpointOption != null) {
+                        answer = addSmartCompletionForSingleValue(val, endpointOption);
+                    }
                 } else {
-                    answer = (ArrayList<LookupElement>) addSmartCompletionSuggestions(val, rows, existing);
+                    // suggest a list of options
+                    answer = addSmartCompletionSuggestions(val, componentModel, existing);
                 }
-                if (!answer.isEmpty()) {
+
+                // are there any results then add them
+                if (answer != null && !answer.isEmpty()) {
                     resultSet.withPrefixMatcher(val).addAllElements(answer);
                 }
             }
