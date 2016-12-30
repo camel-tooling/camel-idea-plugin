@@ -26,10 +26,12 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
  */
 public class CamelPropertyReferenceContributor extends CamelContributor {
 
+    private final CamelSmartCompletionPropertyPlaceholders completionPropertyPlaceholders = new CamelSmartCompletionPropertyPlaceholders();
+
     public CamelPropertyReferenceContributor() {
         extend(CompletionType.BASIC,
                 psiElement().andNot(psiElement().inside(PsiClass.class)),
-                new EndpointCompletion()
+                new EndpointCompletion(completionPropertyPlaceholders)
         );
     }
 
