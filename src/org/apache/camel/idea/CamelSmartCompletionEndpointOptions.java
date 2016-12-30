@@ -110,66 +110,68 @@ public class CamelSmartCompletionEndpointOptions {
         LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE);
         answer.add(element);
 
+        List<LookupElement> old = addSmartCompletionContextPathEnumSuggestions(val, component, existing);
+        if (!old.isEmpty()) {
+            answer.addAll(old);
+        }
+
         return answer;
     }
 
-    @Deprecated
-    public static List<LookupElement> oldAddSmartCompletionSuggestionsContextPath(String val, ComponentModel component, Map<String, String> existing) {
+    private static List<LookupElement> addSmartCompletionContextPathEnumSuggestions(String val, ComponentModel component, Map<String, String> existing) {
         List<LookupElement> answer = new ArrayList<>();
 
-        double priority = 10.0d;
+        double priority = 100.0d;
 
-        for (EndpointOptionModel option : component.getEndpointOptions()) {
+        // lets help the suggestion list if we are editing the context-path and only have 1 enum type option
+        // and the option has not been in use yet, then we can populate the list with the enum values.
 
-            if ("path".equals(option.getKind())) {
-                String name = option.getName();
-                // only add if not already used
-                String old = existing != null ? existing.get(name) : "";
-                if (existing == null || old == null || old.isEmpty()) {
+        long enums = component.getEndpointOptions().stream().filter(o -> "path".equals(o.getKind()) && !o.getEnums().isEmpty()).count();
+        if (enums == 1) {
+            for (EndpointOptionModel option : component.getEndpointOptions()) {
 
-                    String tail = "";
-                    String key = name;
-                    String lookup = val + key + tail;
+                // only add support for enum in the context-path smart completion
+                if ("path".equals(option.getKind()) && !option.getEnums().isEmpty()) {
+                    String name = option.getName();
+                    // only add if not already used
+                    String old = existing != null ? existing.get(name) : "";
+                    if (existing == null || old == null || old.isEmpty()) {
 
-                    LookupElementBuilder builder = LookupElementBuilder.create(lookup);
-                    // only show the option in the UI
-                    builder = builder.withPresentableText(name);
-                    if (!option.getJavaType().isEmpty()) {
-                        builder = builder.withTypeText(option.getJavaType(), true);
+                        // add all enum as choices
+                        for (String choice : option.getEnums().split(",")) {
+
+                            String tail = "";
+                            String key = choice;
+                            String lookup = val + key + tail;
+
+                            LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+                            // only show the option in the UI
+                            builder = builder.withPresentableText(choice);
+                            // lets use the option name as the type so its visible
+                            builder = builder.withTypeText(name, true);
+                            builder = builder.withIcon(AllIcons.Nodes.Enum);
+
+                            if ("true".equals(option.getDeprecated())) {
+                                // mark as deprecated
+                                builder = builder.withStrikeoutness(true);
+                            }
+
+                            // its an enum so always auto complete the choices
+                            LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.ALWAYS_AUTOCOMPLETE);
+
+                            // they should be in the exact order
+                            element = PrioritizedLookupElement.withPriority(element, priority);
+
+                            priority -= 1.0d;
+
+                            answer.add(element);
+                        }
                     }
-                    if ("true".equals(option.getDeprecated())) {
-                        // mark as deprecated
-                        builder = builder.withStrikeoutness(true);
-                    }
-                    // add icons for various options
-                    if ("true".equals(option.getRequired())) {
-                        // for required then make it stand out
-                        builder = builder.withIcon(AllIcons.Toolwindows.ToolWindowFavorites);
-                        builder = builder.withBoldness(true);
-                    } else if ("true".equals(option.getSecret())) {
-                        builder = builder.withIcon(AllIcons.Nodes.SecurityRole);
-                    } else if (!option.getEnums().isEmpty()) {
-                        builder = builder.withIcon(AllIcons.Nodes.Enum);
-                    } else if ("object".equals(option.getType())) {
-                        builder = builder.withIcon(AllIcons.Nodes.Class);
-                    }
-
-                    // we should not offer auto completion as the user should enter some value
-                    // the lookup is just a hint what the option/syntax is
-                    LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE);
-
-                    // they should be in the exact order
-                    element = PrioritizedLookupElement.withPriority(element, priority);
-
-                    priority -= 1.0d;
-
-                    answer.add(element);
                 }
             }
         }
 
         return answer;
     }
-
 
 }
