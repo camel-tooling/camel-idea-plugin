@@ -41,7 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestions;
+import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
+import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
 import static org.apache.camel.idea.CamelSmartCompletionEndpointValue.addSmartCompletionForSingleValue;
 
 /**
@@ -94,6 +95,9 @@ public class CamelContributor extends CompletionContributor {
                 // are we editing an existing parameter value
                 // or are we having a list of suggested parameters to choose among
                 boolean editSingle = val.endsWith("=");
+                boolean editQueryParameters = val.contains("?");
+                boolean editContextPath = !editQueryParameters;
+
                 List<LookupElement> answer = null;
                 if (editSingle) {
                     // parameter name is before = and & or ?
@@ -104,9 +108,12 @@ public class CamelContributor extends CompletionContributor {
                     if (endpointOption != null) {
                         answer = addSmartCompletionForSingleValue(val, endpointOption);
                     }
-                } else {
-                    // suggest a list of options
-                    answer = addSmartCompletionSuggestions(val, componentModel, existing);
+                } else if (editQueryParameters) {
+                    // suggest a list of options for query parameters
+                    answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing);
+                } else if (editContextPath) {
+                    // suggest a list of options for context-path
+                    answer = addSmartCompletionSuggestionsContextPath(val, componentModel, existing);
                 }
 
                 // are there any results then add them

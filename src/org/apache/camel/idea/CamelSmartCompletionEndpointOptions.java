@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -34,7 +35,7 @@ import org.apache.camel.idea.model.EndpointOptionModel;
  */
 public class CamelSmartCompletionEndpointOptions {
 
-    public static List<LookupElement> addSmartCompletionSuggestions(String val, ComponentModel component, Map<String, String> existing) {
+    public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(String val, ComponentModel component, Map<String, String> existing) {
         List<LookupElement> answer = new ArrayList<>();
 
         for (EndpointOptionModel option : component.getEndpointOptions()) {
@@ -42,7 +43,8 @@ public class CamelSmartCompletionEndpointOptions {
             if ("parameter".equals(option.getKind())) {
                 String name = option.getName();
                 // only add if not already used (or if the option is multi valued then it can have many)
-                if ("true".equals(option.getMultiValue()) || existing == null || !existing.containsKey(name)) {
+                String old = existing != null ? existing.get(name) : "";
+                if ("true".equals(option.getMultiValue()) || existing == null || old == null || old.isEmpty()) {
 
                     // no tail for prefix, otherwise use = to setup for value
                     String tail = option.getPrefix().isEmpty() ? "=" : "";
@@ -95,5 +97,63 @@ public class CamelSmartCompletionEndpointOptions {
 
         return answer;
     }
+
+    public static List<LookupElement> addSmartCompletionSuggestionsContextPath(String val, ComponentModel component, Map<String, String> existing) {
+        List<LookupElement> answer = new ArrayList<>();
+
+        double priority = 10.0d;
+
+        for (EndpointOptionModel option : component.getEndpointOptions()) {
+
+            if ("path".equals(option.getKind())) {
+                String name = option.getName();
+                // only add if not already used
+                String old = existing != null ? existing.get(name) : "";
+                if (existing == null || old == null || old.isEmpty()) {
+
+                    String tail = "";
+                    String key = name;
+                    String lookup = val + key + tail;
+
+                    LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+                    // only show the option in the UI
+                    builder = builder.withPresentableText(name);
+                    if (!option.getJavaType().isEmpty()) {
+                        builder = builder.withTypeText(option.getJavaType(), true);
+                    }
+                    if ("true".equals(option.getDeprecated())) {
+                        // mark as deprecated
+                        builder = builder.withStrikeoutness(true);
+                    }
+                    // add icons for various options
+                    if ("true".equals(option.getRequired())) {
+                        // for required then make it stand out
+                        builder = builder.withIcon(AllIcons.Toolwindows.ToolWindowFavorites);
+                        builder = builder.withBoldness(true);
+                    } else if ("true".equals(option.getSecret())) {
+                        builder = builder.withIcon(AllIcons.Nodes.SecurityRole);
+                    } else if (!option.getEnums().isEmpty()) {
+                        builder = builder.withIcon(AllIcons.Nodes.Enum);
+                    } else if ("object".equals(option.getType())) {
+                        builder = builder.withIcon(AllIcons.Nodes.Class);
+                    }
+
+                    // we should not offer auto completion as the user should enter some value
+                    // the lookup is just a hint what the option/syntax is
+                    LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE);
+
+                    // they should be in the exact order
+                    element = PrioritizedLookupElement.withPriority(element, priority);
+
+                    priority -= 1.0d;
+
+                    answer.add(element);
+                }
+            }
+        }
+
+        return answer;
+    }
+
 
 }
