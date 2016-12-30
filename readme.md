@@ -18,9 +18,16 @@ However currently the code is located at github to allow faster and wider collab
 
 ![Early Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/early2.png)
 
-### How to try
+### How to install
 
-We plan to publish the plugin in the IDEA plugin manager, so you can install the plugin from IDEA.
+The plugin `Apache Camel IDEA plugin` is available from Jetbrains Plugin Repository at: https://plugins.jetbrains.com/idea/plugin/9371-apache-camel-idea-plugin
+
+You should be able to install the plugin from within IDEA plugin manager.
+Open the `Preference` menu and select `Plugins`. Click the `Browse repositories...` if `Apache Camel IDEA plugin` is not
+available in the plugin list. From there you should be able to browse all the plugins from the Jetbrains remote plugin repository.
+
+
+### How to try
 
 Currently the plugin is editing Java endpoints in Java source code.
 
