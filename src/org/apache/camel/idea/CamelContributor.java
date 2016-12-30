@@ -24,6 +24,7 @@ import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.codeInsight.completion.PlainPrefixMatcher;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.catalog.CamelCatalog;
@@ -41,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.Icon;
+
 import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
 import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
 import static org.apache.camel.idea.CamelSmartCompletionEndpointValue.addSmartCompletionForSingleValue;
@@ -54,6 +57,8 @@ public class CamelContributor extends CompletionContributor {
     private static final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
     //TODO Allow this to be configurable
     private static final List<String> IGNORE_PROPERTIES = Arrays.asList("java.", "Logger.", "logger", "appender.", "rootLogger.");
+
+    public static final Icon CAMEL_ICON = IconLoader.getIcon("/camel.png");
 
     /**
      * Smart completion for Camel endpoints.

@@ -103,7 +103,7 @@ public class CamelSmartCompletionEndpointOptions {
 
         // show the syntax as the only choice for now
         LookupElementBuilder builder = LookupElementBuilder.create(val);
-        builder = builder.withIcon(AllIcons.Toolwindows.ToolWindowFavorites);
+        builder = builder.withIcon(CamelContributor.CAMEL_ICON);
         builder = builder.withBoldness(true);
         builder = builder.withPresentableText(component.getSyntax());
 
