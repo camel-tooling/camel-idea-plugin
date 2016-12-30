@@ -1,10 +1,10 @@
-out/*
+out/**
 target
 *.iml
 *.ipr
 *.iws
 .idea
-.idea/*
+.idea/**
 .DS_Store
-workspace/*
+workspace/**
 /camel-idea-plugin.iml
