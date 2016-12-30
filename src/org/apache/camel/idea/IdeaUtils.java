@@ -17,8 +17,10 @@
 package org.apache.camel.idea;
 
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiType;
+import com.intellij.psi.tree.IElementType;
 
 public final class IdeaUtils {
 
@@ -30,6 +32,17 @@ public final class IdeaUtils {
             PsiType type = ((PsiLiteralExpression) element).getType();
             String txt = type.getCanonicalText();
             return "java.lang.String".equals(txt);
+        }
+        return false;
+    }
+
+    public static boolean isJavaTokenLiteral(PsiElement element) {
+        if (element instanceof PsiJavaToken) {
+            PsiJavaToken token = (PsiJavaToken) element;
+            IElementType type = token.getTokenType();
+            if (type != null) {
+                return "STRING_LITERAL".equals(type.toString());
+            }
         }
         return false;
     }

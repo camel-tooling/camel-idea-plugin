@@ -37,15 +37,20 @@
   <depends>com.intellij.properties</depends>
 
   <extensions defaultExtensionNs="com.intellij">
-    <!-- hook into IDEA to allow smart completion of Camel endpoints in Java code -->
+    <!-- allow smart completion of Camel endpoints in Java code -->
     <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.CamelJavaReferenceContributor"/>
 
-    <!-- hook into IDEA to allow smart completion of Camel endpoints in property files -->
+    <!-- smart completion of Camel endpoints in property files -->
     <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertyReferenceContributor"/>
 
-    <!-- hook into IDEA to include Camel endpoint documentation in various popups -->
+    <!-- Camel endpoint documentation in various popups -->
     <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.CamelDocumentationProvider"/>
     <lang.documentationProvider language="Properties" implementationClass="org.apache.camel.idea.CamelDocumentationProvider"/>
+
+    <!-- intention to add Camel endpoint -->
+    <intentionAction>
+      <className>org.apache.camel.idea.CamelAddEndpointIntention</className>
+    </intentionAction>
   </extensions>
 
 </idea-plugin>
