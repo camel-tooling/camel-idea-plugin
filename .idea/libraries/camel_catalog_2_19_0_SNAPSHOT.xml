@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="camel-catalog-2.19.0-SNAPSHOT">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/camel-catalog-2.19.0-SNAPSHOT.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
