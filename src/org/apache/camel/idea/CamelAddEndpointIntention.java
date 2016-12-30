@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.*;
 
+import com.intellij.codeInsight.intention.LowPriorityAction;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -38,6 +39,7 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.PopupChooserBuilder;
+import com.intellij.openapi.util.Iconable;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiJavaToken;
@@ -52,12 +54,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static com.intellij.xml.CommonXmlStrings.QUOT;
+import static org.apache.camel.idea.CamelContributor.CAMEL_ICON;
 
-public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction {
+public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction implements Iconable, LowPriorityAction {
 
     private static final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
-
-    // TODO: Add Camel icon
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
@@ -161,6 +162,11 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction {
         return "Apache Camel";
     }
 
+    @Override
+    public Icon getIcon(@IconFlags int flags) {
+        return CAMEL_ICON;
+    }
+
     private static List<String> findCamelComponentsInArtifact(Set<String> artifactIds) {
         List<String> names = new ArrayList<>();
 
@@ -197,5 +203,4 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction {
         }
         return text;
     }
-
 }
