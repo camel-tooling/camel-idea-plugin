@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,6 +21,7 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.PlainPrefixMatcher;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -41,40 +42,47 @@ import java.util.Properties;
  */
 public class CamelSmartCompletionPropertyPlaceholders {
     //TODO Allow this to be configurable
-    private static final List<String> IGNORE_PROPERTIES = Arrays.asList("java.", "Logger.", "logger", "appender.", "rootLogger.","camel.springboot.*");
+    private static final List<String> IGNORE_PROPERTIES = Arrays.asList("java.", "Logger.", "logger", "appender.", "rootLogger.", "camel.springboot.*");
 
-    public  void propertyPlaceholdersSmartCompletion(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet resultSet) {
+    public void propertyPlaceholdersSmartCompletion(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet resultSet) {
         Project project = parameters.getOriginalFile().getManager().getProject();
 
         List<VirtualFile> resourceRoots = ProjectRootManager.getInstance(project).getModuleSourceRoots(JavaModuleSourceRootTypes.PRODUCTION);
         resourceRoots.addAll(ProjectRootManager.getInstance(project).getModuleSourceRoots(JavaModuleSourceRootTypes.TESTS));
-
+        ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
         for (final VirtualFile sourceRoot : resourceRoots) {
             VfsUtil.processFilesRecursively(sourceRoot.getCanonicalFile(), virtualFile -> {
-                if (virtualFile.getName().endsWith(".properties")) {
-                    File file = new File(virtualFile.getPath());
-                    Properties properties = new Properties();
-                    try {
-                        properties.load(Files.newInputStream(file.toPath()));
-                    } catch (IOException e) {
-                    }//TODO : log a warning, but for now we ignore it and continue.
-
-                    properties.forEach((key, value) -> {
-                                String keyStr = (String) key;
-                                boolean noneMatch = IGNORE_PROPERTIES.stream().noneMatch(s -> keyStr.startsWith(s));
-                                if (noneMatch) {
-                                    LookupElementBuilder builder = LookupElementBuilder.create(keyStr+"}}")
-                                            .appendTailText((String) value, true)
-                                            .withPresentableText(keyStr + " = ");
-                                    resultSet.withPrefixMatcher(new PlainPrefixMatcher("")).addElement(builder);
-                                }
-                            }
-                    );
+                if (virtualFile.getName().endsWith(".properties") && !projectFileIndex.isExcluded(sourceRoot)) {
+                    getProperties(virtualFile).forEach((key, value) -> buildResultSet(resultSet, (String) key, (String) value));
                 }
                 return true;
             });
         }
 
 
+    }
+
+    @NotNull
+    private Properties getProperties(VirtualFile virtualFile) {
+        File file = new File(virtualFile.getPath());
+        Properties properties = new Properties();
+
+        try {
+            properties.load(Files.newInputStream(file.toPath()));
+        } catch (IOException e) {
+        }//TODO : log a warning, but for now we ignore it and continue.
+
+        return properties;
+    }
+
+    private void buildResultSet(@NotNull CompletionResultSet resultSet, String key, String value) {
+        String keyStr = key;
+        boolean noneMatch = IGNORE_PROPERTIES.stream().noneMatch(s -> keyStr.startsWith(s));
+        if (noneMatch) {
+            LookupElementBuilder builder = LookupElementBuilder.create(keyStr + "}}")
+                    .appendTailText(value, true)
+                    .withPresentableText(keyStr + " = ");
+            resultSet.withPrefixMatcher(new PlainPrefixMatcher("")).addElement(builder);
+        }
     }
 }
