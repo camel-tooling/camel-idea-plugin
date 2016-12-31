@@ -85,14 +85,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Misc -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.5</version>
-            <scope>compile</scope>
-        </dependency>
-
         <!-- Test -->
         <dependency>
             <groupId>junit</groupId>
@@ -105,7 +97,7 @@
     <build>
         <resources>
             <resource>
-                <directory>src/main/resources/</directory>
+                <directory>resources/</directory>
                 <includes>
                     <include>META-INF/plugin.xml</include>
                     <include>icons/</include>
