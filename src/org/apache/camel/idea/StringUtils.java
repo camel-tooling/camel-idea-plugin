@@ -81,4 +81,48 @@ public final class StringUtils {
         return "";
     }
 
+    /**
+     * To wrap a big line by a separator.
+     *
+     * @param line the big line
+     * @param separator the separator char such as <tt>&</tt>
+     * @param newLine the new line to use when breaking into a new line
+     * @param watermark a watermark to denote the size to cut after
+     */
+    public static String wrapSeparator(String line, String separator, String newLine, int watermark) {
+        StringBuilder sb = new StringBuilder();
+        String[] parts = line.split(separator);
+
+        StringBuilder part = new StringBuilder();
+        for (int i = 0; i < parts.length; i++) {
+            String word = parts[i];
+            part.append(word);
+            if (i < parts.length - 1) {
+                part.append(separator);
+            }
+            // did we hit watermark then reset
+            if (part.length() >= watermark) {
+                // move separator to new line
+                String add = part.toString();
+                if (add.endsWith(separator)) {
+                    add = add.substring(0, add.length() - separator.length());
+                }
+                sb.append(add);
+                sb.append(newLine);
+                sb.append(separator);
+                part.setLength(0);
+            }
+        }
+        // any leftover
+        if (part.length() > 0) {
+            sb.append(part.toString());
+        }
+
+        String answer = sb.toString();
+        if (answer.endsWith(newLine)) {
+            answer = answer.substring(0, answer.length() - newLine.length());
+        }
+        return answer;
+    }
+
 }

@@ -28,7 +28,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
@@ -37,18 +36,19 @@ import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameterList;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
+import com.intellij.psi.util.PsiTreeUtil;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
 import org.apache.camel.catalog.JSonSchemaHelper;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
-import org.apache.commons.lang.WordUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static org.apache.camel.idea.IdeaUtils.isStringLiteral;
 import static org.apache.camel.idea.StringUtils.asComponentName;
 import static org.apache.camel.idea.StringUtils.asLanguageName;
+import static org.apache.camel.idea.StringUtils.wrapSeparator;
 
 /**
  * Camel documentation provider to hook into IDEA to show Camel endpoint documentation in popups and various other places.
@@ -84,13 +84,8 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             return generateCamelComponentDocumentation(componentName, val);
         } else {
             // its maybe a method call for a Camel language
-            // which we need to try find out using IDEA Psi which can be cumbersome and complex
-            PsiElement parent = element.getParent();
-            if (parent instanceof PsiExpressionList) {
-                parent = parent.getParent();
-            }
-            if (parent instanceof PsiMethodCallExpression) {
-                PsiMethodCallExpression call = (PsiMethodCallExpression) parent;
+            PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+            if (call != null) {
                 PsiMethod method = call.resolveMethod();
                 if (method != null) {
                     // try to see if we have a Camel language with the method name
@@ -286,9 +281,8 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         }
         sb.append("<p/>");
 
-        // must wrap val as IDEA cannot handle very big lines
-        String wrapped = WordUtils.wrap(val, 120, "<br/>", true);
-        // TODO: wrap camel urls by breaking at & between options
+        // indent the endpoint url with 5 spaces and wrap it by url separator
+        String wrapped = wrapSeparator(val, "&", "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", 100);
         sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(wrapped).append("</b><br/>");
 
         if (options.length() > 0) {

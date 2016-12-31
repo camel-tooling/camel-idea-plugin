@@ -43,7 +43,7 @@ public class CamelSmartCompletionEndpointValue {
             addEnumSuggestions(val, answer, deprecated, enums, defaultValue);
         } else if ("java.lang.Boolean".equals(javaType) || "boolean".equals(javaType)) {
             addBooleanSuggestions(val, answer, deprecated, defaultValue);
-        } else if (defaultValue != null) {
+        } else if (!defaultValue.isEmpty()) {
             // for any other kind of type and if there is a default value then add that as a suggestion
             // so its easy to see what the default value is
             addDefaultValueSuggestions(val, answer, deprecated, defaultValue);
