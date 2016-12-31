@@ -48,6 +48,7 @@ import org.jetbrains.annotations.Nullable;
 import static org.apache.camel.idea.IdeaUtils.isStringLiteral;
 import static org.apache.camel.idea.StringUtils.asComponentName;
 import static org.apache.camel.idea.StringUtils.asLanguageName;
+import static org.apache.camel.idea.StringUtils.wrapSeparator;
 
 /**
  * Camel documentation provider to hook into IDEA to show Camel endpoint documentation in popups and various other places.
@@ -280,8 +281,9 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         }
         sb.append("<p/>");
 
-        // indent the endpoint url with 5 spaces
-        sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(val).append("</b><br/>");
+        // indent the endpoint url with 5 spaces and wrap it by url separator
+        String wrapped = wrapSeparator(val, "&", "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", 100);
+        sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(wrapped).append("</b><br/>");
 
         if (options.length() > 0) {
             sb.append(options.toString());
