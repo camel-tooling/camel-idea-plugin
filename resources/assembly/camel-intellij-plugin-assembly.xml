@@ -13,10 +13,4 @@
             <scope>runtime</scope>
         </dependencySet>
     </dependencySets>
-    <fileSets>
-        <fileSet>
-            <directory>${project.build.directory}/addon-repository</directory>
-            <outputDirectory>camel-idea-plugin/addon-repository</outputDirectory>
-        </fileSet>
-    </fileSets>
 </assembly>
