@@ -40,7 +40,6 @@ import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.PopupChooserBuilder;
 import com.intellij.openapi.util.Iconable;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteralExpression;
@@ -51,9 +50,7 @@ import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import static com.intellij.xml.CommonXmlStrings.QUOT;
 import static org.apache.camel.idea.CamelContributor.CAMEL_ICON;
 
 public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction implements Iconable, LowPriorityAction {
@@ -100,7 +97,8 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         }
 
         // find the camel component from those libraries
-        List<String> names = findCamelComponentsInArtifact(artifacts);
+        boolean consumerOnly = IdeaUtils.isConsumerEndpoint(element);
+        List<String> names = findCamelComponentNamesInArtifact(artifacts, consumerOnly);
 
         // no camel endpoints then exit
         if (names.isEmpty()) {
@@ -143,7 +141,7 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         }
         if (IdeaUtils.isJavaTokenLiteral(element)) {
             PsiJavaToken token = (PsiJavaToken) element;
-            String text = getInnerText(token);
+            String text = IdeaUtils.getInnerText(token);
             return text == null || text.isEmpty();
         }
         return false;
@@ -167,14 +165,24 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         return CAMEL_ICON;
     }
 
-    private static List<String> findCamelComponentsInArtifact(Set<String> artifactIds) {
+    private static List<String> findCamelComponentNamesInArtifact(Set<String> artifactIds, boolean consumerOnly) {
         List<String> names = new ArrayList<>();
 
         for (String name : camelCatalog.findComponentNames()) {
             String json = camelCatalog.componentJSonSchema(name);
             ComponentModel model = ModelHelper.generateComponentModel(json, false);
             if (artifactIds.contains(model.getArtifactId())) {
-                names.add(name);
+                boolean onlyConsume = "true".equals(model.getConsumerOnly());
+                boolean onlyProduce = "true".equals(model.getProducerOnly());
+                boolean both = !onlyConsume && !onlyProduce;
+
+                if (both) {
+                    names.add(name);
+                } else if (consumerOnly && onlyConsume) {
+                    names.add(name);
+                } else if (!consumerOnly && onlyProduce) {
+                    names.add(name);
+                }
             }
         }
 
@@ -184,23 +192,4 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         return names;
     }
 
-    /**
-     * Code from com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl#getInnerText()
-     */
-    @Nullable
-    private String getInnerText(PsiJavaToken token) {
-        String text = token.getText();
-        int textLength = text.length();
-        if (StringUtil.endsWithChar(text, '\"')) {
-            if (textLength == 1) return null;
-            text = text.substring(1, textLength - 1);
-        } else {
-            if (text.startsWith(QUOT) && text.endsWith(QUOT) && textLength > QUOT.length()) {
-                text = text.substring(QUOT.length(), textLength - QUOT.length());
-            } else {
-                return null;
-            }
-        }
-        return text;
-    }
 }
