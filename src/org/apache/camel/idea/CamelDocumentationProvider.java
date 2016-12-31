@@ -28,7 +28,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
@@ -37,6 +36,7 @@ import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameterList;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
+import com.intellij.psi.util.PsiTreeUtil;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
 import org.apache.camel.catalog.JSonSchemaHelper;
@@ -84,13 +84,8 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             return generateCamelComponentDocumentation(componentName, val);
         } else {
             // its maybe a method call for a Camel language
-            // which we need to try find out using IDEA Psi which can be cumbersome and complex
-            PsiElement parent = element.getParent();
-            if (parent instanceof PsiExpressionList) {
-                parent = parent.getParent();
-            }
-            if (parent instanceof PsiMethodCallExpression) {
-                PsiMethodCallExpression call = (PsiMethodCallExpression) parent;
+            PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+            if (call != null) {
                 PsiMethod method = call.resolveMethod();
                 if (method != null) {
                     // try to see if we have a Camel language with the method name
