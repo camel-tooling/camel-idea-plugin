@@ -42,7 +42,6 @@ import org.apache.camel.catalog.DefaultCamelCatalog;
 import org.apache.camel.catalog.JSonSchemaHelper;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
-import org.apache.commons.lang.WordUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -281,10 +280,8 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         }
         sb.append("<p/>");
 
-        // must wrap val as IDEA cannot handle very big lines
-        String wrapped = WordUtils.wrap(val, 120, "<br/>", true);
-        // TODO: wrap camel urls by breaking at & between options
-        sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(wrapped).append("</b><br/>");
+        // indent the endpoint url with 5 spaces
+        sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(val).append("</b><br/>");
 
         if (options.length() > 0) {
             sb.append(options.toString());
