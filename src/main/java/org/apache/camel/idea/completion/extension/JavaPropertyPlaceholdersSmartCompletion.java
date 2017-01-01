@@ -27,8 +27,6 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
-import static org.apache.camel.idea.completion.extension.CamelPropertiesSmartCompletionExtension.IGNORE_PROPERTIES;
-
 /**
  * Smart completion for editing a Camel endpoint uri, to show a list of property holders can be added.
  * For example editing <tt>jms:queue?{{_CURSOR_HERE_</tt>. Which presents the user
@@ -58,10 +56,9 @@ public class JavaPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
     public void buildResultSet(CompletionResultSet resultSet, VirtualFile virtualFile) {
         getProperties(virtualFile).forEach((key, value) -> {
             String keyStr = (String) key;
-            boolean noneMatch = IGNORE_PROPERTIES.stream().noneMatch(s -> keyStr.startsWith(s));
-            if (noneMatch) {
+            if (!isIgnored(keyStr)) {
                 LookupElementBuilder builder = LookupElementBuilder.create(keyStr + "}}")
-                        .appendTailText((String) value + " :: " + virtualFile.getPresentableName(), true)
+                        .appendTailText(value + " [" + virtualFile.getPresentableName() + "]", true)
                         .withPresentableText(keyStr + " = ");
                 resultSet.withPrefixMatcher(new PlainPrefixMatcher("")).addElement(builder);
             }

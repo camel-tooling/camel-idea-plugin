@@ -37,7 +37,6 @@ import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
  */
 public class CamelPropertiesSmartCompletionExtension implements CamelCompletionExtension {
     //TODO Allow this to be configurable
-    protected static final List<String> IGNORE_PROPERTIES = Arrays.asList("java.", "Logger.", "logger", "appender.", "rootLogger.", "camel.springboot.*");
     protected List<CamelPropertyCompletion> propertyCompletionProviders = new ArrayList<>();
 
     public CamelPropertiesSmartCompletionExtension() {
@@ -69,5 +68,4 @@ public class CamelPropertiesSmartCompletionExtension implements CamelCompletionE
         }
         return false;
     }
-
 }

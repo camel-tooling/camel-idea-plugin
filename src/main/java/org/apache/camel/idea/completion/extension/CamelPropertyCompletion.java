@@ -24,6 +24,7 @@ import com.intellij.openapi.vfs.VirtualFile;
  * scanning for property files and building the completion list in the {@link CamelPropertiesSmartCompletionExtension}
  */
 public interface CamelPropertyCompletion {
+    String[] IGNORE_PROPERTIES = {"java.", "Logger.", "logger", "appender.", "rootLogger.", "camel.springboot.*"};
 
     /**
      * @return true if it match the property file it should process
@@ -34,4 +35,17 @@ public interface CamelPropertyCompletion {
      * Build the property completion result set to be shown in the completion dialog
      */
     void buildResultSet(CompletionResultSet resultSet, VirtualFile virtualFile);
+
+    /**
+     * Test if the property is on the ignore list
+     */
+    default boolean isIgnored(String key) {
+        for (int i = 0; i < IGNORE_PROPERTIES.length; i++) {
+            if (key.startsWith(IGNORE_PROPERTIES[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

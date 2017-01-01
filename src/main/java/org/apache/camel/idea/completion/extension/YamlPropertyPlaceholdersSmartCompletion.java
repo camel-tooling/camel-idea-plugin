@@ -32,7 +32,6 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
-import static org.apache.camel.idea.completion.extension.CamelPropertiesSmartCompletionExtension.IGNORE_PROPERTIES;
 
 /**
  * Smart completion for editing a Camel endpoint uri, to show a list of YAML properties can be added.
@@ -52,8 +51,7 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
             // Parse the YAML file and return the output as a series of Maps and Lists
             result = (Map<String, Object>) yaml.load(ios);
         } catch (Exception e) {
-            e.printStackTrace();
-        }
+        }//TODO : log a warning, but for now we ignore it and continue.
         return result;
     }
 
@@ -66,8 +64,7 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
     public void buildResultSet(CompletionResultSet resultSet, VirtualFile virtualFile) {
         getProperties(virtualFile).forEach((key, value) -> {
             final String keyStr = key;
-            boolean noneMatch = IGNORE_PROPERTIES.stream().noneMatch(s -> keyStr.startsWith(s));
-            if (noneMatch) {
+            if (!isIgnored(key)) {
                 if (value instanceof List) {
                     buildResultSetForList(resultSet, virtualFile, keyStr, (List) value);
                 } else if (value instanceof LinkedHashMap) {
@@ -122,7 +119,7 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
 
     private void buildResultSet(CompletionResultSet resultSet, VirtualFile virtualFile, String keyStr, String value) {
         LookupElementBuilder builder = LookupElementBuilder.create(keyStr + "}}")
-                .appendTailText(value + " :: " + virtualFile.getPresentableName(), true)
+                .appendTailText(value + " [" + virtualFile.getPresentableName() + "]", true)
                 .withPresentableText(keyStr + " = ");
         resultSet.withPrefixMatcher(new PlainPrefixMatcher("")).addElement(builder);
     }
