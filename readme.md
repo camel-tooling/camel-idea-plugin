@@ -83,8 +83,7 @@ Last step you need to import the project as maven project.
 > - Press the "+" and add new "IntelliJ Platform Plugin project"
 > - Press next and finish
 > - Open the "Module Settings" and select the tab "Plug-in Deployment" 
-> - Make sure the path to the "META-INF/plugin.xml" point to the "resources/" directory
-
+> - Make sure the path to the "META-INF/plugin.xml" point to the "src/main/resources/" directory
 
 ### Running and debugging the plugin from source
 
