@@ -47,7 +47,7 @@ public class CamelPropertiesSmartCompletionExtension implements CamelCompletionE
     }
 
     @Override
-    public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet, @NotNull String query) {
+    public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet, @NotNull String[] query) {
         Project project = parameters.getOriginalFile().getManager().getProject();
 
         List<VirtualFile> resourceRoots = ProjectRootManager.getInstance(project).getModuleSourceRoots(JavaModuleSourceRootTypes.PRODUCTION);
@@ -64,8 +64,8 @@ public class CamelPropertiesSmartCompletionExtension implements CamelCompletionE
     }
 
     @Override
-    public boolean isValid(@NotNull CompletionParameters parameters, ProcessingContext context, String query) {
-        if (query.endsWith("{{")) {
+    public boolean isValid(@NotNull CompletionParameters parameters, ProcessingContext context, String[] query) {
+        if (query[0].endsWith("{{")) {
             return true;
         }
         return false;

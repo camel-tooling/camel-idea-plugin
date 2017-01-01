@@ -16,13 +16,19 @@
  */
 package org.apache.camel.idea;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.intellij.codeInsight.completion.InsertHandler;
+import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
+import com.intellij.codeInsight.lookup.Lookup;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.EditorModificationUtil;
 import org.apache.camel.idea.model.EndpointOptionModel;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Smart completion for editing a single value in a Camel endpoint uri, such as
@@ -31,7 +37,7 @@ import org.apache.camel.idea.model.EndpointOptionModel;
  */
 public class CamelSmartCompletionEndpointValue {
 
-    public static List<LookupElement> addSmartCompletionForSingleValue(String val, EndpointOptionModel option) {
+    public static List<LookupElement> addSmartCompletionForSingleValue(Editor editor, String val, String suffix, EndpointOptionModel option) {
         List<LookupElement> answer = new ArrayList<>();
 
         String javaType = option.getJavaType();
@@ -40,23 +46,25 @@ public class CamelSmartCompletionEndpointValue {
         String defaultValue = option.getDefaultValue();
 
         if (!enums.isEmpty()) {
-            addEnumSuggestions(val, answer, deprecated, enums, defaultValue);
+            addEnumSuggestions(editor, val, suffix, answer, deprecated, enums, defaultValue);
         } else if ("java.lang.Boolean".equals(javaType) || "boolean".equals(javaType)) {
-            addBooleanSuggestions(val, answer, deprecated, defaultValue);
+            addBooleanSuggestions(editor, val, suffix, answer, deprecated, defaultValue);
         } else if (!defaultValue.isEmpty()) {
             // for any other kind of type and if there is a default value then add that as a suggestion
             // so its easy to see what the default value is
-            addDefaultValueSuggestions(val, answer, deprecated, defaultValue);
+            addDefaultValueSuggestions(editor, val, suffix, answer, deprecated, defaultValue);
         }
 
         return answer;
     }
 
-    private static void addEnumSuggestions(String val, List<LookupElement> answer, String deprecated, String enums, String defaultValue) {
+    private static void addEnumSuggestions(Editor editor, String val, String suffix, List<LookupElement> answer, String deprecated, String enums, String defaultValue) {
         String[] parts = enums.split(",");
         for (String part : parts) {
             String lookup = val + part;
             LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+            builder = addInsertHandler(editor, suffix, builder);
+
             // only show the option in the UI
             builder = builder.withPresentableText(part);
             builder = builder.withBoldness(true);
@@ -75,10 +83,11 @@ public class CamelSmartCompletionEndpointValue {
         }
     }
 
-    private static void addBooleanSuggestions(String val, List<LookupElement> answer, String deprecated, String defaultValue) {
+    private static void addBooleanSuggestions(Editor editor, String val, String suffix, List<LookupElement> answer, String deprecated, String defaultValue) {
         // for boolean types then give a choice between true|false
         String lookup = val + "true";
         LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+        builder = addInsertHandler(editor, suffix, builder);
         // only show the option in the UI
         builder = builder.withPresentableText("true");
         if ("true".equals(deprecated)) {
@@ -112,9 +121,10 @@ public class CamelSmartCompletionEndpointValue {
         }
     }
 
-    private static void addDefaultValueSuggestions(String val, List<LookupElement> answer, String deprecated, String defaultValue) {
+    private static void addDefaultValueSuggestions(Editor editor, String val, String suffix, List<LookupElement> answer, String deprecated, String defaultValue) {
         String lookup = val + defaultValue;
         LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+        builder = addInsertHandler(editor, suffix, builder);
         // only show the option in the UI
         builder = builder.withPresentableText(defaultValue);
         if ("true".equals(deprecated)) {
@@ -124,6 +134,46 @@ public class CamelSmartCompletionEndpointValue {
         builder = builder.withTailText(" (default value)");
         // there is only one value in the list and its the default value, so never auto complete it but show as suggestion
         answer.add(0, builder.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE));
+    }
+
+    /**
+     * We need special logic to preserve the suffix when the user selects an option to be inserted
+     * and also to remove the old value when pressing enter to a choice
+     */
+    @NotNull
+    private static LookupElementBuilder addInsertHandler(final Editor editor, final String suffix, LookupElementBuilder builder) {
+        builder = builder.withInsertHandler(new InsertHandler<LookupElement>() {
+            @Override
+            public void handleInsert(InsertionContext context, LookupElement item) {
+                // enforce using replace select char as we want to replace any existing option
+                if (context.getCompletionChar() == Lookup.REPLACE_SELECT_CHAR) {
+                    // we still want to keep the suffix because they are other options
+                    String value = suffix;
+                    int pos = value.indexOf("&");
+                    if (pos > -1) {
+                        // strip out first part of suffix until next option
+                        value = value.substring(pos);
+                    }
+                    EditorModificationUtil.insertStringAtCaret(editor, value);
+                    // and move cursor back again
+                    int offset = -1 * value.length();
+                    EditorModificationUtil.moveCaretRelatively(editor, offset);
+                } else if (context.getCompletionChar() == Lookup.NORMAL_SELECT_CHAR) {
+                    // we want to remove the old option (which is the first value in the suffix)
+                    String cut = suffix;
+                    int pos = suffix.indexOf("&");
+                    if (pos > 0) {
+                        cut = cut.substring(0, pos);
+                    }
+                    int len = cut.length();
+                    if (len > 0) {
+                        int offset = editor.getCaretModel().getOffset();
+                        editor.getDocument().deleteString(offset, offset + len);
+                    }
+                }
+            }
+        });
+        return builder;
     }
 
 }

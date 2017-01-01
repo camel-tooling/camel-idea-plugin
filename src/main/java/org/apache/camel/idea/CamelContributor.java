@@ -61,10 +61,10 @@ public class CamelContributor extends CompletionContributor {
         public void addCompletions(@NotNull CompletionParameters parameters,
                                    ProcessingContext context,
                                    @NotNull CompletionResultSet resultSet) {
-            String query = parsePsiElement(parameters);
+            String[] tuple = parsePsiElement(parameters);
             camelCompletionExtensions.stream()
-                    .filter(p -> p.isValid(parameters,context,query))
-                    .forEach(p -> p.addCompletions(parameters,context,resultSet,query));
+                    .filter(p -> p.isValid(parameters,context,tuple))
+                    .forEach(p -> p.addCompletions(parameters,context,resultSet,tuple));
         }
     }
 
@@ -74,13 +74,18 @@ public class CamelContributor extends CompletionContributor {
      * @return new string stripped for any {@link CompletionUtil#DUMMY_IDENTIFIER} and " character
      */
     @NotNull
-    private static String parsePsiElement(@NotNull CompletionParameters parameters) {
+    private static String[] parsePsiElement(@NotNull CompletionParameters parameters) {
         String val = parameters.getPosition().getText();
+        String suffix = "";
+
+        int len = CompletionUtil.DUMMY_IDENTIFIER.length();
         int hackIndex = val.indexOf(CompletionUtil.DUMMY_IDENTIFIER);
         if (hackIndex == -1) {
             hackIndex = val.indexOf(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED);
+            len = CompletionUtil.DUMMY_IDENTIFIER_TRIMMED.length();
         }
         if (hackIndex > -1) {
+            suffix = val.substring(hackIndex + len);
             val = val.substring(0, hackIndex);
         }
 
@@ -90,7 +95,10 @@ public class CamelContributor extends CompletionContributor {
         if (val.endsWith("\"")) {
             val = val.substring(0, val.length() - 1);
         }
-        return val;
+        if (suffix.endsWith("\"")) {
+            suffix = suffix.substring(0, suffix.length() - 1);
+        }
+        return new String[]{val, suffix};
     }
 
     /**
