@@ -66,7 +66,9 @@ public class CamelContributor extends CompletionContributor {
                                    ProcessingContext context,
                                    @NotNull CompletionResultSet resultSet) {
             // is this a possible Camel endpoint uri which we know
-            String val = parsePsiElement(parameters);
+            String[] tuple = parsePsiElement(parameters);
+            String val = tuple[0];
+            String suffix = tuple[1];
 
             if (val.endsWith("{{")) {
                 smartCompletionPropertyPlaceholders.propertyPlaceholdersSmartCompletion(parameters, resultSet);
@@ -108,7 +110,7 @@ public class CamelContributor extends CompletionContributor {
                     name = name.substring(0, name.length() - 1); // remove =
                     EndpointOptionModel endpointOption = componentModel.getEndpointOption(name);
                     if (endpointOption != null) {
-                        answer = addSmartCompletionForSingleValue(val, endpointOption);
+                        answer = addSmartCompletionForSingleValue(parameters.getEditor(), val, suffix, endpointOption);
                     }
                 } else if (editQueryParameters) {
                     // suggest a list of options for query parameters
@@ -132,13 +134,18 @@ public class CamelContributor extends CompletionContributor {
      * @return new string stripped for any {@link CompletionUtil#DUMMY_IDENTIFIER} and " character
      */
     @NotNull
-    private static String parsePsiElement(@NotNull CompletionParameters parameters) {
+    private static String[] parsePsiElement(@NotNull CompletionParameters parameters) {
         String val = parameters.getPosition().getText();
+        String suffix = "";
+
+        int len = CompletionUtil.DUMMY_IDENTIFIER.length();
         int hackIndex = val.indexOf(CompletionUtil.DUMMY_IDENTIFIER);
         if (hackIndex == -1) {
             hackIndex = val.indexOf(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED);
+            len = CompletionUtil.DUMMY_IDENTIFIER_TRIMMED.length();
         }
         if (hackIndex > -1) {
+            suffix = val.substring(hackIndex + len);
             val = val.substring(0, hackIndex);
         }
 
@@ -148,9 +155,10 @@ public class CamelContributor extends CompletionContributor {
         if (val.endsWith("\"")) {
             val = val.substring(0, val.length() - 1);
         }
-        return val;
+        if (suffix.endsWith("\"")) {
+            suffix = suffix.substring(0, suffix.length() - 1);
+        }
+        return new String[]{val, suffix};
     }
-
-
 
 }
