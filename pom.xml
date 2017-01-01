@@ -98,10 +98,6 @@
         <resources>
             <resource>
                 <directory>resources/</directory>
-                <includes>
-                    <include>META-INF/plugin.xml</include>
-                    <include>icons/</include>
-                </includes>
                 <filtering>true</filtering>
             </resource>
         </resources>
