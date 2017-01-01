@@ -16,6 +16,9 @@
  */
 package org.apache.camel.idea;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
@@ -26,9 +29,6 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorModificationUtil;
 import org.apache.camel.idea.model.EndpointOptionModel;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Smart completion for editing a single value in a Camel endpoint uri, such as

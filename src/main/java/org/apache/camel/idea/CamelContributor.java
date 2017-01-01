@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 package org.apache.camel.idea;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.*;
 
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -27,10 +31,6 @@ import org.apache.camel.idea.completion.extension.CamelCompletionExtension;
 import org.apache.camel.idea.completion.extension.CamelPropertiesSmartCompletionExtension;
 import org.apache.camel.idea.completion.extension.JavaSmartCompletionExtension;
 import org.jetbrains.annotations.NotNull;
-
-import javax.swing.*;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Hook into the IDEA language completion system, to setup Camel smart completion.
@@ -50,7 +50,7 @@ public class CamelContributor extends CompletionContributor {
     /**
      * Smart completion for Camel endpoints.
      */
-    static protected class EndpointCompletion extends CompletionProvider<CompletionParameters> {
+    protected static class EndpointCompletion extends CompletionProvider<CompletionParameters> {
 
         private final List<CamelCompletionExtension> camelCompletionExtensions;
 
@@ -63,8 +63,8 @@ public class CamelContributor extends CompletionContributor {
                                    @NotNull CompletionResultSet resultSet) {
             String[] tuple = parsePsiElement(parameters);
             camelCompletionExtensions.stream()
-                    .filter(p -> p.isValid(parameters,context,tuple))
-                    .forEach(p -> p.addCompletions(parameters,context,resultSet,tuple));
+                    .filter(p -> p.isValid(parameters, context, tuple))
+                    .forEach(p -> p.addCompletions(parameters, context, resultSet, tuple));
         }
     }
 
@@ -105,7 +105,7 @@ public class CamelContributor extends CompletionContributor {
      * Add additional completion extension to process when the
      * {@link CompletionProvider#addCompletions(CompletionParameters, ProcessingContext, CompletionResultSet)} is called
      */
-    public void addCompletionExtension(CamelCompletionExtension provider){
+    public void addCompletionExtension(CamelCompletionExtension provider) {
         camelCompletionExtensions.add(provider);
     }
 

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,13 +15,6 @@
  * limitations under the License.
  */
 package org.apache.camel.idea.completion.extension;
-
-import com.intellij.codeInsight.completion.CompletionResultSet;
-import com.intellij.codeInsight.completion.PlainPrefixMatcher;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.vfs.VirtualFile;
-import org.jetbrains.annotations.NotNull;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,6 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.completion.PlainPrefixMatcher;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.vfs.VirtualFile;
+import org.jetbrains.annotations.NotNull;
+import org.yaml.snakeyaml.Yaml;
 import static org.apache.camel.idea.completion.extension.CamelPropertiesSmartCompletionExtension.IGNORE_PROPERTIES;
 
 /**
@@ -72,9 +71,9 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
                 if (value instanceof List) {
                     buildResultSetForList(resultSet, virtualFile, keyStr, (List) value);
                 } else if (value instanceof LinkedHashMap) {
-                    buildResultSetForLinkedHashMap(resultSet,virtualFile,keyStr, Collections.singletonList(value));
+                    buildResultSetForLinkedHashMap(resultSet, virtualFile, keyStr, Collections.singletonList(value));
                 } else {
-                    buildResultSet(resultSet, virtualFile, keyStr,String.valueOf(value));
+                    buildResultSet(resultSet, virtualFile, keyStr, String.valueOf(value));
                 }
             }
         });
@@ -85,22 +84,22 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
      */
     private void buildResultSetForLinkedHashMap(CompletionResultSet resultSet, VirtualFile virtualFile, String keyStr, List<?> propertyList) {
         propertyList.stream()
-                .filter(l -> (l instanceof LinkedHashMap))
-                .map(LinkedHashMap.class::cast)
-                .flatMap(lhm -> lhm.entrySet().stream())
-                .forEach(e -> {
-                            Map.Entry<String,Object> entry = (Map.Entry)e;
-                            String flatKeyStr = keyStr + "." + String.valueOf(entry.getKey());
-                            if (entry.getValue() instanceof List) {
-                                buildResultSetForList(resultSet, virtualFile, flatKeyStr, (List<?>) entry.getValue());
-                            } else if (entry.getValue() instanceof LinkedHashMap) {
-                                buildResultSetForLinkedHashMap(resultSet,virtualFile,flatKeyStr, Collections.singletonList(entry.getValue()));
-                            } else {
-                                buildResultSet(resultSet, virtualFile, flatKeyStr, String.valueOf(entry.getValue()));
-                            }
+            .filter(l -> l instanceof LinkedHashMap)
+            .map(LinkedHashMap.class::cast)
+            .flatMap(lhm -> lhm.entrySet().stream())
+            .forEach(e -> {
+                        Map.Entry<String, Object> entry = (Map.Entry<String, Object>) e;
+                        String flatKeyStr = keyStr + "." + String.valueOf(entry.getKey());
+                        if (entry.getValue() instanceof List) {
+                            buildResultSetForList(resultSet, virtualFile, flatKeyStr, (List<?>) entry.getValue());
+                        } else if (entry.getValue() instanceof LinkedHashMap) {
+                            buildResultSetForLinkedHashMap(resultSet, virtualFile, flatKeyStr, Collections.singletonList(entry.getValue()));
+                        } else {
+                            buildResultSet(resultSet, virtualFile, flatKeyStr, String.valueOf(entry.getValue()));
                         }
+                    }
 
-                );
+            );
     }
 
     /**
@@ -114,14 +113,14 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
                         String flatKeyStr = String.format("%s[%s]", keyStr, count.getAndIncrement());
                         buildResultSet(resultSet, virtualFile, flatKeyStr, String.valueOf(e));
                     } else if (e instanceof List) {
-                        buildResultSetForList(resultSet,virtualFile,keyStr, (List<?>) e);
+                        buildResultSetForList(resultSet, virtualFile, keyStr, (List<?>) e);
                     } else if (e instanceof LinkedHashMap) {
-                        buildResultSetForLinkedHashMap(resultSet,virtualFile,keyStr,propertyList);
+                        buildResultSetForLinkedHashMap(resultSet, virtualFile, keyStr, propertyList);
                     }
                 });
     }
 
-    private void buildResultSet(CompletionResultSet resultSet, VirtualFile virtualFile, String keyStr,String value) {
+    private void buildResultSet(CompletionResultSet resultSet, VirtualFile virtualFile, String keyStr, String value) {
         LookupElementBuilder builder = LookupElementBuilder.create(keyStr + "}}")
                 .appendTailText(value + " :: " + virtualFile.getPresentableName(), true)
                 .withPresentableText(keyStr + " = ");
