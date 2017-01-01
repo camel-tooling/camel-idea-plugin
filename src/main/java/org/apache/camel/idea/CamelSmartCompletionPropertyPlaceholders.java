@@ -56,7 +56,7 @@ public class CamelSmartCompletionPropertyPlaceholders {
             VirtualFile file = sourceRoot.getCanonicalFile();
             if (file != null) {
                 VfsUtil.processFilesRecursively(file, virtualFile -> {
-                    if (virtualFile.getName().endsWith(".properties") && !projectFileIndex.isExcluded(sourceRoot)) {
+                    if (virtualFile.isValid() && virtualFile.getName().endsWith(".properties") && !projectFileIndex.isExcluded(sourceRoot)) {
                         loadProperties(virtualFile).forEach((key, value) -> buildResultSet(resultSet, (String) key, (String) value));
                     }
                     return true;
@@ -67,10 +67,10 @@ public class CamelSmartCompletionPropertyPlaceholders {
 
     @NotNull
     private Properties loadProperties(VirtualFile virtualFile) {
-        File file = new File(virtualFile.getPath());
         Properties properties = new Properties();
 
         try {
+            File file = new File(virtualFile.getPath());
             properties.load(Files.newInputStream(file.toPath()));
         } catch (IOException e) {
             // ignore
