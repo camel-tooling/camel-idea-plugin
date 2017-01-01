@@ -43,6 +43,7 @@ import com.intellij.openapi.util.Iconable;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.ui.components.JBList;
 import com.intellij.util.IncorrectOperationException;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
@@ -106,7 +107,7 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         }
 
         // show popup to chose the component
-        JList list = new JList(names.toArray(new String[names.size()]));
+        JBList list = new JBList(names.toArray(new String[names.size()]));
         PopupChooserBuilder builder = JBPopupFactory.getInstance().createListPopupBuilder(list);
         builder.setAdText(names.size() + " components");
         builder.setTitle("Add Camel Endpoint");
