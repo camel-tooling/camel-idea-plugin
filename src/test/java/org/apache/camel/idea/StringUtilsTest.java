@@ -77,7 +77,8 @@ public class StringUtilsTest extends TestCase {
 
         assertEquals(url, StringUtils.wrapSeparator(url, "&", "\n", 80));
 
-        String longUrl = "jms:queue:cheese?acknowledgementModeName=SESSION_TRANSACTED&asyncConsumer=true&cacheLevelName=CACHE_CONSUMER&deliveryMode=2&errorHandlerLoggingLevel=DEBUG&explicitQosEnabled=true&jmsMessageType=Bytes";
+        String longUrl = "jms:queue:cheese?acknowledgementModeName=SESSION_TRANSACTED&asyncConsumer=true&cacheLevelName=CACHE_CONSUMER"
+                + "&deliveryMode=2&errorHandlerLoggingLevel=DEBUG&explicitQosEnabled=true&jmsMessageType=Bytes";
 
         String wrapped = StringUtils.wrapSeparator(longUrl, "&", "\n", 120);
 

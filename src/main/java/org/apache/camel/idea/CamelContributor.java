@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 package org.apache.camel.idea;
+
+import java.util.List;
+import java.util.Map;
+import javax.swing.*;
 
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -31,11 +35,6 @@ import org.apache.camel.idea.model.EndpointOptionModel;
 import org.apache.camel.idea.model.ModelHelper;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.Icon;
-
 import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
 import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
 import static org.apache.camel.idea.CamelSmartCompletionEndpointValue.addSmartCompletionForSingleValue;
@@ -46,14 +45,14 @@ import static org.apache.camel.idea.CamelSmartCompletionEndpointValue.addSmartCo
  */
 public class CamelContributor extends CompletionContributor {
 
-    private static final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
-
     public static final Icon CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
+
+    private static final CamelCatalog CAMEL_CATALOG = new DefaultCamelCatalog(true);
 
     /**
      * Smart completion for Camel endpoints.
      */
-    static protected class EndpointCompletion extends CompletionProvider<CompletionParameters> {
+    protected static class EndpointCompletion extends CompletionProvider<CompletionParameters> {
 
         private final CamelSmartCompletionPropertyPlaceholders smartCompletionPropertyPlaceholders;
 
@@ -76,10 +75,10 @@ public class CamelContributor extends CompletionContributor {
             }
 
             String componentName = StringUtils.asComponentName(val);
-            if (componentName != null && camelCatalog.findComponentNames().contains(componentName)) {
+            if (componentName != null && CAMEL_CATALOG.findComponentNames().contains(componentName)) {
 
                 // it is a known Camel component
-                String json = camelCatalog.componentJSonSchema(componentName);
+                String json = CAMEL_CATALOG.componentJSonSchema(componentName);
                 ComponentModel componentModel = ModelHelper.generateComponentModel(json, true);
 
                 // grab all existing parameters
@@ -91,7 +90,7 @@ public class CamelContributor extends CompletionContributor {
 
                 Map<String, String> existing = null;
                 try {
-                    existing = camelCatalog.endpointProperties(query);
+                    existing = CAMEL_CATALOG.endpointProperties(query);
                 } catch (Exception e) {
                     // ignore
                 }

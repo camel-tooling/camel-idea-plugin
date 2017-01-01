@@ -90,7 +90,9 @@ public final class IdeaUtils {
         String text = token.getText();
         int textLength = text.length();
         if (StringUtil.endsWithChar(text, '\"')) {
-            if (textLength == 1) return null;
+            if (textLength == 1) {
+                return null;
+            }
             text = text.substring(1, textLength - 1);
         } else {
             if (text.startsWith(QUOT) && text.endsWith(QUOT) && textLength > QUOT.length()) {

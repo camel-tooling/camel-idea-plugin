@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,12 @@
  * limitations under the License.
  */
 package org.apache.camel.idea;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.List;
+import java.util.Properties;
 
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -28,12 +34,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.List;
-import java.util.Properties;
-
 /**
  * Smart completion for editing a Camel endpoint uri, to show a list of property holders can be added.
  * For example editing <tt>jms:queue?{{_CURSOR_HERE_</tt>. Which presents the user
@@ -42,9 +42,11 @@ import java.util.Properties;
 public class CamelSmartCompletionPropertyPlaceholders {
 
     //TODO Allow this to be configurable
-    private static final String[] IGNORE_PROPERTIES = new String[]{"java.", "Logger.", "logger", "appender.", "rootLogger.",
-            // ignore camel-spring-boot auto configuration prefixes
-            "camel.springboot.", "camel.component.", "camel.dataformat.", "camel.language."};
+    private static final String[] IGNORE_PROPERTIES = new String[]{
+        "java.", "Logger.", "logger", "appender.", "rootLogger.",
+        // ignore camel-spring-boot auto configuration prefixes
+        "camel.springboot.", "camel.component.", "camel.dataformat.", "camel.language."
+    };
 
     public void propertyPlaceholdersSmartCompletion(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet resultSet) {
         Project project = parameters.getOriginalFile().getManager().getProject();
