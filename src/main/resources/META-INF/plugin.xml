@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/davsclaus/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.1.6</version>
+  <version>0.1.7</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -9,6 +9,7 @@
 
       The plugin includes:
       <ul>
+        <li>Smart completion for Camel YAML property placeholders (ctrl + space after {{)</li>
         <li>Smart completion for Camel endpoints in Java editor (ctrl + space)</li>
         <li>Smart completion for Camel endpoints in properties files (ctrl + space)</li>
         <li>Smart completion for Camel property placeholders (ctrl + space after {{)</li>
@@ -19,6 +20,7 @@
 
   <change-notes><![CDATA[
       <ul>
+        <li>0.1.7 - Smart completion for YAML property files</li>
         <li>0.1.6 - Project migrated to Maven and other minor bug fixes</li>
         <li>0.1.5 - Intention to add Camel endpoint</li>
         <li>0.1.4 - Smart completion for property placeholders</li>
