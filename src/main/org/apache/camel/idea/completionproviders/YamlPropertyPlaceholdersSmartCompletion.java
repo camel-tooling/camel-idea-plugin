@@ -1,0 +1,76 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.camel.idea.completionproviders;
+
+import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.completion.PlainPrefixMatcher;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.vfs.VirtualFile;
+import org.jetbrains.annotations.NotNull;
+import org.yaml.snakeyaml.Yaml;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.apache.camel.idea.completionproviders.CamelPropertiesSmartCompletionExtension.IGNORE_PROPERTIES;
+
+/**
+ * Smart completion for editing a Camel endpoint uri, to show a list of YAML properties can be added.
+ * For example editing <tt>jms:queue?{{_CURSOR_HERE_</tt>. Which presents the user
+ * with a list of possible properties.
+ */
+public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCompletion {
+
+    @NotNull
+    private Map<String,Object> getProperties(VirtualFile virtualFile) {
+        Map<String,Object> result = new HashMap<>();
+        File file = new File(virtualFile.getPath());
+        Yaml yaml = new Yaml();
+
+        try {
+            InputStream ios = new FileInputStream(file);
+            // Parse the YAML file and return the output as a series of Maps and Lists
+            result = (Map<String,Object>)yaml.load(ios);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    @Override
+    public boolean isValidExtension(String filename) {
+        return filename.endsWith(".yaml");
+    }
+
+    @Override
+    public void buildResultSet(CompletionResultSet resultSet, VirtualFile virtualFile) {
+        getProperties(virtualFile).forEach((key, value) -> {
+            String keyStr = key;
+            boolean noneMatch = IGNORE_PROPERTIES.stream().noneMatch(s -> keyStr.startsWith(s));
+            if (noneMatch) {
+                String valueStr = String.valueOf(value);
+                LookupElementBuilder builder = LookupElementBuilder.create(keyStr + "}}")
+                        .appendTailText(valueStr, true)
+                        .withPresentableText(keyStr + " = ");
+                resultSet.withPrefixMatcher(new PlainPrefixMatcher("")).addElement(builder);
+            }
+        });
+    }
+}

@@ -13,6 +13,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
         <idea.version>2016.3.2</idea.version>
+        <snakeyaml-version>1.6</snakeyaml-version>
         <camel.version>2.19.0-SNAPSHOT</camel.version>
         <ij.plugin>true</ij.plugin>
     </properties>
@@ -84,6 +85,11 @@
             <version>${idea.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>${snakeyaml-version}</version>
+        </dependency>
 
         <!-- Test -->
         <dependency>
@@ -98,10 +104,6 @@
         <resources>
             <resource>
                 <directory>resources/</directory>
-                <includes>
-                    <include>META-INF/plugin.xml</include>
-                    <include>icons/</include>
-                </includes>
                 <filtering>true</filtering>
             </resource>
         </resources>

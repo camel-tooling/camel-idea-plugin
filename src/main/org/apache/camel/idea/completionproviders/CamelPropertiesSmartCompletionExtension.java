@@ -14,37 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea;
+package org.apache.camel.idea.completionproviders;
 
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
-import com.intellij.codeInsight.completion.PlainPrefixMatcher;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 
 /**
- * Smart completion for editing a Camel endpoint uri, to show a list of property holders can be added.
+ * Smart completion for editing a Camel endpoint uri, to show a list of properties can be added.
  * For example editing <tt>jms:queue?{{_CURSOR_HERE_</tt>. Which presents the user
  * with a list of possible properties.
  */
-public class CamelSmartCompletionPropertyPlaceholders {
+public class CamelPropertiesSmartCompletionExtension implements CamelCompletionExtension {
     //TODO Allow this to be configurable
-    private static final List<String> IGNORE_PROPERTIES = Arrays.asList("java.", "Logger.", "logger", "appender.", "rootLogger.", "camel.springboot.*");
+    protected static final List<String> IGNORE_PROPERTIES = Arrays.asList("java.", "Logger.", "logger", "appender.", "rootLogger.", "camel.springboot.*");
+    protected List<CamelPropertyCompletion> propertyCompletionProviders = new ArrayList<>();
 
-    public void propertyPlaceholdersSmartCompletion(@NotNull CompletionParameters parameters, @NotNull CompletionResultSet resultSet) {
+    public CamelPropertiesSmartCompletionExtension() {
+        propertyCompletionProviders.add(new JavaPropertyPlaceholdersSmartCompletion());
+        propertyCompletionProviders.add(new YamlPropertyPlaceholdersSmartCompletion());
+    }
+
+    @Override
+    public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet, @NotNull String query) {
         Project project = parameters.getOriginalFile().getManager().getProject();
 
         List<VirtualFile> resourceRoots = ProjectRootManager.getInstance(project).getModuleSourceRoots(JavaModuleSourceRootTypes.PRODUCTION);
@@ -52,37 +55,20 @@ public class CamelSmartCompletionPropertyPlaceholders {
         ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
         for (final VirtualFile sourceRoot : resourceRoots) {
             VfsUtil.processFilesRecursively(sourceRoot.getCanonicalFile(), virtualFile -> {
-                if (virtualFile.getName().endsWith(".properties") && !projectFileIndex.isExcluded(sourceRoot)) {
-                    getProperties(virtualFile).forEach((key, value) -> buildResultSet(resultSet, (String) key, (String) value));
-                }
+                propertyCompletionProviders.stream()
+                        .filter(p -> p.isValidExtension(virtualFile.getName()) && !projectFileIndex.isExcluded(sourceRoot))
+                        .forEach(p -> p.buildResultSet(resultSet, virtualFile));
                 return true;
             });
         }
-
-
     }
 
-    @NotNull
-    private Properties getProperties(VirtualFile virtualFile) {
-        File file = new File(virtualFile.getPath());
-        Properties properties = new Properties();
-
-        try {
-            properties.load(Files.newInputStream(file.toPath()));
-        } catch (IOException e) {
-        }//TODO : log a warning, but for now we ignore it and continue.
-
-        return properties;
-    }
-
-    private void buildResultSet(@NotNull CompletionResultSet resultSet, String key, String value) {
-        String keyStr = key;
-        boolean noneMatch = IGNORE_PROPERTIES.stream().noneMatch(s -> keyStr.startsWith(s));
-        if (noneMatch) {
-            LookupElementBuilder builder = LookupElementBuilder.create(keyStr + "}}")
-                    .appendTailText(value, true)
-                    .withPresentableText(keyStr + " = ");
-            resultSet.withPrefixMatcher(new PlainPrefixMatcher("")).addElement(builder);
+    @Override
+    public boolean isValid(@NotNull CompletionParameters parameters, ProcessingContext context, String query) {
+        if (query.endsWith("{{")) {
+            return true;
         }
+        return false;
     }
+
 }

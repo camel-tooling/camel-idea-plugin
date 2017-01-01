@@ -5,32 +5,26 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea;
+package org.apache.camel.idea.completionproviders;
 
-import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.psi.PsiClass;
-
-import static com.intellij.patterns.PlatformPatterns.psiElement;
+import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.openapi.vfs.VirtualFile;
 
 /**
- * Plugin to hook into the IDEA Java language, to setup Camel smart completion for editing Java source code.
+ *
  */
-public class CamelJavaReferenceContributor extends CamelContributor {
+public interface CamelPropertyCompletion {
 
-    public CamelJavaReferenceContributor() {
-        extend(CompletionType.BASIC,
-                psiElement().and(psiElement().inside(PsiClass.class)),
-                new EndpointCompletion(getCamelCompletionExtensions())
-        );
-    }
+    boolean isValidExtension(String filename);
 
+    void buildResultSet(CompletionResultSet resultSet, VirtualFile virtualFile);
 }
