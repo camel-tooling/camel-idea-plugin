@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,14 @@
  * limitations under the License.
  */
 package org.apache.camel.idea;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import javax.swing.*;
 
 import com.intellij.codeInsight.intention.LowPriorityAction;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
@@ -35,6 +43,7 @@ import com.intellij.openapi.util.Iconable;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.ui.components.JBList;
 import com.intellij.util.IncorrectOperationException;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
@@ -43,19 +52,11 @@ import org.apache.camel.idea.model.ModelHelper;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
 import static org.apache.camel.idea.CamelContributor.CAMEL_ICON;
 
 public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction implements Iconable, LowPriorityAction {
 
-    private static final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
+    private static final CamelCatalog CAMEL_CATALOG = new DefaultCamelCatalog(true);
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
@@ -106,7 +107,7 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         }
 
         // show popup to chose the component
-        JList list = new JList(names.toArray(new String[names.size()]));
+        JBList list = new JBList(names.toArray(new String[names.size()]));
         PopupChooserBuilder builder = JBPopupFactory.getInstance().createListPopupBuilder(list);
         builder.setAdText(names.size() + " components");
         builder.setTitle("Add Camel Endpoint");
@@ -168,8 +169,8 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
     private static List<String> findCamelComponentNamesInArtifact(Set<String> artifactIds, boolean consumerOnly) {
         List<String> names = new ArrayList<>();
 
-        for (String name : camelCatalog.findComponentNames()) {
-            String json = camelCatalog.componentJSonSchema(name);
+        for (String name : CAMEL_CATALOG.findComponentNames()) {
+            String json = CAMEL_CATALOG.componentJSonSchema(name);
             ComponentModel model = ModelHelper.generateComponentModel(json, false);
             if (artifactIds.contains(model.getArtifactId())) {
                 boolean onlyConsume = "true".equals(model.getConsumerOnly());

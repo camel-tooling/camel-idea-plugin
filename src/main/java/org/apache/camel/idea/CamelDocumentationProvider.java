@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -55,9 +55,9 @@ import static org.apache.camel.idea.StringUtils.wrapSeparator;
  */
 public class CamelDocumentationProvider extends DocumentationProviderEx implements ExternalDocumentationProvider, ExternalDocumentationHandler {
 
-    private final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
-
     private static final String GITHUB_EXTERNAL_DOC_URL = "https://github.com/apache/camel/blob/master";
+
+    private static final CamelCatalog CAMEL_CATALOG = new DefaultCamelCatalog(true);
 
     @Nullable
     @Override
@@ -90,11 +90,11 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                 if (method != null) {
                     // try to see if we have a Camel language with the method name
                     String name = asLanguageName(method.getName());
-                    if (camelCatalog.findLanguageNames().contains(name)) {
+                    if (CAMEL_CATALOG.findLanguageNames().contains(name)) {
                         // okay its a potential Camel language so see if the psi method call is using
                         // camel-core types so we know for a fact its really a Camel language
                         if (isPsiMethodCamelLanguage(method)) {
-                            String html = camelCatalog.languageHtmlDoc(name);
+                            String html = CAMEL_CATALOG.languageHtmlDoc(name);
                             if (html != null) {
                                 return html;
                             }
@@ -159,9 +159,9 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         }
 
         String name = StringUtils.asComponentName(val);
-        if (name != null && camelCatalog.findComponentNames().contains(name)) {
+        if (name != null && CAMEL_CATALOG.findComponentNames().contains(name)) {
 
-            String json = camelCatalog.componentJSonSchema(name);
+            String json = CAMEL_CATALOG.componentJSonSchema(name);
             ComponentModel component = ModelHelper.generateComponentModel(json, false);
 
             // to build external links which points to github
@@ -203,7 +203,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         if (text != null) {
             // check if its a known Camel component
             String name = asComponentName(text);
-            return camelCatalog.findComponentNames().contains(name);
+            return CAMEL_CATALOG.findComponentNames().contains(name);
         }
         return false;
     }
@@ -230,12 +230,12 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
     private String generateCamelComponentDocumentation(String componentName, String val) {
         // it is a known Camel component
-        String json = camelCatalog.componentJSonSchema(componentName);
+        String json = CAMEL_CATALOG.componentJSonSchema(componentName);
         ComponentModel component = ModelHelper.generateComponentModel(json, false);
 
         Map<String, String> existing = null;
         try {
-            existing = camelCatalog.endpointProperties(val);
+            existing = CAMEL_CATALOG.endpointProperties(val);
         } catch (Throwable e) {
             // ignore
         }

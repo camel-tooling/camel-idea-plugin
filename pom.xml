@@ -27,15 +27,17 @@
   <description>Plugin for Intellij IDEA to provide a set of small Apache Camel related capabilities to IDEA editor.
   </description>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <idea.version>2016.3.2</idea.version>
-        <snakeyaml-version>1.6</snakeyaml-version>
-        <camel.version>2.19.0-SNAPSHOT</camel.version>
-        <ij.plugin>true</ij.plugin>
-    </properties>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
+    <maven.checkstyle.version>6.17</maven.checkstyle.version>
+    <idea.version>2016.3.2</idea.version>
+    <snakeyaml-version>1.6</snakeyaml-version>
+    <camel.version>2.19.0-SNAPSHOT</camel.version>
+    <ij.plugin>true</ij.plugin>
+  </properties>
 
   <scm>
     <connection>scm:git:git://github.com/davsclaus/camel-idea-plugin.git</connection>
@@ -139,6 +141,39 @@
     </resources>
 
     <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${maven.checkstyle.plugin.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>${maven.checkstyle.version}</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>validate</id>
+            <phase>validate</phase>
+            <configuration>
+              <includeResources>false</includeResources>
+              <configLocation>buildingtools/camel-checkstyle.xml</configLocation>
+              <consoleOutput>true</consoleOutput>
+              <failsOnError>true</failsOnError>
+              <linkXRef>false</linkXRef>
+              <suppressionsLocation>buildingtools/camel-checkstyle-suppressions.xml</suppressionsLocation>
+              <encoding>UTF-8</encoding>
+              <sourceDirectory>${basedir}/src</sourceDirectory>
+            </configuration>
+            <goals>
+              <goal>checkstyle</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>

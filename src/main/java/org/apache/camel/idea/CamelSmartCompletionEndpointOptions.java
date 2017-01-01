@@ -33,7 +33,11 @@ import org.apache.camel.idea.model.EndpointOptionModel;
  * For example editing <tt>jms:queue?_CURSOR_HERE_</tt>. Which presents the user
  * with a list of possible options for the JMS endpoint.
  */
-public class CamelSmartCompletionEndpointOptions {
+public final class CamelSmartCompletionEndpointOptions {
+
+    private CamelSmartCompletionEndpointOptions() {
+        // static class
+    }
 
     public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(String val, ComponentModel component, Map<String, String> existing) {
         List<LookupElement> answer = new ArrayList<>();

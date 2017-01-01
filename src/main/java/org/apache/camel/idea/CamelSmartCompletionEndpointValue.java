@@ -35,7 +35,10 @@ import java.util.List;
  * <tt>jms:queue?acknowledgementModeName=_CURSOR_HERE_</tt>. Which presents the user
  * with a list of possible values for the <tt>acknowledgementModeName</tt> option.
  */
-public class CamelSmartCompletionEndpointValue {
+public final class CamelSmartCompletionEndpointValue {
+
+    private CamelSmartCompletionEndpointValue() {
+    }
 
     public static List<LookupElement> addSmartCompletionForSingleValue(Editor editor, String val, String suffix, EndpointOptionModel option) {
         List<LookupElement> answer = new ArrayList<>();
