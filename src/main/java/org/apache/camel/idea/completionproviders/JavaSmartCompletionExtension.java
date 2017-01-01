@@ -30,6 +30,8 @@ public class JavaSmartCompletionExtension implements CamelCompletionExtension {
     public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet, @NotNull String query) {
         // it is a known Camel component
         String componentName = StringUtils.asComponentName(query);
+
+        // it is a known Camel component
         String json = camelCatalog.componentJSonSchema(componentName);
         ComponentModel componentModel = ModelHelper.generateComponentModel(json, true);
 
@@ -42,7 +44,7 @@ public class JavaSmartCompletionExtension implements CamelCompletionExtension {
 
         Map<String, String> existing = null;
         try {
-            existing = camelCatalog.endpointProperties(camelQuery);
+            existing = camelCatalog.endpointProperties(query);
         } catch (Exception e) {
             // ignore
         }
@@ -64,7 +66,7 @@ public class JavaSmartCompletionExtension implements CamelCompletionExtension {
                 answer = addSmartCompletionForSingleValue(query, endpointOption);
             }
         } else if (editQueryParameters) {
-            // suggest a list of options for camelQuery parameters
+            // suggest a list of options for query parameters
             answer = addSmartCompletionSuggestionsQueryParameters(query, componentModel, existing);
         } else if (editContextPath) {
             // suggest a list of options for context-path

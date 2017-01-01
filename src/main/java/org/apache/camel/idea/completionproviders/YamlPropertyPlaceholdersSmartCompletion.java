@@ -67,7 +67,7 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
             if (noneMatch) {
                 String valueStr = String.valueOf(value);
                 LookupElementBuilder builder = LookupElementBuilder.create(keyStr + "}}")
-                        .appendTailText(valueStr, true)
+                        .appendTailText(valueStr + " :: "+virtualFile.getPresentableName(), true)
                         .withPresentableText(keyStr + " = ");
                 resultSet.withPrefixMatcher(new PlainPrefixMatcher("")).addElement(builder);
             }

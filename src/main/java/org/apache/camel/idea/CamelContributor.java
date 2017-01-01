@@ -38,7 +38,7 @@ import java.util.List;
  */
 public class CamelContributor extends CompletionContributor {
 
-    public static final Icon CAMEL_ICON = IconLoader.getIcon("/camel.png");
+    public static final Icon CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
 
     private List<CamelCompletionExtension> camelCompletionExtensions = new ArrayList<>();
 

@@ -17,6 +17,7 @@
 package org.apache.camel.idea;
 
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteralExpression;
@@ -73,6 +74,11 @@ public final class IdeaUtils {
                 return "from".equals(name) || "fromF".equals(name) || "interceptFrom".equals(name) || "pollEnrich".equals(name);
             }
         }
+        PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
+        if (annotation != null && annotation.getQualifiedName() != null) {
+            return annotation.getQualifiedName().equals("org.apache.camel.Consume");
+        }
+
         return false;
     }
 

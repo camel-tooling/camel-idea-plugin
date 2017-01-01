@@ -61,7 +61,7 @@ public class JavaPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
             boolean noneMatch = IGNORE_PROPERTIES.stream().noneMatch(s -> keyStr.startsWith(s));
             if (noneMatch) {
                 LookupElementBuilder builder = LookupElementBuilder.create(keyStr + "}}")
-                        .appendTailText((String) value, true)
+                        .appendTailText((String) value + " :: "+virtualFile.getPresentableName(), true)
                         .withPresentableText(keyStr + " = ");
                 resultSet.withPrefixMatcher(new PlainPrefixMatcher("")).addElement(builder);
             }

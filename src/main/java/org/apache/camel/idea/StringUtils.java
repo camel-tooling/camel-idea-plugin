@@ -19,6 +19,9 @@ package org.apache.camel.idea;
 import java.util.List;
 import java.util.Map;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 /**
  * Various utility methods.
  */
@@ -27,10 +30,12 @@ public final class StringUtils {
     private StringUtils() {
     }
 
+    @NotNull
     public static boolean hasQuestionMark(String val) {
-        return val.indexOf('?') > 0;
+        return val != null && val.indexOf('?') > 0;
     }
 
+    @Nullable
     public static String asComponentName(String val) {
         if (val == null) {
             return null;
@@ -43,13 +48,14 @@ public final class StringUtils {
         return null;
     }
 
+    @Nullable
     public static String asLanguageName(String val) {
         if (val == null) {
             return null;
         }
 
         if (val.startsWith("tokenize")) {
-            return val;
+            return "tokenize";
         } else if (val.equals("js") || val.equals("javascript")) {
             return "javaScript";
         }
@@ -60,6 +66,7 @@ public final class StringUtils {
     /**
      * Gets the value with the key in a safe way, eg returning an empty string if there was no value for the key.
      */
+    @NotNull
     public static String getSafeValue(String key, List<Map<String, String>> rows) {
         for (Map<String, String> row : rows) {
             String value = row.get(key);
@@ -73,6 +80,7 @@ public final class StringUtils {
     /**
      * Gets the value with the key in a safe way, eg returning an empty string if there was no value for the key.
      */
+    @NotNull
     public static String getSafeValue(String key, Map<String, String> rows) {
         String value = rows.get(key);
         if (value != null) {
@@ -89,6 +97,7 @@ public final class StringUtils {
      * @param newLine the new line to use when breaking into a new line
      * @param watermark a watermark to denote the size to cut after
      */
+    @NotNull
     public static String wrapSeparator(String line, String separator, String newLine, int watermark) {
         StringBuilder sb = new StringBuilder();
         String[] parts = line.split(separator);
