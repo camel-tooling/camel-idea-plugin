@@ -23,9 +23,9 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.util.ProcessingContext;
-import org.apache.camel.idea.completionproviders.CamelCompletionExtension;
-import org.apache.camel.idea.completionproviders.CamelPropertiesSmartCompletionExtension;
-import org.apache.camel.idea.completionproviders.JavaSmartCompletionExtension;
+import org.apache.camel.idea.completion.extension.CamelCompletionExtension;
+import org.apache.camel.idea.completion.extension.CamelPropertiesSmartCompletionExtension;
+import org.apache.camel.idea.completion.extension.JavaSmartCompletionExtension;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

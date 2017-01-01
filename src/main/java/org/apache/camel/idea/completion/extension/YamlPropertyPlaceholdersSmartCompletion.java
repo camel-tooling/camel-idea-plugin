@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.completionproviders;
+package org.apache.camel.idea.completion.extension;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.PlainPrefixMatcher;
@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.camel.idea.completionproviders.CamelPropertiesSmartCompletionExtension.IGNORE_PROPERTIES;
+import static org.apache.camel.idea.completion.extension.CamelPropertiesSmartCompletionExtension.IGNORE_PROPERTIES;
 
 /**
  * Smart completion for editing a Camel endpoint uri, to show a list of YAML properties can be added.
