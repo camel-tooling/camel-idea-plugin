@@ -48,7 +48,7 @@ public class CamelContributor extends CompletionContributor {
 
     private static final CamelCatalog camelCatalog = new DefaultCamelCatalog(true);
 
-    public static final Icon CAMEL_ICON = IconLoader.getIcon("/camel.png");
+    public static final Icon CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
 
     /**
      * Smart completion for Camel endpoints.
