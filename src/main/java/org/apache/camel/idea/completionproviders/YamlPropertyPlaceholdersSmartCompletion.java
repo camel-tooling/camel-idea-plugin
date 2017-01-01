@@ -27,7 +27,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.camel.idea.completionproviders.CamelPropertiesSmartCompletionExtension.IGNORE_PROPERTIES;
 
@@ -39,15 +42,15 @@ import static org.apache.camel.idea.completionproviders.CamelPropertiesSmartComp
 public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCompletion {
 
     @NotNull
-    private Map<String,Object> getProperties(VirtualFile virtualFile) {
-        Map<String,Object> result = new HashMap<>();
+    private Map<String, Object> getProperties(VirtualFile virtualFile) {
+        Map<String, Object> result = new HashMap<>();
         File file = new File(virtualFile.getPath());
         Yaml yaml = new Yaml();
 
         try {
             InputStream ios = new FileInputStream(file);
             // Parse the YAML file and return the output as a series of Maps and Lists
-            result = (Map<String,Object>)yaml.load(ios);
+            result = (Map<String, Object>) yaml.load(ios);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -62,15 +65,63 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
     @Override
     public void buildResultSet(CompletionResultSet resultSet, VirtualFile virtualFile) {
         getProperties(virtualFile).forEach((key, value) -> {
-            String keyStr = key;
+            final String keyStr = key;
             boolean noneMatch = IGNORE_PROPERTIES.stream().noneMatch(s -> keyStr.startsWith(s));
             if (noneMatch) {
-                String valueStr = String.valueOf(value);
-                LookupElementBuilder builder = LookupElementBuilder.create(keyStr + "}}")
-                        .appendTailText(valueStr + " :: "+virtualFile.getPresentableName(), true)
-                        .withPresentableText(keyStr + " = ");
-                resultSet.withPrefixMatcher(new PlainPrefixMatcher("")).addElement(builder);
+                if (value instanceof List) {
+                    List<?> propertyList = (List) value;
+                    buildResultSetForList(resultSet, virtualFile, keyStr, propertyList);
+                } else {
+                    buildResultSet(resultSet, virtualFile, keyStr,String.valueOf(value));
+                }
             }
         });
+    }
+
+    /**
+     * Flat the {@link LinkedHashMap} to string property names and build the {@link CompletionResultSet}
+     */
+    private void buildResultSetForLinkedHashMap(CompletionResultSet resultSet, VirtualFile virtualFile, String keyStr, List<?> propertyList) {
+        propertyList.stream()
+                .filter(l -> (l instanceof LinkedHashMap))
+                .map(LinkedHashMap.class::cast)
+                .flatMap(lhm -> lhm.entrySet().stream())
+                .forEach(e -> {
+                            Map.Entry<String,Object> entry = (Map.Entry)e;
+                            if (entry.getValue() instanceof List) {
+                                String flatKeyStr = keyStr + "." + String.valueOf(entry.getKey());
+                                buildResultSetForList(resultSet,virtualFile,flatKeyStr,(List<?>)entry.getValue());
+                            } else {
+                                String flatKeyStr = keyStr + "." + String.valueOf(entry.getKey());
+                                buildResultSet(resultSet, virtualFile, flatKeyStr, String.valueOf(entry.getValue()));
+                            }
+                        }
+
+                );
+    }
+
+    /**
+     * Flat the List to string array and build the {@link CompletionResultSet}
+     */
+    private void buildResultSetForList(CompletionResultSet resultSet, VirtualFile virtualFile, String keyStr, List<?> propertyList) {
+        final AtomicInteger count = new AtomicInteger(0);
+        propertyList.stream()
+                .forEach(e -> {
+                    if (e instanceof String) {
+                        String flatKeyStr = String.format("%s[%s]", keyStr, count.getAndIncrement());
+                        buildResultSet(resultSet, virtualFile, flatKeyStr, String.valueOf(e));
+                    } else if (e instanceof List) {
+                        buildResultSetForList(resultSet,virtualFile,keyStr, (List<?>) e);
+                    } else if (e instanceof LinkedHashMap) {
+                        buildResultSetForLinkedHashMap(resultSet,virtualFile,keyStr,propertyList);
+                    }
+                });
+    }
+
+    private void buildResultSet(CompletionResultSet resultSet, VirtualFile virtualFile, String keyStr,String value) {
+        LookupElementBuilder builder = LookupElementBuilder.create(keyStr + "}}")
+                .appendTailText(value + " :: " + virtualFile.getPresentableName(), true)
+                .withPresentableText(keyStr + " = ");
+        resultSet.withPrefixMatcher(new PlainPrefixMatcher("")).addElement(builder);
     }
 }
