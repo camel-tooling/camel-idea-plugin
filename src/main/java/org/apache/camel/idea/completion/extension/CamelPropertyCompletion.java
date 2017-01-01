@@ -20,11 +20,18 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.vfs.VirtualFile;
 
 /**
- *
+ * Completion handler for building property result set. Hook into the process when
+ * scanning for property files and building the completion list in the {@link CamelPropertiesSmartCompletionExtension}
  */
 public interface CamelPropertyCompletion {
 
+    /**
+     * @return true if it match the property file it should process
+     */
     boolean isValidExtension(String filename);
 
+    /**
+     * Build the property completion result set to be shown in the completion dialog
+     */
     void buildResultSet(CompletionResultSet resultSet, VirtualFile virtualFile);
 }

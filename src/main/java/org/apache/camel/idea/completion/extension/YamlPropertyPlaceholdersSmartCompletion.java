@@ -26,6 +26,7 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -59,7 +60,7 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
 
     @Override
     public boolean isValidExtension(String filename) {
-        return filename.endsWith(".yaml");
+        return filename.endsWith(".yaml") || filename.endsWith(".yml");
     }
 
     @Override
@@ -69,8 +70,9 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
             boolean noneMatch = IGNORE_PROPERTIES.stream().noneMatch(s -> keyStr.startsWith(s));
             if (noneMatch) {
                 if (value instanceof List) {
-                    List<?> propertyList = (List) value;
-                    buildResultSetForList(resultSet, virtualFile, keyStr, propertyList);
+                    buildResultSetForList(resultSet, virtualFile, keyStr, (List) value);
+                } else if (value instanceof LinkedHashMap) {
+                    buildResultSetForLinkedHashMap(resultSet,virtualFile,keyStr, Collections.singletonList(value));
                 } else {
                     buildResultSet(resultSet, virtualFile, keyStr,String.valueOf(value));
                 }
@@ -88,11 +90,12 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
                 .flatMap(lhm -> lhm.entrySet().stream())
                 .forEach(e -> {
                             Map.Entry<String,Object> entry = (Map.Entry)e;
+                            String flatKeyStr = keyStr + "." + String.valueOf(entry.getKey());
                             if (entry.getValue() instanceof List) {
-                                String flatKeyStr = keyStr + "." + String.valueOf(entry.getKey());
-                                buildResultSetForList(resultSet,virtualFile,flatKeyStr,(List<?>)entry.getValue());
+                                buildResultSetForList(resultSet, virtualFile, flatKeyStr, (List<?>) entry.getValue());
+                            } else if (entry.getValue() instanceof LinkedHashMap) {
+                                buildResultSetForLinkedHashMap(resultSet,virtualFile,flatKeyStr, Collections.singletonList(entry.getValue()));
                             } else {
-                                String flatKeyStr = keyStr + "." + String.valueOf(entry.getKey());
                                 buildResultSet(resultSet, virtualFile, flatKeyStr, String.valueOf(entry.getValue()));
                             }
                         }
