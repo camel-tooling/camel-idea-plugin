@@ -51,17 +51,46 @@ how to hook into various IDEA APIs which is massive and takes longer time to fig
 Jetbrains are not very good at documenting their APIs with neither javadoc, or documentation to their own plugins.
 However with some trial and run you can find out bit by bit.
 
-I have put screen shots of how I have setup IDEA for plugin development. There is a couple of fields
-which you must configure with an absolute file location to a directory, and why its important to
-setup this correctly. Those fields has been marked with red rectangle in the screenshots.
+#### Importing project as maven project
 
-The screen shots are in the [img/setup directory](https://github.com/davsclaus/camel-idea-plugin/tree/master/img/setup).
+Importing the project into IntelliJ as plug-in project requires a few steps before it possible.
+
+First you need to install the "Intellij plugin development with Maven" in your IDEA
+
+ > - Open Preferences -> Plugins
+ > - Browse for plug-ins and search "Intellij plugin development with Maven"
+ > - Install the plug-in by right click and press "Download and Install"
+ > - Restart the IDE
+ 
+Second you need to install the IntelliJ libraries into your local maven repository. The first parameter
+is the version of the IDEA you have installed locally, second is the locations of the IDEA.
+
+ > - Execute the script file "./install-intellij-libs.sh 2016.3.2 /Applications/IntelliJ\ IDEA\ CE.app/Contents"
+  
+Next step you need to update the pom.xml file with the right Intellij version number
+
+ > - Open the pom.xml file
+ > - Modify the property idea.version with the version number you have intalled.
+ > - Run "mvn install"
+
+Last step you need to import the project as maven project.
+
+> - Open your IDEA
+> - Create a new project from existing source
+> - Select the "camel-idea-plugin" location
+> - Import project from external module and select Maven
+> - Press next until you hit the page "Please select the project SDK"
+> - Press the "+" and add new "IntelliJ Platform Plugin project"
+> - Press next and finish
+> - Open the "Module Settings" and select the tab "Plug-in Deployment" 
+> - Make sure the path to the "META-INF/plugin.xml" point to the "resources/" directory
+
 
 ### Running and debugging the plugin from source
 
-If everything is setup correctly, then you can launch the plugin, by running "Apache Camel IDEA plugin"
-from the run menu in IDEA. Then a 2nd instance of IDEA is launched where you can open a Camel project.
-
+After completing all steps and if everything is setup correctly, then you can launch the plugin by 
+add a plugin run/debug configuration. To do that, go to Run → Edit Configurations…​ and add Plugin configuration.
+                                                                  
 You can also launch the plugin in debug mode where you can put breakpoints in the source code.
 This is very handy to debug the code and find issues. However for code changes you need to stop and
 start the plugin again.
