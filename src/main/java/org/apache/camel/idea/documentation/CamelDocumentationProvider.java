@@ -36,6 +36,8 @@ import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameterList;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttributeValue;
 import org.apache.camel.catalog.JSonSchemaHelper;
@@ -228,6 +230,14 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         if (fqn.startsWith("com.intellij.lang.properties.psi.impl.PropertyValue")) {
             // yes we can support this also
             return element.getText();
+        }
+
+        // maybe its yaml
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("yaml")) {
+                return element.getText();
+            }
         }
 
         return null;

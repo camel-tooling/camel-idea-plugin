@@ -58,6 +58,7 @@
     <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
     <lang.documentationProvider language="XML" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
     <lang.documentationProvider language="Properties" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
+    <lang.documentationProvider language="yaml" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
 
     <!-- intention to add Camel endpoint -->
     <intentionAction>
