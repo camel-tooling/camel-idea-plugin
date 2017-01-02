@@ -17,20 +17,20 @@
 package org.apache.camel.idea;
 
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.psi.PsiClass;
-import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionExtension;
+import org.apache.camel.idea.completion.extension.CamelProperyPlaceholderSmartCompletionExtension;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
- * Plugin to hook into the IDEA Java language, to setup Camel smart completion for editing Java source code.
+ * Plugin to hook into the IDEA completion system, to setup smart completion for Camel property placeholders (eg {{foo}} style)
  */
-public class CamelJavaReferenceContributor extends CamelContributor {
+public class CamelPropertyPlaceholderReferenceContributor extends CamelContributor {
 
-    public CamelJavaReferenceContributor() {
-        addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
+    public CamelPropertyPlaceholderReferenceContributor() {
+        // add hook for smart completion for {{ }} placeholders
+        addCompletionExtension(new CamelProperyPlaceholderSmartCompletionExtension());
         extend(CompletionType.BASIC,
-                psiElement().and(psiElement().inside(PsiClass.class)),
+                psiElement().notNull(), // this works anywhere
                 new EndpointCompletion(getCamelCompletionExtensions())
         );
     }

@@ -21,7 +21,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 
 /**
  * Completion handler for building property result set. Hook into the process when
- * scanning for property files and building the completion list in the {@link CamelPropertiesSmartCompletionExtension}
+ * scanning for property files and building the completion list in the {@link CamelProperyPlaceholderSmartCompletionExtension}
  */
 public interface CamelPropertyCompletion {
     String[] IGNORE_PROPERTIES = {

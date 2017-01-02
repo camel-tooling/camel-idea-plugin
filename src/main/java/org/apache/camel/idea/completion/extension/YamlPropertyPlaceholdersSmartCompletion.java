@@ -34,6 +34,8 @@ import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
 /**
+ * To support smart completion where properties are loaded from <tt>.yaml</tt> files.
+ * <p/>
  * Smart completion for editing a Camel endpoint uri, to show a list of YAML properties can be added.
  * For example editing <tt>jms:queue?{{_CURSOR_HERE_</tt>. Which presents the user
  * with a list of possible properties.

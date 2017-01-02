@@ -36,7 +36,10 @@ import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameterList;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlAttributeValue;
 import org.apache.camel.catalog.JSonSchemaHelper;
 import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
@@ -216,11 +219,25 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             return (String) literal.getValue();
         }
 
+        // is it from an xml attribute when using XML
+        XmlAttributeValue xml = PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class);
+        if (xml != null) {
+            return xml.getValue();
+        }
+
         // its maybe a property from properties file
         String fqn = element.getClass().getName();
         if (fqn.startsWith("com.intellij.lang.properties.psi.impl.PropertyValue")) {
             // yes we can support this also
             return element.getText();
+        }
+
+        // maybe its yaml
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("yaml")) {
+                return element.getText();
+            }
         }
 
         return null;
