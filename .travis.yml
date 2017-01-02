@@ -5,4 +5,4 @@ jdk:
 before_install:
     -  "curl -L -o ideaCI.dmg https://download.jetbrains.com/idea/ideaIC-2016.3.2.tar.gz"
     -  "tar -xvf ideaCI.dmg --strip=1 idea-IC-163.10154.41/lib/"
-    -  "./install-dependencies.sh 2016.3.2 idea-IC-163.10154.41"
+    -  "./install-intellij-libs.sh 2016.3.2 idea-IC-163.10154.41"
