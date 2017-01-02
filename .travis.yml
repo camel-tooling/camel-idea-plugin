@@ -6,5 +6,4 @@ before_install:
     -  "curl -L -o ideaCI.tar.gz https://download.jetbrains.com/idea/ideaIC-2016.3.2.tar.gz"
     -  "mkdir idea"
     -  "tar -xvf ideaCI.tar.gz --directory idea/ --strip=1 idea-IC-163.10154.41/lib/"
-    -  "ls -la idea/"
     -  "./install-intellij-libs.sh 2016.3.2 idea"
