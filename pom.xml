@@ -21,7 +21,7 @@
 
   <groupId>org.apache.camel</groupId>
   <artifactId>camel-idea-plugin</artifactId>
-  <version>0.1.6-SNAPSHOT</version>
+  <version>0.1.7-SNAPSHOT</version>
   <name>Apache Camel IDEA Plugin</name>
 
   <description>Plugin for Intellij IDEA to provide a set of small Apache Camel related capabilities to IDEA editor.
@@ -33,9 +33,12 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.checkstyle.version>6.17</maven.checkstyle.version>
+
     <idea.version>2016.3.2</idea.version>
-    <snakeyaml-version>1.6</snakeyaml-version>
     <camel.version>2.19.0-SNAPSHOT</camel.version>
+    <snakeyaml.version>1.6</snakeyaml.version>
+    <junit.version>4.12</junit.version>
+
     <ij.plugin>true</ij.plugin>
   </properties>
 
@@ -43,7 +46,7 @@
     <connection>scm:git:git://github.com/davsclaus/camel-idea-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:davsclaus/camel-idea-plugin.git</developerConnection>
     <url>davsclaus/camel-idea-plugin.git</url>
-    <tag>0.1.6-SNAPSHOT</tag>
+    <tag>0.1.7-SNAPSHOT</tag>
   </scm>
 
   <!-- TODO: until we use a released version of camel-catalog -->
@@ -83,48 +86,48 @@
       <scope>compile</scope>
     </dependency>
 
-        <!-- IntelliJ Dependencies -->
-        <dependency>
-            <groupId>com.intellij</groupId>
-            <artifactId>openapi</artifactId>
-            <version>${idea.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.intellij</groupId>
-            <artifactId>idea</artifactId>
-            <version>${idea.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.intellij</groupId>
-            <artifactId>extensions</artifactId>
-            <version>${idea.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.intellij</groupId>
-            <artifactId>annotations</artifactId>
-            <version>${idea.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.intellij</groupId>
-            <artifactId>util</artifactId>
-            <version>${idea.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>${snakeyaml-version}</version>
-        </dependency>
+    <!-- IntelliJ Dependencies -->
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>openapi</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>idea</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>extensions</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>annotations</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>util</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>${snakeyaml.version}</version>
+    </dependency>
 
     <!-- Test -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
