@@ -34,6 +34,7 @@
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <maven.checkstyle.version>6.17</maven.checkstyle.version>
     <idea.version>2016.3.2</idea.version>
+    <snakeyaml-version>1.6</snakeyaml-version>
     <camel.version>2.19.0-SNAPSHOT</camel.version>
     <ij.plugin>true</ij.plugin>
   </properties>
@@ -82,37 +83,42 @@
       <scope>compile</scope>
     </dependency>
 
-    <!-- IntelliJ Dependencies -->
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>openapi</artifactId>
-      <version>${idea.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>idea</artifactId>
-      <version>${idea.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>extensions</artifactId>
-      <version>${idea.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>annotations</artifactId>
-      <version>${idea.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>util</artifactId>
-      <version>${idea.version}</version>
-      <scope>provided</scope>
-    </dependency>
+        <!-- IntelliJ Dependencies -->
+        <dependency>
+            <groupId>com.intellij</groupId>
+            <artifactId>openapi</artifactId>
+            <version>${idea.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.intellij</groupId>
+            <artifactId>idea</artifactId>
+            <version>${idea.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.intellij</groupId>
+            <artifactId>extensions</artifactId>
+            <version>${idea.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.intellij</groupId>
+            <artifactId>annotations</artifactId>
+            <version>${idea.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.intellij</groupId>
+            <artifactId>util</artifactId>
+            <version>${idea.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>${snakeyaml-version}</version>
+        </dependency>
 
     <!-- Test -->
     <dependency>

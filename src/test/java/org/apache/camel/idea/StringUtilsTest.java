@@ -24,6 +24,7 @@ import java.util.Map;
 import junit.framework.TestCase;
 import org.junit.Test;
 
+
 public class StringUtilsTest extends TestCase {
 
     @Test

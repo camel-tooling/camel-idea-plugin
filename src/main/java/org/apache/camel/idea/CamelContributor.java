@@ -16,8 +16,8 @@
  */
 package org.apache.camel.idea;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import javax.swing.*;
 
 import com.intellij.codeInsight.completion.CompletionContributor;
@@ -25,19 +25,12 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtil;
-import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.util.ProcessingContext;
-import org.apache.camel.catalog.CamelCatalog;
-import org.apache.camel.catalog.DefaultCamelCatalog;
-import org.apache.camel.idea.model.ComponentModel;
-import org.apache.camel.idea.model.EndpointOptionModel;
-import org.apache.camel.idea.model.ModelHelper;
+import org.apache.camel.idea.completion.extension.CamelCompletionExtension;
+import org.apache.camel.idea.completion.extension.CamelPropertiesSmartCompletionExtension;
+import org.apache.camel.idea.completion.extension.JavaSmartCompletionExtension;
 import org.jetbrains.annotations.NotNull;
-
-import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
-import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
-import static org.apache.camel.idea.CamelSmartCompletionEndpointValue.addSmartCompletionForSingleValue;
 
 /**
  * Hook into the IDEA language completion system, to setup Camel smart completion.
@@ -47,83 +40,31 @@ public class CamelContributor extends CompletionContributor {
 
     public static final Icon CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
 
-    private static final CamelCatalog CAMEL_CATALOG = new DefaultCamelCatalog(true);
+    private List<CamelCompletionExtension> camelCompletionExtensions = new ArrayList<>();
+
+    CamelContributor() {
+        addCompletionExtension(new JavaSmartCompletionExtension());
+        addCompletionExtension(new CamelPropertiesSmartCompletionExtension());
+    }
 
     /**
      * Smart completion for Camel endpoints.
      */
     protected static class EndpointCompletion extends CompletionProvider<CompletionParameters> {
 
-        private final CamelSmartCompletionPropertyPlaceholders smartCompletionPropertyPlaceholders;
+        private final List<CamelCompletionExtension> camelCompletionExtensions;
 
-        public EndpointCompletion(CamelSmartCompletionPropertyPlaceholders smartCompletionPropertyPlaceholders) {
-
-            this.smartCompletionPropertyPlaceholders = smartCompletionPropertyPlaceholders;
+        public EndpointCompletion(List<CamelCompletionExtension> camelCompletionExtensions) {
+            this.camelCompletionExtensions = camelCompletionExtensions;
         }
 
         public void addCompletions(@NotNull CompletionParameters parameters,
                                    ProcessingContext context,
                                    @NotNull CompletionResultSet resultSet) {
-            // is this a possible Camel endpoint uri which we know
             String[] tuple = parsePsiElement(parameters);
-            String val = tuple[0];
-            String suffix = tuple[1];
-
-            if (val.endsWith("{{")) {
-                smartCompletionPropertyPlaceholders.propertyPlaceholdersSmartCompletion(parameters, resultSet);
-                return; //we are done
-            }
-
-            String componentName = StringUtils.asComponentName(val);
-            if (componentName != null && CAMEL_CATALOG.findComponentNames().contains(componentName)) {
-
-                // it is a known Camel component
-                String json = CAMEL_CATALOG.componentJSonSchema(componentName);
-                ComponentModel componentModel = ModelHelper.generateComponentModel(json, true);
-
-                // grab all existing parameters
-                String query = val;
-                // strip up ending incomplete parameter
-                if (query.endsWith("&") || query.endsWith("?")) {
-                    query = query.substring(0, query.length() - 1);
-                }
-
-                Map<String, String> existing = null;
-                try {
-                    existing = CAMEL_CATALOG.endpointProperties(query);
-                } catch (Exception e) {
-                    // ignore
-                }
-
-                // are we editing an existing parameter value
-                // or are we having a list of suggested parameters to choose among
-                boolean editSingle = val.endsWith("=");
-                boolean editQueryParameters = val.contains("?");
-                boolean editContextPath = !editQueryParameters;
-
-                List<LookupElement> answer = null;
-                if (editSingle) {
-                    // parameter name is before = and & or ?
-                    int pos = Math.max(val.lastIndexOf('&'), val.lastIndexOf('?'));
-                    String name = val.substring(pos + 1);
-                    name = name.substring(0, name.length() - 1); // remove =
-                    EndpointOptionModel endpointOption = componentModel.getEndpointOption(name);
-                    if (endpointOption != null) {
-                        answer = addSmartCompletionForSingleValue(parameters.getEditor(), val, suffix, endpointOption);
-                    }
-                } else if (editQueryParameters) {
-                    // suggest a list of options for query parameters
-                    answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing);
-                } else if (editContextPath) {
-                    // suggest a list of options for context-path
-                    answer = addSmartCompletionSuggestionsContextPath(val, componentModel, existing);
-                }
-
-                // are there any results then add them
-                if (answer != null && !answer.isEmpty()) {
-                    resultSet.withPrefixMatcher(val).addAllElements(answer);
-                }
-            }
+            camelCompletionExtensions.stream()
+                    .filter(p -> p.isValid(parameters, context, tuple))
+                    .forEach(p -> p.addCompletions(parameters, context, resultSet, tuple));
         }
     }
 
@@ -159,5 +100,18 @@ public class CamelContributor extends CompletionContributor {
         }
         return new String[]{val, suffix};
     }
+
+    /**
+     * Add additional completion extension to process when the
+     * {@link CompletionProvider#addCompletions(CompletionParameters, ProcessingContext, CompletionResultSet)} is called
+     */
+    public void addCompletionExtension(CamelCompletionExtension provider) {
+        camelCompletionExtensions.add(provider);
+    }
+
+    public List<CamelCompletionExtension> getCamelCompletionExtensions() {
+        return camelCompletionExtensions;
+    }
+
 
 }
