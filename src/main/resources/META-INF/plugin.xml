@@ -50,12 +50,12 @@
     <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertyReferenceContributor"/>
 
     <!-- Camel endpoint documentation in various popups -->
-    <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.CamelDocumentationProvider"/>
-    <lang.documentationProvider language="Properties" implementationClass="org.apache.camel.idea.CamelDocumentationProvider"/>
+    <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
+    <lang.documentationProvider language="Properties" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
 
     <!-- intention to add Camel endpoint -->
     <intentionAction>
-      <className>org.apache.camel.idea.CamelAddEndpointIntention</className>
+      <className>org.apache.camel.idea.intention.CamelAddEndpointIntention</className>
     </intentionAction>
   </extensions>
 

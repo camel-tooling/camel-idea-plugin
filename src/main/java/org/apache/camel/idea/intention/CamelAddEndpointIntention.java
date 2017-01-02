@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea;
+package org.apache.camel.idea.intention;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,8 +45,7 @@ import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.IncorrectOperationException;
-import org.apache.camel.catalog.CamelCatalog;
-import org.apache.camel.catalog.DefaultCamelCatalog;
+import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
 import org.apache.camel.idea.util.IdeaUtils;
@@ -56,8 +55,6 @@ import org.jetbrains.annotations.NotNull;
 import static org.apache.camel.idea.CamelContributor.CAMEL_ICON;
 
 public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction implements Iconable, LowPriorityAction {
-
-    private static final CamelCatalog CAMEL_CATALOG = new DefaultCamelCatalog(true);
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
@@ -170,8 +167,8 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
     private static List<String> findCamelComponentNamesInArtifact(Set<String> artifactIds, boolean consumerOnly) {
         List<String> names = new ArrayList<>();
 
-        for (String name : CAMEL_CATALOG.findComponentNames()) {
-            String json = CAMEL_CATALOG.componentJSonSchema(name);
+        for (String name : CamelCatalogService.getInstance().findComponentNames()) {
+            String json = CamelCatalogService.getInstance().componentJSonSchema(name);
             ComponentModel model = ModelHelper.generateComponentModel(json, false);
             if (artifactIds.contains(model.getArtifactId())) {
                 boolean onlyConsume = "true".equals(model.getConsumerOnly());
