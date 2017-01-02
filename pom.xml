@@ -29,6 +29,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
@@ -91,7 +92,7 @@
       <groupId>com.intellij</groupId>
       <artifactId>openapi</artifactId>
       <version>${idea.version}</version>
-      <scope>compile</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
@@ -99,7 +100,6 @@
       <version>${idea.version}</version>
       <scope>provided</scope>
     </dependency>
-
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>extensions</artifactId>
@@ -125,6 +125,7 @@
     </dependency>
 
     <!-- Test -->
+
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>idea_rt</artifactId>
@@ -275,12 +276,6 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>util</artifactId>
-      <version>${idea.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.intellij</groupId>
       <artifactId>jing</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
@@ -300,6 +295,18 @@
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>asm-all</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij.plugins</groupId>
+      <artifactId>properties</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij.plugins</groupId>
+      <artifactId>resources_en</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -333,7 +340,6 @@
         </includes>
       </resource>
     </resources>
-
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -351,18 +357,19 @@
               <additionalClasspathElements>
                 <additionalClasspathElement>${java.home}/../lib/tools.jar</additionalClasspathElement>
               </additionalClasspathElements>
-              <argLine>-ea -Xbootclasspath/p:../out/classes/production/boot -XX:+HeapDumpOnOutOfMemoryError -Xmx512m -XX:MaxPermSize=320m</argLine>
-              <systemPropertyVariables>
-                <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
-                <idea.system.path>../test-system</idea.system.path>
-                <idea.home.path>../</idea.home.path>
-                <idea.config.path>../test-config</idea.config.path>
-                <idea.platform.prefix>Idea</idea.platform.prefix>
-                <idea.test.group>ALL_EXCLUDE_DEFINED</idea.test.group>
-                <idea.load.plugins>true</idea.load.plugins>
-                <idea.load.plugins.id>com.intellij, org.apache.camel</idea.load.plugins.id>
-
-              </systemPropertyVariables>
+              <argLine>
+                -ea
+                -Xbootclasspath/p:../out/classes/production/boot
+                -XX:+HeapDumpOnOutOfMemoryError
+                -Xmx256m
+                -XX:MaxPermSize=320m
+                -Didea.system.path=${project.build.directory}/test-system
+                -Didea.home.path=${project.build.directory}
+                -Didea.config.path=${project.build.directory}/test-config
+                -Didea.test.group=ALL_EXCLUDE_DEFINED
+                -Didea.platform.prefix=Idea
+                -Didea.load.plugins.id=org.apache.camel
+              </argLine>
             </configuration>
           </execution>
         </executions>

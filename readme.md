@@ -94,6 +94,23 @@ You can also launch the plugin in debug mode where you can put breakpoints in th
 This is very handy to debug the code and find issues. However for code changes you need to stop and
 start the plugin again.
 
+### Running the unit test
+
+Running the IntelliJ unit test from maven 
+
+> mvn verify
+
+Running the test from IDEA requires to add following settings to the run configuration VM options
+
+> -ea
+  -Xbootclasspath/p:../out/classes/production/boot
+  -XX:+HeapDumpOnOutOfMemoryError
+  -Xmx256m
+  -XX:MaxPermSize=320m
+  -Didea.system.path=target/test-system
+  -Didea.home.path=target/
+  -Didea.config.path=target/test-config
+  -Didea.test.group=ALL_EXCLUDE_DEFINED
 
 ### Contributing / Hacking on the code
 
