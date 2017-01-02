@@ -28,8 +28,8 @@ import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.idea.completion.extension.CamelCompletionExtension;
+import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionExtension;
 import org.apache.camel.idea.completion.extension.CamelPropertiesSmartCompletionExtension;
-import org.apache.camel.idea.completion.extension.JavaSmartCompletionExtension;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -40,11 +40,9 @@ public class CamelContributor extends CompletionContributor {
 
     public static final Icon CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
 
-    private List<CamelCompletionExtension> camelCompletionExtensions = new ArrayList<>();
+    private final List<CamelCompletionExtension> camelCompletionExtensions = new ArrayList<>();
 
     CamelContributor() {
-        addCompletionExtension(new JavaSmartCompletionExtension());
-        addCompletionExtension(new CamelPropertiesSmartCompletionExtension());
     }
 
     /**
@@ -109,7 +107,11 @@ public class CamelContributor extends CompletionContributor {
         camelCompletionExtensions.add(provider);
     }
 
-    public List<CamelCompletionExtension> getCamelCompletionExtensions() {
+    public List<CamelCompletionExtension> getCamelCompletionExtensions(boolean xmlMode) {
+        if (camelCompletionExtensions.isEmpty()) {
+            addCompletionExtension(new CamelEndpointSmartCompletionExtension(xmlMode));
+            addCompletionExtension(new CamelPropertiesSmartCompletionExtension());
+        }
         return camelCompletionExtensions;
     }
 

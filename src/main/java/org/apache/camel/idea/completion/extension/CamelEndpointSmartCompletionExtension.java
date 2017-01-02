@@ -37,7 +37,13 @@ import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointValue
 /**
  * Extension for supporting camel smart completion for camel options and values.
  */
-public class JavaSmartCompletionExtension implements CamelCompletionExtension {
+public class CamelEndpointSmartCompletionExtension implements CamelCompletionExtension {
+
+    private final boolean xmlMode;
+
+    public CamelEndpointSmartCompletionExtension(boolean xmlMode) {
+        this.xmlMode = xmlMode;
+    }
 
     @Override
     public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet, @NotNull String[] query) {
@@ -79,14 +85,14 @@ public class JavaSmartCompletionExtension implements CamelCompletionExtension {
             name = name.substring(0, name.length() - 1); // remove =
             EndpointOptionModel endpointOption = componentModel.getEndpointOption(name);
             if (endpointOption != null) {
-                answer = addSmartCompletionForSingleValue(parameters.getEditor(), val, suffix, endpointOption);
+                answer = addSmartCompletionForSingleValue(parameters.getEditor(), val, suffix, endpointOption, xmlMode);
             }
         } else if (editQueryParameters) {
             // suggest a list of options for query parameters
-            answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing);
+            answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing, xmlMode);
         } else if (editContextPath) {
             // suggest a list of options for context-path
-            answer = addSmartCompletionSuggestionsContextPath(val, componentModel, existing);
+            answer = addSmartCompletionSuggestionsContextPath(val, componentModel, existing, xmlMode);
         }
 
         // are there any results then add them

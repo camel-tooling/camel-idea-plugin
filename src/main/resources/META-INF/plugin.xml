@@ -46,6 +46,9 @@
     <!-- allow smart completion of Camel endpoints in Java code -->
     <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.CamelJavaReferenceContributor"/>
 
+    <!-- allow smart completion of Camel endpoints in XML files -->
+    <completion.contributor language="XML" implementationClass="org.apache.camel.idea.CamelXmlReferenceContributor"/>
+
     <!-- smart completion of Camel endpoints in property files -->
     <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertyReferenceContributor"/>
 

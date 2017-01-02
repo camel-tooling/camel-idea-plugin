@@ -28,11 +28,13 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 /**
+ * To support smart completion where properties are loaded from <tt>.properties</tt> files.
+ * <p/>
  * Smart completion for editing a Camel endpoint uri, to show a list of property holders can be added.
  * For example editing <tt>jms:queue?{{_CURSOR_HERE_</tt>. Which presents the user
  * with a list of possible properties.
  */
-public class JavaPropertyPlaceholdersSmartCompletion implements CamelPropertyCompletion {
+public class PropertiesPropertyPlaceholdersSmartCompletion implements CamelPropertyCompletion {
 
     @NotNull
     private Properties getProperties(VirtualFile virtualFile) {

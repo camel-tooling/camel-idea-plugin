@@ -17,19 +17,19 @@
 package org.apache.camel.idea;
 
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.psi.PsiClass;
+import com.intellij.psi.xml.XmlFile;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
- * Plugin to hook into the IDEA completion system, to setup Camel smart completion for editing Property files.
+ * Plugin to hook into the IDEA XML language, to setup Camel smart completion for editing XML source code.
  */
-public class CamelPropertyReferenceContributor extends CamelContributor {
+public class CamelXmlReferenceContributor extends CamelContributor {
 
-    public CamelPropertyReferenceContributor() {
+    public CamelXmlReferenceContributor() {
         extend(CompletionType.BASIC,
-                psiElement().andNot(psiElement().inside(PsiClass.class)),
-                new EndpointCompletion(getCamelCompletionExtensions(false)) // xml mode should be false for Camel property placeholders
+                psiElement().and(psiElement().inside(XmlFile.class)),
+                new EndpointCompletion(getCamelCompletionExtensions(true))
         );
     }
 

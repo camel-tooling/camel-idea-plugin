@@ -40,7 +40,8 @@ public final class CamelSmartCompletionEndpointOptions {
         // static class
     }
 
-    public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(String val, ComponentModel component, Map<String, String> existing) {
+    public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(String val, ComponentModel component,
+                                                                                   Map<String, String> existing, boolean xmlMode) {
         List<LookupElement> answer = new ArrayList<>();
 
         for (EndpointOptionModel option : component.getEndpointOptions()) {
@@ -103,7 +104,8 @@ public final class CamelSmartCompletionEndpointOptions {
         return answer;
     }
 
-    public static List<LookupElement> addSmartCompletionSuggestionsContextPath(String val, ComponentModel component, Map<String, String> existing) {
+    public static List<LookupElement> addSmartCompletionSuggestionsContextPath(String val, ComponentModel component,
+                                                                               Map<String, String> existing, boolean xmlMode) {
         List<LookupElement> answer = new ArrayList<>();
 
         // show the syntax as the only choice for now
@@ -115,7 +117,7 @@ public final class CamelSmartCompletionEndpointOptions {
         LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE);
         answer.add(element);
 
-        List<LookupElement> old = addSmartCompletionContextPathEnumSuggestions(val, component, existing);
+        List<LookupElement> old = addSmartCompletionContextPathEnumSuggestions(val, component, existing, xmlMode);
         if (!old.isEmpty()) {
             answer.addAll(old);
         }
@@ -123,7 +125,8 @@ public final class CamelSmartCompletionEndpointOptions {
         return answer;
     }
 
-    private static List<LookupElement> addSmartCompletionContextPathEnumSuggestions(String val, ComponentModel component, Map<String, String> existing) {
+    private static List<LookupElement> addSmartCompletionContextPathEnumSuggestions(String val, ComponentModel component,
+                                                                                    Map<String, String> existing, boolean xmlMode) {
         List<LookupElement> answer = new ArrayList<>();
 
         double priority = 100.0d;

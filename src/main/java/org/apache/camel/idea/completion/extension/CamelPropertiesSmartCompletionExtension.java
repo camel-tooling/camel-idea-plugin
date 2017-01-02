@@ -17,7 +17,6 @@
 package org.apache.camel.idea.completion.extension;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -31,16 +30,19 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
 
 /**
- * Smart completion for editing a Camel endpoint uri, to show a list of properties can be added.
+ * Camel property placeholder smart completion.
+ * <p/>
+ * Such as a Camel endpoint uri, to show a list of properties can be added.
  * For example editing <tt>jms:queue?{{_CURSOR_HERE_</tt>. Which presents the user
- * with a list of possible properties.
+ * with a list of possible properties. However it works for any Camel property placeholder
+ * used in your source code.
  */
 public class CamelPropertiesSmartCompletionExtension implements CamelCompletionExtension {
     //TODO Allow this to be configurable
     protected List<CamelPropertyCompletion> propertyCompletionProviders = new ArrayList<>();
 
     public CamelPropertiesSmartCompletionExtension() {
-        propertyCompletionProviders.add(new JavaPropertyPlaceholdersSmartCompletion());
+        propertyCompletionProviders.add(new PropertiesPropertyPlaceholdersSmartCompletion());
         propertyCompletionProviders.add(new YamlPropertyPlaceholdersSmartCompletion());
     }
 
