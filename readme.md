@@ -18,6 +18,9 @@ However currently the code is located at github to allow faster and wider collab
 
 ![Early Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/early2.png)
 
+### Build status
+[![Build Status](https://travis-ci.org/davsclaus/camel-idea-plugin.svg?branch=master)](https://travis-ci.org/davsclaus/camel-idea-plugin)
+
 ### How to install
 
 The plugin `Apache Camel IDEA plugin` is available from Jetbrains Plugin Repository at: https://plugins.jetbrains.com/idea/plugin/9371-apache-camel-idea-plugin
@@ -94,6 +97,23 @@ You can also launch the plugin in debug mode where you can put breakpoints in th
 This is very handy to debug the code and find issues. However for code changes you need to stop and
 start the plugin again.
 
+### Running the unit test
+
+Running the IntelliJ unit test from maven 
+
+> mvn verify
+
+Running the test from IDEA requires to add following settings to the run configuration VM options
+
+> -ea
+  -Xbootclasspath/p:../out/classes/production/boot
+  -XX:+HeapDumpOnOutOfMemoryError
+  -Xmx256m
+  -XX:MaxPermSize=320m
+  -Didea.system.path=target/test-system
+  -Didea.home.path=target/
+  -Didea.config.path=target/test-config
+  -Didea.test.group=ALL_EXCLUDE_DEFINED
 
 ### Contributing / Hacking on the code
 

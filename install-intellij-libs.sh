@@ -28,3 +28,6 @@ do
     ARTIFACT_ID="${JAR_FILE%.*}"
     mvn install:install-file -Dfile="$i" -DgroupId=com.intellij -DartifactId=${ARTIFACT_ID} -Dversion=${IDEA_VERSION} -Dpackaging=jar
 done
+
+mvn install:install-file -Dfile="${INTELLIJ_HOME}/plugins/properties/lib/properties.jar" -DgroupId=com.intellij.plugins -DartifactId=properties -Dversion=${IDEA_VERSION} -Dpackaging=jar
+mvn install:install-file -Dfile="${INTELLIJ_HOME}/plugins/properties/lib/resources_en.jar" -DgroupId=com.intellij.plugins -DartifactId=resources_en -Dversion=${IDEA_VERSION} -Dpackaging=jar
