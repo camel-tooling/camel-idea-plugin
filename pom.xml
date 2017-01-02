@@ -91,7 +91,7 @@
       <groupId>com.intellij</groupId>
       <artifactId>openapi</artifactId>
       <version>${idea.version}</version>
-      <scope>provided</scope>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
@@ -99,6 +99,7 @@
       <version>${idea.version}</version>
       <scope>provided</scope>
     </dependency>
+
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>extensions</artifactId>
@@ -125,6 +126,196 @@
 
     <!-- Test -->
     <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>idea_rt</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>trove4j</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>log4j</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>boot</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>bootstrap</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>jdom</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>kotlin-runtime</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>picocontainer</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>resources_en</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>resources</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>jna-platform</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency><dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>jna</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>httpclient-4.5.2</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency><dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>commons-logging-1.2</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>jps-builders</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>jps-model</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>netty-all-4.1.5.Final</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>guava-19.0</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>forms_rt</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>automaton</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>cglib-nodep-3.2.4</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>oromatcher</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>rngom-20051226-patched</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>snappy-in-java-0.5.1</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>nanoxml-2.2.3</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>util</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>jing</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>proxy-vole_20131209</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>protobuf-2.5.0</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>asm-all</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>icons</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>sanselan-0.98-snapshot</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
@@ -144,7 +335,38 @@
     </resources>
 
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.19.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <useManifestOnlyJar>false</useManifestOnlyJar>
+              <useSystemClassLoader>true</useSystemClassLoader>
+              <additionalClasspathElements>
+                <additionalClasspathElement>${java.home}/../lib/tools.jar</additionalClasspathElement>
+              </additionalClasspathElements>
+              <argLine>-ea -Xbootclasspath/p:../out/classes/production/boot -XX:+HeapDumpOnOutOfMemoryError -Xmx512m -XX:MaxPermSize=320m</argLine>
+              <systemPropertyVariables>
+                <java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
+                <idea.system.path>../test-system</idea.system.path>
+                <idea.home.path>../</idea.home.path>
+                <idea.config.path>../test-config</idea.config.path>
+                <idea.platform.prefix>Idea</idea.platform.prefix>
+                <idea.test.group>ALL_EXCLUDE_DEFINED</idea.test.group>
+                <idea.load.plugins>true</idea.load.plugins>
+                <idea.load.plugins.id>com.intellij, org.apache.camel</idea.load.plugins.id>
 
+              </systemPropertyVariables>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>

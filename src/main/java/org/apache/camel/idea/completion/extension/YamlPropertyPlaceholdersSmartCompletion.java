@@ -43,13 +43,10 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
     @NotNull
     private Map<String, Object> getProperties(VirtualFile virtualFile) {
         Map<String, Object> result = new HashMap<>();
-        File file = new File(virtualFile.getPath());
         Yaml yaml = new Yaml();
-
         try {
-            InputStream ios = new FileInputStream(file);
             // Parse the YAML file and return the output as a series of Maps and Lists
-            result = (Map<String, Object>) yaml.load(ios);
+            result = (Map<String, Object>) yaml.load(virtualFile.getInputStream());
         } catch (Exception e) {
         }//TODO : log a warning, but for now we ignore it and continue.
         return result;
