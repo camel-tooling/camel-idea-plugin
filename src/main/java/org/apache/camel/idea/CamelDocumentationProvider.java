@@ -42,13 +42,14 @@ import org.apache.camel.catalog.DefaultCamelCatalog;
 import org.apache.camel.catalog.JSonSchemaHelper;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
+import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static org.apache.camel.idea.IdeaUtils.isStringLiteral;
-import static org.apache.camel.idea.StringUtils.asComponentName;
-import static org.apache.camel.idea.StringUtils.asLanguageName;
-import static org.apache.camel.idea.StringUtils.wrapSeparator;
+import static org.apache.camel.idea.util.IdeaUtils.isStringLiteral;
+import static org.apache.camel.idea.util.StringUtils.asComponentName;
+import static org.apache.camel.idea.util.StringUtils.asLanguageName;
+import static org.apache.camel.idea.util.StringUtils.wrapSeparator;
 
 /**
  * Camel documentation provider to hook into IDEA to show Camel endpoint documentation in popups and various other places.
