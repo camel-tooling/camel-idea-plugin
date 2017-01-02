@@ -37,6 +37,7 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameterList;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlAttributeValue;
 import org.apache.camel.catalog.JSonSchemaHelper;
 import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
@@ -214,6 +215,12 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         if (isStringLiteral(element)) {
             PsiLiteralExpression literal = (PsiLiteralExpression) element;
             return (String) literal.getValue();
+        }
+
+        // is it from an xml attribute when using XML
+        XmlAttributeValue xml = PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class);
+        if (xml != null) {
+            return xml.getValue();
         }
 
         // its maybe a property from properties file

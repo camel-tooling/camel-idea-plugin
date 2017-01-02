@@ -54,8 +54,9 @@
     <!-- smart completion of Camel property placeholders, eg {{foo}} style -->
     <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertyPlaceholderReferenceContributor"/>
 
-    <!-- Camel endpoint documentation in various popups -->
+    <!-- quick documentation for Camel endpoints -->
     <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
+    <lang.documentationProvider language="XML" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
     <lang.documentationProvider language="Properties" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
 
     <!-- intention to add Camel endpoint -->
