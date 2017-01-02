@@ -18,6 +18,9 @@ However currently the code is located at github to allow faster and wider collab
 
 ![Early Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/early2.png)
 
+### Build status
+[![Build Status](https://travis-ci.org/davsclaus/camel-idea-plugin.svg?branch=master)](https://travis-ci.org/davsclaus/camel-idea-plugin)
+
 ### How to install
 
 The plugin `Apache Camel IDEA plugin` is available from Jetbrains Plugin Repository at: https://plugins.jetbrains.com/idea/plugin/9371-apache-camel-idea-plugin
