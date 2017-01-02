@@ -9,18 +9,17 @@
 
       The plugin includes:
       <ul>
-        <li>Smart completion for Camel YAML property placeholders (ctrl + space after {{)</li>
-        <li>Smart completion for Camel endpoints in Java editor (ctrl + space)</li>
-        <li>Smart completion for Camel endpoints in properties files (ctrl + space)</li>
-        <li>Smart completion for Camel property placeholders (ctrl + space after {{)</li>
+        <li>Smart completion for Camel endpoints in Java, XML, properties or yaml files (ctrl + space)</li>
+        <li>Smart completion for Camel property placeholders (cursor after {{)</li>
         <li>Intention to add new Camel endpoint in Java editor (alt + enter in empty string)</li>
-        <li>Quick documentation for Camel endpoints and external link to Camel component opening in web browser (F1 and shift-F1)</li>
+        <li>Quick documentation for Camel endpoints and external link to Camel component opening in web browser (ctrl + j and shift-F1)</li>
       </ul>
     ]]></description>
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.1.7 - Smart completion for YAML property files</li>
+        <li>0.1.8 - Smart completion for XML files</li>
+        <li>0.1.7 - Smart completion for YAML and properties files</li>
         <li>0.1.6 - Project migrated to Maven and other minor bug fixes</li>
         <li>0.1.5 - Intention to add Camel endpoint</li>
         <li>0.1.4 - Smart completion for property placeholders</li>
