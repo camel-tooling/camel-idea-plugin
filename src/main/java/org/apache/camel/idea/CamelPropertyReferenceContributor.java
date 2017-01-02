@@ -18,6 +18,7 @@ package org.apache.camel.idea;
 
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.psi.PsiClass;
+import org.apache.camel.idea.completion.extension.CamelPropertiesSmartCompletionExtension;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
@@ -27,9 +28,10 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
 public class CamelPropertyReferenceContributor extends CamelContributor {
 
     public CamelPropertyReferenceContributor() {
+        addCompletionExtension(new CamelPropertiesSmartCompletionExtension());
         extend(CompletionType.BASIC,
-                psiElement().andNot(psiElement().inside(PsiClass.class)),
-                new EndpointCompletion(getCamelCompletionExtensions(false)) // xml mode should be false for Camel property placeholders
+                psiElement().andNot(psiElement().inside(PsiClass.class)), // TODO: wonder if we can do this filter better
+                new EndpointCompletion(getCamelCompletionExtensions())
         );
     }
 

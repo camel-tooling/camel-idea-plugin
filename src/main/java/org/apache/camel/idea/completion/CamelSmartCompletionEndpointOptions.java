@@ -44,6 +44,8 @@ public final class CamelSmartCompletionEndpointOptions {
                                                                                    Map<String, String> existing, boolean xmlMode) {
         List<LookupElement> answer = new ArrayList<>();
 
+        String separator = xmlMode ? "&amp;" : "&";
+
         for (EndpointOptionModel option : component.getEndpointOptions()) {
 
             if ("parameter".equals(option.getKind())) {
@@ -62,8 +64,8 @@ public final class CamelSmartCompletionEndpointOptions {
                         // none existing options so we need to start with a ? mark
                         lookup = val + "?" + key + tail;
                     } else {
-                        if (!val.endsWith("&") && !val.endsWith("?")) {
-                            lookup = val + "&" + key + tail;
+                        if (!val.endsWith(separator) && !val.endsWith("?")) {
+                            lookup = val + separator + key + tail;
                         } else {
                             // there is already either an ending ? or &
                             lookup = val + key + tail;

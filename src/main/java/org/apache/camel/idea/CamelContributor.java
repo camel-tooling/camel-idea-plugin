@@ -107,11 +107,7 @@ public class CamelContributor extends CompletionContributor {
         camelCompletionExtensions.add(provider);
     }
 
-    public List<CamelCompletionExtension> getCamelCompletionExtensions(boolean xmlMode) {
-        if (camelCompletionExtensions.isEmpty()) {
-            addCompletionExtension(new CamelEndpointSmartCompletionExtension(xmlMode));
-            addCompletionExtension(new CamelPropertiesSmartCompletionExtension());
-        }
+    public List<CamelCompletionExtension> getCamelCompletionExtensions() {
         return camelCompletionExtensions;
     }
 
