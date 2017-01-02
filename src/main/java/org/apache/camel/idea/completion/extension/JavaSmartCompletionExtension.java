@@ -18,28 +18,26 @@ package org.apache.camel.idea.completion.extension;
 
 import java.util.List;
 import java.util.Map;
+
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.util.ProcessingContext;
-import org.apache.camel.catalog.CamelCatalog;
-import org.apache.camel.catalog.DefaultCamelCatalog;
-import org.apache.camel.idea.StringUtils;
+import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.EndpointOptionModel;
 import org.apache.camel.idea.model.ModelHelper;
+import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
-import static org.apache.camel.idea.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
-import static org.apache.camel.idea.CamelSmartCompletionEndpointValue.addSmartCompletionForSingleValue;
+import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
+import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
+import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointValue.addSmartCompletionForSingleValue;
 
 /**
  * Extension for supporting camel smart completion for camel options and values.
  */
 public class JavaSmartCompletionExtension implements CamelCompletionExtension {
-
-    private static final CamelCatalog CAMELCATALOG = new DefaultCamelCatalog(true);
 
     @Override
     public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet, @NotNull String[] query) {
@@ -48,7 +46,7 @@ public class JavaSmartCompletionExtension implements CamelCompletionExtension {
         String componentName = StringUtils.asComponentName(query[0]);
 
         // it is a known Camel component
-        String json = CAMELCATALOG.componentJSonSchema(componentName);
+        String json = CamelCatalogService.getInstance().componentJSonSchema(componentName);
         ComponentModel componentModel = ModelHelper.generateComponentModel(json, true);
 
         // grab all existing parameters
@@ -62,7 +60,7 @@ public class JavaSmartCompletionExtension implements CamelCompletionExtension {
 
         Map<String, String> existing = null;
         try {
-            existing = CAMELCATALOG.endpointProperties(camelQuery);
+            existing = CamelCatalogService.getInstance().endpointProperties(camelQuery);
         } catch (Exception e) {
             // ignore
         }
@@ -101,7 +99,7 @@ public class JavaSmartCompletionExtension implements CamelCompletionExtension {
     public boolean isValid(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, String query[]) {
         // is this a possible Camel endpoint uri which we know
         String componentName = StringUtils.asComponentName(query[0]);
-        if (!query[0].endsWith("{{") && componentName != null && CAMELCATALOG.findComponentNames().contains(componentName)) {
+        if (!query[0].endsWith("{{") && componentName != null && CamelCatalogService.getInstance().findComponentNames().contains(componentName)) {
             return true;
         }
         return false;

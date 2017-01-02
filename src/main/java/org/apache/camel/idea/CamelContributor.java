@@ -113,5 +113,4 @@ public class CamelContributor extends CompletionContributor {
         return camelCompletionExtensions;
     }
 
-
 }

@@ -58,7 +58,8 @@ public class JavaPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
             String keyStr = (String) key;
             if (!isIgnored(keyStr)) {
                 LookupElementBuilder builder = LookupElementBuilder.create(keyStr + "}}")
-                        .appendTailText(value + " [" + virtualFile.getPresentableName() + "]", true)
+                        .appendTailText(String.valueOf(value), true)
+                        .withTypeText("[" + virtualFile.getPresentableName() + "]", true)
                         .withPresentableText(keyStr + " = ");
                 resultSet.withPrefixMatcher(new PlainPrefixMatcher("")).addElement(builder);
             }

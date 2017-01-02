@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea;
+package org.apache.camel.idea.documentation;
 
 import java.util.List;
 import java.util.Map;
@@ -37,18 +37,18 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameterList;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.util.PsiTreeUtil;
-import org.apache.camel.catalog.CamelCatalog;
-import org.apache.camel.catalog.DefaultCamelCatalog;
 import org.apache.camel.catalog.JSonSchemaHelper;
+import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
+import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static org.apache.camel.idea.IdeaUtils.isStringLiteral;
-import static org.apache.camel.idea.StringUtils.asComponentName;
-import static org.apache.camel.idea.StringUtils.asLanguageName;
-import static org.apache.camel.idea.StringUtils.wrapSeparator;
+import static org.apache.camel.idea.util.IdeaUtils.isStringLiteral;
+import static org.apache.camel.idea.util.StringUtils.asComponentName;
+import static org.apache.camel.idea.util.StringUtils.asLanguageName;
+import static org.apache.camel.idea.util.StringUtils.wrapSeparator;
 
 /**
  * Camel documentation provider to hook into IDEA to show Camel endpoint documentation in popups and various other places.
@@ -56,8 +56,6 @@ import static org.apache.camel.idea.StringUtils.wrapSeparator;
 public class CamelDocumentationProvider extends DocumentationProviderEx implements ExternalDocumentationProvider, ExternalDocumentationHandler {
 
     private static final String GITHUB_EXTERNAL_DOC_URL = "https://github.com/apache/camel/blob/master";
-
-    private static final CamelCatalog CAMEL_CATALOG = new DefaultCamelCatalog(true);
 
     @Nullable
     @Override
@@ -90,11 +88,11 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                 if (method != null) {
                     // try to see if we have a Camel language with the method name
                     String name = asLanguageName(method.getName());
-                    if (CAMEL_CATALOG.findLanguageNames().contains(name)) {
+                    if (CamelCatalogService.getInstance().findLanguageNames().contains(name)) {
                         // okay its a potential Camel language so see if the psi method call is using
                         // camel-core types so we know for a fact its really a Camel language
                         if (isPsiMethodCamelLanguage(method)) {
-                            String html = CAMEL_CATALOG.languageHtmlDoc(name);
+                            String html = CamelCatalogService.getInstance().languageHtmlDoc(name);
                             if (html != null) {
                                 return html;
                             }
@@ -159,9 +157,9 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         }
 
         String name = StringUtils.asComponentName(val);
-        if (name != null && CAMEL_CATALOG.findComponentNames().contains(name)) {
+        if (name != null && CamelCatalogService.getInstance().findComponentNames().contains(name)) {
 
-            String json = CAMEL_CATALOG.componentJSonSchema(name);
+            String json = CamelCatalogService.getInstance().componentJSonSchema(name);
             ComponentModel component = ModelHelper.generateComponentModel(json, false);
 
             // to build external links which points to github
@@ -203,7 +201,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         if (text != null) {
             // check if its a known Camel component
             String name = asComponentName(text);
-            return CAMEL_CATALOG.findComponentNames().contains(name);
+            return CamelCatalogService.getInstance().findComponentNames().contains(name);
         }
         return false;
     }
@@ -230,12 +228,12 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
     private String generateCamelComponentDocumentation(String componentName, String val) {
         // it is a known Camel component
-        String json = CAMEL_CATALOG.componentJSonSchema(componentName);
+        String json = CamelCatalogService.getInstance().componentJSonSchema(componentName);
         ComponentModel component = ModelHelper.generateComponentModel(json, false);
 
         Map<String, String> existing = null;
         try {
-            existing = CAMEL_CATALOG.endpointProperties(val);
+            existing = CamelCatalogService.getInstance().endpointProperties(val);
         } catch (Throwable e) {
             // ignore
         }

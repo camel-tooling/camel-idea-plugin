@@ -21,7 +21,7 @@
 
   <groupId>org.apache.camel</groupId>
   <artifactId>camel-idea-plugin</artifactId>
-  <version>0.1.7-SNAPSHOT</version>
+  <version>0.1.8-SNAPSHOT</version>
   <name>Apache Camel IDEA Plugin</name>
 
   <description>Plugin for Intellij IDEA to provide a set of small Apache Camel related capabilities to IDEA editor.
@@ -46,7 +46,7 @@
     <connection>scm:git:git://github.com/davsclaus/camel-idea-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:davsclaus/camel-idea-plugin.git</developerConnection>
     <url>davsclaus/camel-idea-plugin.git</url>
-    <tag>0.1.7-SNAPSHOT</tag>
+    <tag>0.1.8-SNAPSHOT</tag>
   </scm>
 
   <!-- TODO: until we use a released version of camel-catalog -->

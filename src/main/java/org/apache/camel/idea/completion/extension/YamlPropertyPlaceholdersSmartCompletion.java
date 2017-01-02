@@ -101,23 +101,25 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
      */
     private void buildResultSetForList(CompletionResultSet resultSet, VirtualFile virtualFile, String keyStr, List<?> propertyList) {
         final AtomicInteger count = new AtomicInteger(0);
-        propertyList.stream()
-                .forEach(e -> {
-                    if (e instanceof String) {
-                        String flatKeyStr = String.format("%s[%s]", keyStr, count.getAndIncrement());
-                        buildResultSet(resultSet, virtualFile, flatKeyStr, String.valueOf(e));
-                    } else if (e instanceof List) {
-                        buildResultSetForList(resultSet, virtualFile, keyStr, (List<?>) e);
-                    } else if (e instanceof LinkedHashMap) {
-                        buildResultSetForLinkedHashMap(resultSet, virtualFile, keyStr, propertyList);
-                    }
-                });
+        propertyList.stream().forEach(e -> {
+            if (e instanceof String) {
+                String flatKeyStr = String.format("%s[%s]", keyStr, count.getAndIncrement());
+                buildResultSet(resultSet, virtualFile, flatKeyStr, String.valueOf(e));
+            } else if (e instanceof List) {
+                buildResultSetForList(resultSet, virtualFile, keyStr, (List<?>) e);
+            } else if (e instanceof LinkedHashMap) {
+                buildResultSetForLinkedHashMap(resultSet, virtualFile, keyStr, propertyList);
+            }
+        });
     }
 
     private void buildResultSet(CompletionResultSet resultSet, VirtualFile virtualFile, String keyStr, String value) {
-        LookupElementBuilder builder = LookupElementBuilder.create(keyStr + "}}")
-                .appendTailText(value + " [" + virtualFile.getPresentableName() + "]", true)
+        if (!isIgnored(keyStr)) {
+            LookupElementBuilder builder = LookupElementBuilder.create(keyStr + "}}")
+                .appendTailText(value, true)
+                .withTypeText("[" + virtualFile.getPresentableName() + "]", true)
                 .withPresentableText(keyStr + " = ");
-        resultSet.withPrefixMatcher(new PlainPrefixMatcher("")).addElement(builder);
+            resultSet.withPrefixMatcher(new PlainPrefixMatcher("")).addElement(builder);
+        }
     }
 }
