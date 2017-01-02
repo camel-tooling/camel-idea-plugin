@@ -26,10 +26,12 @@ import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.idea.completion.extension.CamelCompletionExtension;
-import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionExtension;
-import org.apache.camel.idea.completion.extension.CamelPropertiesSmartCompletionExtension;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -61,19 +63,42 @@ public class CamelContributor extends CompletionContributor {
                                    @NotNull CompletionResultSet resultSet) {
             String[] tuple = parsePsiElement(parameters);
             camelCompletionExtensions.stream()
-                    .filter(p -> p.isValid(parameters, context, tuple))
-                    .forEach(p -> p.addCompletions(parameters, context, resultSet, tuple));
+                .filter(p -> p.isValid(parameters, context, tuple))
+                .forEach(p -> p.addCompletions(parameters, context, resultSet, tuple));
         }
     }
 
     /**
-     * Parse the PSI text {@link CompletionUtil#DUMMY_IDENTIFIER} and " character and remove them
+     * Parse the PSI text {@link CompletionUtil#DUMMY_IDENTIFIER} and " character and remove them.
+     * <p/>
+     * This implementation support Java literal expressions and XML attributes where you can define Camel endpoints.
+     *
      * @param parameters - completion parameter to parse
      * @return new string stripped for any {@link CompletionUtil#DUMMY_IDENTIFIER} and " character
      */
     @NotNull
     private static String[] parsePsiElement(@NotNull CompletionParameters parameters) {
-        String val = parameters.getPosition().getText();
+        PsiElement element = parameters.getPosition();
+
+        String val = null;
+
+        // need the entire line so find the literal expression that would hold the entire string
+        PsiLiteralExpression literal = PsiTreeUtil.getParentOfType(element, PsiLiteralExpression.class);
+        if (literal != null) {
+            Object o = literal.getValue();
+            val = o != null ? o.toString() : null;
+        }
+        if (val == null) {
+            // maybe its xml then try that
+            XmlAttributeValue xml = PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class);
+            val = xml != null ? xml.getValue() : null;
+        }
+
+        if (val == null) {
+            // fallback to generic
+            val = element.getText();
+        }
+
         String suffix = "";
 
         int len = CompletionUtil.DUMMY_IDENTIFIER.length();
