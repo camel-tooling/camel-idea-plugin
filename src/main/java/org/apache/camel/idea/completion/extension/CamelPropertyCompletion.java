@@ -24,7 +24,9 @@ import com.intellij.openapi.vfs.VirtualFile;
  * scanning for property files and building the completion list in the {@link CamelPropertiesSmartCompletionExtension}
  */
 public interface CamelPropertyCompletion {
-    String[] IGNORE_PROPERTIES = {"java.", "Logger.", "logger", "appender.", "rootLogger.", "camel.springboot.*"};
+    String[] IGNORE_PROPERTIES = {"java.", "Logger.", "logger", "appender.", "rootLogger."
+            // ignore camel-spring-boot auto configuration prefixes
+            + "camel.springboot.", "camel.component.", "camel.dataformat.", "camel.language."};
 
     /**
      * @return true if it match the property file it should process
