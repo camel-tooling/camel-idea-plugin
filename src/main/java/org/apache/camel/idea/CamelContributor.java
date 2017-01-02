@@ -24,7 +24,9 @@ import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.completion.CompletionSorter;
 import com.intellij.codeInsight.completion.CompletionUtil;
+import com.intellij.codeInsight.completion.impl.BetterPrefixMatcher;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.idea.completion.extension.CamelCompletionExtension;
@@ -112,6 +114,5 @@ public class CamelContributor extends CompletionContributor {
     public List<CamelCompletionExtension> getCamelCompletionExtensions() {
         return camelCompletionExtensions;
     }
-
 
 }
