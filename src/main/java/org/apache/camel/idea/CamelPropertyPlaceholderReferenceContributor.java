@@ -17,19 +17,20 @@
 package org.apache.camel.idea;
 
 import com.intellij.codeInsight.completion.CompletionType;
-import org.apache.camel.idea.completion.extension.CamelPropertiesSmartCompletionExtension;
+import org.apache.camel.idea.completion.extension.CamelProperyPlaceholderSmartCompletionExtension;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
- * Plugin to hook into the IDEA completion system, to setup Camel smart completion for editing Property files.
+ * Plugin to hook into the IDEA completion system, to setup smart completion for Camel property placeholders (eg {{foo}} style)
  */
-public class CamelPropertyReferenceContributor extends CamelContributor {
+public class CamelPropertyPlaceholderReferenceContributor extends CamelContributor {
 
-    public CamelPropertyReferenceContributor() {
-        addCompletionExtension(new CamelPropertiesSmartCompletionExtension());
+    public CamelPropertyPlaceholderReferenceContributor() {
+        // add hook for smart completion for {{ }} placeholders
+        addCompletionExtension(new CamelProperyPlaceholderSmartCompletionExtension());
         extend(CompletionType.BASIC,
-                psiElement().notNull(),
+                psiElement().notNull(), // this works anywhere
                 new EndpointCompletion(getCamelCompletionExtensions())
         );
     }

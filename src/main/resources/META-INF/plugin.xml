@@ -49,8 +49,11 @@
     <!-- allow smart completion of Camel endpoints in XML files -->
     <completion.contributor language="XML" implementationClass="org.apache.camel.idea.CamelXmlReferenceContributor"/>
 
-    <!-- smart completion of Camel endpoints in property files -->
-    <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertyReferenceContributor"/>
+    <!-- smart completion of Camel endpoints in property/yaml files -->
+    <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertiesOrYamlFileReferenceContributor"/>
+
+    <!-- smart completion of Camel property placeholders, eg {{foo}} style -->
+    <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertyPlaceholderReferenceContributor"/>
 
     <!-- Camel endpoint documentation in various popups -->
     <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>

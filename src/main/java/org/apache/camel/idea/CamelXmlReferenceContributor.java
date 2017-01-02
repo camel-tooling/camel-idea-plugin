@@ -27,8 +27,6 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
  */
 public class CamelXmlReferenceContributor extends CamelContributor {
 
-    // TODO: maybe we should if the xml file is Camel XML than just a xml file
-
     public CamelXmlReferenceContributor() {
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(true));
         extend(CompletionType.BASIC,

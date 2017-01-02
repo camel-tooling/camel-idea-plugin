@@ -37,11 +37,11 @@ import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
  * with a list of possible properties. However it works for any Camel property placeholder
  * used in your source code.
  */
-public class CamelPropertiesSmartCompletionExtension implements CamelCompletionExtension {
-    //TODO Allow this to be configurable
-    protected List<CamelPropertyCompletion> propertyCompletionProviders = new ArrayList<>();
+public class CamelProperyPlaceholderSmartCompletionExtension implements CamelCompletionExtension {
 
-    public CamelPropertiesSmartCompletionExtension() {
+    private final List<CamelPropertyCompletion> propertyCompletionProviders = new ArrayList<>();
+
+    public CamelProperyPlaceholderSmartCompletionExtension() {
         propertyCompletionProviders.add(new PropertiesPropertyPlaceholdersSmartCompletion());
         propertyCompletionProviders.add(new YamlPropertyPlaceholdersSmartCompletion());
     }
