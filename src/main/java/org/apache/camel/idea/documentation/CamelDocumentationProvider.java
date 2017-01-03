@@ -48,6 +48,7 @@ import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static org.apache.camel.idea.util.IdeaUtils.getInnerText;
 import static org.apache.camel.idea.util.IdeaUtils.isStringLiteral;
 import static org.apache.camel.idea.util.StringUtils.asComponentName;
 import static org.apache.camel.idea.util.StringUtils.asLanguageName;
@@ -237,6 +238,16 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("yaml")) {
                 return element.getText();
+            }
+        }
+
+        // maybe its groovy
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Groovy")) {
+                String text = element.getText();
+                // unwrap groovy gstring
+                return getInnerText(text);
             }
         }
 

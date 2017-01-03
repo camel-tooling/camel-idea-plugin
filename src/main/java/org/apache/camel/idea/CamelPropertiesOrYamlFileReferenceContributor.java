@@ -17,12 +17,8 @@
 package org.apache.camel.idea;
 
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.patterns.InitialPatternCondition;
-import com.intellij.patterns.PsiFilePattern;
 import com.intellij.psi.PsiFile;
-import com.intellij.util.ProcessingContext;
 import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionExtension;
-import org.jetbrains.annotations.Nullable;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
@@ -35,26 +31,9 @@ public class CamelPropertiesOrYamlFileReferenceContributor extends CamelContribu
         // also allow to setup camel endpoints in properties files
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
         extend(CompletionType.BASIC,
-                psiElement().and(psiElement().inside(PsiFile.class).inFile(propertiesFile())),
+                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("properties", "yaml", "yml"))),
                 new EndpointCompletion(getCamelCompletionExtensions())
         );
-    }
-
-    /**
-     * Checks if its a (properties or yaml) file or not
-     */
-    private static PsiFilePattern.Capture<PsiFile> propertiesFile() {
-        return new PsiFilePattern.Capture<>(new InitialPatternCondition<PsiFile>(PsiFile.class) {
-            @Override
-            public boolean accepts(@Nullable Object o, ProcessingContext context) {
-                if (o instanceof PsiFile) {
-                    String ext = ((PsiFile) o).getFileType().getName();
-                    return ext.equalsIgnoreCase("properties")
-                        || ext.equalsIgnoreCase("yaml") || ext.equalsIgnoreCase("yml");
-                }
-                return false;
-            }
-        });
     }
 
 }
