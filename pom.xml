@@ -39,7 +39,7 @@
     <camel.version>2.19.0-SNAPSHOT</camel.version>
     <snakeyaml.version>1.6</snakeyaml.version>
     <junit.version>4.12</junit.version>
-
+    <idea.platform.prefix>-Didea.platform.prefix=Idea</idea.platform.prefix>
     <ij.plugin>true</ij.plugin>
   </properties>
 
@@ -77,6 +77,32 @@
       </releases>
     </pluginRepository>
   </pluginRepositories>
+
+  <profiles>
+    <profile>
+      <id>ultimate</id>
+      <properties>
+        <idea.platform.prefix></idea.platform.prefix>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.intellij</groupId>
+          <artifactId>idea-jsp-openapi</artifactId>
+          <version>${idea.version}</version>
+          <optional>true</optional>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>com.intellij</groupId>
+          <artifactId>jsp-api</artifactId>
+          <version>${idea.version}</version>
+          <optional>true</optional>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+
 
   <dependencies>
     <!-- Camel dependencies -->
@@ -328,6 +354,7 @@
       <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
+
   </dependencies>
 
   <build>
@@ -367,8 +394,8 @@
                 -Didea.home.path=${project.build.directory}
                 -Didea.config.path=${project.build.directory}/test-config
                 -Didea.test.group=ALL_EXCLUDE_DEFINED
-                -Didea.platform.prefix=Idea
                 -Didea.load.plugins.id=org.apache.camel
+                ${idea.platform.prefix}
               </argLine>
             </configuration>
           </execution>
