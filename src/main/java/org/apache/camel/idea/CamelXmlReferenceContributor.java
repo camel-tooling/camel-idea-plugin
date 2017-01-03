@@ -17,7 +17,7 @@
 package org.apache.camel.idea;
 
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.psi.xml.XmlFile;
+import com.intellij.psi.PsiFile;
 import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionExtension;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
@@ -30,7 +30,7 @@ public class CamelXmlReferenceContributor extends CamelContributor {
     public CamelXmlReferenceContributor() {
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(true));
         extend(CompletionType.BASIC,
-                psiElement().and(psiElement().inside(XmlFile.class)),
+                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("xml"))),
                 new EndpointCompletion(getCamelCompletionExtensions())
         );
     }

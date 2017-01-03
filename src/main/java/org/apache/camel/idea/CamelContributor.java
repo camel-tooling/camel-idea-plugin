@@ -26,19 +26,23 @@ import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.patterns.InitialPatternCondition;
+import com.intellij.patterns.PsiFilePattern;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.idea.completion.extension.CamelCompletionExtension;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Hook into the IDEA language completion system, to setup Camel smart completion.
  * Extend this class to define what it should re-act on when using smart completion
  */
-public class CamelContributor extends CompletionContributor {
+public abstract class CamelContributor extends CompletionContributor {
 
     public static final Icon CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
 
@@ -135,5 +139,27 @@ public class CamelContributor extends CompletionContributor {
     public List<CamelCompletionExtension> getCamelCompletionExtensions() {
         return camelCompletionExtensions;
     }
+
+    /**
+     * Checks if its a file of expect type
+     */
+    static PsiFilePattern.Capture<PsiFile> matchFileType(final String... extensions) {
+        return new PsiFilePattern.Capture<>(new InitialPatternCondition<PsiFile>(PsiFile.class) {
+            @Override
+            public boolean accepts(@Nullable Object o, ProcessingContext context) {
+                if (o instanceof PsiFile) {
+                    String ext = ((PsiFile) o).getFileType().getName();
+                    for (String match : extensions) {
+                        if (match.equalsIgnoreCase(ext)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                return false;
+            }
+        });
+    }
+
 
 }
