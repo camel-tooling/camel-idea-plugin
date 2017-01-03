@@ -31,12 +31,17 @@ import com.intellij.patterns.PsiFilePattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.idea.completion.extension.CamelCompletionExtension;
+import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import static org.apache.camel.idea.util.IdeaUtils.getInnerText;
 
 /**
  * Hook into the IDEA language completion system, to setup Camel smart completion.
@@ -86,16 +91,27 @@ public abstract class CamelContributor extends CompletionContributor {
 
         String val = null;
 
-        // need the entire line so find the literal expression that would hold the entire string
+        // need the entire line so find the literal expression that would hold the entire string (java)
         PsiLiteralExpression literal = PsiTreeUtil.getParentOfType(element, PsiLiteralExpression.class);
         if (literal != null) {
             Object o = literal.getValue();
             val = o != null ? o.toString() : null;
         }
+
+        // maybe its xml then try that
         if (val == null) {
-            // maybe its xml then try that
             XmlAttributeValue xml = PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class);
             val = xml != null ? xml.getValue() : null;
+        }
+
+        // maybe its groovy
+        if (val == null && element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Groovy")) {
+                String text = element.getText();
+                // unwrap groovy gstring
+                val = getInnerText(text);
+            }
         }
 
         if (val == null) {
@@ -105,12 +121,16 @@ public abstract class CamelContributor extends CompletionContributor {
 
         String suffix = "";
 
+        // okay IDEA folks its not nice, in groovy the dummy identifier is using lower case i in intellij
+        // so we need to lower case it all
+        String hackVal = val.toLowerCase();
         int len = CompletionUtil.DUMMY_IDENTIFIER.length();
-        int hackIndex = val.indexOf(CompletionUtil.DUMMY_IDENTIFIER);
+        int hackIndex = hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER.toLowerCase());
         if (hackIndex == -1) {
-            hackIndex = val.indexOf(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED);
+            hackIndex = hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED.toLowerCase());
             len = CompletionUtil.DUMMY_IDENTIFIER_TRIMMED.length();
         }
+
         if (hackIndex > -1) {
             suffix = val.substring(hackIndex + len);
             val = val.substring(0, hackIndex);

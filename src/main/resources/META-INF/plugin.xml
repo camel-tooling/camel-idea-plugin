@@ -9,7 +9,7 @@
 
       The plugin includes:
       <ul>
-        <li>Smart completion for Camel endpoints in Java, XML, properties or yaml files (ctrl + space)</li>
+        <li>Smart completion for Camel endpoints in Java, Groovy, XML, properties or yaml files (ctrl + space)</li>
         <li>Smart completion for Camel property placeholders (cursor after {{)</li>
         <li>Intention to add new Camel endpoint in Java editor (alt + enter in empty string)</li>
         <li>Quick documentation for Camel endpoints and external link to Camel component opening in web browser (ctrl + j and shift-F1)</li>
@@ -18,7 +18,7 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.1.8 - Smart completion for XML files</li>
+        <li>0.1.8 - Smart completion for Groovy and XML files</li>
         <li>0.1.7 - Smart completion for YAML and properties files</li>
         <li>0.1.6 - Project migrated to Maven and other minor bug fixes</li>
         <li>0.1.5 - Intention to add Camel endpoint</li>
@@ -42,13 +42,10 @@
   <depends>com.intellij.properties</depends>
 
   <extensions defaultExtensionNs="com.intellij">
-    <!-- allow smart completion of Camel endpoints in Java code -->
+    <!-- allow smart completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.CamelJavaReferenceContributor"/>
-
-    <!-- allow smart completion of Camel endpoints in XML files -->
     <completion.contributor language="XML" implementationClass="org.apache.camel.idea.CamelXmlReferenceContributor"/>
-
-    <!-- smart completion of Camel endpoints in property/yaml files -->
+    <completion.contributor language="Groovy" implementationClass="org.apache.camel.idea.CamelGroovyReferenceContributor"/>
     <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertiesOrYamlFileReferenceContributor"/>
 
     <!-- smart completion of Camel property placeholders, eg {{foo}} style -->
@@ -57,6 +54,7 @@
     <!-- quick documentation for Camel endpoints -->
     <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
     <lang.documentationProvider language="XML" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
+    <lang.documentationProvider language="Groovy" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
     <lang.documentationProvider language="Properties" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
     <lang.documentationProvider language="yaml" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
 

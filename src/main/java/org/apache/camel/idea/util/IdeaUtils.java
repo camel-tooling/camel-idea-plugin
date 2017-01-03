@@ -87,7 +87,14 @@ public final class IdeaUtils {
      */
     @Nullable
     public static String getInnerText(PsiJavaToken token) {
-        String text = token.getText();
+        return getInnerText(token.getText());
+    }
+
+    /**
+     * Code from com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl#getInnerText()
+     */
+    @Nullable
+    public static String getInnerText(String text) {
         int textLength = text.length();
         if (StringUtil.endsWithChar(text, '\"')) {
             if (textLength == 1) {
