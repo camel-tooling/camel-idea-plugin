@@ -38,11 +38,9 @@ public class PropertiesPropertyPlaceholdersSmartCompletion implements CamelPrope
 
     @NotNull
     private Properties getProperties(VirtualFile virtualFile) {
-        File file = new File(virtualFile.getPath());
         Properties properties = new Properties();
-
         try {
-            properties.load(Files.newInputStream(file.toPath()));
+            properties.load(virtualFile.getInputStream());
         } catch (IOException e) {
         }//TODO : log a warning, but for now we ignore it and continue.
 
