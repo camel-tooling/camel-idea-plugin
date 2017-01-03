@@ -17,20 +17,20 @@
 package org.apache.camel.idea;
 
 import com.intellij.codeInsight.completion.CompletionType;
-import org.apache.camel.idea.completion.extension.CamelPropertyPlaceholderSmartCompletionExtension;
+import com.intellij.psi.PsiFile;
+import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionExtension;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
- * Plugin to hook into the IDEA completion system, to setup smart completion for Camel property placeholders (eg {{foo}} style)
+ * Plugin to hook into the IDEA Kotlin language, to setup Camel smart completion for editing Kotlin source code.
  */
-public class CamelPropertyPlaceholderReferenceContributor extends CamelContributor {
+public class CamelKotlinReferenceContributor extends CamelContributor {
 
-    public CamelPropertyPlaceholderReferenceContributor() {
-        // add hook for smart completion for {{ }} placeholders
-        addCompletionExtension(new CamelPropertyPlaceholderSmartCompletionExtension());
+    public CamelKotlinReferenceContributor() {
+        addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
         extend(CompletionType.BASIC,
-                psiElement().notNull(), // this works anywhere
+                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("Kotlin"))),
                 new EndpointCompletion(getCamelCompletionExtensions())
         );
     }

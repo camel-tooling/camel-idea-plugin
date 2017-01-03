@@ -37,11 +37,11 @@ import org.jetbrains.jps.model.java.JavaModuleSourceRootTypes;
  * with a list of possible properties. However it works for any Camel property placeholder
  * used in your source code.
  */
-public class CamelProperyPlaceholderSmartCompletionExtension implements CamelCompletionExtension {
+public class CamelPropertyPlaceholderSmartCompletionExtension implements CamelCompletionExtension {
 
     private final List<CamelPropertyCompletion> propertyCompletionProviders = new ArrayList<>();
 
-    public CamelProperyPlaceholderSmartCompletionExtension() {
+    public CamelPropertyPlaceholderSmartCompletionExtension() {
         propertyCompletionProviders.add(new PropertiesPropertyPlaceholdersSmartCompletion());
         propertyCompletionProviders.add(new YamlPropertyPlaceholdersSmartCompletion());
     }
@@ -54,12 +54,14 @@ public class CamelProperyPlaceholderSmartCompletionExtension implements CamelCom
         resourceRoots.addAll(ProjectRootManager.getInstance(project).getModuleSourceRoots(JavaModuleSourceRootTypes.TESTS));
         ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
         for (final VirtualFile sourceRoot : resourceRoots) {
-            VfsUtil.processFilesRecursively(sourceRoot.getCanonicalFile(), virtualFile -> {
-                propertyCompletionProviders.stream()
+            if (sourceRoot.isValid() && sourceRoot.getCanonicalFile() != null) {
+                VfsUtil.processFilesRecursively(sourceRoot.getCanonicalFile(), virtualFile -> {
+                    propertyCompletionProviders.stream()
                         .filter(p -> p.isValidExtension(virtualFile.getName()) && !projectFileIndex.isExcluded(sourceRoot))
                         .forEach(p -> p.buildResultSet(resultSet, virtualFile));
-                return true;
-            });
+                    return true;
+                });
+            }
         }
     }
 

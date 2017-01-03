@@ -124,6 +124,14 @@ public abstract class CamelContributor extends CompletionContributor {
             }
         }
 
+        // maybe its kotlin
+        if (val == null && element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("kotlin")) {
+                val = element.getText();
+            }
+        }
+
         if (val == null) {
             // fallback to generic
             val = element.getText();
