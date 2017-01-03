@@ -114,6 +114,16 @@ public abstract class CamelContributor extends CompletionContributor {
             }
         }
 
+        // maybe its scala
+        if (val == null && element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Scala")) {
+                String text = element.getText();
+                // unwrap scala string
+                val = getInnerText(text);
+            }
+        }
+
         if (val == null) {
             // fallback to generic
             val = element.getText();
