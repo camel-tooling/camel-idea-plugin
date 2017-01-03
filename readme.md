@@ -73,10 +73,13 @@ is the version of the IDEA you have installed locally, second is the locations o
 Next step you need to update the pom.xml file with the right Intellij version number
 
  > - Open the pom.xml file
- > - Modify the property idea.version with the version number you have intalled.
- > - Run "mvn install"
+ > - Modify the property idea.version with the version number you have installed.
+ > - Run "mvn install" or "mvn install -P ultimate" for running the Ultimate version of IDEA
 
 Last step you need to import the project as maven project.
+
+> Important : if you are using the Ultimate version you need to enable the maven profile "uiltimate" when importing the
+project. Otherwise running the test will not work from IDEA
 
 > - Open your IDEA
 > - Create a new project from existing source
@@ -99,11 +102,15 @@ start the plugin again.
 
 ### Running the unit test
 
-Running the IntelliJ unit test from maven 
+Running the IntelliJ unit test from maven with the community version
 
 > mvn verify
 
-Running the test from IDEA requires to add following settings to the run configuration VM options
+Running the IntelliJ unit test from maven with the Ultimate version
+
+> mvn verify -P ultimate
+
+Running the test from IDEA community requires to add following settings to the run configuration VM options.
 
 > -ea
   -Xbootclasspath/p:../out/classes/production/boot
@@ -114,6 +121,9 @@ Running the test from IDEA requires to add following settings to the run configu
   -Didea.home.path=target/
   -Didea.config.path=target/test-config
   -Didea.test.group=ALL_EXCLUDE_DEFINED
+  
+
+> For the Ultimate version no VM options is necessary   
 
 ### Contributing / Hacking on the code
 
