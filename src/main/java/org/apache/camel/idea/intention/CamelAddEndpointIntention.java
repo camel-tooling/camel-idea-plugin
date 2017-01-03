@@ -28,6 +28,7 @@ import com.intellij.codeInsight.intention.LowPriorityAction;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -45,6 +46,7 @@ import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.IncorrectOperationException;
+import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
@@ -97,7 +99,7 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
         // find the camel component from those libraries
         boolean consumerOnly = IdeaUtils.isConsumerEndpoint(element);
-        List<String> names = findCamelComponentNamesInArtifact(artifacts, consumerOnly);
+        List<String> names = findCamelComponentNamesInArtifact(artifacts, consumerOnly, project);
 
         // no camel endpoints then exit
         if (names.isEmpty()) {
@@ -164,11 +166,12 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         return CAMEL_ICON;
     }
 
-    private static List<String> findCamelComponentNamesInArtifact(Set<String> artifactIds, boolean consumerOnly) {
+    private static List<String> findCamelComponentNamesInArtifact(Set<String> artifactIds, boolean consumerOnly, Project project) {
         List<String> names = new ArrayList<>();
 
-        for (String name : CamelCatalogService.getInstance().findComponentNames()) {
-            String json = CamelCatalogService.getInstance().componentJSonSchema(name);
+        CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
+        for (String name : camelCatalog.findComponentNames()) {
+            String json = camelCatalog.componentJSonSchema(name);
             ComponentModel model = ModelHelper.generateComponentModel(json, false);
             if (artifactIds.contains(model.getArtifactId())) {
                 boolean onlyConsume = "true".equals(model.getConsumerOnly());

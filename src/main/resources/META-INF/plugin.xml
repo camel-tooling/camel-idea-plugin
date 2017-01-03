@@ -42,6 +42,9 @@
   <depends>com.intellij.properties</depends>
 
   <extensions defaultExtensionNs="com.intellij">
+
+    <projectService serviceImplementation="org.apache.camel.idea.catalog.CamelCatalogService" />
+
     <!-- allow smart completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.CamelJavaReferenceContributor"/>
     <completion.contributor language="XML" implementationClass="org.apache.camel.idea.CamelXmlReferenceContributor"/>
