@@ -251,6 +251,16 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             }
         }
 
+        // maybe its sccala
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Scala")) {
+                String text = element.getText();
+                // unwrap scala string
+                return getInnerText(text);
+            }
+        }
+
         return null;
     }
 

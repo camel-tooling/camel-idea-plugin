@@ -46,6 +46,7 @@
     <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.CamelJavaReferenceContributor"/>
     <completion.contributor language="XML" implementationClass="org.apache.camel.idea.CamelXmlReferenceContributor"/>
     <completion.contributor language="Groovy" implementationClass="org.apache.camel.idea.CamelGroovyReferenceContributor"/>
+    <completion.contributor language="Scala" implementationClass="org.apache.camel.idea.CamelScalaReferenceContributor"/>
     <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertiesOrYamlFileReferenceContributor"/>
 
     <!-- smart completion of Camel property placeholders, eg {{foo}} style -->
@@ -55,6 +56,8 @@
     <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
     <lang.documentationProvider language="XML" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
     <lang.documentationProvider language="Groovy" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
+    <lang.documentationProvider language="Scala" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
+                                order="first"/>
     <lang.documentationProvider language="Properties" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
     <lang.documentationProvider language="yaml" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
 
