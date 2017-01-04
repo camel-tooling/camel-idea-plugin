@@ -16,7 +16,7 @@ to Apache Software Foundation to be included out of the box at Apache Camel.
  
 However currently the code is located at github to allow faster and wider collaboration in the community.
 
-![Early Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/early2.png)
+![Early Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/01-endpoint-options.png)
 
 ### Build status
 [![Build Status](https://travis-ci.org/davsclaus/camel-idea-plugin.svg?branch=master)](https://travis-ci.org/davsclaus/camel-idea-plugin)
@@ -144,7 +144,7 @@ Jetbrains provides a FAQ for the IDEA SDK which is massive and takes time to lea
 
 ### TODOs
 
-The plugin is far from finished/ready, and therefore there is work to be done. 
+The plugin is not finished and therefore there is work to be done. 
 
 The issue tracker has a list of tickets with items to implement. This can be a good place
 to look for _stuff_ you can help with.
