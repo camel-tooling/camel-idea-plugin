@@ -68,27 +68,29 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public String getQuickNavigateInfo(PsiElement element, PsiElement originalElement) {
-        PsiExpressionList exps = PsiTreeUtil.getNextSiblingOfType(originalElement, PsiExpressionList.class);
-        if (exps != null) {
-            if (exps.getExpressions().length >= 1) {
-                // grab first string parameter (as the string would contain the camel endpoint uri
-                final PsiClassType stringType = PsiType.getJavaLangString(element.getManager(), element.getResolveScope());
-                PsiExpression exp = Arrays.stream(exps.getExpressions()).filter(
-                    (e) -> e.getType() != null && stringType.isAssignableFrom(e.getType()))
-                    .findFirst().orElse(null);
-                if (exp instanceof PsiLiteralExpression) {
-                    Object o = ((PsiLiteralExpression) exp).getValue();
-                    String val = o != null ? o.toString() : null;
-                    // okay only allow this popup to work when its from a RouteBuilder class
-                    PsiClass clazz = PsiTreeUtil.getParentOfType(originalElement, PsiClass.class);
-                    if (clazz != null) {
-                        PsiClassType[] types = clazz.getExtendsListTypes();
-                        boolean found = Arrays.stream(types).anyMatch((p) -> p.getClassName().equals("RouteBuilder"));
-                        if (found) {
-                            String componentName = StringUtils.asComponentName(val);
-                            if (componentName != null) {
-                                // the quick info cannot be so wide so wrap at 120 chars
-                                return generateCamelComponentDocumentation(componentName, val, 120, element.getProject());
+        if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
+            PsiExpressionList exps = PsiTreeUtil.getNextSiblingOfType(originalElement, PsiExpressionList.class);
+            if (exps != null) {
+                if (exps.getExpressions().length >= 1) {
+                    // grab first string parameter (as the string would contain the camel endpoint uri
+                    final PsiClassType stringType = PsiType.getJavaLangString(element.getManager(), element.getResolveScope());
+                    PsiExpression exp = Arrays.stream(exps.getExpressions()).filter(
+                        (e) -> e.getType() != null && stringType.isAssignableFrom(e.getType()))
+                        .findFirst().orElse(null);
+                    if (exp instanceof PsiLiteralExpression) {
+                        Object o = ((PsiLiteralExpression) exp).getValue();
+                        String val = o != null ? o.toString() : null;
+                        // okay only allow this popup to work when its from a RouteBuilder class
+                        PsiClass clazz = PsiTreeUtil.getParentOfType(originalElement, PsiClass.class);
+                        if (clazz != null) {
+                            PsiClassType[] types = clazz.getExtendsListTypes();
+                            boolean found = Arrays.stream(types).anyMatch((p) -> p.getClassName().equals("RouteBuilder"));
+                            if (found) {
+                                String componentName = StringUtils.asComponentName(val);
+                                if (componentName != null) {
+                                    // the quick info cannot be so wide so wrap at 120 chars
+                                    return generateCamelComponentDocumentation(componentName, val, 120, element.getProject());
+                                }
                             }
                         }
                     }
@@ -190,7 +192,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Override
     public boolean handleExternal(PsiElement element, PsiElement originalElement) {
         String val = fetchLiteralForCamelDocumentation(element);
-        if (val == null || ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
+        if (val == null || !ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
             return false;
         }
 
