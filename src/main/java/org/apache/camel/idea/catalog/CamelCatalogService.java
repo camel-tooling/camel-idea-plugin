@@ -22,18 +22,15 @@ import org.apache.camel.catalog.DefaultCamelCatalog;
 /**
  * Service which provides the instance to be used when accessing the {@link CamelCatalog}.
  */
-public final class CamelCatalogService {
+public class CamelCatalogService {
 
-    private static final CamelCatalog INSTANCE = new DefaultCamelCatalog(true);
-
-    private CamelCatalogService() {
-    }
+    private  final CamelCatalog instance = new DefaultCamelCatalog(true);
 
     /**
      * Gets the {@link CamelCatalog} instance to use.
      */
-    public static CamelCatalog getInstance() {
-        return INSTANCE;
+    public CamelCatalog get() {
+        return instance;
     }
 
 }

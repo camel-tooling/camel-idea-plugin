@@ -18,15 +18,17 @@ package org.apache.camel.idea.completion.extension;
 
 import java.util.Arrays;
 import java.util.List;
+
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import org.apache.camel.idea.util.CamelService;
 
+
 /**
  * Testing smart completion with YML property classes
  */
-public class YamlPropertyPlaceholdersSmartCompletionTestIT extends LightCodeInsightFixtureTestCase {
+public class JavaPropertyPlaceholdersSmartCompletionTestIT extends LightCodeInsightFixtureTestCase {
 
     @Override
     protected void setUp() throws Exception {
@@ -40,20 +42,16 @@ public class YamlPropertyPlaceholdersSmartCompletionTestIT extends LightCodeInsi
     }
 
     public void testCompletion() {
-        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
+        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertTrue(strings.containsAll(Arrays.asList("example.generateOrderPeriod}}", "example.processOrderPeriod}}",
-            "mysql.service.database}}", "mysql.service.host}}",
-            "mysql.service.port}}", "spring.datasource.password}}",
-            "spring.datasource.url}}", "spring.datasource.username}}",
-            "spring.jpa.hibernate.ddl-auto}}", "spring.jpa.show-sql}}")));
-        assertEquals(10, strings.size());
+        assertTrue(strings.containsAll(Arrays.asList("ftp.client}}", "ftp.server}}")));
+        assertEquals(2, strings.size());
     }
 
     public void testCamelIsNotPresent() {
         ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(false);
-        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
+        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertEquals(0, strings.size());

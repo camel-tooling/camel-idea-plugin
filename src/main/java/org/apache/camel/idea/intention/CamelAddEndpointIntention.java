@@ -28,6 +28,7 @@ import com.intellij.codeInsight.intention.LowPriorityAction;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -45,9 +46,11 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.IncorrectOperationException;
+import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
+import org.apache.camel.idea.util.CamelService;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -59,33 +62,8 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
-        // gather all libraries (JARs) from the project/classpath
-        Set<Library> processedLibraries = new HashSet<>();
-
-        // TODO: this should be cached/faster maybe?
-        Module[] modules = ModuleManager.getInstance(project).getModules();
-        for (Module module : modules) {
-            ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
-            OrderEntry[] orderEntries = moduleRootManager.getOrderEntries();
-            for (OrderEntry orderEntry : orderEntries) {
-                if (orderEntry instanceof LibraryOrderEntry) {
-                    LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) orderEntry;
-                    // skip test scope
-                    if (libraryOrderEntry.getScope().isForProductionCompile() || libraryOrderEntry.getScope().isForProductionRuntime()) {
-                        final Library library = libraryOrderEntry.getLibrary();
-                        if (library == null) {
-                            continue;
-                        }
-                        if (processedLibraries.contains(library)) {
-                            continue;
-                        }
-                        processedLibraries.add(library);
-                    }
-                }
-            }
-        }
-
-        // filter libraries to only be Camel libraries
+         // filter libraries to only be Camel libraries
+        Set<Library> processedLibraries = ServiceManager.getService(project, CamelService.class).getLibraries();
         Set<String> artifacts = new LinkedHashSet<>();
         for (Library lib : processedLibraries) {
             String name = lib.getName();
@@ -98,7 +76,7 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
         // find the camel component from those libraries
         boolean consumerOnly = IdeaUtils.isConsumerEndpoint(element);
-        List<String> names = findCamelComponentNamesInArtifact(artifacts, consumerOnly);
+        List<String> names = findCamelComponentNamesInArtifact(artifacts, consumerOnly, project);
 
         // no camel endpoints then exit
         if (names.isEmpty()) {
@@ -132,18 +110,21 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
-        // special for xml
-        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        if (xml != null) {
-            // special check for poll enrich where we add the endpoint on a child node (camel expression)
-            XmlTag parent = xml.getParentTag();
-            if (parent != null && parent.getLocalName().equals("pollEnrich")) {
-                return true;
+        if (ServiceManager.getService(project, CamelService.class).isCamelPresent()) {
+            // special for xml
+            XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+            if (xml != null) {
+                // special check for poll enrich where we add the endpoint on a child node (camel expression)
+                XmlTag parent = xml.getParentTag();
+                if (parent != null && parent.getLocalName().equals("pollEnrich")) {
+                    return true;
+                }
             }
-        }
 
-        String text = extractTextFromElement(element);
-        return text != null && text.trim().isEmpty();
+            String text = extractTextFromElement(element);
+            return text != null && text.trim().isEmpty();
+        }
+        return false;
     }
 
     @NotNull
@@ -164,11 +145,12 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         return CAMEL_ICON;
     }
 
-    private static List<String> findCamelComponentNamesInArtifact(Set<String> artifactIds, boolean consumerOnly) {
+    private static List<String> findCamelComponentNamesInArtifact(Set<String> artifactIds, boolean consumerOnly, Project project) {
         List<String> names = new ArrayList<>();
 
-        for (String name : CamelCatalogService.getInstance().findComponentNames()) {
-            String json = CamelCatalogService.getInstance().componentJSonSchema(name);
+        CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
+        for (String name : camelCatalog.findComponentNames()) {
+            String json = camelCatalog.componentJSonSchema(name);
             ComponentModel model = ModelHelper.generateComponentModel(json, false);
             if (artifactIds.contains(model.getArtifactId())) {
                 boolean onlyConsume = "true".equals(model.getConsumerOnly());
