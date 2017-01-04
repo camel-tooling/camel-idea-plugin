@@ -162,20 +162,57 @@ public final class IdeaUtils {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
                 // need to walk a bit into the psi tree to find the element that holds the method call name
-                PsiElement parent = element.getParent();
-                if (parent != null) {
-                    parent = parent.getParent();
+                // must be a groovy string kind
+                String kind = element.toString();
+                if (kind.contains("Gstring")) {
+                    PsiElement parent = element.getParent();
+                    if (parent != null) {
+                        parent = parent.getParent();
+                    }
+                    if (parent != null) {
+                        element = parent.getPrevSibling();
+                    }
+                    if (element != null) {
+                        element = element.getLastChild();
+                    }
+                    if (element != null) {
+                        kind = element.toString();
+                        // must be an identifier which is part of the method call
+                        if (kind.contains("identifier")) {
+                            String name = element.getText();
+                            return "from".equals(name) || "fromF".equals(name) || "interceptFrom".equals(name) || "pollEnrich".equals(name);
+                        }
+                    }
                 }
-                if (parent != null) {
-                    element = parent.getPrevSibling();
+                return false;
+            }
+        }
+        // kotlin
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("kotlin")) {
+                // need to walk a bit into the psi tree to find the element that holds the method call name
+                // (yes we need to go up till 6 levels up to find the method call expression
+                String kind = element.toString();
+                // must be a string kind
+                if (kind.contains("STRING")) {
+                    for (int i = 0; i < 6; i++) {
+                        if (element != null) {
+                            kind = element.toString();
+                            if ("CALL_EXPRESSION".equals(kind)) {
+                                element = element.getFirstChild();
+                                if (element != null) {
+                                    String name = element.getText();
+                                    return "from".equals(name) || "fromF".equals(name) || "interceptFrom".equals(name) || "pollEnrich".equals(name);
+                                }
+                            }
+                            if (element != null) {
+                                element = element.getParent();
+                            }
+                        }
+                    }
                 }
-                if (element != null) {
-                    element = element.getLastChild();
-                }
-                if (element != null) {
-                    String name = element.getText();
-                    return "from".equals(name) || "fromF".equals(name) || "interceptFrom".equals(name) || "pollEnrich".equals(name);
-                }
+                return false;
             }
         }
 
@@ -218,21 +255,59 @@ public final class IdeaUtils {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
                 // need to walk a bit into the psi tree to find the element that holds the method call name
-                PsiElement parent = element.getParent();
-                if (parent != null) {
-                    parent = parent.getParent();
+                // must be a groovy string kind
+                String kind = element.toString();
+                if (kind.contains("Gstring")) {
+                    PsiElement parent = element.getParent();
+                    if (parent != null) {
+                        parent = parent.getParent();
+                    }
+                    if (parent != null) {
+                        element = parent.getPrevSibling();
+                    }
+                    if (element != null) {
+                        element = element.getLastChild();
+                    }
+                    if (element != null) {
+                        kind = element.toString();
+                        // must be an identifier which is part of the method call
+                        if (kind.contains("identifier")) {
+                            String name = element.getText();
+                            return "to".equals(name) || "toF".equals(name) || "toD".equals(name)
+                                || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
+                        }
+                    }
                 }
-                if (parent != null) {
-                    element = parent.getPrevSibling();
+                return false;
+            }
+        }
+        // kotlin
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("kotlin")) {
+                // need to walk a bit into the psi tree to find the element that holds the method call name
+                // (yes we need to go up till 6 levels up to find the method call expression
+                String kind = element.toString();
+                // must be a string kind
+                if (kind.contains("STRING")) {
+                    for (int i = 0; i < 6; i++) {
+                        if (element != null) {
+                            kind = element.toString();
+                            if ("CALL_EXPRESSION".equals(kind)) {
+                                element = element.getFirstChild();
+                                if (element != null) {
+                                    String name = element.getText();
+                                    return "to".equals(name) || "toF".equals(name) || "toD".equals(name)
+                                        || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
+                                }
+                            }
+                            if (element != null) {
+                                element = element.getParent();
+                            }
+                        }
+                    }
                 }
-                if (element != null) {
-                    element = element.getLastChild();
-                }
-                if (element != null) {
-                    String name = element.getText();
-                    return "to".equals(name) || "toF".equals(name) || "toD".equals(name)
-                        || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
-                }
+                return false;
             }
         }
 
