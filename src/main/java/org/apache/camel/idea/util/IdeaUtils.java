@@ -157,6 +157,27 @@ public final class IdeaUtils {
             }
             return "from".equals(name) || "interceptFrom".equals(name);
         }
+        // groovy
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Groovy")) {
+                // need to walk a bit into the psi tree to find the element that holds the method call name
+                PsiElement parent = element.getParent();
+                if (parent != null) {
+                    parent = parent.getParent();
+                }
+                if (parent != null) {
+                    element = parent.getPrevSibling();
+                }
+                if (element != null) {
+                    element = element.getLastChild();
+                }
+                if (element != null) {
+                    String name = element.getText();
+                    return "from".equals(name) || "fromF".equals(name) || "interceptFrom".equals(name) || "pollEnrich".equals(name);
+                }
+            }
+        }
 
         return false;
     }
@@ -191,6 +212,28 @@ public final class IdeaUtils {
                 return true;
             }
             return "to".equals(name) || "interceptSendToEndpoint".equals(name) || "wireTap".equals(name);
+        }
+        // groovy
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Groovy")) {
+                // need to walk a bit into the psi tree to find the element that holds the method call name
+                PsiElement parent = element.getParent();
+                if (parent != null) {
+                    parent = parent.getParent();
+                }
+                if (parent != null) {
+                    element = parent.getPrevSibling();
+                }
+                if (element != null) {
+                    element = element.getLastChild();
+                }
+                if (element != null) {
+                    String name = element.getText();
+                    return "to".equals(name) || "toF".equals(name) || "toD".equals(name)
+                        || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
+                }
+            }
         }
 
         return false;

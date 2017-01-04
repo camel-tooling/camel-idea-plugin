@@ -88,6 +88,10 @@ public abstract class CamelContributor extends CompletionContributor {
         PsiElement element = parameters.getPosition();
 
         String val = extractTextFromElement(element);
+        if (val == null || val.isEmpty()) {
+            return new String[]{"", ""};
+        }
+
         String suffix = "";
 
         // okay IDEA folks its not nice, in groovy the dummy identifier is using lower case i in intellij
