@@ -165,6 +165,41 @@ public final class IdeaUtils {
     }
 
     /**
+     * Is the given element from a producer endpoint used in a route from a <tt>to</tt>, <tt>toF</tt>,
+     * <tt>interceptSendToEndpiint</tt>, <tt>wireTap</tt>, or <tt>enrich</tt> pattern.
+     */
+    public static boolean isProducerEndpoint(PsiElement element) {
+        // java method call
+        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        if (call != null) {
+            PsiMethod method = call.resolveMethod();
+            if (method != null) {
+                String name = method.getName();
+                return "to".equals(name) || "toF".equals(name) || "toD".equals(name)
+                    || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
+            }
+        }
+        // annotation
+        PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
+        if (annotation != null && annotation.getQualifiedName() != null) {
+            return annotation.getQualifiedName().equals("org.apache.camel.Produce");
+        }
+        // xml
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            String name = xml.getLocalName();
+            // special check for enrich where we add the endpoint on a child node (camel expression)
+            XmlTag parent = xml.getParentTag();
+            if (parent != null && parent.getLocalName().equals("enrich")) {
+                return true;
+            }
+            return "to".equals(name) || "interceptSendToEndpoint".equals(name) || "wireTap".equals(name);
+        }
+
+        return false;
+    }
+
+    /**
      * Code from com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl#getInnerText()
      */
     @Nullable

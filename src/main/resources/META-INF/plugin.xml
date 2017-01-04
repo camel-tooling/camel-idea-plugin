@@ -19,7 +19,8 @@
   <change-notes><![CDATA[
       <ul>
         <li>0.2.1 - Smart completion for Kotlin files.
-                    Endpoint options are now sorted.</li>
+                    Endpoint options are now sorted.
+                    Endpoint options filtered to only include applicable options when used as consumer vs producer only mode.</li>
         <li>0.2.0 - Smart completion for Groovy, Scala and XML files</li>
         <li>0.1.7 - Smart completion for YAML and properties files</li>
         <li>0.1.6 - Project migrated to Maven and other minor bug fixes</li>
