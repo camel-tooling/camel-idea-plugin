@@ -16,6 +16,7 @@
  */
 package org.apache.camel.idea.documentation;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -65,15 +66,27 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     public String getQuickNavigateInfo(PsiElement element, PsiElement originalElement) {
         PsiExpressionList exps = PsiTreeUtil.getNextSiblingOfType(originalElement, PsiExpressionList.class);
         if (exps != null) {
-            if (exps.getExpressions().length == 1) {
-                PsiExpression exp = exps.getExpressions()[0];
+            if (exps.getExpressions().length >= 1) {
+                // grab first string parameter (as the string would contain the camel endpoint uri
+                final PsiClassType stringType = PsiType.getJavaLangString(element.getManager(), element.getResolveScope());
+                PsiExpression exp = Arrays.stream(exps.getExpressions()).filter(
+                    (e) -> e.getType() != null && stringType.isAssignableFrom(e.getType()))
+                    .findFirst().orElse(null);
                 if (exp instanceof PsiLiteralExpression) {
                     Object o = ((PsiLiteralExpression) exp).getValue();
                     String val = o != null ? o.toString() : null;
-                    String componentName = StringUtils.asComponentName(val);
-                    if (componentName != null) {
-                        // the quick info cannot be so wide so wrap at 120 chars
-                        return generateCamelComponentDocumentation(componentName, val, 120);
+                    // okay only allow this popup to work when its from a RouteBuilder class
+                    PsiClass clazz = PsiTreeUtil.getParentOfType(originalElement, PsiClass.class);
+                    if (clazz != null) {
+                        PsiClassType[] types = clazz.getExtendsListTypes();
+                        boolean found = Arrays.stream(types).anyMatch((p) -> p.getClassName().equals("RouteBuilder"));
+                        if (found) {
+                            String componentName = StringUtils.asComponentName(val);
+                            if (componentName != null) {
+                                // the quick info cannot be so wide so wrap at 120 chars
+                                return generateCamelComponentDocumentation(componentName, val, 120);
+                            }
+                        }
                     }
                 }
             }
@@ -235,6 +248,10 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     private String generateCamelComponentDocumentation(String componentName, String val, int wrapLength) {
         // it is a known Camel component
         String json = CamelCatalogService.getInstance().componentJSonSchema(componentName);
+        if (json == null) {
+            return null;
+        }
+
         ComponentModel component = ModelHelper.generateComponentModel(json, false);
 
         Map<String, String> existing = null;
