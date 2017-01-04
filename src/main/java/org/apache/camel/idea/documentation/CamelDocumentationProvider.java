@@ -29,17 +29,13 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameterList;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
-import com.intellij.psi.impl.source.tree.LeafPsiElement;
-import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlAttributeValue;
 import org.apache.camel.catalog.JSonSchemaHelper;
 import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
@@ -48,8 +44,7 @@ import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static org.apache.camel.idea.util.IdeaUtils.getInnerText;
-import static org.apache.camel.idea.util.IdeaUtils.isStringLiteral;
+import static org.apache.camel.idea.util.IdeaUtils.extractTextFromElement;
 import static org.apache.camel.idea.util.StringUtils.asComponentName;
 import static org.apache.camel.idea.util.StringUtils.asLanguageName;
 import static org.apache.camel.idea.util.StringUtils.wrapSeparator;
@@ -214,62 +209,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         if (element == null) {
             return null;
         }
-
-        if (isStringLiteral(element)) {
-            PsiLiteralExpression literal = (PsiLiteralExpression) element;
-            return (String) literal.getValue();
-        }
-
-        // is it from an xml attribute when using XML
-        XmlAttributeValue xml = PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class);
-        if (xml != null) {
-            return xml.getValue();
-        }
-
-        // its maybe a property from properties file
-        String fqn = element.getClass().getName();
-        if (fqn.startsWith("com.intellij.lang.properties.psi.impl.PropertyValue")) {
-            // yes we can support this also
-            return element.getText();
-        }
-
-        // maybe its yaml
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("yaml")) {
-                return element.getText();
-            }
-        }
-
-        // maybe its groovy
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Groovy")) {
-                String text = element.getText();
-                // unwrap groovy gstring
-                return getInnerText(text);
-            }
-        }
-
-        // maybe its scala
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Scala")) {
-                String text = element.getText();
-                // unwrap scala string
-                return getInnerText(text);
-            }
-        }
-
-        // maybe its kotlin
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("kotlin")) {
-                return element.getText();
-            }
-        }
-
-        return null;
+        return extractTextFromElement(element);
     }
 
     private String generateCamelComponentDocumentation(String componentName, String val) {

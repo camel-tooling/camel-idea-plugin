@@ -30,18 +30,12 @@ import com.intellij.patterns.InitialPatternCondition;
 import com.intellij.patterns.PsiFilePattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiLiteralExpression;
-import com.intellij.psi.impl.source.tree.LeafPsiElement;
-import com.intellij.psi.tree.IElementType;
-import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.idea.completion.extension.CamelCompletionExtension;
-import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static org.apache.camel.idea.util.IdeaUtils.getInnerText;
+import static org.apache.camel.idea.util.IdeaUtils.extractTextFromElement;
 
 /**
  * Hook into the IDEA language completion system, to setup Camel smart completion.
@@ -89,54 +83,7 @@ public abstract class CamelContributor extends CompletionContributor {
     private static String[] parsePsiElement(@NotNull CompletionParameters parameters) {
         PsiElement element = parameters.getPosition();
 
-        String val = null;
-
-        // need the entire line so find the literal expression that would hold the entire string (java)
-        PsiLiteralExpression literal = PsiTreeUtil.getParentOfType(element, PsiLiteralExpression.class);
-        if (literal != null) {
-            Object o = literal.getValue();
-            val = o != null ? o.toString() : null;
-        }
-
-        // maybe its xml then try that
-        if (val == null) {
-            XmlAttributeValue xml = PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class);
-            val = xml != null ? xml.getValue() : null;
-        }
-
-        // maybe its groovy
-        if (val == null && element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Groovy")) {
-                String text = element.getText();
-                // unwrap groovy gstring
-                val = getInnerText(text);
-            }
-        }
-
-        // maybe its scala
-        if (val == null && element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Scala")) {
-                String text = element.getText();
-                // unwrap scala string
-                val = getInnerText(text);
-            }
-        }
-
-        // maybe its kotlin
-        if (val == null && element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("kotlin")) {
-                val = element.getText();
-            }
-        }
-
-        if (val == null) {
-            // fallback to generic
-            val = element.getText();
-        }
-
+        String val = extractTextFromElement(element);
         String suffix = "";
 
         // okay IDEA folks its not nice, in groovy the dummy identifier is using lower case i in intellij
