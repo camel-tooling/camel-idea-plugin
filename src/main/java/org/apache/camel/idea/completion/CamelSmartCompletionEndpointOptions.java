@@ -46,7 +46,11 @@ public final class CamelSmartCompletionEndpointOptions {
 
         String separator = xmlMode ? "&amp;" : "&";
 
-        for (EndpointOptionModel option : component.getEndpointOptions()) {
+        List<EndpointOptionModel> options = component.getEndpointOptions();
+        // sort the options A..Z which is easier to users to understand
+        options.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+
+        for (EndpointOptionModel option : options) {
 
             if ("parameter".equals(option.getKind())) {
                 String name = option.getName();
