@@ -134,4 +134,53 @@ public final class StringUtils {
         return answer;
     }
 
+    @Nullable
+    public static String wrap(String str, int wrapLength, String newLineStr, boolean wrapLongWords) {
+        if (str == null) {
+            return null;
+        } else {
+            if (newLineStr == null) {
+                newLineStr = System.lineSeparator();
+            }
+
+            if (wrapLength < 1) {
+                wrapLength = 1;
+            }
+
+            int inputLineLength = str.length();
+            int offset = 0;
+            StringBuilder sb = new StringBuilder(inputLineLength + 32);
+
+            while (inputLineLength - offset > wrapLength) {
+                if (str.charAt(offset) == 32) {
+                    ++offset;
+                } else {
+                    int spaceToWrapAt = str.lastIndexOf(32, wrapLength + offset);
+                    if (spaceToWrapAt >= offset) {
+                        sb.append(str.substring(offset, spaceToWrapAt));
+                        sb.append(newLineStr);
+                        offset = spaceToWrapAt + 1;
+                    } else if (wrapLongWords) {
+                        sb.append(str.substring(offset, wrapLength + offset));
+                        sb.append(newLineStr);
+                        offset += wrapLength;
+                    } else {
+                        spaceToWrapAt = str.indexOf(32, wrapLength + offset);
+                        if (spaceToWrapAt >= 0) {
+                            sb.append(str.substring(offset, spaceToWrapAt));
+                            sb.append(newLineStr);
+                            offset = spaceToWrapAt + 1;
+                        } else {
+                            sb.append(str.substring(offset));
+                            offset = inputLineLength;
+                        }
+                    }
+                }
+            }
+
+            sb.append(str.substring(offset));
+            return sb.toString();
+        }
+    }
+
 }

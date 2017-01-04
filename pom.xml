@@ -114,14 +114,6 @@
       <scope>compile</scope>
     </dependency>
 
-    <!-- commons-lang for wrapping words -->
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>${commons.lang.version}</version>
-      <scope>compile</scope>
-    </dependency>
-
     <!-- IntelliJ Dependencies -->
     <dependency>
       <groupId>com.intellij</groupId>

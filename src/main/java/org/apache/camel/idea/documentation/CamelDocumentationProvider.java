@@ -45,13 +45,13 @@ import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
 import org.apache.camel.idea.util.StringUtils;
-import org.apache.commons.lang.WordUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static org.apache.camel.idea.util.IdeaUtils.extractTextFromElement;
 import static org.apache.camel.idea.util.StringUtils.asComponentName;
 import static org.apache.camel.idea.util.StringUtils.asLanguageName;
+import static org.apache.camel.idea.util.StringUtils.wrap;
 import static org.apache.camel.idea.util.StringUtils.wrapSeparator;
 
 /**
@@ -368,7 +368,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
     private static String wrapText(String text, int wrapLength) {
         if (wrapLength > 0) {
-            text = WordUtils.wrap(text, wrapLength, "<br/>", true);
+            text = wrap(text, wrapLength, "<br/>", true);
         }
         return text;
     }
