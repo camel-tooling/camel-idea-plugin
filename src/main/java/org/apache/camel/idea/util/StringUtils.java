@@ -30,11 +30,16 @@ public final class StringUtils {
     private StringUtils() {
     }
 
-    @NotNull
+    /**
+     * Whether to given value has a question mark or not
+     */
     public static boolean hasQuestionMark(String val) {
         return val != null && val.indexOf('?') > 0;
     }
 
+    /**
+     * Gets the value as a Camel component name
+     */
     @Nullable
     public static String asComponentName(String val) {
         if (val == null) {
@@ -48,6 +53,9 @@ public final class StringUtils {
         return null;
     }
 
+    /**
+     * Gets the value as a Camel language name
+     */
     @Nullable
     public static String asLanguageName(String val) {
         if (val == null) {
@@ -134,51 +142,59 @@ public final class StringUtils {
         return answer;
     }
 
+    /**
+     * To wrap a big line by words.
+     *
+     * @param line the big line
+     * @param newLine the new line to use when breaking into a new line
+     * @param watermark a watermark to denote the size to cut after
+     * @param wrapLongWords whether to wrap long words
+     */
     @Nullable
-    public static String wrap(String str, int wrapLength, String newLineStr, boolean wrapLongWords) {
-        if (str == null) {
+    public static String wrapWords(String line, String newLine, int watermark, boolean wrapLongWords) {
+        if (line == null) {
             return null;
         } else {
-            if (newLineStr == null) {
-                newLineStr = System.lineSeparator();
+            if (newLine == null) {
+                newLine = System.lineSeparator();
             }
 
-            if (wrapLength < 1) {
-                wrapLength = 1;
+            if (watermark < 1) {
+                watermark = 1;
             }
 
-            int inputLineLength = str.length();
+            int inputLineLength = line.length();
             int offset = 0;
             StringBuilder sb = new StringBuilder(inputLineLength + 32);
 
-            while (inputLineLength - offset > wrapLength) {
-                if (str.charAt(offset) == 32) {
+            while (inputLineLength - offset > watermark) {
+                if (line.charAt(offset) == 32) {
                     ++offset;
                 } else {
-                    int spaceToWrapAt = str.lastIndexOf(32, wrapLength + offset);
+                    int spaceToWrapAt = line.lastIndexOf(32, watermark + offset);
                     if (spaceToWrapAt >= offset) {
-                        sb.append(str.substring(offset, spaceToWrapAt));
-                        sb.append(newLineStr);
+                        sb.append(line.substring(offset, spaceToWrapAt));
+                        sb.append(newLine);
                         offset = spaceToWrapAt + 1;
                     } else if (wrapLongWords) {
-                        sb.append(str.substring(offset, wrapLength + offset));
-                        sb.append(newLineStr);
-                        offset += wrapLength;
+                        sb.append(line.substring(offset, watermark + offset));
+                        sb.append(newLine);
+                        offset += watermark;
                     } else {
-                        spaceToWrapAt = str.indexOf(32, wrapLength + offset);
+                        spaceToWrapAt = line.indexOf(32, watermark + offset);
                         if (spaceToWrapAt >= 0) {
-                            sb.append(str.substring(offset, spaceToWrapAt));
-                            sb.append(newLineStr);
+                            sb.append(line.substring(offset, spaceToWrapAt));
+                            sb.append(newLine);
                             offset = spaceToWrapAt + 1;
                         } else {
-                            sb.append(str.substring(offset));
+                            sb.append(line.substring(offset));
                             offset = inputLineLength;
                         }
                     }
                 }
             }
 
-            sb.append(str.substring(offset));
+            sb.append(line.substring(offset));
             return sb.toString();
         }
     }
