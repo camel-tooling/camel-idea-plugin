@@ -51,10 +51,17 @@ public final class IdeaUtils {
     @Nullable
     public static String extractTextFromElement(PsiElement element) {
         // need the entire line so find the literal expression that would hold the entire string (java)
-        PsiLiteralExpression literal = PsiTreeUtil.getParentOfType(element, PsiLiteralExpression.class);
+        PsiLiteralExpression literal;
+        if (element instanceof PsiLiteralExpression) {
+            literal = (PsiLiteralExpression) element;
+        } else {
+            literal = PsiTreeUtil.getParentOfType(element, PsiLiteralExpression.class);
+        }
         if (literal != null) {
             Object o = literal.getValue();
-            return o != null ? o.toString() : null;
+            String text = o != null ? o.toString() : null;
+            // unwrap literal string which can happen in java too
+            return getInnerText(text);
         }
 
         // maybe its xml then try that
@@ -104,7 +111,7 @@ public final class IdeaUtils {
             if (type.getLanguage().isKindOf("kotlin")) {
                 String text = element.getText();
                 // unwrap kotlin string
-                return getKotlinInnerText(text);
+                return getInnerText(text);
             }
         }
 
@@ -411,32 +418,21 @@ public final class IdeaUtils {
      */
     @Nullable
     private static String getInnerText(String text) {
+        if (text == null) {
+            return null;
+        }
         int textLength = text.length();
         if (StringUtil.endsWithChar(text, '\"')) {
             if (textLength == 1) {
-                return null;
+                return "";
             }
             text = text.substring(1, textLength - 1);
         } else {
             if (text.startsWith(QUOT) && text.endsWith(QUOT) && textLength > QUOT.length()) {
                 text = text.substring(QUOT.length(), textLength - QUOT.length());
-            } else {
-                return null;
             }
         }
         return text;
     }
 
-    @Nullable
-    private static String getKotlinInnerText(String text) {
-        // it may be just a single quote
-        int textLength = text.length();
-        if (StringUtil.endsWithChar(text, '\"')) {
-            if (textLength == 1) {
-                // its a open or closing quote which kotlin breaks into two psi elements
-                return "";
-            }
-        }
-        return text;
-    }
 }
