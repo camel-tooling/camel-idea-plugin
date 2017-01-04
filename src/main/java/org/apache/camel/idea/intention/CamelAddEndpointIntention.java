@@ -41,8 +41,8 @@ import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.PopupChooserBuilder;
 import com.intellij.openapi.util.Iconable;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiJavaToken;
-import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.IncorrectOperationException;
 import org.apache.camel.idea.catalog.CamelCatalogService;
@@ -53,6 +53,7 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.idea.CamelContributor.CAMEL_ICON;
+import static org.apache.camel.idea.util.IdeaUtils.extractTextFromElement;
 
 public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction implements Iconable, LowPriorityAction {
 
@@ -131,19 +132,18 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
-        // if its a string literal
-        if (IdeaUtils.isStringLiteral(element)) {
-            PsiLiteralExpression literal = (PsiLiteralExpression) element;
-            String text = (String) literal.getValue();
-            // only be available if the string is empty
-            return text == null || text.isEmpty();
+        // special for xml
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            // special check for poll enrich where we add the endpoint on a child node (camel expression)
+            XmlTag parent = xml.getParentTag();
+            if (parent != null && parent.getLocalName().equals("pollEnrich")) {
+                return true;
+            }
         }
-        if (IdeaUtils.isJavaTokenLiteral(element)) {
-            PsiJavaToken token = (PsiJavaToken) element;
-            String text = IdeaUtils.getInnerText(token);
-            return text == null || text.isEmpty();
-        }
-        return false;
+
+        String text = extractTextFromElement(element);
+        return text != null && text.trim().isEmpty();
     }
 
     @NotNull
