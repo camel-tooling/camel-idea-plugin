@@ -41,15 +41,30 @@ public final class CamelSmartCompletionEndpointOptions {
     }
 
     public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(String val, ComponentModel component,
-                                                                                   Map<String, String> existing, boolean xmlMode) {
+                                                                                   Map<String, String> existing, boolean xmlMode,
+                                                                                   boolean consumerOnly, boolean producerOnly) {
         List<LookupElement> answer = new ArrayList<>();
 
         String separator = xmlMode ? "&amp;" : "&";
 
-        for (EndpointOptionModel option : component.getEndpointOptions()) {
+        List<EndpointOptionModel> options = component.getEndpointOptions();
+        // sort the options A..Z which is easier to users to understand
+        options.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+
+        for (EndpointOptionModel option : options) {
 
             if ("parameter".equals(option.getKind())) {
                 String name = option.getName();
+
+                // if we are consumer only, then any option that has producer in the label should be skipped (as its only for producer)
+                if (consumerOnly && option.getLabel().contains("producer")) {
+                    continue;
+                }
+                // if we are producer only, then any option that has consume in the label should be skipped (as its only for consumer)
+                if (producerOnly && option.getLabel().contains("consumer")) {
+                    continue;
+                }
+
                 // only add if not already used (or if the option is multi valued then it can have many)
                 String old = existing != null ? existing.get(name) : "";
                 if ("true".equals(option.getMultiValue()) || existing == null || old == null || old.isEmpty()) {

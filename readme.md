@@ -5,9 +5,10 @@ Plugin for Intellij IDEA to provide a set of small Camel related capabilities to
 
 The plugin includes:
 
-- Smart completion for Camel endpoints in Java, Groovy, Scala, XML, properties or yaml files (`ctrl + space`)
+- Smart completion for Camel endpoints in Java, Groovy, Kotlin, Scala, XML, properties or yaml files (`ctrl + space`)
 - Smart completion for Camel property placeholders (cursor after `{{`)
-- Intention to add new Camel endpoint in Java editor (`alt + enter` in empty string)
+- Endpoint options filtered to only include applicable options when used as consumer vs producer only mode
+- Intention to add new Camel endpoint (`alt + enter` in empty string)
 - Quick documentation for Camel endpoints and external link to Camel component opening in web browser (`ctrl + j` and `shift-F1`)
 
 When the plugin becomes more complete and stable then the intention is to donate the source code

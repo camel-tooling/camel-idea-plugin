@@ -36,6 +36,8 @@ import org.jetbrains.annotations.NotNull;
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointValue.addSmartCompletionForSingleValue;
+import static org.apache.camel.idea.util.IdeaUtils.isConsumerEndpoint;
+import static org.apache.camel.idea.util.IdeaUtils.isProducerEndpoint;
 
 /**
  * Extension for supporting camel smart completion for camel options and values.
@@ -90,7 +92,6 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         // or are we having a list of suggested parameters to choose among
         boolean editSingle = val.endsWith("=");
         boolean editQueryParameters = val.contains("?");
-        boolean editContextPath = !editQueryParameters;
 
         List<LookupElement> answer = null;
         if (editSingle) {
@@ -115,8 +116,10 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
             }
         } else if (editQueryParameters) {
             // suggest a list of options for query parameters
-            answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing, xmlMode);
-        } else if (editContextPath) {
+            boolean consumerOnly = isConsumerEndpoint(parameters.getPosition());
+            boolean producerOnly = isProducerEndpoint(parameters.getPosition());
+            answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing, xmlMode, consumerOnly, producerOnly);
+        } else {
             // suggest a list of options for context-path
             answer = addSmartCompletionSuggestionsContextPath(val, componentModel, existing, xmlMode);
         }

@@ -18,14 +18,19 @@ package org.apache.camel.idea.util;
 
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiType;
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.Nullable;
 
 import static com.intellij.xml.CommonXmlStrings.QUOT;
@@ -35,9 +40,74 @@ public final class IdeaUtils {
     private IdeaUtils() {
     }
 
+    @Nullable
+    public static String extractTextFromElement(PsiElement element) {
+        // need the entire line so find the literal expression that would hold the entire string (java)
+        PsiLiteralExpression literal = PsiTreeUtil.getParentOfType(element, PsiLiteralExpression.class);
+        if (literal != null) {
+            Object o = literal.getValue();
+            return o != null ? o.toString() : null;
+        }
+
+        // maybe its xml then try that
+        XmlAttributeValue xml = PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class);
+        if (xml != null) {
+            return xml.getValue();
+        }
+
+        // its maybe a property from properties file
+        String fqn = element.getClass().getName();
+        if (fqn.startsWith("com.intellij.lang.properties.psi.impl.PropertyValue")) {
+            // yes we can support this also
+            return element.getText();
+        }
+
+        // maybe its yaml
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("yaml")) {
+                return element.getText();
+            }
+        }
+
+        // maybe its groovy
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Groovy")) {
+                String text = element.getText();
+                // unwrap groovy gstring
+                return getInnerText(text);
+            }
+        }
+
+        // maybe its scala
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Scala")) {
+                String text = element.getText();
+                // unwrap scala string
+                return getInnerText(text);
+            }
+        }
+
+        // maybe its kotlin
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("kotlin")) {
+                String text = element.getText();
+                // unwrap kotlin string
+                return getKotlinInnerText(text);
+            }
+        }
+
+        // fallback to generic
+        return element.getText();
+    }
+
     /**
      * Is the given element a string literal
      */
+    @Deprecated
     public static boolean isStringLiteral(PsiElement element) {
         if (element instanceof PsiLiteralExpression) {
             PsiType type = ((PsiLiteralExpression) element).getType();
@@ -50,6 +120,7 @@ public final class IdeaUtils {
     /**
      * Is the given element a java token literal
      */
+    @Deprecated
     public static boolean isJavaTokenLiteral(PsiElement element) {
         if (element instanceof PsiJavaToken) {
             PsiJavaToken token = (PsiJavaToken) element;
@@ -66,6 +137,7 @@ public final class IdeaUtils {
      * <tt>interceptFrom</tt>, or <tt>pollEnrich</tt> pattern.
      */
     public static boolean isConsumerEndpoint(PsiElement element) {
+        // java method call
         PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
         if (call != null) {
             PsiMethod method = call.resolveMethod();
@@ -74,20 +146,59 @@ public final class IdeaUtils {
                 return "from".equals(name) || "fromF".equals(name) || "interceptFrom".equals(name) || "pollEnrich".equals(name);
             }
         }
+        // annotation
         PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
         if (annotation != null && annotation.getQualifiedName() != null) {
             return annotation.getQualifiedName().equals("org.apache.camel.Consume");
+        }
+        // xml
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            String name = xml.getLocalName();
+            // special check for poll enrich where we add the endpoint on a child node (camel expression)
+            XmlTag parent = xml.getParentTag();
+            if (parent != null && parent.getLocalName().equals("pollEnrich")) {
+                return true;
+            }
+            return "from".equals(name) || "interceptFrom".equals(name);
         }
 
         return false;
     }
 
     /**
-     * Code from com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl#getInnerText()
+     * Is the given element from a producer endpoint used in a route from a <tt>to</tt>, <tt>toF</tt>,
+     * <tt>interceptSendToEndpiint</tt>, <tt>wireTap</tt>, or <tt>enrich</tt> pattern.
      */
-    @Nullable
-    public static String getInnerText(PsiJavaToken token) {
-        return getInnerText(token.getText());
+    public static boolean isProducerEndpoint(PsiElement element) {
+        // java method call
+        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        if (call != null) {
+            PsiMethod method = call.resolveMethod();
+            if (method != null) {
+                String name = method.getName();
+                return "to".equals(name) || "toF".equals(name) || "toD".equals(name)
+                    || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
+            }
+        }
+        // annotation
+        PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
+        if (annotation != null && annotation.getQualifiedName() != null) {
+            return annotation.getQualifiedName().equals("org.apache.camel.Produce");
+        }
+        // xml
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            String name = xml.getLocalName();
+            // special check for enrich where we add the endpoint on a child node (camel expression)
+            XmlTag parent = xml.getParentTag();
+            if (parent != null && parent.getLocalName().equals("enrich")) {
+                return true;
+            }
+            return "to".equals(name) || "interceptSendToEndpoint".equals(name) || "wireTap".equals(name);
+        }
+
+        return false;
     }
 
     /**
@@ -109,5 +220,47 @@ public final class IdeaUtils {
             }
         }
         return text;
+    }
+
+    @Nullable
+    public static String getKotlinInnerText(String text) {
+        // it may be just a single quote
+        int textLength = text.length();
+        if (StringUtil.endsWithChar(text, '\"')) {
+            if (textLength == 1) {
+                // its a open or closing quote which kotlin breaks into two psi elements
+                return "";
+            }
+        }
+        return text;
+    }
+
+    public static boolean isCamelExpressionOrLanguage(PsiClass clazz) {
+        if (clazz == null) {
+            return false;
+        }
+        String fqn = clazz.getQualifiedName();
+        if ("org.apache.camel.Expression".equals(fqn)
+                || "org.apache.camel.Predicate".equals(fqn)
+                || "org.apache.camel.model.language.ExpressionDefinition".equals(fqn)
+                || "org.apache.camel.builder.ExpressionClause".equals(fqn)) {
+            return true;
+        }
+        // try implements first
+        for (PsiClassType ct : clazz.getImplementsListTypes()) {
+            PsiClass resolved = ct.resolve();
+            if (isCamelExpressionOrLanguage(resolved)) {
+                return true;
+            }
+        }
+        // then fallback as extends
+        for (PsiClassType ct : clazz.getExtendsListTypes()) {
+            PsiClass resolved = ct.resolve();
+            if (isCamelExpressionOrLanguage(resolved)) {
+                return true;
+            }
+        }
+        // okay then go up and try super
+        return isCamelExpressionOrLanguage(clazz.getSuperClass());
     }
 }
