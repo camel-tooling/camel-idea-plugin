@@ -72,6 +72,7 @@ public final class ModelHelper {
                 option.setName(getSafeValue("name", row));
                 option.setKind(getSafeValue("kind", row));
                 option.setGroup(getSafeValue("group", row));
+                option.setLabel(getSafeValue("label", row));
                 option.setRequired(getSafeValue("required", row));
                 option.setType(getSafeValue("type", row));
                 option.setJavaType(getSafeValue("javaType", row));
