@@ -28,20 +28,27 @@ import com.intellij.openapi.roots.ModuleRootListener;
 import org.apache.camel.idea.util.CamelService;
 import org.jetbrains.annotations.NotNull;
 
+
 /**
  * Listen for changes to Modules ad update the library cached and isCamelPresent
  * <p>
- *     If changes is made to the module settings it will clear the cache do re-scan
- *     of all camel dependencies and update the camel is present status
+ *     If changes are made to the module settings the cache is cleared and scanning
+ *     for all camel dependencies is re-run and the {@link CamelService#isCamelPresent()}
+ *     is updated
  * </p>
  * <p>
- *     When the editor is open for the first time and module is added it will
- *     scan for all camel dependencies and update the camel is present status
+ *     When the project is open for the first time  it will scan for all camel dependencies
+ *     and update the {@link CamelService#isCamelPresent()}.
+ *
+ *     After it has scan all modules it set the flag runModuleOnStartUp = true
+ *     to prevent it triggered both {@link ModuleRootListener#rootsChanged(ModuleRootEvent)}
+ *     and {@link ModuleAdapter#moduleAdded(Project, Module)} on new module added
  * </p>
  */
 public class CamelProjectComponent implements ProjectComponent {
 
     private final Project project;
+    private boolean runModuleOnStartUp;
 
     CamelProjectComponent(Project project) {
         this.project = project;
@@ -67,11 +74,13 @@ public class CamelProjectComponent implements ProjectComponent {
             @Override
             public void rootsChanged(ModuleRootEvent event) {
                 Project project = (Project) event.getSource();
-                getCamelIdeaService(project).setCamelPresent(false);
-                getCamelIdeaService(project).clearLibraries();
+                if (project.isOpen()) {
+                    getCamelIdeaService(project).setCamelPresent(false);
+                    getCamelIdeaService(project).clearLibraries();
 
-                for (Module module : ModuleManager.getInstance(project).getModules()) {
-                    getCamelIdeaService(project).scanForCamelDependencies(module);
+                    for (Module module : ModuleManager.getInstance(project).getModules()) {
+                        getCamelIdeaService(project).scanForCamelDependencies(module);
+                    }
                 }
             }
         });
@@ -79,7 +88,13 @@ public class CamelProjectComponent implements ProjectComponent {
         project.getMessageBus().connect(project).subscribe(ProjectTopics.MODULES, new ModuleAdapter() {
             @Override
             public void moduleAdded(@NotNull Project project, @NotNull Module module) {
-                getCamelIdeaService(project).scanForCamelDependencies(module);
+                if (!runModuleOnStartUp) {
+                    runModuleOnStartUp = true;
+                    // We scan all models at once to prevent scanning the same libraries multiple times
+                    for (Module m : ModuleManager.getInstance(project).getModules()) {
+                        getCamelIdeaService(project).scanForCamelDependencies(m);
+                    }
+                }
             }
         });
 
@@ -87,7 +102,9 @@ public class CamelProjectComponent implements ProjectComponent {
 
     @Override
     public void disposeComponent() {
-
+        getCamelIdeaService(project).setCamelPresent(false);
+        getCamelIdeaService(project).clearLibraries();
+        runModuleOnStartUp = false;
     }
 
     private CamelService getCamelIdeaService(Project project) {
