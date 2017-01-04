@@ -39,6 +39,7 @@
     <camel.version>2.19.0-SNAPSHOT</camel.version>
     <snakeyaml.version>1.6</snakeyaml.version>
     <junit.version>4.12</junit.version>
+    <shrikwrap.version>1.2.6</shrikwrap.version>
     <idea.platform.prefix>-Didea.platform.prefix=Idea</idea.platform.prefix>
     <ij.plugin>true</ij.plugin>
   </properties>
@@ -346,6 +347,13 @@
       <groupId>com.intellij</groupId>
       <artifactId>sanselan-0.98-snapshot</artifactId>
       <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.shrinkwrap</groupId>
+      <artifactId>shrinkwrap-depchain</artifactId>
+      <version>${shrikwrap.version}</version>
+      <type>pom</type>
       <scope>test</scope>
     </dependency>
     <dependency>

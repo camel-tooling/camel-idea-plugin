@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -54,7 +54,7 @@ public class CamelService {
     /**
      * @param lib - Add library to the service library cache
      */
-    public void addLibrary(Library lib){
+    public void addLibrary(Library lib) {
         processedLibraries.add(lib);
     }
 
@@ -89,7 +89,8 @@ public class CamelService {
 
                 String name = libraryOrderEntry.getPresentableName().toLowerCase();
                 if (name.contains("camel") && (libraryOrderEntry.getScope().isForProductionCompile() || libraryOrderEntry.getScope().isForProductionRuntime())) {
-                    if (!isCamelPresent() && name.contains("camel-core") && !name.contains("camel-core-") && libraryOrderEntry.getLibrary().getFiles(OrderRootType.CLASSES).length > 0) {
+                    if (!isCamelPresent() && name.contains("camel-core") && !name.contains("camel-core-")
+                        && (libraryOrderEntry.getLibrary() != null && libraryOrderEntry.getLibrary().getFiles(OrderRootType.CLASSES).length > 0)) {
                         setCamelPresent(true);
                     }
 
