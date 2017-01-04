@@ -116,7 +116,9 @@ public final class IdeaUtils {
         }
 
         // fallback to generic
-        return element.getText();
+        String text = element.getText();
+        // the text may be quoted so unwrap that
+        return getInnerText(text);
     }
 
     /**
