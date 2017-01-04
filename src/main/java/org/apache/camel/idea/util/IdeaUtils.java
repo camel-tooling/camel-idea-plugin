@@ -215,6 +215,34 @@ public final class IdeaUtils {
                 return false;
             }
         }
+        // scala
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Scala")) {
+                // need to walk a bit into the psi tree to find the element that holds the method call name
+                // (yes we need to go up till 5 levels up to find the method call expression
+                String kind = element.toString();
+                // must be a string kind
+                if (kind.contains("string")) {
+                    for (int i = 0; i < 5; i++) {
+                        if (element != null) {
+                            kind = element.toString();
+                            if ("MethodCall".equals(kind)) {
+                                element = element.getFirstChild();
+                                if (element != null) {
+                                    String name = element.getText();
+                                    return "from".equals(name) || "fromF".equals(name) || "interceptFrom".equals(name) || "pollEnrich".equals(name);
+                                }
+                            }
+                            if (element != null) {
+                                element = element.getParent();
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        }
 
         return false;
     }
@@ -294,6 +322,35 @@ public final class IdeaUtils {
                         if (element != null) {
                             kind = element.toString();
                             if ("CALL_EXPRESSION".equals(kind)) {
+                                element = element.getFirstChild();
+                                if (element != null) {
+                                    String name = element.getText();
+                                    return "to".equals(name) || "toF".equals(name) || "toD".equals(name)
+                                        || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
+                                }
+                            }
+                            if (element != null) {
+                                element = element.getParent();
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+        // scala
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Scala")) {
+                // need to walk a bit into the psi tree to find the element that holds the method call name
+                // (yes we need to go up till 5 levels up to find the method call expression
+                String kind = element.toString();
+                // must be a string kind
+                if (kind.contains("string")) {
+                    for (int i = 0; i < 5; i++) {
+                        if (element != null) {
+                            kind = element.toString();
+                            if ("MethodCall".equals(kind)) {
                                 element = element.getFirstChild();
                                 if (element != null) {
                                     String name = element.getText();
