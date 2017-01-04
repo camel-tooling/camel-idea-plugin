@@ -25,7 +25,6 @@ import junit.framework.TestCase;
 import org.apache.camel.idea.util.StringUtils;
 import org.junit.Test;
 
-
 public class StringUtilsTest extends TestCase {
 
     @Test
