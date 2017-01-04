@@ -20,7 +20,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.intellij.codeInsight.completion.CompletionType;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
+import org.apache.camel.idea.util.CamelService;
 
 
 /**
@@ -31,6 +33,7 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends LightCodeInsi
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(true);
     }
 
     @Override
@@ -44,5 +47,13 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends LightCodeInsi
         List<String> strings = myFixture.getLookupElementStrings();
         assertTrue(strings.containsAll(Arrays.asList("ftp.client}}", "ftp.server}}")));
         assertEquals(2, strings.size());
+    }
+
+    public void testCamelIsNotPresent() {
+        ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(false);
+        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals(0, strings.size());
     }
 }

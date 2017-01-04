@@ -19,7 +19,9 @@ package org.apache.camel.idea.completion.extension;
 import java.util.Arrays;
 import java.util.List;
 import com.intellij.codeInsight.completion.CompletionType;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
+import org.apache.camel.idea.util.CamelService;
 
 /**
  * Testing smart completion with YML property classes
@@ -29,6 +31,7 @@ public class YamlPropertyPlaceholdersSmartCompletionTestIT extends LightCodeInsi
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(true);
     }
 
     @Override
@@ -46,5 +49,13 @@ public class YamlPropertyPlaceholdersSmartCompletionTestIT extends LightCodeInsi
             "spring.datasource.url}}", "spring.datasource.username}}",
             "spring.jpa.hibernate.ddl-auto}}", "spring.jpa.show-sql}}")));
         assertEquals(10, strings.size());
+    }
+
+    public void testCamelIsNotPresent() {
+        ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(false);
+        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals(0, strings.size());
     }
 }

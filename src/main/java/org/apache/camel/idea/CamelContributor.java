@@ -25,6 +25,7 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtil;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.patterns.InitialPatternCondition;
 import com.intellij.patterns.PsiFilePattern;
@@ -37,7 +38,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.idea.completion.extension.CamelCompletionExtension;
-import org.apache.camel.idea.util.IdeaUtils;
+import org.apache.camel.idea.util.CamelService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,10 +71,12 @@ public abstract class CamelContributor extends CompletionContributor {
         public void addCompletions(@NotNull CompletionParameters parameters,
                                    ProcessingContext context,
                                    @NotNull CompletionResultSet resultSet) {
-            String[] tuple = parsePsiElement(parameters);
-            camelCompletionExtensions.stream()
-                .filter(p -> p.isValid(parameters, context, tuple))
-                .forEach(p -> p.addCompletions(parameters, context, resultSet, tuple));
+            if (ServiceManager.getService(parameters.getOriginalFile().getProject(), CamelService.class).isCamelPresent()) {
+                String[] tuple = parsePsiElement(parameters);
+                camelCompletionExtensions.stream()
+                    .filter(p -> p.isValid(parameters, context, tuple))
+                    .forEach(p -> p.addCompletions(parameters, context, resultSet, tuple));
+            }
         }
     }
 

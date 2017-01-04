@@ -50,6 +50,7 @@ import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
+import org.apache.camel.idea.util.CamelService;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -60,33 +61,8 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
-        // gather all libraries (JARs) from the project/classpath
-        Set<Library> processedLibraries = new HashSet<>();
-
-        // TODO: this should be cached/faster maybe?
-        Module[] modules = ModuleManager.getInstance(project).getModules();
-        for (Module module : modules) {
-            ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
-            OrderEntry[] orderEntries = moduleRootManager.getOrderEntries();
-            for (OrderEntry orderEntry : orderEntries) {
-                if (orderEntry instanceof LibraryOrderEntry) {
-                    LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) orderEntry;
-                    // skip test scope
-                    if (libraryOrderEntry.getScope().isForProductionCompile() || libraryOrderEntry.getScope().isForProductionRuntime()) {
-                        final Library library = libraryOrderEntry.getLibrary();
-                        if (library == null) {
-                            continue;
-                        }
-                        if (processedLibraries.contains(library)) {
-                            continue;
-                        }
-                        processedLibraries.add(library);
-                    }
-                }
-            }
-        }
-
-        // filter libraries to only be Camel libraries
+         // filter libraries to only be Camel libraries
+        Set<Library> processedLibraries = ServiceManager.getService(project, CamelService.class).getLibraries();
         Set<String> artifacts = new LinkedHashSet<>();
         for (Library lib : processedLibraries) {
             String name = lib.getName();
@@ -133,17 +109,19 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
-        // if its a string literal
-        if (IdeaUtils.isStringLiteral(element)) {
-            PsiLiteralExpression literal = (PsiLiteralExpression) element;
-            String text = (String) literal.getValue();
-            // only be available if the string is empty
-            return text == null || text.isEmpty();
-        }
-        if (IdeaUtils.isJavaTokenLiteral(element)) {
-            PsiJavaToken token = (PsiJavaToken) element;
-            String text = IdeaUtils.getInnerText(token);
-            return text == null || text.isEmpty();
+        if (ServiceManager.getService(project, CamelService.class).isCamelPresent()) {
+            // if its a string literal
+            if (IdeaUtils.isStringLiteral(element)) {
+                PsiLiteralExpression literal = (PsiLiteralExpression) element;
+                String text = (String) literal.getValue();
+                // only be available if the string is empty
+                return text == null || text.isEmpty();
+            }
+            if (IdeaUtils.isJavaTokenLiteral(element)) {
+                PsiJavaToken token = (PsiJavaToken) element;
+                String text = IdeaUtils.getInnerText(token);
+                return text == null || text.isEmpty();
+            }
         }
         return false;
     }

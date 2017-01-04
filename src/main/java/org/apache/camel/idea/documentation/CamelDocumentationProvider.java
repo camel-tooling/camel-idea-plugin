@@ -46,6 +46,7 @@ import org.apache.camel.catalog.JSonSchemaHelper;
 import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
+import org.apache.camel.idea.util.CamelService;
 import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -78,38 +79,39 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public String generateDoc(PsiElement element, @Nullable PsiElement originalElement) {
-        String val = fetchLiteralForCamelDocumentation(element);
-        if (val == null) {
-            return null;
-        }
+        if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
+            String val = fetchLiteralForCamelDocumentation(element);
+            if (val == null) {
+                return null;
+            }
 
-        Project project = element.getProject();
-        CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
-        String componentName = StringUtils.asComponentName(val);
-        if (componentName != null) {
-            return generateCamelComponentDocumentation(componentName, val, camelCatalog);
-        } else {
-            // its maybe a method call for a Camel language
-            PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-            if (call != null) {
-                PsiMethod method = call.resolveMethod();
-                if (method != null) {
-                    // try to see if we have a Camel language with the method name
-                    String name = asLanguageName(method.getName());
-                    if (camelCatalog.findLanguageNames().contains(name)) {
-                        // okay its a potential Camel language so see if the psi method call is using
-                        // camel-core types so we know for a fact its really a Camel language
-                        if (isPsiMethodCamelLanguage(method)) {
-                            String html = camelCatalog.languageHtmlDoc(name);
-                            if (html != null) {
-                                return html;
+            Project project = element.getProject();
+            CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
+            String componentName = StringUtils.asComponentName(val);
+            if (componentName != null) {
+                return generateCamelComponentDocumentation(componentName, val, camelCatalog);
+            } else {
+                // its maybe a method call for a Camel language
+                PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+                if (call != null) {
+                    PsiMethod method = call.resolveMethod();
+                    if (method != null) {
+                        // try to see if we have a Camel language with the method name
+                        String name = asLanguageName(method.getName());
+                        if (camelCatalog.findLanguageNames().contains(name)) {
+                            // okay its a potential Camel language so see if the psi method call is using
+                            // camel-core types so we know for a fact its really a Camel language
+                            if (isPsiMethodCamelLanguage(method)) {
+                                String html = camelCatalog.languageHtmlDoc(name);
+                                if (html != null) {
+                                    return html;
+                                }
                             }
                         }
                     }
                 }
             }
         }
-
         return null;
     }
 
@@ -130,7 +132,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     public PsiElement getCustomDocumentationElement(@NotNull Editor editor, @NotNull PsiFile file, @Nullable PsiElement contextElement) {
         // documentation from properties file will cause IDEA to call this method where we can tell IDEA we can provide
         // documentation for the element if we can detect its a Camel component
-        if (hasDocumentationForCamelComponent(contextElement)) {
+        if (ServiceManager.getService(contextElement.getProject(), CamelService.class).isCamelPresent() && hasDocumentationForCamelComponent(contextElement)) {
             return contextElement;
         }
         return null;
@@ -160,7 +162,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Override
     public boolean handleExternal(PsiElement element, PsiElement originalElement) {
         String val = fetchLiteralForCamelDocumentation(element);
-        if (val == null) {
+        if (val == null || ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
             return false;
         }
 
@@ -207,12 +209,14 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     }
 
     private boolean hasDocumentationForCamelComponent(PsiElement element) {
-        String text = fetchLiteralForCamelDocumentation(element);
-        if (text != null) {
-            // check if its a known Camel component
-            String name = asComponentName(text);
-            Project project = element.getProject();
-            return ServiceManager.getService(project, CamelCatalogService.class).get().findComponentNames().contains(name);
+        if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
+            String text = fetchLiteralForCamelDocumentation(element);
+            if (text != null) {
+                // check if its a known Camel component
+                String name = asComponentName(text);
+                Project project = element.getProject();
+                return ServiceManager.getService(project, CamelCatalogService.class).get().findComponentNames().contains(name);
+            }
         }
         return false;
     }

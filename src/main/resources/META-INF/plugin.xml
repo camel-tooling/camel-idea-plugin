@@ -41,9 +41,17 @@
   <!-- depend on the properties plugin -->
   <depends>com.intellij.properties</depends>
 
+  <project-components>
+    <!-- Add your project components here -->
+    <component>
+      <implementation-class>org.apache.camel.idea.CamelProjectComponent</implementation-class>
+    </component>
+  </project-components>
+
   <extensions defaultExtensionNs="com.intellij">
 
     <projectService serviceImplementation="org.apache.camel.idea.catalog.CamelCatalogService" />
+    <projectService serviceImplementation="org.apache.camel.idea.util.CamelService" />
 
     <!-- allow smart completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.CamelJavaReferenceContributor"/>
