@@ -175,7 +175,8 @@ public final class IdeaUtils {
             PsiMethod method = call.resolveMethod();
             if (method != null) {
                 String name = method.getName();
-                return "to".equals(name) || "toF".equals(name) || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
+                return "to".equals(name) || "toF".equals(name) || "toD".equals(name)
+                    || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
             }
         }
         // annotation
