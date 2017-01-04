@@ -25,12 +25,14 @@ import com.intellij.lang.documentation.DocumentationProviderEx;
 import com.intellij.lang.documentation.ExternalDocumentationHandler;
 import com.intellij.lang.documentation.ExternalDocumentationProvider;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
@@ -39,7 +41,6 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameterList;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlAttributeValue;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.JSonSchemaHelper;
 import org.apache.camel.idea.catalog.CamelCatalogService;
@@ -87,7 +88,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                             String componentName = StringUtils.asComponentName(val);
                             if (componentName != null) {
                                 // the quick info cannot be so wide so wrap at 120 chars
-                                return generateCamelComponentDocumentation(componentName, val, 120);
+                                return generateCamelComponentDocumentation(componentName, val, 120, element.getProject());
                             }
                         }
                     }
@@ -107,15 +108,17 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public String generateDoc(PsiElement element, @Nullable PsiElement originalElement) {
+        String val = null;
         if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
-            String val = fetchLiteralForCamelDocumentation(element);
+            val = fetchLiteralForCamelDocumentation(element);
             if (val == null) {
                 return null;
             }
+        }
 
         String componentName = StringUtils.asComponentName(val);
         if (componentName != null) {
-            return generateCamelComponentDocumentation(componentName, val, -1);
+            return generateCamelComponentDocumentation(componentName, val, -1, element.getProject());
         } else {
             // its maybe a method call for a Camel language
             PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
@@ -124,11 +127,11 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                 if (method != null) {
                     // try to see if we have a Camel language with the method name
                     String name = asLanguageName(method.getName());
-                    if (CamelCatalogService.getInstance().findLanguageNames().contains(name)) {
+                    if (ServiceManager.getService(element.getProject(), CamelCatalogService.class).get().findLanguageNames().contains(name)) {
                         // okay its a potential Camel language so see if the psi method call is using
                         // camel-core types so we know for a fact its really a Camel language
                         if (isPsiMethodCamelLanguage(method)) {
-                            String html = CamelCatalogService.getInstance().languageHtmlDoc(name);
+                            String html = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get().languageHtmlDoc(name);
                             if (html != null) {
                                 return html;
                             }
@@ -253,9 +256,10 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         return extractTextFromElement(element);
     }
 
-    private String generateCamelComponentDocumentation(String componentName, String val, int wrapLength) {
+    private String generateCamelComponentDocumentation(String componentName, String val, int wrapLength, Project project) {
         // it is a known Camel component
-        String json = CamelCatalogService.getInstance().componentJSonSchema(componentName);
+        CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
+        String json = camelCatalog.componentJSonSchema(componentName);
         if (json == null) {
             return null;
         }
