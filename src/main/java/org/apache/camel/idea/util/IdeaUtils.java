@@ -21,7 +21,6 @@ import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
@@ -35,11 +34,20 @@ import org.jetbrains.annotations.Nullable;
 
 import static com.intellij.xml.CommonXmlStrings.QUOT;
 
+/**
+ * Utility methods to work with IDEA {@link PsiElement}s.
+ */
 public final class IdeaUtils {
 
     private IdeaUtils() {
     }
 
+    /**
+     * Extract the text value from the {@link PsiElement} from any of the support languages this plugin works with.
+     *
+     * @param element the element
+     * @return the text or <tt>null</tt> if the element is not a text/literal kind.
+     */
     @Nullable
     public static String extractTextFromElement(PsiElement element) {
         // need the entire line so find the literal expression that would hold the entire string (java)
@@ -111,22 +119,9 @@ public final class IdeaUtils {
     public static boolean isStringLiteral(PsiElement element) {
         if (element instanceof PsiLiteralExpression) {
             PsiType type = ((PsiLiteralExpression) element).getType();
-            String txt = type.getCanonicalText();
-            return "java.lang.String".equals(txt);
-        }
-        return false;
-    }
-
-    /**
-     * Is the given element a java token literal
-     */
-    @Deprecated
-    public static boolean isJavaTokenLiteral(PsiElement element) {
-        if (element instanceof PsiJavaToken) {
-            PsiJavaToken token = (PsiJavaToken) element;
-            IElementType type = token.getTokenType();
             if (type != null) {
-                return "STRING_LITERAL".equals(type.toString());
+                String txt = type.getCanonicalText();
+                return "java.lang.String".equals(txt);
             }
         }
         return false;
@@ -162,13 +157,99 @@ public final class IdeaUtils {
             }
             return "from".equals(name) || "interceptFrom".equals(name);
         }
+        // groovy
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Groovy")) {
+                // need to walk a bit into the psi tree to find the element that holds the method call name
+                // must be a groovy string kind
+                String kind = element.toString();
+                if (kind.contains("Gstring")) {
+                    PsiElement parent = element.getParent();
+                    if (parent != null) {
+                        parent = parent.getParent();
+                    }
+                    if (parent != null) {
+                        element = parent.getPrevSibling();
+                    }
+                    if (element != null) {
+                        element = element.getLastChild();
+                    }
+                    if (element != null) {
+                        kind = element.toString();
+                        // must be an identifier which is part of the method call
+                        if (kind.contains("identifier")) {
+                            String name = element.getText();
+                            return "from".equals(name) || "fromF".equals(name) || "interceptFrom".equals(name) || "pollEnrich".equals(name);
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+        // kotlin
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("kotlin")) {
+                // need to walk a bit into the psi tree to find the element that holds the method call name
+                // (yes we need to go up till 6 levels up to find the method call expression
+                String kind = element.toString();
+                // must be a string kind
+                if (kind.contains("STRING")) {
+                    for (int i = 0; i < 6; i++) {
+                        if (element != null) {
+                            kind = element.toString();
+                            if ("CALL_EXPRESSION".equals(kind)) {
+                                element = element.getFirstChild();
+                                if (element != null) {
+                                    String name = element.getText();
+                                    return "from".equals(name) || "fromF".equals(name) || "interceptFrom".equals(name) || "pollEnrich".equals(name);
+                                }
+                            }
+                            if (element != null) {
+                                element = element.getParent();
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+        // scala
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Scala")) {
+                // need to walk a bit into the psi tree to find the element that holds the method call name
+                // (yes we need to go up till 5 levels up to find the method call expression
+                String kind = element.toString();
+                // must be a string kind
+                if (kind.contains("string")) {
+                    for (int i = 0; i < 5; i++) {
+                        if (element != null) {
+                            kind = element.toString();
+                            if ("MethodCall".equals(kind)) {
+                                element = element.getFirstChild();
+                                if (element != null) {
+                                    String name = element.getText();
+                                    return "from".equals(name) || "fromF".equals(name) || "interceptFrom".equals(name) || "pollEnrich".equals(name);
+                                }
+                            }
+                            if (element != null) {
+                                element = element.getParent();
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        }
 
         return false;
     }
 
     /**
      * Is the given element from a producer endpoint used in a route from a <tt>to</tt>, <tt>toF</tt>,
-     * <tt>interceptSendToEndpiint</tt>, <tt>wireTap</tt>, or <tt>enrich</tt> pattern.
+     * <tt>interceptSendToEndpoint</tt>, <tt>wireTap</tt>, or <tt>enrich</tt> pattern.
      */
     public static boolean isProducerEndpoint(PsiElement element) {
         // java method call
@@ -197,53 +278,114 @@ public final class IdeaUtils {
             }
             return "to".equals(name) || "interceptSendToEndpoint".equals(name) || "wireTap".equals(name);
         }
+        // groovy
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Groovy")) {
+                // need to walk a bit into the psi tree to find the element that holds the method call name
+                // must be a groovy string kind
+                String kind = element.toString();
+                if (kind.contains("Gstring")) {
+                    PsiElement parent = element.getParent();
+                    if (parent != null) {
+                        parent = parent.getParent();
+                    }
+                    if (parent != null) {
+                        element = parent.getPrevSibling();
+                    }
+                    if (element != null) {
+                        element = element.getLastChild();
+                    }
+                    if (element != null) {
+                        kind = element.toString();
+                        // must be an identifier which is part of the method call
+                        if (kind.contains("identifier")) {
+                            String name = element.getText();
+                            return "to".equals(name) || "toF".equals(name) || "toD".equals(name)
+                                || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+        // kotlin
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("kotlin")) {
+                // need to walk a bit into the psi tree to find the element that holds the method call name
+                // (yes we need to go up till 6 levels up to find the method call expression
+                String kind = element.toString();
+                // must be a string kind
+                if (kind.contains("STRING")) {
+                    for (int i = 0; i < 6; i++) {
+                        if (element != null) {
+                            kind = element.toString();
+                            if ("CALL_EXPRESSION".equals(kind)) {
+                                element = element.getFirstChild();
+                                if (element != null) {
+                                    String name = element.getText();
+                                    return "to".equals(name) || "toF".equals(name) || "toD".equals(name)
+                                        || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
+                                }
+                            }
+                            if (element != null) {
+                                element = element.getParent();
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+        // scala
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Scala")) {
+                // need to walk a bit into the psi tree to find the element that holds the method call name
+                // (yes we need to go up till 5 levels up to find the method call expression
+                String kind = element.toString();
+                // must be a string kind
+                if (kind.contains("string")) {
+                    for (int i = 0; i < 5; i++) {
+                        if (element != null) {
+                            kind = element.toString();
+                            if ("MethodCall".equals(kind)) {
+                                element = element.getFirstChild();
+                                if (element != null) {
+                                    String name = element.getText();
+                                    return "to".equals(name) || "toF".equals(name) || "toD".equals(name)
+                                        || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
+                                }
+                            }
+                            if (element != null) {
+                                element = element.getParent();
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        }
 
         return false;
     }
 
     /**
-     * Code from com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl#getInnerText()
+     * Is the class a Camel expression class
+     *
+     * @param clazz  the class
+     * @return <tt>true</tt> if its a Camel expression class, <tt>false</tt> otherwise.
      */
-    @Nullable
-    public static String getInnerText(String text) {
-        int textLength = text.length();
-        if (StringUtil.endsWithChar(text, '\"')) {
-            if (textLength == 1) {
-                return null;
-            }
-            text = text.substring(1, textLength - 1);
-        } else {
-            if (text.startsWith(QUOT) && text.endsWith(QUOT) && textLength > QUOT.length()) {
-                text = text.substring(QUOT.length(), textLength - QUOT.length());
-            } else {
-                return null;
-            }
-        }
-        return text;
-    }
-
-    @Nullable
-    public static String getKotlinInnerText(String text) {
-        // it may be just a single quote
-        int textLength = text.length();
-        if (StringUtil.endsWithChar(text, '\"')) {
-            if (textLength == 1) {
-                // its a open or closing quote which kotlin breaks into two psi elements
-                return "";
-            }
-        }
-        return text;
-    }
-
     public static boolean isCamelExpressionOrLanguage(PsiClass clazz) {
         if (clazz == null) {
             return false;
         }
         String fqn = clazz.getQualifiedName();
         if ("org.apache.camel.Expression".equals(fqn)
-                || "org.apache.camel.Predicate".equals(fqn)
-                || "org.apache.camel.model.language.ExpressionDefinition".equals(fqn)
-                || "org.apache.camel.builder.ExpressionClause".equals(fqn)) {
+            || "org.apache.camel.Predicate".equals(fqn)
+            || "org.apache.camel.model.language.ExpressionDefinition".equals(fqn)
+            || "org.apache.camel.builder.ExpressionClause".equals(fqn)) {
             return true;
         }
         // try implements first
@@ -262,5 +404,39 @@ public final class IdeaUtils {
         }
         // okay then go up and try super
         return isCamelExpressionOrLanguage(clazz.getSuperClass());
+    }
+
+    /**
+     * Code from com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl#getInnerText()
+     */
+    @Nullable
+    private static String getInnerText(String text) {
+        int textLength = text.length();
+        if (StringUtil.endsWithChar(text, '\"')) {
+            if (textLength == 1) {
+                return null;
+            }
+            text = text.substring(1, textLength - 1);
+        } else {
+            if (text.startsWith(QUOT) && text.endsWith(QUOT) && textLength > QUOT.length()) {
+                text = text.substring(QUOT.length(), textLength - QUOT.length());
+            } else {
+                return null;
+            }
+        }
+        return text;
+    }
+
+    @Nullable
+    private static String getKotlinInnerText(String text) {
+        // it may be just a single quote
+        int textLength = text.length();
+        if (StringUtil.endsWithChar(text, '\"')) {
+            if (textLength == 1) {
+                // its a open or closing quote which kotlin breaks into two psi elements
+                return "";
+            }
+        }
+        return text;
     }
 }
