@@ -11,6 +11,7 @@
       <ul>
         <li>Smart completion for Camel endpoints in Java, Groovy, Kotlin, Scala, XML, properties or yaml files (ctrl + space)</li>
         <li>Smart completion for Camel property placeholders (cursor after {{)</li>
+        <li>Endpoint options filtered to only include applicable options when used as consumer vs producer only mode</li>
         <li>Intention to add new Camel endpoint in Java editor (alt + enter in empty string)</li>
         <li>Quick documentation for Camel endpoints and external link to Camel component opening in web browser (ctrl + j and shift-F1)</li>
         <li>Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders</li>
@@ -19,7 +20,8 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.2.1 - Smart completion for Kotlin files.
+        <li>0.2.1 - Plugin is only in use if the loaded project is a Camel project (has camel-core as library/dependency).
+                    Smart completion for Kotlin files.
                     Endpoint options are now sorted.
                     Endpoint options filtered to only include applicable options when used as consumer vs producer only mode.
                     Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders.</li>
