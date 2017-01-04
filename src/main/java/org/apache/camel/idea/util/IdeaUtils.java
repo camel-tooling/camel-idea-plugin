@@ -21,6 +21,7 @@ import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
@@ -148,6 +149,16 @@ public final class IdeaUtils {
             if (method != null) {
                 String name = method.getName();
                 return "from".equals(name) || "fromF".equals(name) || "interceptFrom".equals(name) || "pollEnrich".equals(name);
+            } else {
+                // alternative when we run unit test where IDEA causes the method call expression to include their dummy hack which skews up this logic
+                PsiElement child = call.getFirstChild();
+                if (child != null) {
+                    child = child.getLastChild();
+                }
+                if (child != null && child instanceof PsiIdentifier) {
+                    String name = child.getText();
+                    return "from".equals(name) || "fromF".equals(name) || "interceptFrom".equals(name) || "pollEnrich".equals(name);
+                }
             }
         }
         // annotation
@@ -269,6 +280,17 @@ public final class IdeaUtils {
                 String name = method.getName();
                 return "to".equals(name) || "toF".equals(name) || "toD".equals(name)
                     || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
+            } else {
+                // alternative when we run unit test where IDEA causes the method call expression to include their dummy hack which skews up this logic
+                PsiElement child = call.getFirstChild();
+                if (child != null) {
+                    child = child.getLastChild();
+                }
+                if (child != null && child instanceof PsiIdentifier) {
+                    String name = child.getText();
+                    return "to".equals(name) || "toF".equals(name) || "toD".equals(name)
+                        || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
+                }
             }
         }
         // annotation

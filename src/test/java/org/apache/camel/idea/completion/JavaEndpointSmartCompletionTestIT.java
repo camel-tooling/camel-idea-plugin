@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.completion.extension;
+package org.apache.camel.idea.completion;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,9 +25,9 @@ import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import org.apache.camel.idea.util.CamelService;
 
 /**
- * Testing smart completion with YML property classes
+ * Testing smart completion with Camel Java DSL
  */
-public class JavaPropertyPlaceholdersSmartCompletionTestIT extends LightCodeInsightFixtureTestCase {
+public class JavaEndpointSmartCompletionTestIT extends LightCodeInsightFixtureTestCase {
 
     @Override
     protected void setUp() throws Exception {
@@ -40,19 +40,22 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends LightCodeInsi
         return "src/test/resources/testData/";
     }
 
-    public void testCompletion() {
-        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties");
+    public void testConsumerCompletion() {
+        myFixture.configureByFiles("CompleteJavaEndpointConsumerTestData.java");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertTrue(strings.containsAll(Arrays.asList("ftp.client}}", "ftp.server}}")));
-        assertEquals(2, strings.size());
+        assertTrue(strings.containsAll(Arrays.asList("file:inbox?autoCreate=", "file:inbox?include=", "file:inbox?delay=", "file:inbox?delete=")));
+        assertFalse(strings.containsAll(Arrays.asList("file:inbox?fileExist=", "file:inbox?forceWrites=")));
+        assertTrue("There is many options", strings.size() > 60);
     }
 
-    public void testCamelIsNotPresent() {
-        ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(false);
-        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties");
+    public void testProducerCompletion() {
+        myFixture.configureByFiles("CompleteJavaEndpointProducerTestData.java");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals(0, strings.size());
+        assertFalse(strings.containsAll(Arrays.asList("file:outbox?autoCreate=", "file:outbox?include=", "file:outbox?delay=", "file:outbox?delete=")));
+        assertTrue(strings.containsAll(Arrays.asList("file:outbox?fileExist=", "file:outbox?forceWrites=")));
+        assertTrue("There is less options", strings.size() < 30);
     }
+
 }
