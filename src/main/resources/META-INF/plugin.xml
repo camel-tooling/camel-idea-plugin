@@ -57,14 +57,20 @@
     <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertyPlaceholderReferenceContributor"/>
 
     <!-- quick documentation for Camel endpoints -->
-    <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
-    <lang.documentationProvider language="XML" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
-    <lang.documentationProvider language="Groovy" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
-    <lang.documentationProvider language="kotlin" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
+    <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
+                                order="first"/>
+    <lang.documentationProvider language="XML" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
+                                order="first"/>
+    <lang.documentationProvider language="Groovy" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
+                                order="first"/>
+    <lang.documentationProvider language="kotlin" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
+                                order="first"/>
     <lang.documentationProvider language="Scala" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
                                 order="first"/>
-    <lang.documentationProvider language="Properties" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
-    <lang.documentationProvider language="yaml" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
+    <lang.documentationProvider language="Properties" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
+                                order="first"/>
+    <lang.documentationProvider language="yaml" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
+                                order="first"/>
 
     <!-- intention to add Camel endpoint -->
     <intentionAction>

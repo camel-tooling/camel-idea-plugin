@@ -28,7 +28,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
@@ -41,6 +44,7 @@ import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
 import org.apache.camel.idea.util.StringUtils;
+import org.apache.commons.lang.WordUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -59,6 +63,22 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public String getQuickNavigateInfo(PsiElement element, PsiElement originalElement) {
+        PsiExpressionList exps = PsiTreeUtil.getNextSiblingOfType(originalElement, PsiExpressionList.class);
+        if (exps != null) {
+            if (exps.getExpressions().length == 1) {
+                PsiExpression exp = exps.getExpressions()[0];
+                if (exp instanceof PsiLiteralExpression) {
+                    Object o = ((PsiLiteralExpression) exp).getValue();
+                    String val = o != null ? o.toString() : null;
+                    String componentName = StringUtils.asComponentName(val);
+                    if (componentName != null) {
+                        // the quick info cannot be so wide so wrap at 120 chars
+                        return generateCamelComponentDocumentation(componentName, val, 120);
+                    }
+                }
+            }
+        }
+
         return null;
     }
 
@@ -78,7 +98,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
         String componentName = StringUtils.asComponentName(val);
         if (componentName != null) {
-            return generateCamelComponentDocumentation(componentName, val);
+            return generateCamelComponentDocumentation(componentName, val, -1);
         } else {
             // its maybe a method call for a Camel language
             PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
@@ -212,7 +232,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         return extractTextFromElement(element);
     }
 
-    private String generateCamelComponentDocumentation(String componentName, String val) {
+    private String generateCamelComponentDocumentation(String componentName, String val, int wrapLength) {
         // it is a known Camel component
         String json = CamelCatalogService.getInstance().componentJSonSchema(componentName);
         ComponentModel component = ModelHelper.generateComponentModel(json, false);
@@ -246,14 +266,14 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                     options.append("<b>").append(line).append("</b>");
 
                     String summary = row.get("description");
-                    options.append(summary).append("<br/>");
+                    options.append(wrapText(summary, wrapLength)).append("<br/>");
                 }
             }
         }
 
         StringBuilder sb = new StringBuilder();
         sb.append("<b>").append(component.getTitle()).append(" Component</b><br/>");
-        sb.append(component.getDescription()).append("<br/><br/>");
+        sb.append(wrapText(component.getDescription(), wrapLength)).append("<br/><br/>");
         sb.append("Syntax: <tt>").append(component.getSyntax()).append("?options</tt><br/>");
         sb.append("Java class: <tt>").append(component.getJavaType()).append("</tt><br/>");
 
@@ -327,5 +347,12 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         }
         // okay then go up and try super
         return isCamelExpressionOrLanguage(clazz.getSuperClass());
+    }
+
+    private static String wrapText(String text, int wrapLength) {
+        if (wrapLength > 0) {
+            text = WordUtils.wrap(text, wrapLength, "<br/>", true);
+        }
+        return text;
     }
 }

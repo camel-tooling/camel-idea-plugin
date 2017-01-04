@@ -37,6 +37,7 @@
 
     <idea.version>2016.3.2</idea.version>
     <camel.version>2.19.0-SNAPSHOT</camel.version>
+    <commons.lang.version>3.5</commons.lang.version>
     <snakeyaml.version>1.6</snakeyaml.version>
     <junit.version>4.12</junit.version>
     <idea.platform.prefix>-Didea.platform.prefix=Idea</idea.platform.prefix>
@@ -110,6 +111,14 @@
       <groupId>org.apache.camel</groupId>
       <artifactId>camel-catalog</artifactId>
       <version>${camel.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <!-- commons-lang for wrapping words -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons.lang.version}</version>
       <scope>compile</scope>
     </dependency>
 
