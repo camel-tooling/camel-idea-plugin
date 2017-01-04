@@ -41,6 +41,8 @@ import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.PopupChooserBuilder;
 import com.intellij.openapi.util.Iconable;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.IncorrectOperationException;
 import org.apache.camel.idea.catalog.CamelCatalogService;
@@ -130,6 +132,16 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
+        // special for xml
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            // special check for poll enrich where we add the endpoint on a child node (camel expression)
+            XmlTag parent = xml.getParentTag();
+            if (parent != null && parent.getLocalName().equals("pollEnrich")) {
+                return true;
+            }
+        }
+
         String text = extractTextFromElement(element);
         return text != null && text.trim().isEmpty();
     }

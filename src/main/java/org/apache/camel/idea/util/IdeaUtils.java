@@ -28,6 +28,7 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.Nullable;
 
 import static com.intellij.xml.CommonXmlStrings.QUOT;
@@ -134,6 +135,7 @@ public final class IdeaUtils {
      * <tt>interceptFrom</tt>, or <tt>pollEnrich</tt> pattern.
      */
     public static boolean isConsumerEndpoint(PsiElement element) {
+        // java method call
         PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
         if (call != null) {
             PsiMethod method = call.resolveMethod();
@@ -142,9 +144,21 @@ public final class IdeaUtils {
                 return "from".equals(name) || "fromF".equals(name) || "interceptFrom".equals(name) || "pollEnrich".equals(name);
             }
         }
+        // annotation
         PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
         if (annotation != null && annotation.getQualifiedName() != null) {
             return annotation.getQualifiedName().equals("org.apache.camel.Consume");
+        }
+        // xml
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            String name = xml.getLocalName();
+            // special check for poll enrich where we add the endpoint on a child node (camel expression)
+            XmlTag parent = xml.getParentTag();
+            if (parent != null && parent.getLocalName().equals("pollEnrich")) {
+                return true;
+            }
+            return "from".equals(name) || "interceptFrom".equals(name);
         }
 
         return false;
