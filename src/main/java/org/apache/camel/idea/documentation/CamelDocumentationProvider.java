@@ -16,6 +16,7 @@
  */
 package org.apache.camel.idea.documentation;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +29,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
@@ -40,6 +44,7 @@ import org.apache.camel.catalog.JSonSchemaHelper;
 import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
+import org.apache.camel.idea.util.IdeaUtils;
 import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -48,6 +53,7 @@ import static org.apache.camel.idea.util.IdeaUtils.extractTextFromElement;
 import static org.apache.camel.idea.util.StringUtils.asComponentName;
 import static org.apache.camel.idea.util.StringUtils.asLanguageName;
 import static org.apache.camel.idea.util.StringUtils.wrapSeparator;
+import static org.apache.camel.idea.util.StringUtils.wrapWords;
 
 /**
  * Camel documentation provider to hook into IDEA to show Camel endpoint documentation in popups and various other places.
@@ -59,6 +65,34 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public String getQuickNavigateInfo(PsiElement element, PsiElement originalElement) {
+        PsiExpressionList exps = PsiTreeUtil.getNextSiblingOfType(originalElement, PsiExpressionList.class);
+        if (exps != null) {
+            if (exps.getExpressions().length >= 1) {
+                // grab first string parameter (as the string would contain the camel endpoint uri
+                final PsiClassType stringType = PsiType.getJavaLangString(element.getManager(), element.getResolveScope());
+                PsiExpression exp = Arrays.stream(exps.getExpressions()).filter(
+                    (e) -> e.getType() != null && stringType.isAssignableFrom(e.getType()))
+                    .findFirst().orElse(null);
+                if (exp instanceof PsiLiteralExpression) {
+                    Object o = ((PsiLiteralExpression) exp).getValue();
+                    String val = o != null ? o.toString() : null;
+                    // okay only allow this popup to work when its from a RouteBuilder class
+                    PsiClass clazz = PsiTreeUtil.getParentOfType(originalElement, PsiClass.class);
+                    if (clazz != null) {
+                        PsiClassType[] types = clazz.getExtendsListTypes();
+                        boolean found = Arrays.stream(types).anyMatch((p) -> p.getClassName().equals("RouteBuilder"));
+                        if (found) {
+                            String componentName = StringUtils.asComponentName(val);
+                            if (componentName != null) {
+                                // the quick info cannot be so wide so wrap at 120 chars
+                                return generateCamelComponentDocumentation(componentName, val, 120);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         return null;
     }
 
@@ -78,7 +112,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
         String componentName = StringUtils.asComponentName(val);
         if (componentName != null) {
-            return generateCamelComponentDocumentation(componentName, val);
+            return generateCamelComponentDocumentation(componentName, val, -1);
         } else {
             // its maybe a method call for a Camel language
             PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
@@ -212,9 +246,13 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         return extractTextFromElement(element);
     }
 
-    private String generateCamelComponentDocumentation(String componentName, String val) {
+    private String generateCamelComponentDocumentation(String componentName, String val, int wrapLength) {
         // it is a known Camel component
         String json = CamelCatalogService.getInstance().componentJSonSchema(componentName);
+        if (json == null) {
+            return null;
+        }
+
         ComponentModel component = ModelHelper.generateComponentModel(json, false);
 
         Map<String, String> existing = null;
@@ -246,14 +284,14 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                     options.append("<b>").append(line).append("</b>");
 
                     String summary = row.get("description");
-                    options.append(summary).append("<br/>");
+                    options.append(wrapText(summary, wrapLength)).append("<br/>");
                 }
             }
         }
 
         StringBuilder sb = new StringBuilder();
         sb.append("<b>").append(component.getTitle()).append(" Component</b><br/>");
-        sb.append(component.getDescription()).append("<br/><br/>");
+        sb.append(wrapText(component.getDescription(), wrapLength)).append("<br/><br/>");
         sb.append("Syntax: <tt>").append(component.getSyntax()).append("?options</tt><br/>");
         sb.append("Java class: <tt>").append(component.getJavaType()).append("</tt><br/>");
 
@@ -281,7 +319,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             PsiClassReferenceType clazz = (PsiClassReferenceType) type;
             PsiClass resolved = clazz.resolve();
             if (resolved != null) {
-                boolean language = isCamelExpressionOrLanguage(resolved);
+                boolean language = IdeaUtils.isCamelExpressionOrLanguage(resolved);
                 // try parent using some weird/nasty stub stuff which is how complex IDEA AST
                 // is when its parsing the Camel route builder
                 if (!language) {
@@ -290,7 +328,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                         elem = elem.getParent();
                     }
                     if (elem instanceof PsiClass) {
-                        language = isCamelExpressionOrLanguage((PsiClass) elem);
+                        language = IdeaUtils.isCamelExpressionOrLanguage((PsiClass) elem);
                     }
                 }
                 return language;
@@ -300,32 +338,10 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         return false;
     }
 
-    private boolean isCamelExpressionOrLanguage(PsiClass clazz) {
-        if (clazz == null) {
-            return false;
+    private static String wrapText(String text, int wrapLength) {
+        if (wrapLength > 0) {
+            text = wrapWords(text, "<br/>", wrapLength, true);
         }
-        String fqn = clazz.getQualifiedName();
-        if ("org.apache.camel.Expression".equals(fqn)
-                || "org.apache.camel.Predicate".equals(fqn)
-                || "org.apache.camel.model.language.ExpressionDefinition".equals(fqn)
-                || "org.apache.camel.builder.ExpressionClause".equals(fqn)) {
-            return true;
-        }
-        // try implements first
-        for (PsiClassType ct : clazz.getImplementsListTypes()) {
-            PsiClass resolved = ct.resolve();
-            if (isCamelExpressionOrLanguage(resolved)) {
-                return true;
-            }
-        }
-        // then fallback as extends
-        for (PsiClassType ct : clazz.getExtendsListTypes()) {
-            PsiClass resolved = ct.resolve();
-            if (isCamelExpressionOrLanguage(resolved)) {
-                return true;
-            }
-        }
-        // okay then go up and try super
-        return isCamelExpressionOrLanguage(clazz.getSuperClass());
+        return text;
     }
 }

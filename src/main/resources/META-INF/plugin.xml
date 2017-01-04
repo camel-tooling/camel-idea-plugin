@@ -13,6 +13,7 @@
         <li>Smart completion for Camel property placeholders (cursor after {{)</li>
         <li>Intention to add new Camel endpoint in Java editor (alt + enter in empty string)</li>
         <li>Quick documentation for Camel endpoints and external link to Camel component opening in web browser (ctrl + j and shift-F1)</li>
+        <li>Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders</li>
       </ul>
     ]]></description>
 
@@ -20,7 +21,8 @@
       <ul>
         <li>0.2.1 - Smart completion for Kotlin files.
                     Endpoint options are now sorted.
-                    Endpoint options filtered to only include applicable options when used as consumer vs producer only mode.</li>
+                    Endpoint options filtered to only include applicable options when used as consumer vs producer only mode.
+                    Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders.</li>
         <li>0.2.0 - Smart completion for Groovy, Scala and XML files</li>
         <li>0.1.7 - Smart completion for YAML and properties files</li>
         <li>0.1.6 - Project migrated to Maven and other minor bug fixes</li>
@@ -57,14 +59,20 @@
     <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertyPlaceholderReferenceContributor"/>
 
     <!-- quick documentation for Camel endpoints -->
-    <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
-    <lang.documentationProvider language="XML" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
-    <lang.documentationProvider language="Groovy" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
-    <lang.documentationProvider language="kotlin" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
+    <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
+                                order="first"/>
+    <lang.documentationProvider language="XML" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
+                                order="first"/>
+    <lang.documentationProvider language="Groovy" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
+                                order="first"/>
+    <lang.documentationProvider language="kotlin" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
+                                order="first"/>
     <lang.documentationProvider language="Scala" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
                                 order="first"/>
-    <lang.documentationProvider language="Properties" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
-    <lang.documentationProvider language="yaml" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"/>
+    <lang.documentationProvider language="Properties" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
+                                order="first"/>
+    <lang.documentationProvider language="yaml" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
+                                order="first"/>
 
     <!-- intention to add Camel endpoint -->
     <intentionAction>

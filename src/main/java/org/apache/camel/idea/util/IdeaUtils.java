@@ -18,6 +18,8 @@ package org.apache.camel.idea.util;
 
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteralExpression;
@@ -231,5 +233,34 @@ public final class IdeaUtils {
             }
         }
         return text;
+    }
+
+    public static boolean isCamelExpressionOrLanguage(PsiClass clazz) {
+        if (clazz == null) {
+            return false;
+        }
+        String fqn = clazz.getQualifiedName();
+        if ("org.apache.camel.Expression".equals(fqn)
+                || "org.apache.camel.Predicate".equals(fqn)
+                || "org.apache.camel.model.language.ExpressionDefinition".equals(fqn)
+                || "org.apache.camel.builder.ExpressionClause".equals(fqn)) {
+            return true;
+        }
+        // try implements first
+        for (PsiClassType ct : clazz.getImplementsListTypes()) {
+            PsiClass resolved = ct.resolve();
+            if (isCamelExpressionOrLanguage(resolved)) {
+                return true;
+            }
+        }
+        // then fallback as extends
+        for (PsiClassType ct : clazz.getExtendsListTypes()) {
+            PsiClass resolved = ct.resolve();
+            if (isCamelExpressionOrLanguage(resolved)) {
+                return true;
+            }
+        }
+        // okay then go up and try super
+        return isCamelExpressionOrLanguage(clazz.getSuperClass());
     }
 }
