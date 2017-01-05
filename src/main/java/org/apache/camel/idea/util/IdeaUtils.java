@@ -138,6 +138,125 @@ public final class IdeaUtils {
     }
 
     /**
+     * Is the given element from the start of a Camel route, eg <tt>from</tt>, ot &lt;from&gt;.
+     */
+    public static boolean isCamelRouteStart(PsiElement element) {
+        // java method call
+        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        if (call != null) {
+            PsiMethod method = call.resolveMethod();
+            if (method != null) {
+                String name = method.getName();
+                return "from".equals(name) || "fromF".equals(name);
+            } else {
+                // alternative when we run unit test where IDEA causes the method call expression to include their dummy hack which skews up this logic
+                PsiElement child = call.getFirstChild();
+                if (child != null) {
+                    child = child.getLastChild();
+                }
+                if (child != null && child instanceof PsiIdentifier) {
+                    String name = child.getText();
+                    return "from".equals(name) || "fromF".equals(name);
+                }
+            }
+        }
+        // xml
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            String name = xml.getLocalName();
+            return "from".equals(name);
+        }
+        // groovy
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Groovy")) {
+                // need to walk a bit into the psi tree to find the element that holds the method call name
+                // must be a groovy string kind
+                String kind = element.toString();
+                if (kind.contains("Gstring")) {
+                    PsiElement parent = element.getParent();
+                    if (parent != null) {
+                        parent = parent.getParent();
+                    }
+                    if (parent != null) {
+                        element = parent.getPrevSibling();
+                    }
+                    if (element != null) {
+                        element = element.getLastChild();
+                    }
+                    if (element != null) {
+                        kind = element.toString();
+                        // must be an identifier which is part of the method call
+                        if (kind.contains("identifier")) {
+                            String name = element.getText();
+                            return "from".equals(name) || "fromF".equals(name);
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+        // kotlin
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("kotlin")) {
+                // need to walk a bit into the psi tree to find the element that holds the method call name
+                // (yes we need to go up till 6 levels up to find the method call expression
+                String kind = element.toString();
+                // must be a string kind
+                if (kind.contains("STRING")) {
+                    for (int i = 0; i < 6; i++) {
+                        if (element != null) {
+                            kind = element.toString();
+                            if ("CALL_EXPRESSION".equals(kind)) {
+                                element = element.getFirstChild();
+                                if (element != null) {
+                                    String name = element.getText();
+                                    return "from".equals(name) || "fromF".equals(name);
+                                }
+                            }
+                            if (element != null) {
+                                element = element.getParent();
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+        // scala
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Scala")) {
+                // need to walk a bit into the psi tree to find the element that holds the method call name
+                // (yes we need to go up till 5 levels up to find the method call expression
+                String kind = element.toString();
+                // must be a string kind
+                if (kind.contains("string")) {
+                    for (int i = 0; i < 5; i++) {
+                        if (element != null) {
+                            kind = element.toString();
+                            if ("MethodCall".equals(kind)) {
+                                element = element.getFirstChild();
+                                if (element != null) {
+                                    String name = element.getText();
+                                    return "from".equals(name) || "fromF".equals(name);
+                                }
+                            }
+                            if (element != null) {
+                                element = element.getParent();
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Is the given element from a consumer endpoint used in a route from a <tt>from</tt>, <tt>fromF</tt>,
      * <tt>interceptFrom</tt>, or <tt>pollEnrich</tt> pattern.
      */
