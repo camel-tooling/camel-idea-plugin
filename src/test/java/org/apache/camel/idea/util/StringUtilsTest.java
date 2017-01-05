@@ -91,4 +91,26 @@ public class StringUtilsTest extends TestCase {
         assertEquals(line2, parts[1]);
     }
 
+    @Test
+    public void testWrapWords() {
+        String words = "Plugin for Intellij IDEA to provide a set of small Camel related capabilities to IDEA editor."
+            + " When the plugin becomes more complete and stable then the intention is to donate the source code"
+            + " to Apache Software Foundation to be included out of the box at Apache Camel.";
+
+        String wrapped = StringUtils.wrapWords(words, "\n", 80, true);
+
+        String[] parts = wrapped.split("\n");
+        assertEquals(4, parts.length);
+
+        assertTrue(parts[0].length() <= 80);
+        assertTrue(parts[1].length() <= 80);
+        assertTrue(parts[2].length() <= 80);
+        assertTrue(parts[3].length() <= 80);
+
+        assertTrue(parts[0].startsWith("Plugin for Intellij"));
+        assertTrue(parts[1].startsWith("IDEA editor"));
+        assertTrue(parts[2].startsWith("is to donate"));
+        assertTrue(parts[3].startsWith("the box at Apache Camel."));
+    }
+
 }
