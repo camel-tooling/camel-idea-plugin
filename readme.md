@@ -1,7 +1,7 @@
 Camel IDEA Plugin
 =================
 
-[![GitHub release](https://img.shields.io/github/release/qubyte/rubidium.svg?style=flat-square)]()
+[![GitHub tag](https://img.shields.io/github/tag/davsclaus/camel-idea-plugin.svg?style=plastic)]()
 
 Plugin for Intellij IDEA to provide a set of small Camel related capabilities to IDEA editor.
 
