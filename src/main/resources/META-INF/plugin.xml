@@ -50,7 +50,7 @@
   <depends>com.intellij.properties</depends>
 
   <project-components>
-    <!-- Add your project components here -->
+    <!-- Camel project component -->
     <component>
       <implementation-class>org.apache.camel.idea.CamelProjectComponent</implementation-class>
     </component>
@@ -58,8 +58,9 @@
 
   <extensions defaultExtensionNs="com.intellij">
 
-    <projectService serviceImplementation="org.apache.camel.idea.catalog.CamelCatalogService" />
-    <projectService serviceImplementation="org.apache.camel.idea.util.CamelService" />
+    <!-- services which can be requested from IDEA api -->
+    <projectService serviceImplementation="org.apache.camel.idea.catalog.CamelCatalogService"/>
+    <projectService serviceImplementation="org.apache.camel.idea.util.CamelService"/>
 
     <!-- allow smart completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.CamelJavaReferenceContributor"/>
@@ -71,6 +72,10 @@
 
     <!-- puts the Camel icon in the gutter for each line that starts a Camel route -->
     <codeInsight.lineMarkerProvider language="JAVA" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
+    <codeInsight.lineMarkerProvider language="XML" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
+    <codeInsight.lineMarkerProvider language="Groovy" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
+    <codeInsight.lineMarkerProvider language="kotlin" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
+    <codeInsight.lineMarkerProvider language="Scala" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
 
     <!-- smart completion of Camel property placeholders, eg {{foo}} style -->
     <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertyPlaceholderReferenceContributor"/>
