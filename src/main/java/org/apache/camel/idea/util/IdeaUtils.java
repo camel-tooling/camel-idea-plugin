@@ -40,6 +40,8 @@ import static com.intellij.xml.CommonXmlStrings.QUOT;
  */
 public final class IdeaUtils {
 
+    private static final String SINGLE_QUOT = "'";
+
     private IdeaUtils() {
     }
 
@@ -184,12 +186,23 @@ public final class IdeaUtils {
                     if (element != null) {
                         element = element.getLastChild();
                     }
-                    if (element != null) {
-                        kind = element.toString();
-                        // must be an identifier which is part of the method call
-                        if (kind.contains("identifier")) {
-                            String name = element.getText();
-                            return "from".equals(name) || "fromF".equals(name);
+                }
+                if (element != null) {
+                    kind = element.toString();
+                    // must be an identifier which is part of the method call
+                    if (kind.contains("identifier")) {
+                        String name = element.getText();
+                        boolean from = "from".equals(name) || "fromF".equals(name);
+                        if (from) {
+                            // sanity check that "from" was from a from a method call
+                            PsiElement parent = element.getParent();
+                            if (parent != null) {
+                                parent = parent.getParent();
+                            }
+                            if (parent != null) {
+                                kind = parent.toString();
+                            }
+                            return kind.contains("Method call");
                         }
                     }
                 }
@@ -314,13 +327,13 @@ public final class IdeaUtils {
                     if (element != null) {
                         element = element.getLastChild();
                     }
-                    if (element != null) {
-                        kind = element.toString();
-                        // must be an identifier which is part of the method call
-                        if (kind.contains("identifier")) {
-                            String name = element.getText();
-                            return "from".equals(name) || "fromF".equals(name) || "interceptFrom".equals(name) || "pollEnrich".equals(name);
-                        }
+                }
+                if (element != null) {
+                    kind = element.toString();
+                    // must be an identifier which is part of the method call
+                    if (kind.contains("identifier")) {
+                        String name = element.getText();
+                        return "from".equals(name) || "fromF".equals(name) || "interceptFrom".equals(name) || "pollEnrich".equals(name);
                     }
                 }
                 return false;
@@ -446,14 +459,14 @@ public final class IdeaUtils {
                     if (element != null) {
                         element = element.getLastChild();
                     }
-                    if (element != null) {
-                        kind = element.toString();
-                        // must be an identifier which is part of the method call
-                        if (kind.contains("identifier")) {
-                            String name = element.getText();
-                            return "to".equals(name) || "toF".equals(name) || "toD".equals(name)
-                                || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
-                        }
+                }
+                if (element != null) {
+                    kind = element.toString();
+                    // must be an identifier which is part of the method call
+                    if (kind.contains("identifier")) {
+                        String name = element.getText();
+                        return "to".equals(name) || "toF".equals(name) || "toD".equals(name)
+                            || "interceptSendToEndpoint".equals(name) || "enrich".equals(name) || "wireTap".equals(name);
                     }
                 }
                 return false;
@@ -573,6 +586,9 @@ public final class IdeaUtils {
         } else {
             if (text.startsWith(QUOT) && text.endsWith(QUOT) && textLength > QUOT.length()) {
                 text = text.substring(QUOT.length(), textLength - QUOT.length());
+            }
+            if (text.startsWith(SINGLE_QUOT) && text.endsWith(SINGLE_QUOT) && textLength > SINGLE_QUOT.length()) {
+                text = text.substring(SINGLE_QUOT.length(), textLength - SINGLE_QUOT.length());
             }
         }
         return text;
