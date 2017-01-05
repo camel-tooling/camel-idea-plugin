@@ -68,6 +68,9 @@
     <completion.contributor language="Scala" implementationClass="org.apache.camel.idea.CamelScalaReferenceContributor"/>
     <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertiesOrYamlFileReferenceContributor"/>
 
+    <!--puts the Camel icon in the gutter for each line that contains a Camel route-->
+    <codeInsight.lineMarkerProvider language="JAVA" implementationClass="org.apache.camel.idea.completion.extension.CamelRouteLineMarkerProvider"/>
+
     <!-- smart completion of Camel property placeholders, eg {{foo}} style -->
     <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertyPlaceholderReferenceContributor"/>
 
