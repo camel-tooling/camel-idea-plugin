@@ -26,6 +26,7 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import org.apache.camel.idea.catalog.CamelCatalogService;
+import org.apache.camel.idea.util.CamelService;
 import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,17 +37,20 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
     @Override
     protected void collectNavigationMarkers(@NotNull PsiElement element,
                                             Collection<? super RelatedItemLineMarkerInfo> result) {
-        if (element instanceof PsiLiteralExpression) {
-            PsiLiteralExpression literalExpression = (PsiLiteralExpression) element;
-            String value = literalExpression.getValue() instanceof String ? (String) literalExpression.getValue() : null;
-            String componentName = StringUtils.asComponentName(value);
-            Project project = element.getProject();
-            if (value != null && !value.endsWith("{{") && componentName != null && ServiceManager.getService(project, CamelCatalogService.class).get().findComponentNames().contains(componentName)) {
-                NavigationGutterIconBuilder<PsiElement> builder =
-                        NavigationGutterIconBuilder.create(IconLoader.getIcon("/icons/camel.png")).
-                                setTargets(element).
-                                setTooltipText("Camel route");
-                result.add(builder.createLineMarkerInfo(element));
+        if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
+            if (element instanceof PsiLiteralExpression) {
+                PsiLiteralExpression literalExpression = (PsiLiteralExpression) element;
+                String value = literalExpression.getValue() instanceof String ? (String) literalExpression.getValue() : null;
+                String componentName = StringUtils.asComponentName(value);
+                Project project = element.getProject();
+                if (value != null && !value.endsWith("{{") && componentName != null
+                        && ServiceManager.getService(project, CamelCatalogService.class).get().findComponentNames().contains(componentName)) {
+                    NavigationGutterIconBuilder<PsiElement> builder =
+                            NavigationGutterIconBuilder.create(IconLoader.getIcon("/icons/camel.png")).
+                                    setTargets(element).
+                                    setTooltipText("Camel route");
+                    result.add(builder.createLineMarkerInfo(element));
+                }
             }
         }
     }
