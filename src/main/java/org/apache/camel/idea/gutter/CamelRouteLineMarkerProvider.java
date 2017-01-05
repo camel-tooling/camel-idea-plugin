@@ -14,44 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.completion.extension;
+package org.apache.camel.idea.gutter;
 
 import java.util.Collection;
+
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiLiteralExpression;
-import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.util.CamelService;
-import org.apache.camel.idea.util.StringUtils;
+import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Provider that adds the Camel icon in the gutter when it detects a Camel route.
  */
 public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider {
+
     @Override
     protected void collectNavigationMarkers(@NotNull PsiElement element,
                                             Collection<? super RelatedItemLineMarkerInfo> result) {
+
         if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
-            if (element instanceof PsiLiteralExpression) {
-                PsiLiteralExpression literalExpression = (PsiLiteralExpression) element;
-                String value = literalExpression.getValue() instanceof String ? (String) literalExpression.getValue() : null;
-                String componentName = StringUtils.asComponentName(value);
-                Project project = element.getProject();
-                if (value != null && !value.endsWith("{{") && componentName != null
-                        && ServiceManager.getService(project, CamelCatalogService.class).get().findComponentNames().contains(componentName)) {
-                    NavigationGutterIconBuilder<PsiElement> builder =
-                            NavigationGutterIconBuilder.create(IconLoader.getIcon("/icons/camel.png")).
-                                    setTargets(element).
-                                    setTooltipText("Camel route");
-                    result.add(builder.createLineMarkerInfo(element));
-                }
+            if (IdeaUtils.isCamelRouteStart(element)) {
+                NavigationGutterIconBuilder<PsiElement> builder =
+                    NavigationGutterIconBuilder.create(IconLoader.getIcon("/icons/camel.png")).
+                        setTargets(element).
+                        setTooltipText("Camel route");
+                result.add(builder.createLineMarkerInfo(element));
             }
         }
     }
+
 }
