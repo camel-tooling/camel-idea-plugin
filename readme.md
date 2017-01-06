@@ -1,6 +1,9 @@
 Camel IDEA Plugin
 =================
 
+[![GitHub tag](https://img.shields.io/github/tag/davsclaus/camel-idea-plugin.svg?style=plastic)]()
+[![Build Status](https://travis-ci.org/davsclaus/camel-idea-plugin.svg?branch=master)](https://travis-ci.org/davsclaus/camel-idea-plugin)
+
 Plugin for Intellij IDEA to provide a set of small Camel related capabilities to IDEA editor.
 
 The plugin includes:
@@ -17,9 +20,6 @@ to Apache Software Foundation to be included out of the box at Apache Camel.
 However currently the code is located at github to allow faster and wider collaboration in the community.
 
 ![Early Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/01-endpoint-options.png)
-
-### Build status
-[![Build Status](https://travis-ci.org/davsclaus/camel-idea-plugin.svg?branch=master)](https://travis-ci.org/davsclaus/camel-idea-plugin)
 
 ### How to install
 
