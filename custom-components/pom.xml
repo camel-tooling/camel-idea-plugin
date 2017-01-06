@@ -33,6 +33,7 @@
 
   <modules>
     <module>beverage-component</module>
+    <module>beverage-example</module>
   </modules>
 
 </project>

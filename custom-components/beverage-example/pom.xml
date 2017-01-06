@@ -26,9 +26,9 @@
     <relativePath>..</relativePath>
   </parent>
 
-  <artifactId>beverage-component</artifactId>
-  <name>Apache Camel IDE :: Custom Components :: Beverage Component</name>
-  <description>A custom Camel component for ordering drinks</description>
+  <artifactId>beverage-example</artifactId>
+  <name>Apache Camel IDE :: Custom Components :: Beverage Example</name>
+  <description>A little Camel example using custom component</description>
 
   <dependencies>
 
@@ -40,36 +40,22 @@
 
     <dependency>
       <groupId>org.apache.camel</groupId>
-      <artifactId>camel-test</artifactId>
-      <version>${camel.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- use the Camel apt compiler plugin -->
-    <dependency>
-      <groupId>org.apache.camel</groupId>
-      <artifactId>apt</artifactId>
-      <version>${camel.version}</version>
-      <scope>provided</scope>
+      <artifactId>beverage-component</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
   </dependencies>
 
   <build>
     <plugins>
-      <!-- use Camel plugins to generate component details -->
+      <!-- Allows the example to be run via 'mvn camel:run' -->
       <plugin>
         <groupId>org.apache.camel</groupId>
-        <artifactId>camel-package-maven-plugin</artifactId>
+        <artifactId>camel-maven-plugin</artifactId>
         <version>${camel.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate-components-list</goal>
-            </goals>
-            <phase>generate-resources</phase>
-          </execution>
-        </executions>
+        <configuration>
+          <mainClass>io.fabric8.FooMain</mainClass>
+        </configuration>
       </plugin>
     </plugins>
   </build>
