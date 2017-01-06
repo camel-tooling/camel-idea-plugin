@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/davsclaus/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.2.2</version>
+  <version>0.3.0</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -20,6 +20,7 @@
 
   <change-notes><![CDATA[
       <ul>
+        <li>0.3.0 - Restructured project as multi Maven module to support further work.</li>
         <li>0.2.2 - Show Camel icon in gutter where a Camel route starts.
         <li>0.2.1 - Plugin is only in use if the loaded project is a Camel project (has camel-core as library/dependency).
                     Smart completion for Kotlin files.
