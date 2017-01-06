@@ -17,7 +17,6 @@
 package org.apache.camel.idea.util;
 
 import java.util.Arrays;
-
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
@@ -154,7 +153,10 @@ public final class IdeaUtils {
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (xml != null) {
             String name = xml.getLocalName();
-            return "from".equals(name);
+            XmlTag parentTag = xml.getParentTag();
+            if (parentTag != null) {
+                return "from".equals(name) && "route".equals(parentTag.getLocalName());
+            }
         }
         // groovy
         if (element instanceof LeafPsiElement) {
@@ -316,8 +318,13 @@ public final class IdeaUtils {
     private static boolean isFromJavaMethod(PsiMethodCallExpression call, String... methods) {
         PsiMethod method = call.resolveMethod();
         if (method != null) {
-            String name = method.getName();
-            return Arrays.stream(methods).anyMatch(name::equals);
+            PsiClass containingClass = method.getContainingClass();
+            if (containingClass != null) {
+                String className = containingClass.getQualifiedName();
+                String name = method.getName();
+
+                return Arrays.stream(methods).anyMatch(name::equals) && "org.apache.camel.builder.RouteBuilder".equals(className);
+            }
         } else {
             // alternative when we run unit test where IDEA causes the method call expression to include their dummy hack which skews up this logic
             PsiElement child = call.getFirstChild();
