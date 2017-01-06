@@ -42,6 +42,7 @@ import static com.intellij.xml.CommonXmlStrings.QUOT;
 public final class IdeaUtils {
 
     private static final String SINGLE_QUOT = "'";
+    private static final String ROUTE_BUILDER_CLASS_QUALIFIED_NAME = "org.apache.camel.builder.RouteBuilder";
 
     private IdeaUtils() {
     }
@@ -323,7 +324,10 @@ public final class IdeaUtils {
                 String className = containingClass.getQualifiedName();
                 String name = method.getName();
 
-                return Arrays.stream(methods).anyMatch(name::equals) && "org.apache.camel.builder.RouteBuilder".equals(className);
+                if (Arrays.stream(methods).anyMatch(name::equals)) {
+                    return ROUTE_BUILDER_CLASS_QUALIFIED_NAME.equals(className)
+                            || Arrays.stream(containingClass.getSupers()).anyMatch(psiClass -> ROUTE_BUILDER_CLASS_QUALIFIED_NAME.equals(psiClass.getQualifiedName()));
+                }
             }
         } else {
             // alternative when we run unit test where IDEA causes the method call expression to include their dummy hack which skews up this logic
