@@ -24,13 +24,20 @@ import org.apache.camel.catalog.DefaultCamelCatalog;
  */
 public class CamelCatalogService {
 
-    private  final CamelCatalog instance = new DefaultCamelCatalog(true);
+    private  CamelCatalog instance;
 
     /**
      * Gets the {@link CamelCatalog} instance to use.
      */
     public CamelCatalog get() {
+        if (instance == null) {
+            instance = new DefaultCamelCatalog(true);
+        }
         return instance;
+    }
+
+    public boolean isInstantiated(){
+      return instance != null;
     }
 
 }
