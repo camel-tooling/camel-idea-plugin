@@ -19,6 +19,7 @@ package org.apache.camel.idea.util;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -31,7 +32,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Service access for Camel libraries
  */
-public class CamelService {
+public class CamelService implements Disposable {
 
     Set<String> processedLibraries = new HashSet<>();
 
@@ -107,5 +108,10 @@ public class CamelService {
                 }
             }
         }
+    }
+
+    @Override
+    public void dispose() {
+        processedLibraries.clear();
     }
 }
