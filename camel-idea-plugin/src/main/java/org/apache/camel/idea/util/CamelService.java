@@ -158,38 +158,49 @@ public class CamelService implements Disposable {
                         continue;
                     }
 
-                    try (URLClassLoader classLoader = newURLClassLoaderForLibrary(library)) {
-                        if (classLoader != null) {
-                            // is there any custom Camel components in this library?
-                            Properties properties = loadComponentProperties(classLoader);
-                            if (properties != null) {
-                                String components = (String) properties.get("components");
-                                if (components != null) {
-                                    String[] part = components.split("\\s");
-                                    for (String scheme : part) {
-                                        if (!camelCatalog.findComponentNames().contains(scheme)) {
-                                            // find the class name
-                                            String javaType = extractComponentJavaType(classLoader, scheme);
-                                            if (javaType != null) {
-                                                String json = loadComponentJSonSchema(classLoader, scheme);
-                                                if (json != null) {
-                                                    camelCatalog.addComponent(scheme, javaType, json);
-                                                    // okay a new Camel component was added
-                                                    if (!containsLibrary(artifactId)) {
-                                                        addLibrary(artifactId);
-                                                    }
-                                                }
-                                            }
+                    addCustomCamelComponentsFromDependency(camelCatalog, library, artifactId);
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds any discovered custom Camel components from the dependency.
+     *
+     * @param camelCatalog the Camel catalog to add the found custom components
+     * @param library      the dependency
+     * @param artifactId   the artifact id of the dependency
+     */
+    private void addCustomCamelComponentsFromDependency(CamelCatalog camelCatalog, Library library, String artifactId) {
+        try (URLClassLoader classLoader = newURLClassLoaderForLibrary(library)) {
+            if (classLoader != null) {
+                // is there any custom Camel components in this library?
+                Properties properties = loadComponentProperties(classLoader);
+                if (properties != null) {
+                    String components = (String) properties.get("components");
+                    if (components != null) {
+                        String[] part = components.split("\\s");
+                        for (String scheme : part) {
+                            if (!camelCatalog.findComponentNames().contains(scheme)) {
+                                // find the class name
+                                String javaType = extractComponentJavaType(classLoader, scheme);
+                                if (javaType != null) {
+                                    String json = loadComponentJSonSchema(classLoader, scheme);
+                                    if (json != null) {
+                                        camelCatalog.addComponent(scheme, javaType, json);
+                                        // okay a new Camel component was added
+                                        if (!containsLibrary(artifactId)) {
+                                            addLibrary(artifactId);
                                         }
                                     }
                                 }
                             }
                         }
-                    } catch (IOException e) {
-                        // ignore
                     }
                 }
             }
+        } catch (IOException e) {
+            // ignore
         }
     }
 
