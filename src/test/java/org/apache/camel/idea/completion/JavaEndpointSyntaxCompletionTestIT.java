@@ -18,25 +18,12 @@ package org.apache.camel.idea.completion;
 
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
-import org.apache.camel.idea.util.CamelService;
+import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
 /**
  * Testing smart completion with Camel Java DSL
  */
-public class JavaEndpointSyntaxCompletionTestIT extends LightCodeInsightFixtureTestCase {
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(true);
-    }
-
-    @Override
-    protected String getTestDataPath() {
-        return "src/test/resources/testData/";
-    }
+public class JavaEndpointSyntaxCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     public void testSyntax() {
         myFixture.configureByFiles("CompleteJavaEndpointSyntaxTestData.java");

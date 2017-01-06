@@ -18,26 +18,19 @@ package org.apache.camel.idea.catalog;
 
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
+import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.apache.camel.idea.util.CamelService;
 
 
 /**
  * Test the Camel Catalog is instantiated when camel is present
  */
-public class CamelCatalogServiceTestIT extends LightCodeInsightFixtureTestCase {
+public class CamelCatalogServiceTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        CamelCatalogService service = ServiceManager.getService(myModule.getProject(), CamelCatalogService.class);
-        disposeOnTearDown(service);
         ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(false);
-    }
-
-    @Override
-    protected String getTestDataPath() {
-        return "src/test/resources/testData/";
     }
 
     public void testNoCatalogInstance() {

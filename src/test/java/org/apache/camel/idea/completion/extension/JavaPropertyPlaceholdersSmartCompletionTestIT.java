@@ -21,24 +21,13 @@ import java.util.List;
 
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
+import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.apache.camel.idea.util.CamelService;
 
 /**
  * Testing smart completion with YML property classes
  */
-public class JavaPropertyPlaceholdersSmartCompletionTestIT extends LightCodeInsightFixtureTestCase {
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(true);
-    }
-
-    @Override
-    protected String getTestDataPath() {
-        return "src/test/resources/testData/";
-    }
+public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     public void testCompletion() {
         myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties");

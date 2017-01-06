@@ -20,26 +20,18 @@ import java.io.File;
 import java.io.IOException;
 
 import com.intellij.ide.highlighter.JavaFileType;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiReference;
-import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
-import org.apache.camel.idea.util.CamelService;
+import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
 
 /**
  * Test if the expected documentation is called where the caret is placed
  */
-public class CamelDocumentationProviderTestIT extends LightCodeInsightFixtureTestCase {
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(true);
-    }
+public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
 
     public String getJavaTestData() {
