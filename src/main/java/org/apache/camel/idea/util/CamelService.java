@@ -33,7 +33,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class CamelService {
 
-    Set<Library> processedLibraries = new HashSet<>();
+    Set<String> processedLibraries = new HashSet<>();
 
     boolean camelPresent;
 
@@ -52,16 +52,16 @@ public class CamelService {
     }
 
     /**
-     * @param lib - Add library to the service library cache
+     * @param lib - Add the of the library
      */
-    public void addLibrary(Library lib) {
+    public void addLibrary(String lib) {
         processedLibraries.add(lib);
     }
 
     /**
-     * @return all cached libraries
+     * @return all cached library names
      */
-    public Set<Library> getLibraries() {
+    public Set<String> getLibraries() {
         return processedLibraries;
     }
 
@@ -101,7 +101,11 @@ public class CamelService {
                     if (containsLibrary(library)) {
                         continue;
                     }
-                    addLibrary(library);
+                    if (name != null && name.startsWith("maven: org.apache.camel:")) {
+                        name = name.substring(24);
+                        String artifactId = name.substring(0, name.indexOf(":"));
+                        addLibrary(artifactId);
+                    }
                 }
             }
         }
