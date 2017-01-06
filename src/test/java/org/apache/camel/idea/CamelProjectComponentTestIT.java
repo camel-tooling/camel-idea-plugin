@@ -61,7 +61,7 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(camelJar);
 
         final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myProject);
-        addLibraryToModule(virtualFile, projectLibraryTable, "camel-core:");
+        addLibraryToModule(virtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-core:2.19.0-snapshot");
 
         UIUtil.dispatchAllInvocationEvents();
         assertEquals(1, service.getLibraries().size());
@@ -77,16 +77,14 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
 
         final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myProject);
 
-        addLibraryToModule(camelSpringVirtualFile, projectLibraryTable, "camel-spring:");
-        Library coreLibrary = addLibraryToModule(camelCoreVirtualFile, projectLibraryTable, "camel-core:");
+        addLibraryToModule(camelSpringVirtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-spring:2.19.0-snapshot");
+        Library coreLibrary = addLibraryToModule(camelCoreVirtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-core:2.19.0-snapshot");
 
         UIUtil.dispatchAllInvocationEvents();
         assertEquals(2, service.getLibraries().size());
         assertEquals(true, service.isCamelPresent());
 
-        ApplicationManager.getApplication().runWriteAction(() -> {
-            projectLibraryTable.removeLibrary(coreLibrary);
-        });
+        ApplicationManager.getApplication().runWriteAction(() -> projectLibraryTable.removeLibrary(coreLibrary));
 
         UIUtil.dispatchAllInvocationEvents();
         assertEquals(1, service.getLibraries().size());
@@ -103,7 +101,7 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myProject);
         ApplicationManager.getApplication().runWriteAction(() -> {
             final Module moduleA = createModule("myNewModel.iml");
-            Library library = projectLibraryTable.createLibrary("camel-core:");
+            Library library = projectLibraryTable.createLibrary("Maven: org.apache.camel:camel-core:2.19.0-snapshot");
             final Library.ModifiableModel libraryModifiableModel = library.getModifiableModel();
             libraryModifiableModel.addRoot(virtualFile, OrderRootType.CLASSES);
             libraryModifiableModel.commit();

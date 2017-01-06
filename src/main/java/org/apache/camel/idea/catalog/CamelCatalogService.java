@@ -16,21 +16,33 @@
  */
 package org.apache.camel.idea.catalog;
 
+import com.intellij.openapi.Disposable;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
 
 /**
  * Service which provides the instance to be used when accessing the {@link CamelCatalog}.
  */
-public class CamelCatalogService {
+public class CamelCatalogService implements Disposable {
 
-    private  final CamelCatalog instance = new DefaultCamelCatalog(true);
+    private  CamelCatalog instance;
 
     /**
      * Gets the {@link CamelCatalog} instance to use.
      */
     public CamelCatalog get() {
+        if (instance == null) {
+            instance = new DefaultCamelCatalog(true);
+        }
         return instance;
     }
 
+    public boolean isInstantiated() {
+        return instance != null;
+    }
+
+    @Override
+    public void dispose() {
+        instance = null;
+    }
 }

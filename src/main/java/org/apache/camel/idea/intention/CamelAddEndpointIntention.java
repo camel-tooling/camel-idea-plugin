@@ -63,16 +63,7 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
          // filter libraries to only be Camel libraries
-        Set<Library> processedLibraries = ServiceManager.getService(project, CamelService.class).getLibraries();
-        Set<String> artifacts = new LinkedHashSet<>();
-        for (Library lib : processedLibraries) {
-            String name = lib.getName();
-            if (name != null && name.startsWith("Maven: org.apache.camel:")) {
-                name = name.substring(24);
-                String artifactId = name.substring(0, name.indexOf(":"));
-                artifacts.add(artifactId);
-            }
-        }
+        Set<String> artifacts = ServiceManager.getService(project, CamelService.class).getLibraries();
 
         // find the camel component from those libraries
         boolean consumerOnly = IdeaUtils.isConsumerEndpoint(element);

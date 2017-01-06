@@ -19,6 +19,7 @@ package org.apache.camel.idea.util;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -31,9 +32,9 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Service access for Camel libraries
  */
-public class CamelService {
+public class CamelService implements Disposable {
 
-    Set<Library> processedLibraries = new HashSet<>();
+    Set<String> processedLibraries = new HashSet<>();
 
     boolean camelPresent;
 
@@ -52,16 +53,16 @@ public class CamelService {
     }
 
     /**
-     * @param lib - Add library to the service library cache
+     * @param lib - Add the of the library
      */
-    public void addLibrary(Library lib) {
+    public void addLibrary(String lib) {
         processedLibraries.add(lib);
     }
 
     /**
-     * @return all cached libraries
+     * @return all cached library names
      */
-    public Set<Library> getLibraries() {
+    public Set<String> getLibraries() {
         return processedLibraries;
     }
 
@@ -73,9 +74,9 @@ public class CamelService {
     }
 
     /**
-     * @return true if the library is cached
+     * @return true if the library name is cached
      */
-    public boolean containsLibrary(Library lib) {
+    public boolean containsLibrary(String lib) {
         return processedLibraries.contains(lib);
     }
 
@@ -88,7 +89,7 @@ public class CamelService {
                 LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
 
                 String name = libraryOrderEntry.getPresentableName().toLowerCase();
-                if (name.contains("camel") && (libraryOrderEntry.getScope().isForProductionCompile() || libraryOrderEntry.getScope().isForProductionRuntime())) {
+                if (name.contains("org.apache.camel") && (libraryOrderEntry.getScope().isForProductionCompile() || libraryOrderEntry.getScope().isForProductionRuntime())) {
                     if (!isCamelPresent() && name.contains("camel-core") && !name.contains("camel-core-")
                         && (libraryOrderEntry.getLibrary() != null && libraryOrderEntry.getLibrary().getFiles(OrderRootType.CLASSES).length > 0)) {
                         setCamelPresent(true);
@@ -98,12 +99,19 @@ public class CamelService {
                     if (library == null) {
                         continue;
                     }
-                    if (containsLibrary(library)) {
+                    String[] split = name.split(":");
+                    String artifactId = split[2].trim();
+                    if (containsLibrary(artifactId)) {
                         continue;
                     }
-                    addLibrary(library);
+                    addLibrary(artifactId);
                 }
             }
         }
+    }
+
+    @Override
+    public void dispose() {
+        processedLibraries.clear();
     }
 }

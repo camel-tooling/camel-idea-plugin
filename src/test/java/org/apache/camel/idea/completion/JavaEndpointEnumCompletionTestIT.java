@@ -20,25 +20,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
-import org.apache.camel.idea.util.CamelService;
+import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
 /**
  * Testing smart completion with Camel Java DSL
  */
-public class JavaEndpointEnumCompletionTestIT extends LightCodeInsightFixtureTestCase {
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(true);
-    }
-
-    @Override
-    protected String getTestDataPath() {
-        return "src/test/resources/testData/";
-    }
+public class JavaEndpointEnumCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     public void testEnum() {
         myFixture.configureByFiles("CompleteJavaEndpointSyntaxEnumTestData.java");
