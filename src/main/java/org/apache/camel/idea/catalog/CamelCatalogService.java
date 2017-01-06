@@ -36,8 +36,8 @@ public class CamelCatalogService {
         return instance;
     }
 
-    public boolean isInstantiated(){
-      return instance != null;
+    public boolean isInstantiated() {
+        return instance != null;
     }
 
 }
