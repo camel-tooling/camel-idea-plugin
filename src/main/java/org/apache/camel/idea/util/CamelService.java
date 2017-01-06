@@ -73,9 +73,9 @@ public class CamelService {
     }
 
     /**
-     * @return true if the library is cached
+     * @return true if the library name is cached
      */
-    public boolean containsLibrary(Library lib) {
+    public boolean containsLibrary(String lib) {
         return processedLibraries.contains(lib);
     }
 
@@ -88,7 +88,7 @@ public class CamelService {
                 LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
 
                 String name = libraryOrderEntry.getPresentableName().toLowerCase();
-                if (name.contains("camel") && (libraryOrderEntry.getScope().isForProductionCompile() || libraryOrderEntry.getScope().isForProductionRuntime())) {
+                if (name.contains("org.apache.camel") && (libraryOrderEntry.getScope().isForProductionCompile() || libraryOrderEntry.getScope().isForProductionRuntime())) {
                     if (!isCamelPresent() && name.contains("camel-core") && !name.contains("camel-core-")
                         && (libraryOrderEntry.getLibrary() != null && libraryOrderEntry.getLibrary().getFiles(OrderRootType.CLASSES).length > 0)) {
                         setCamelPresent(true);
@@ -98,14 +98,12 @@ public class CamelService {
                     if (library == null) {
                         continue;
                     }
-                    if (containsLibrary(library)) {
+                    String[] split = name.split(":");
+                    String artifactId = split[2].trim();
+                    if (containsLibrary(artifactId)) {
                         continue;
                     }
-                    if (name != null && name.startsWith("maven: org.apache.camel:")) {
-                        name = name.substring(24);
-                        String artifactId = name.substring(0, name.indexOf(":"));
-                        addLibrary(artifactId);
-                    }
+                    addLibrary(artifactId);
                 }
             }
         }
