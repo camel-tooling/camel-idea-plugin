@@ -172,6 +172,8 @@ public class CamelService implements Disposable {
      * @param artifactId   the artifact id of the dependency
      */
     private void addCustomCamelComponentsFromDependency(CamelCatalog camelCatalog, Library library, String artifactId) {
+        boolean added = false;
+
         try (URLClassLoader classLoader = newURLClassLoaderForLibrary(library)) {
             if (classLoader != null) {
                 // is there any custom Camel components in this library?
@@ -187,11 +189,9 @@ public class CamelService implements Disposable {
                                 if (javaType != null) {
                                     String json = loadComponentJSonSchema(classLoader, scheme);
                                     if (json != null) {
-                                        camelCatalog.addComponent(scheme, javaType, json);
                                         // okay a new Camel component was added
-                                        if (!containsLibrary(artifactId)) {
-                                            addLibrary(artifactId);
-                                        }
+                                        camelCatalog.addComponent(scheme, javaType, json);
+                                        added = true;
                                     }
                                 }
                             }
@@ -201,6 +201,11 @@ public class CamelService implements Disposable {
             }
         } catch (IOException e) {
             // ignore
+        }
+
+        if (added) {
+            // oaky one ore more components was added so add the library as well
+            addLibrary(artifactId);
         }
     }
 
