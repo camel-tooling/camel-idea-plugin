@@ -147,7 +147,7 @@ Jetbrains provides a FAQ for the IDEA SDK which is massive and takes time to lea
 The plugin is not finished and therefore there is work to be done. 
 
 The issue tracker has a list of tickets with items to implement. This can be a good place
-to look for _stuff_ you can help with.
+to look for _stuff_ you can help with. We have labelled the beginner tickets with `beginner` and `help wanted`.
 
 Also we love feedback and you are welcome to log tickets about issues, ideas, etc.
 
