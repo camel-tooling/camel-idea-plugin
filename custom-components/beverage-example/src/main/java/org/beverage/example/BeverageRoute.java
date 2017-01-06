@@ -23,7 +23,7 @@ public class BeverageRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         from("timer:hello?period=2000")
-            .to("beverage:GinTonic?amount=2")
+            .to("beverage:Wine?amount=4")
             .log("${body}");
     }
 }

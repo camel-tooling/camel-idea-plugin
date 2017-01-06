@@ -26,6 +26,8 @@
     <relativePath>..</relativePath>
   </parent>
 
+  <!-- do not use org.apache.camel as that is reserved for vanilla Apache Camel -->
+  <groupId>org.beverage</groupId>
   <artifactId>beverage-component</artifactId>
   <name>Apache Camel IDE :: Custom Components :: Beverage Component</name>
   <description>A custom Camel component for ordering drinks</description>

@@ -39,7 +39,7 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.camel</groupId>
+      <groupId>org.beverage</groupId>
       <artifactId>beverage-component</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -54,7 +54,7 @@
         <artifactId>camel-maven-plugin</artifactId>
         <version>${camel.version}</version>
         <configuration>
-          <mainClass>io.fabric8.FooMain</mainClass>
+          <mainClass>org.beverage.example.BeverageMain</mainClass>
         </configuration>
       </plugin>
     </plugins>

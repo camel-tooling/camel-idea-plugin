@@ -48,7 +48,7 @@ import org.jetbrains.annotations.NotNull;
 public class CamelProjectComponent implements ProjectComponent {
 
     private final Project project;
-    private boolean runModuleOnStartUp;
+    private volatile boolean runModuleOnStartUp;
 
     CamelProjectComponent(Project project) {
         this.project = project;
@@ -80,6 +80,7 @@ public class CamelProjectComponent implements ProjectComponent {
 
                     for (Module module : ModuleManager.getInstance(project).getModules()) {
                         getCamelIdeaService(project).scanForCamelDependencies(module);
+                        getCamelIdeaService(project).scanForCustomCamelDependencies(project, module);
                     }
                 }
             }
@@ -93,11 +94,12 @@ public class CamelProjectComponent implements ProjectComponent {
                     // We scan all models at once to prevent scanning the same libraries multiple times
                     for (Module m : ModuleManager.getInstance(project).getModules()) {
                         getCamelIdeaService(project).scanForCamelDependencies(m);
-                        getCamelIdeaService(project).scanForCustomCamelDependencies(module);
+                        getCamelIdeaService(project).scanForCustomCamelDependencies(project, module);
                     }
+                } else {
+                    // a new module is added scan for custom Camel components
+                    getCamelIdeaService(project).scanForCustomCamelDependencies(project, module);
                 }
-                // a new module is added scan for custom Camel components
-                getCamelIdeaService(project).scanForCustomCamelDependencies(module);
             }
         });
 

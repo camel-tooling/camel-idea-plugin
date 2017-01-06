@@ -16,16 +16,19 @@
  */
 package org.apache.camel.idea.util;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
@@ -38,15 +41,18 @@ import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.catalog.CatalogHelper.loadText;
 
-
 /**
  * Service access for Camel libraries
  */
 public class CamelService implements Disposable {
 
-    Set<String> processedLibraries = new HashSet<>();
+    private Set<String> processedLibraries = new HashSet<>();
+    private volatile boolean camelPresent;
 
-    boolean camelPresent;
+    @Override
+    public void dispose() {
+        processedLibraries.clear();
+    }
 
     /**
      * @return true if Camel is present on the classpath
@@ -110,11 +116,18 @@ public class CamelService implements Disposable {
                         continue;
                     }
                     String[] split = name.split(":");
+                    String groupId = split[1].trim();
                     String artifactId = split[2].trim();
+
                     if (containsLibrary(artifactId)) {
                         continue;
                     }
-                    addLibrary(artifactId);
+
+                    // must be from vanilla Apache Camel as
+                    // we have a another scanner for custom components
+                    if ("org.apache.camel".equals(groupId)) {
+                        addLibrary(artifactId);
+                    }
                 }
             }
         }
@@ -123,7 +136,9 @@ public class CamelService implements Disposable {
     /**
      * Scan for Custom Camel Libraries and update the cache and camel catalog with custom components discovered
      */
-    public void scanForCustomCamelDependencies(@NotNull Module module) {
+    public void scanForCustomCamelDependencies(@NotNull Project project, @NotNull Module module) {
+        CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
+
         for (OrderEntry entry : ModuleRootManager.getInstance(module).getOrderEntries()) {
             if (entry instanceof LibraryOrderEntry) {
                 LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
@@ -135,100 +150,116 @@ public class CamelService implements Disposable {
                         continue;
                     }
                     String[] split = name.split(":");
+                    String groupId = split[1].trim();
                     String artifactId = split[2].trim();
-                    if (containsLibrary(artifactId)) {
+
+                    // skip reserved from Apache Camel itself
+                    if ("org.apache.camel".equals(groupId)) {
                         continue;
                     }
 
-                    CamelCatalog camelCatalog = ServiceManager.getService(CamelCatalogService.class).get();
-
-                    // is there any custom Camel components in this library?
-                    Properties properties = loadComponentProperties(library);
-                    if (properties != null) {
-                        String components = (String) properties.get("components");
-                        if (components != null) {
-                            String[] part = components.split("\\s");
-                            for (String scheme : part) {
-                                if (!camelCatalog.findComponentNames().contains(scheme)) {
-                                    // find the class name
-                                    String javaType = extractComponentJavaType(library, scheme);
-                                    if (javaType != null) {
-                                        String json = loadComponentJSonSchema(library, scheme);
-                                        if (json != null) {
-                                            camelCatalog.addComponent(scheme, javaType, json);
+                    try (URLClassLoader classLoader = newURLClassLoaderForLibrary(library)) {
+                        if (classLoader != null) {
+                            // is there any custom Camel components in this library?
+                            Properties properties = loadComponentProperties(classLoader);
+                            if (properties != null) {
+                                String components = (String) properties.get("components");
+                                if (components != null) {
+                                    String[] part = components.split("\\s");
+                                    for (String scheme : part) {
+                                        if (!camelCatalog.findComponentNames().contains(scheme)) {
+                                            // find the class name
+                                            String javaType = extractComponentJavaType(classLoader, scheme);
+                                            if (javaType != null) {
+                                                String json = loadComponentJSonSchema(classLoader, scheme);
+                                                if (json != null) {
+                                                    camelCatalog.addComponent(scheme, javaType, json);
+                                                    // okay a new Camel component was added
+                                                    if (!containsLibrary(artifactId)) {
+                                                        addLibrary(artifactId);
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
+                    } catch (IOException e) {
+                        // ignore
                     }
-
-                    addLibrary(artifactId);
                 }
             }
         }
     }
 
-    public static Properties loadComponentProperties(Library library) {
-        Properties answer = new Properties();
-
-        try {
-            VirtualFile[] files = library.getFiles(OrderRootType.CLASSES);
-            Optional<VirtualFile> vf = Arrays.stream(files).filter((f) -> f.getName().equals("component.properties")).findFirst();
-            if (vf.isPresent()) {
-                InputStream is = vf.get().getInputStream();
-                if (is != null) {
-                    answer.load(is);
+    private static URLClassLoader newURLClassLoaderForLibrary(Library library) throws MalformedURLException {
+        VirtualFile[] files = library.getFiles(OrderRootType.CLASSES);
+        if (files.length == 1) {
+            VirtualFile vf = files[0];
+            if (vf.getName().toLowerCase().endsWith(".jar")) {
+                String path = vf.getPath();
+                if (path.endsWith("!/")) {
+                    path = path.substring(0, path.length() - 2);
                 }
+                URL url = new URL("file:" + path);
+                return new URLClassLoader(new URL[] {url});
+            }
+        }
+        return null;
+    }
+
+    private static Properties loadComponentProperties(URLClassLoader classLoader) {
+        Properties answer = new Properties();
+        try {
+            InputStream is = classLoader.getResourceAsStream("META-INF/services/org/apache/camel/component.properties");
+            if (is != null) {
+                answer.load(is);
             }
         } catch (Throwable e) {
             // ignore
+        }
+        return answer;
+    }
+
+    private static String loadComponentJSonSchema(URLClassLoader classLoader, String scheme) {
+        String answer = null;
+
+        String path = null;
+        String javaType = extractComponentJavaType(classLoader, scheme);
+        if (javaType != null) {
+            int pos = javaType.lastIndexOf(".");
+            path = javaType.substring(0, pos);
+            path = path.replace('.', '/');
+            path = path + "/" + scheme + ".json";
+        }
+
+        if (path != null) {
+            try {
+                InputStream is = classLoader.getResourceAsStream(path);
+                if (is != null) {
+                    answer = loadText(is);
+                }
+            } catch (Throwable e) {
+                // ignore
+            }
         }
 
         return answer;
     }
 
-    public static String extractComponentJavaType(Library library, String scheme) {
+    private static String extractComponentJavaType(URLClassLoader classLoader, String scheme) {
         try {
-            VirtualFile[] files = library.getFiles(OrderRootType.CLASSES);
-            Optional<VirtualFile> vf = Arrays.stream(files).filter((f) -> f.getName().equals(scheme)).findFirst();
-            if (vf.isPresent()) {
-                InputStream is = vf.get().getInputStream();
-                if (is != null) {
-                    Properties props = new Properties();
-                    props.load(is);
-                    return (String) props.get("class");
-                }
+            InputStream is = classLoader.getResourceAsStream("META-INF/services/org/apache/camel/component/" + scheme);
+            if (is != null) {
+                Properties props = new Properties();
+                props.load(is);
+                return (String) props.get("class");
             }
         } catch (Throwable e) {
             // ignore
         }
 
         return null;
-    }
-
-    public static String loadComponentJSonSchema(Library library, String scheme) {
-        String answer = null;
-
-        try {
-            // is it a JAR file
-            VirtualFile[] files = library.getFiles(OrderRootType.CLASSES);
-            Optional<VirtualFile> vf = Arrays.stream(files).filter((f) -> f.getName().equals(scheme + ".json")).findFirst();
-            if (vf.isPresent()) {
-                InputStream is = vf.get().getInputStream();
-                if (is != null) {
-                    answer = loadText(is);
-                }
-            }
-        } catch (Throwable e) {
-            // ignore
-        }
-
-        return answer;
-    }
-
-    @Override
-    public void dispose() {
-        processedLibraries.clear();
     }
 }
