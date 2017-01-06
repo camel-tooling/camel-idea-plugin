@@ -13,6 +13,7 @@ The plugin includes:
 - Endpoint options filtered to only include applicable options when used as consumer vs producer only mode
 - Intention to add new Camel endpoint (`alt + enter` in empty string)
 - Quick documentation for Camel endpoints and external link to Camel component opening in web browser (`ctrl + j` and `shift-F1`)
+- Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)
 
 When the plugin becomes more complete and stable then the intention is to donate the source code
 to Apache Software Foundation to be included out of the box at Apache Camel.
