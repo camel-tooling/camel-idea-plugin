@@ -19,6 +19,7 @@ package org.apache.camel.idea.catalog;
 import com.intellij.openapi.Disposable;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
+import org.apache.camel.catalog.maven.MavenVersionManager;
 
 /**
  * Service which provides the instance to be used when accessing the {@link CamelCatalog}.
@@ -33,12 +34,25 @@ public class CamelCatalogService implements Disposable {
     public CamelCatalog get() {
         if (instance == null) {
             instance = new DefaultCamelCatalog(true);
+            instance.setVersionManager(new MavenVersionManager());
         }
         return instance;
     }
 
     public boolean isInstantiated() {
         return instance != null;
+    }
+
+    /**
+     * Loads a specific Camel version into the Catalog to use.
+     */
+    public boolean loadVersion(String version) {
+        return get().getVersionManager().loadVersion(version);
+    }
+
+    public void clearLoadedVersion() {
+        // this will force re initialization of the catalog
+        dispose();
     }
 
     @Override

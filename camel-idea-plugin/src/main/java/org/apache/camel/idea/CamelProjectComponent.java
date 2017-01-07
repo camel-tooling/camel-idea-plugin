@@ -25,9 +25,9 @@ import com.intellij.openapi.project.ModuleAdapter;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
+import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.util.CamelService;
 import org.jetbrains.annotations.NotNull;
-
 
 /**
  * Listen for changes to Modules ad update the library cached and isCamelPresent
@@ -79,7 +79,8 @@ public class CamelProjectComponent implements ProjectComponent {
                     getCamelIdeaService(project).clearLibraries();
 
                     for (Module module : ModuleManager.getInstance(project).getModules()) {
-                        getCamelIdeaService(project).scanForCamelDependencies(module);
+                        getCamelIdeaService(project).scanForCamelVersionChange(project, module);
+                        getCamelIdeaService(project).scanForCamelDependencies(project, module);
                         getCamelIdeaService(project).scanForCustomCamelDependencies(project, module);
                     }
                 }
@@ -93,11 +94,13 @@ public class CamelProjectComponent implements ProjectComponent {
                     runModuleOnStartUp = true;
                     // We scan all models at once to prevent scanning the same libraries multiple times
                     for (Module m : ModuleManager.getInstance(project).getModules()) {
-                        getCamelIdeaService(project).scanForCamelDependencies(m);
+                        getCamelIdeaService(project).scanForCamelVersionChange(project, module);
+                        getCamelIdeaService(project).scanForCamelDependencies(project, m);
                         getCamelIdeaService(project).scanForCustomCamelDependencies(project, module);
                     }
                 } else {
-                    // a new module is added scan for custom Camel components
+                    // a new module is added scan for custom Camel components and version changes
+                    getCamelIdeaService(project).scanForCamelVersionChange(project, module);
                     getCamelIdeaService(project).scanForCustomCamelDependencies(project, module);
                 }
             }
@@ -109,10 +112,15 @@ public class CamelProjectComponent implements ProjectComponent {
     public void disposeComponent() {
         getCamelIdeaService(project).setCamelPresent(false);
         getCamelIdeaService(project).clearLibraries();
+        getCamelCatalogService(project).clearLoadedVersion();
         runModuleOnStartUp = false;
     }
 
     private CamelService getCamelIdeaService(Project project) {
         return ServiceManager.getService(project, CamelService.class);
+    }
+
+    private CamelCatalogService getCamelCatalogService(Project project) {
+        return ServiceManager.getService(project, CamelCatalogService.class);
     }
 }

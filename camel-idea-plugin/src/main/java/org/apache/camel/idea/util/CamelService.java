@@ -99,7 +99,7 @@ public class CamelService implements Disposable {
     /**
      * Scan for Apache Camel Libraries and update the cache and isCamelPresent
      */
-    public void scanForCamelDependencies(@NotNull Module module) {
+    public void scanForCamelDependencies(@NotNull Project project, @NotNull Module module) {
         for (OrderEntry entry : ModuleRootManager.getInstance(module).getOrderEntries()) {
             if (entry instanceof LibraryOrderEntry) {
                 LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
@@ -127,6 +127,55 @@ public class CamelService implements Disposable {
                     // we have a another scanner for custom components
                     if ("org.apache.camel".equals(groupId)) {
                         addLibrary(artifactId);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Scan for Camel version changes when a project uses a different camel-core version than the CamelCatalog currently uses.
+     * These two version needs to be aligned to offer the best tooling support on the given project.
+     */
+    public void scanForCamelVersionChange(@NotNull Project project, @NotNull Module module) {
+        CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
+
+        for (OrderEntry entry : ModuleRootManager.getInstance(module).getOrderEntries()) {
+            if (entry instanceof LibraryOrderEntry) {
+                LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
+
+                String name = libraryOrderEntry.getPresentableName().toLowerCase();
+                if (libraryOrderEntry.getScope().isForProductionCompile() || libraryOrderEntry.getScope().isForProductionRuntime()) {
+                    final Library library = libraryOrderEntry.getLibrary();
+                    if (library == null) {
+                        continue;
+                    }
+                    String[] split = name.split(":");
+                    String groupId = split[1].trim();
+                    String artifactId = split[2].trim();
+                    String version = null;
+                    if (split.length > 2) {
+                        version = split[3].trim();
+                    }
+
+                    if ("org.apache.camel".equals(groupId) && "camel-core".equals(artifactId)) {
+                        String currentVersion = camelCatalog.getLoadedVersion();
+                        if (currentVersion == null) {
+                            // okay no special version was loaded so its the catalog version we are using
+                            currentVersion = camelCatalog.getCatalogVersion();
+                        }
+                        if (version != null && !version.equalsIgnoreCase(currentVersion)) {
+                            // attempt to load new version from project
+
+                            // re-create catalog from new version
+                            getCamelCatalogService(project).clearLoadedVersion();
+                            camelCatalog = getCamelCatalogService(project).get();
+
+                            boolean loaded = camelCatalog.loadVersion(version);
+                            if (!loaded) {
+                                System.err.println("Cannot load CamelCatalog version " + version);
+                            }
+                        }
                     }
                 }
             }
@@ -278,4 +327,9 @@ public class CamelService implements Disposable {
 
         return null;
     }
+
+    private CamelCatalogService getCamelCatalogService(Project project) {
+        return ServiceManager.getService(project, CamelCatalogService.class);
+    }
+
 }
