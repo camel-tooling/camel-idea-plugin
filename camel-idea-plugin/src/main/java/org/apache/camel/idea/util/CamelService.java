@@ -51,10 +51,15 @@ public class CamelService implements Disposable {
 
     private Set<String> processedLibraries = new HashSet<>();
     private volatile boolean camelPresent;
+    private Notification camelVersionNotification;
 
     @Override
     public void dispose() {
         processedLibraries.clear();
+        if (camelVersionNotification != null) {
+            camelVersionNotification.expire();
+            camelVersionNotification = null;
+        }
     }
 
     /**
@@ -100,47 +105,10 @@ public class CamelService implements Disposable {
     }
 
     /**
-     * Scan for Apache Camel Libraries and update the cache and isCamelPresent
-     */
-    public void scanForCamelDependencies(@NotNull Project project, @NotNull Module module) {
-        for (OrderEntry entry : ModuleRootManager.getInstance(module).getOrderEntries()) {
-            if (entry instanceof LibraryOrderEntry) {
-                LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
-
-                String name = libraryOrderEntry.getPresentableName().toLowerCase();
-                if (name.contains("org.apache.camel") && (libraryOrderEntry.getScope().isForProductionCompile() || libraryOrderEntry.getScope().isForProductionRuntime())) {
-                    if (!isCamelPresent() && name.contains("camel-core") && !name.contains("camel-core-")
-                        && (libraryOrderEntry.getLibrary() != null && libraryOrderEntry.getLibrary().getFiles(OrderRootType.CLASSES).length > 0)) {
-                        setCamelPresent(true);
-                    }
-
-                    final Library library = libraryOrderEntry.getLibrary();
-                    if (library == null) {
-                        continue;
-                    }
-                    String[] split = name.split(":");
-                    String groupId = split[1].trim();
-                    String artifactId = split[2].trim();
-
-                    if (containsLibrary(artifactId)) {
-                        continue;
-                    }
-
-                    // must be from vanilla Apache Camel as
-                    // we have a another scanner for custom components
-                    if ("org.apache.camel".equals(groupId)) {
-                        addLibrary(artifactId);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Scan for Camel version changes when a project uses a different camel-core version than the CamelCatalog currently uses.
+     * Scan for Camel project present and setup {@link CamelCatalog} to use same version of Camel as the project does.
      * These two version needs to be aligned to offer the best tooling support on the given project.
      */
-    public void scanForCamelVersionChange(@NotNull Project project, @NotNull Module module) {
+    public void scanForCamelProject(@NotNull Project project, @NotNull Module module) {
         for (OrderEntry entry : ModuleRootManager.getInstance(module).getOrderEntries()) {
             if (entry instanceof LibraryOrderEntry) {
                 LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
@@ -160,7 +128,9 @@ public class CamelService implements Disposable {
                     }
 
                     if ("org.apache.camel".equals(groupId) && "camel-core".equals(artifactId)) {
-                        boolean notified = false;
+
+                        // okay its a camel project
+                        setCamelPresent(true);
 
                         String currentVersion = getCamelCatalogService(project).get().getLoadedVersion();
                         if (currentVersion == null) {
@@ -168,29 +138,38 @@ public class CamelService implements Disposable {
                             currentVersion = getCamelCatalogService(project).get().getCatalogVersion();
                         }
                         if (version != null && !version.equalsIgnoreCase(currentVersion)) {
+                            // there is a different version to be loaded, so expire old notification
+                            if (camelVersionNotification != null) {
+                                camelVersionNotification.expire();
+                                camelVersionNotification = null;
+                            }
+
                             // attempt to load new version of camel-catalog to match the version from the project
                             // use catalog service to load version (which takes care of switching catalog as well)
                             boolean loaded = getCamelCatalogService(project).loadVersion(version);
                             if (!loaded) {
-                                Notification note = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin cannot download camel-catalog with version " + version
+                                camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin cannot download camel-catalog with version " + version
                                     + ". Will fallback and use version " + getCamelCatalogService(project).get().getCatalogVersion(), NotificationType.WARNING);
-                                note.notify(project);
-                                // we dont want to send out a 2nd notification
-                                notified = true;
+                                camelVersionNotification.notify(project);
                             }
                         }
 
-                        if (!notified) {
+                        // only notify this once on startup (or if a new version was successfully loaded)
+                        if (camelVersionNotification == null) {
                             currentVersion = getCamelCatalogService(project).get().getLoadedVersion();
                             if (currentVersion == null) {
                                 // okay no special version was loaded so its the catalog version we are using
                                 currentVersion = getCamelCatalogService(project).get().getCatalogVersion();
                             }
 
-                            Notification note = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin is using camel-catalog version "
+                            camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin is using camel-catalog version "
                                 + currentVersion, NotificationType.INFORMATION);
-                            note.notify(project);
+                            camelVersionNotification.notify(project);
                         }
+
+                        // okay we found camel-core and have setup the project version for it
+                        // then we should return early
+                        return;
                     }
                 }
             }
@@ -198,9 +177,9 @@ public class CamelService implements Disposable {
     }
 
     /**
-     * Scan for Custom Camel Libraries and update the cache and camel catalog with custom components discovered
+     * Scan for Camel component (both from Apache Camel and 3rd party components)
      */
-    public void scanForCustomCamelDependencies(@NotNull Project project, @NotNull Module module) {
+    public void scanForCamelDependencies(@NotNull Project project, @NotNull Module module) {
         CamelCatalog camelCatalog = getCamelCatalogService(project).get();
 
         for (OrderEntry entry : ModuleRootManager.getInstance(module).getOrderEntries()) {
@@ -217,12 +196,16 @@ public class CamelService implements Disposable {
                     String groupId = split[1].trim();
                     String artifactId = split[2].trim();
 
-                    // skip reserved from Apache Camel itself
-                    if ("org.apache.camel".equals(groupId)) {
+                    // is it a known library then continue
+                    if (containsLibrary(artifactId)) {
                         continue;
                     }
 
-                    addCustomCamelComponentsFromDependency(camelCatalog, library, artifactId);
+                    if ("org.apache.camel".equals(groupId)) {
+                        addLibrary(artifactId);
+                    } else {
+                        addCustomCamelComponentsFromDependency(camelCatalog, library, artifactId);
+                    }
                 }
             }
         }
@@ -268,7 +251,6 @@ public class CamelService implements Disposable {
         }
 
         if (added) {
-            // oaky one ore more components was added so add the library as well
             addLibrary(artifactId);
         }
     }

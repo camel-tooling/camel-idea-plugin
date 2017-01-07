@@ -73,15 +73,20 @@ public class CamelProjectComponent implements ProjectComponent {
         project.getMessageBus().connect(project).subscribe(ProjectTopics.PROJECT_ROOTS, new ModuleRootListener() {
             @Override
             public void rootsChanged(ModuleRootEvent event) {
+                // this event is called if the user adds a new dependency to the project
+                // such as adding a dependency to the project maven pom.xml file
                 Project project = (Project) event.getSource();
                 if (project.isOpen()) {
+                    // rebuild list of libraries because the dependencies may have changed
                     getCamelIdeaService(project).setCamelPresent(false);
                     getCamelIdeaService(project).clearLibraries();
 
                     for (Module module : ModuleManager.getInstance(project).getModules()) {
-                        getCamelIdeaService(project).scanForCamelVersionChange(project, module);
-                        getCamelIdeaService(project).scanForCamelDependencies(project, module);
-                        getCamelIdeaService(project).scanForCustomCamelDependencies(project, module);
+                        getCamelIdeaService(project).scanForCamelProject(project, module);
+                        // if its a Camel project then scan for additional Camel components
+                        if (getCamelIdeaService(project).isCamelPresent()) {
+                            getCamelIdeaService(project).scanForCamelDependencies(project, module);
+                        }
                     }
                 }
             }
@@ -94,18 +99,23 @@ public class CamelProjectComponent implements ProjectComponent {
                     runModuleOnStartUp = true;
                     // We scan all models at once to prevent scanning the same libraries multiple times
                     for (Module m : ModuleManager.getInstance(project).getModules()) {
-                        getCamelIdeaService(project).scanForCamelVersionChange(project, module);
-                        getCamelIdeaService(project).scanForCamelDependencies(project, m);
-                        getCamelIdeaService(project).scanForCustomCamelDependencies(project, module);
+                        getCamelIdeaService(project).scanForCamelProject(project, m);
+
+                        // if its a Camel project then scan for additional Camel components
+                        if (getCamelIdeaService(project).isCamelPresent()) {
+                            getCamelIdeaService(project).scanForCamelDependencies(project, m);
+                        }
                     }
                 } else {
-                    // a new module is added scan for custom Camel components and version changes
-                    getCamelIdeaService(project).scanForCamelVersionChange(project, module);
-                    getCamelIdeaService(project).scanForCustomCamelDependencies(project, module);
+                    // a new module is added scan for new Camel components and potential camel-core version changes
+                    getCamelIdeaService(project).scanForCamelProject(project, module);
+                    // if its a Camel project then scan for additional Camel components
+                    if (getCamelIdeaService(project).isCamelPresent()) {
+                        getCamelIdeaService(project).scanForCamelDependencies(project, module);
+                    }
                 }
             }
         });
-
     }
 
     @Override
