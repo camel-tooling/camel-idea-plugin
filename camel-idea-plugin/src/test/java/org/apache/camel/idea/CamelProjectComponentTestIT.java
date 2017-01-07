@@ -76,14 +76,14 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
 
         final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myProject);
 
-        addLibraryToModule(camelSpringVirtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-spring:2.19.0-snapshot");
+        Library springLibrary = addLibraryToModule(camelSpringVirtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-spring:2.19.0-snapshot");
         Library coreLibrary = addLibraryToModule(camelCoreVirtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-core:2.19.0-snapshot");
 
         UIUtil.dispatchAllInvocationEvents();
         assertEquals(2, service.getLibraries().size());
         assertEquals(true, service.isCamelPresent());
 
-        ApplicationManager.getApplication().runWriteAction(() -> projectLibraryTable.removeLibrary(coreLibrary));
+        ApplicationManager.getApplication().runWriteAction(() -> projectLibraryTable.removeLibrary(springLibrary));
 
         UIUtil.dispatchAllInvocationEvents();
         assertEquals(1, service.getLibraries().size());
