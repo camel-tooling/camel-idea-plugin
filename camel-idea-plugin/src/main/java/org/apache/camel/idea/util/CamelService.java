@@ -49,6 +49,8 @@ import static org.apache.camel.idea.CamelContributor.CAMEL_NOTIFICATION_GROUP;
  */
 public class CamelService implements Disposable {
 
+    // TODO: should be moved to some other package than util, eg service
+
     private Set<String> processedLibraries = new HashSet<>();
     private volatile boolean camelPresent;
     private Notification camelVersionNotification;
