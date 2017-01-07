@@ -46,9 +46,6 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
-import com.intellij.openapi.ui.MessageType;
-import com.intellij.openapi.ui.popup.BalloonBuilder;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.idea.catalog.CamelCatalogService;
@@ -239,14 +236,7 @@ public class CamelService implements Disposable {
             String message = "The following Camel components with artifactId [" + components
                 + "] does not include component JSon schema metadata which is required for the Camel IDEA plugin to support these components.";
 
-            BalloonBuilder balloonBuilder = JBPopupFactory.getInstance().createHtmlTextBalloonBuilder(message, MessageType.WARNING, null);
-            balloonBuilder.setTitle("Camel IDEA Plugin");
-
-            camelMissingJSonSchemaNotification = CAMEL_NOTIFICATION_GROUP.createNotification("The following Camel components with artifactId [" + components
-                + "] does not include component JSon schema metadata which is required for the Camel IDEA plugin to support these components.", NotificationType.WARNING);
-            camelMissingJSonSchemaNotification.setBalloon(balloonBuilder.createBalloon());
-            camelMissingJSonSchemaNotification.setImportant(true);
-            camelMissingJSonSchemaNotification.setIcon(CAMEL_ICON);
+            camelMissingJSonSchemaNotification = CAMEL_NOTIFICATION_GROUP.createNotification(message, NotificationType.WARNING).setImportant(true).setIcon(CAMEL_ICON);
             camelMissingJSonSchemaNotification.notify(project);
         }
     }
