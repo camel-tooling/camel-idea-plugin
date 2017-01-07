@@ -15,6 +15,7 @@ The plugin includes:
 - Quick documentation for Camel endpoints and external link to Camel component opening in web browser (`ctrl + j` and `shift-F1`)
 - Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders
 - Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)
+- Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)
 
 When the plugin becomes more complete and stable then the intention is to donate the source code
 to Apache Software Foundation to be included out of the box at Apache Camel.
