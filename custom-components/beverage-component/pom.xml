@@ -47,7 +47,7 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- use the Camel apt compiler plugin -->
+    <!-- use the Camel apt compiler plugin to generte JSon schema metadata -->
     <dependency>
       <groupId>org.apache.camel</groupId>
       <artifactId>apt</artifactId>
@@ -59,7 +59,7 @@
 
   <build>
     <plugins>
-      <!-- use Camel plugins to generate component details -->
+      <!-- use Camel plugins to generate component list -->
       <plugin>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-package-maven-plugin</artifactId>

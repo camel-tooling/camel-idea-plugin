@@ -16,14 +16,24 @@
  */
 package org.apache.camel.idea.util;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+import java.util.stream.Collectors;
 
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
@@ -42,6 +52,7 @@ import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.catalog.CatalogHelper.loadText;
+import static org.apache.camel.idea.CamelContributor.CAMEL_ICON;
 import static org.apache.camel.idea.CamelContributor.CAMEL_NOTIFICATION_GROUP;
 
 /**
@@ -51,16 +62,24 @@ public class CamelService implements Disposable {
 
     // TODO: should be moved to some other package than util, eg service
 
+    private static final String MISSING_JSON_SCHEMA_LINK = "https://github.com/davsclaus/camel-idea-plugin/tree/master/custom-components/beverage-component";
+
     private Set<String> processedLibraries = new HashSet<>();
     private volatile boolean camelPresent;
     private Notification camelVersionNotification;
+    private Notification camelMissingJSonSchemaNotification;
 
     @Override
     public void dispose() {
         processedLibraries.clear();
+
         if (camelVersionNotification != null) {
             camelVersionNotification.expire();
             camelVersionNotification = null;
+        }
+        if (camelMissingJSonSchemaNotification != null) {
+            camelMissingJSonSchemaNotification.expire();
+            camelMissingJSonSchemaNotification = null;
         }
     }
 
@@ -184,6 +203,8 @@ public class CamelService implements Disposable {
     public void scanForCamelDependencies(@NotNull Project project, @NotNull Module module) {
         CamelCatalog camelCatalog = getCamelCatalogService(project).get();
 
+        List<String> missingJSonSchemas = new ArrayList<>();
+
         for (OrderEntry entry : ModuleRootManager.getInstance(module).getOrderEntries()) {
             if (entry instanceof LibraryOrderEntry) {
                 LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
@@ -206,10 +227,20 @@ public class CamelService implements Disposable {
                     if ("org.apache.camel".equals(groupId)) {
                         addLibrary(artifactId);
                     } else {
-                        addCustomCamelComponentsFromDependency(camelCatalog, library, artifactId);
+                        addCustomCamelComponentsFromDependency(camelCatalog, library, artifactId, missingJSonSchemas);
                     }
                 }
             }
+        }
+
+        if (!missingJSonSchemas.isEmpty()) {
+            String components = missingJSonSchemas.stream().collect(Collectors.joining(","));
+            String message = "The following Camel components with artifactId [" + components
+                + "] does not include component JSon schema metadata which is required for the Camel IDEA plugin to support these components."
+                + "\nSee more details at: " + MISSING_JSON_SCHEMA_LINK;
+
+            camelMissingJSonSchemaNotification = CAMEL_NOTIFICATION_GROUP.createNotification(message, NotificationType.WARNING).setImportant(true).setIcon(CAMEL_ICON);
+            camelMissingJSonSchemaNotification.notify(project);
         }
     }
 
@@ -220,7 +251,7 @@ public class CamelService implements Disposable {
      * @param library      the dependency
      * @param artifactId   the artifact id of the dependency
      */
-    private void addCustomCamelComponentsFromDependency(CamelCatalog camelCatalog, Library library, String artifactId) {
+    private void addCustomCamelComponentsFromDependency(CamelCatalog camelCatalog, Library library, String artifactId, List<String> missingJSonSchemas) {
         boolean added = false;
 
         try (URLClassLoader classLoader = newURLClassLoaderForLibrary(library)) {
@@ -233,6 +264,8 @@ public class CamelService implements Disposable {
                         String[] part = components.split("\\s");
                         for (String scheme : part) {
                             if (!camelCatalog.findComponentNames().contains(scheme)) {
+                                // mark as added to avoid re-scanning the same component again
+                                added = true;
                                 // find the class name
                                 String javaType = extractComponentJavaType(classLoader, scheme);
                                 if (javaType != null) {
@@ -240,7 +273,9 @@ public class CamelService implements Disposable {
                                     if (json != null) {
                                         // okay a new Camel component was added
                                         camelCatalog.addComponent(scheme, javaType, json);
-                                        added = true;
+                                    } else {
+                                        // the component has no json schema, and hence its not supported by the plugin
+                                        missingJSonSchemas.add(artifactId);
                                     }
                                 }
                             }
@@ -276,14 +311,87 @@ public class CamelService implements Disposable {
     private static Properties loadComponentProperties(URLClassLoader classLoader) {
         Properties answer = new Properties();
         try {
+            // load the component files using the recommended way by a component.properties file
             InputStream is = classLoader.getResourceAsStream("META-INF/services/org/apache/camel/component.properties");
             if (is != null) {
                 answer.load(is);
+            } else {
+                // okay then try to load using a fallback using classpath scanning
+                loadComponentPropertiesClasspathScan(classLoader, answer);
             }
         } catch (Throwable e) {
             // ignore
         }
         return answer;
+    }
+
+    private static void loadComponentPropertiesClasspathScan(URLClassLoader classLoader, Properties answer) throws IOException {
+        Enumeration<URL> e = classLoader.getResources("META-INF/services/org/apache/camel/component/");
+        if (e != null) {
+            final List<String> names = new ArrayList<>();
+            while (e.hasMoreElements()) {
+                URL url = e.nextElement();
+                String urlPath = url.getFile();
+
+                urlPath = URLDecoder.decode(urlPath, "UTF-8");
+
+                // If it's a file in a directory, trim the stupid file: spec
+                if (urlPath.startsWith("file:")) {
+                    // file path can be temporary folder which uses characters that the URLDecoder decodes wrong
+                    // for example + being decoded to something else (+ can be used in temp folders on Mac OS)
+                    // to remedy this then create new path without using the URLDecoder
+                    try {
+                        urlPath = new URI(url.getFile()).getPath();
+                    } catch (URISyntaxException ignore) {
+                        // fallback to use as it was given from the URLDecoder
+                        // this allows us to work on Windows if users have spaces in paths
+                    }
+                    if (urlPath.startsWith("file:")) {
+                        urlPath = urlPath.substring(5);
+                    }
+                }
+                // Else it's in a JAR, grab the path to the jar
+                if (urlPath.indexOf('!') > 0) {
+                    urlPath = urlPath.substring(0, urlPath.indexOf('!'));
+                }
+
+                FileInputStream stream = new FileInputStream(urlPath);
+                List<String> found = findCamelComponentNamesInJar(stream, "META-INF/services/org/apache/camel/component/");
+                names.addAll(found);
+            }
+            if (!names.isEmpty()) {
+                // join the names using a space
+                String line = names.stream().collect(Collectors.joining(" "));
+                answer.put("components", line);
+            }
+        }
+    }
+
+    private static List<String> findCamelComponentNamesInJar(InputStream stream, String urlPath) {
+        List<String> entries = new ArrayList<>();
+
+        JarInputStream jarStream;
+        try {
+            jarStream = new JarInputStream(stream);
+
+            JarEntry entry;
+            while ((entry = jarStream.getNextJarEntry()) != null) {
+                String name = entry.getName();
+                if (name != null) {
+                    name = name.trim();
+                    if (name.startsWith(urlPath)) {
+                        if (!entry.isDirectory() && !name.endsWith(".class")) {
+                            name = name.substring(urlPath.length());
+                            entries.add(name);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            // ignore
+        }
+
+        return entries;
     }
 
     private static String loadComponentJSonSchema(URLClassLoader classLoader, String scheme) {
