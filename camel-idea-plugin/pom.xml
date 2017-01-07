@@ -113,6 +113,14 @@
 
     <!-- Test -->
     <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-core</artifactId>
+      <version>${camel.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- IntelliJ Test -->
+    <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>idea_rt</artifactId>
       <version>${idea.version}</version>
