@@ -166,11 +166,6 @@ public class CamelService implements Disposable {
                         }
                         if (version != null && !version.equalsIgnoreCase(currentVersion)) {
                             // attempt to load new version from project
-
-                            // re-create catalog from new version
-                            getCamelCatalogService(project).clearLoadedVersion();
-                            camelCatalog = getCamelCatalogService(project).get();
-
                             boolean loaded = camelCatalog.loadVersion(version);
                             if (!loaded) {
                                 System.err.println("Cannot load CamelCatalog version " + version);
