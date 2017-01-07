@@ -27,7 +27,6 @@ import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiReference;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
-
 /**
  * Test if the expected documentation is called where the caret is placed
  */
@@ -57,17 +56,16 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
         PsiReference referenceElement = myFixture.getReferenceAtCaretPosition();
         assertNotNull(referenceElement);
 
-        String docInfo = new CamelDocumentationProvider().getQuickNavigateInfo(psiClass,  referenceElement.getElement());
+        String docInfo = new CamelDocumentationProvider().getQuickNavigateInfo(psiClass, referenceElement.getElement());
         assertNotNull(docInfo);
         assertEquals(exampleHtmlFileText(getTestName(true)), docInfo);
     }
 
     private PsiClass getTestClass() throws Exception {
-        return ((PsiJavaFile)myFixture.getFile()).getClasses() [0];
+        return ((PsiJavaFile) myFixture.getFile()).getClasses()[0];
     }
 
-
-    private  String exampleHtmlFileText(String name) throws IOException {
+    private String exampleHtmlFileText(String name) throws IOException {
         final File htmlPath = new File(getTestDataPath() + name + ".html");
         return StringUtil.convertLineSeparators(FileUtil.loadFile(htmlPath).trim(), "");
     }

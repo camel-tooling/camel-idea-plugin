@@ -25,7 +25,7 @@ import org.apache.camel.catalog.DefaultCamelCatalog;
  */
 public class CamelCatalogService implements Disposable {
 
-    private  CamelCatalog instance;
+    private CamelCatalog instance;
 
     /**
      * Gets the {@link CamelCatalog} instance to use.
