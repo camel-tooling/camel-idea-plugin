@@ -38,7 +38,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
-
 /**
  * Test if the {@link CamelService} service is updated correctly when changes happen to
  * the Project and model configuration
@@ -89,7 +88,6 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         UIUtil.dispatchAllInvocationEvents();
         assertEquals(1, service.getLibraries().size());
     }
-
 
     public void testAddModule() throws IOException {
         CamelService service = ServiceManager.getService(myProject, CamelService.class);

@@ -32,7 +32,6 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
  */
 public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
-
     public String getJavaTestData() {
         return "public static class MyRouteBuilder extends RouteBuilder {\n"
             + "        @Override\n"
