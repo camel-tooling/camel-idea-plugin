@@ -268,9 +268,18 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
         ComponentModel component = ModelHelper.generateComponentModel(json, false);
 
+        // camel catalog expects &amp; as & when it parses so replace all &amp; as &
+        String camelQuery = val;
+        camelQuery = camelQuery.replaceAll("&amp;", "&");
+
+        // strip up ending incomplete parameter
+        if (camelQuery.endsWith("&") || camelQuery.endsWith("?")) {
+            camelQuery = camelQuery.substring(0, camelQuery.length() - 1);
+        }
+
         Map<String, String> existing = null;
         try {
-            existing = camelCatalog.endpointProperties(val);
+            existing = camelCatalog.endpointProperties(camelQuery);
         } catch (Throwable e) {
             // ignore
         }
