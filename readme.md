@@ -1,10 +1,10 @@
-Camel IDEA Plugin
-=================
+Apache Camel IDEA Plugin
+========================
 
 [![GitHub tag](https://img.shields.io/github/tag/davsclaus/camel-idea-plugin.svg?style=plastic)]()
 [![Build Status](https://travis-ci.org/davsclaus/camel-idea-plugin.svg?branch=master)](https://travis-ci.org/davsclaus/camel-idea-plugin)
 
-Plugin for Intellij IDEA to provide a set of small Camel related capabilities to IDEA editor.
+Plugin for Intellij IDEA to provide a set of small Apache Camel related capabilities to the code editor.
 
 The plugin includes:
 
@@ -13,6 +13,7 @@ The plugin includes:
 - Endpoint options filtered to only include applicable options when used as consumer vs producer only mode
 - Intention to add new Camel endpoint (`alt + enter` in empty string)
 - Quick documentation for Camel endpoints and external link to Camel component opening in web browser (`ctrl + j` and `shift-F1`)
+- Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders
 - Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)
 
 When the plugin becomes more complete and stable then the intention is to donate the source code
@@ -20,7 +21,8 @@ to Apache Software Foundation to be included out of the box at Apache Camel.
  
 However currently the code is located at github to allow faster and wider collaboration in the community.
 
-![Early Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/01-endpoint-options.png)
+![Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/01-endpoint-options.png)
+
 
 ### How to install
 
@@ -54,6 +56,7 @@ in the guide above. I did this so I can peak inside their source code, because y
 how to hook into various IDEA APIs which is massive and takes longer time to figure out to use. Sadly
 Jetbrains are not very good at documenting their APIs with neither javadoc, or documentation to their own plugins.
 However with some trial and run you can find out bit by bit.
+
 
 #### Importing project as maven project
 
@@ -92,6 +95,7 @@ project. Otherwise running the test will not work from IDEA
 > - Open the "Module Settings" and select the tab "Plug-in Deployment" 
 > - Make sure the path to the "META-INF/plugin.xml" point to the "src/main/resources/" directory
 
+
 ### Running and debugging the plugin from source
 
 After completing all steps and if everything is setup correctly, then you can launch the plugin by 
@@ -100,6 +104,7 @@ add a plugin run/debug configuration. To do that, go to Run → Edit Configurati
 You can also launch the plugin in debug mode where you can put breakpoints in the source code.
 This is very handy to debug the code and find issues. However for code changes you need to stop and
 start the plugin again.
+
 
 ### Running the unit test
 
@@ -126,6 +131,7 @@ Running the test from IDEA community requires to add following settings to the r
 
 > For the Ultimate version no VM options is necessary   
 
+
 ### Contributing / Hacking on the code
 
 We love contributions. And anyone is welcome to join and hack on the code. For code changes you
@@ -137,11 +143,13 @@ You should be willing to provide any code changes under the ASF license and that
 will be donated to Apache Software Foundation to be included out of the box at Apache Camel.
 If you are not willing to accept this, then we are sorry, but then any code contributions cannot be accepted.
 
+
 ### IDEA SDK and FAQ
 
 Jetbrains provides a FAQ for the IDEA SDK which is massive and takes time to learn.
 
 - http://www.jetbrains.org/intellij/sdk/docs/faq.html
+
 
 ### TODOs
 

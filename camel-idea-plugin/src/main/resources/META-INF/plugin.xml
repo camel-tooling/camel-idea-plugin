@@ -5,14 +5,14 @@
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
-      Plugin for Intellij IDEA to provide a set of small Apache Camel related capabilities to IDEA editor.
+      Plugin for Intellij IDEA to provide a set of small Apache Camel related capabilities to the code editor.
 
       The plugin includes:
       <ul>
         <li>Smart completion for Camel endpoints in Java, Groovy, Kotlin, Scala, XML, properties or yaml files (ctrl + space)</li>
         <li>Smart completion for Camel property placeholders (cursor after {{)</li>
         <li>Endpoint options filtered to only include applicable options when used as consumer vs producer only mode</li>
-        <li>Intention to add new Camel endpoint in Java editor (alt + enter in empty string)</li>
+        <li>Intention to add new Camel endpoint (alt + enter in empty string)</li>
         <li>Quick documentation for Camel endpoints and external link to Camel component opening in web browser (ctrl + j and shift-F1)</li>
         <li>Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders</li>
         <li>Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)</li>
