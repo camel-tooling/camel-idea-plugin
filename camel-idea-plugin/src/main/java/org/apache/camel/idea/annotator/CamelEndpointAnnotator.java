@@ -213,8 +213,8 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
      *
      * @return the summary, or <tt>empty</tt> if no validation errors
      */
+    @SuppressWarnings("unchecked")
     private <T> String summaryErrorMessage(EndpointValidationResult result, T entry, CamelAnnotatorEndpointMessage msg) {
-
         if (result.getIncapable() != null) {
             return "Incapable of parsing uri: " + result.getIncapable();
         } else if (result.getSyntaxError() != null) {
@@ -224,7 +224,6 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
         }
 
         return msg.getErrorMessage(result, entry);
-
     }
 
 }

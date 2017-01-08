@@ -40,6 +40,7 @@ import org.yaml.snakeyaml.Yaml;
 public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCompletion {
 
     @NotNull
+    @SuppressWarnings("unchecked")
     private Map<String, Object> getProperties(VirtualFile virtualFile) {
         Map<String, Object> result = new HashMap<>();
         Yaml yaml = new Yaml();
@@ -47,7 +48,8 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
             // Parse the YAML file and return the output as a series of Maps and Lists
             result = (Map<String, Object>) yaml.load(virtualFile.getInputStream());
         } catch (Exception e) {
-        }//TODO : log a warning, but for now we ignore it and continue.
+            // ignore
+        }
         return result;
     }
 
@@ -75,6 +77,7 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
     /**
      * Flat the {@link LinkedHashMap} to string property names and build the {@link CompletionResultSet}
      */
+    @SuppressWarnings("unchecked")
     private void buildResultSetForLinkedHashMap(CompletionResultSet resultSet, VirtualFile virtualFile, String keyStr, List<?> propertyList) {
         propertyList.stream()
             .filter(l -> l instanceof LinkedHashMap)
@@ -100,7 +103,7 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
      */
     private void buildResultSetForList(CompletionResultSet resultSet, VirtualFile virtualFile, String keyStr, List<?> propertyList) {
         final AtomicInteger count = new AtomicInteger(0);
-        propertyList.stream().forEach(e -> {
+        propertyList.forEach(e -> {
             if (e instanceof String) {
                 String flatKeyStr = String.format("%s[%s]", keyStr, count.getAndIncrement());
                 buildResultSet(resultSet, virtualFile, flatKeyStr, String.valueOf(e));
