@@ -49,7 +49,8 @@ public class CamelAnnotator implements Annotator {
                 && !fromElement.trim().endsWith("{{") && !fromElement.trim().endsWith("=")
                 && !fromElement.trim().endsWith("${")) {
                 validateEndpointProperties(element, holder, fromElement);
-                validateSimpleExpression(element, holder, fromElement);
+                //Comment out until we solve the classloader issue.
+                //validateSimpleExpression(element, holder, fromElement);
             }
         }
     }
