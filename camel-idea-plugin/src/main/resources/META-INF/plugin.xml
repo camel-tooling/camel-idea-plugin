@@ -110,11 +110,11 @@
     </intentionAction>
 
     <!-- Annotator to validate end points-->
-    <annotator language="JAVA" implementationClass="org.apache.camel.idea.annotator.CamelAnnotator"/>
-    <annotator language="XML" implementationClass="org.apache.camel.idea.annotator.CamelAnnotator"/>
-    <annotator language="Groovy" implementationClass="org.apache.camel.idea.annotator.CamelAnnotator"/>
-    <annotator language="kotlin" implementationClass="org.apache.camel.idea.annotator.CamelAnnotator"/>
-    <annotator language="Scala" implementationClass="org.apache.camel.idea.annotator.CamelAnnotator"/>
+    <annotator language="JAVA" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
+    <annotator language="XML" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
+    <annotator language="Groovy" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
+    <annotator language="kotlin" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
+    <annotator language="Scala" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
   </extensions>
 
 </idea-plugin>

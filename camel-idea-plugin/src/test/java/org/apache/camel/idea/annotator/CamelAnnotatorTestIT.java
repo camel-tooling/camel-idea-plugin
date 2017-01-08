@@ -29,65 +29,23 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
         return "src/test/resources/testData/annotator/";
     }
 
-    public String getJavaInvalidBooleanPropertyTestData() {
-        return "public class MyRouteBuilder extends RouteBuilder {\n"
-            + "        public void configure() throws Exception {\n"
-            + "            from(\"timer:trigger?bridgeErrorHandler=DDDD\")\n"
-            + "            from(\"timer:trigger?bridgeErrorHandler=<error descr=\"Invalid boolean value: DDDD\">DDDD</error>\")\n"
-            + "                .to(\"file:outbox\");\n"
-            + "        }\n"
-            + "    }";
-    }
-
-    public String getXmlInvalidBooleanPropertyTestData() {
-        return "<route id=\"generateOrder-route\">\n"
-            + "      <from uri=\"timer:trigger?bridgeErrorHandler=DDDD\"/>\n"
-            + "      <from uri=\"timer:trigger?bridgeErrorHandler=<error descr=\"Invalid boolean value: DDDD\">DDDD</error>\"/>\n"
-            + "      <to uri=\"file:outbox\"/>\n"
-            + "    </route>";
-    }
-
-    public String getJavaInvalidIntegerePropertyTestData() {
-        return "public class MyRouteBuilder extends RouteBuilder {\n"
-            + "        public void configure() throws Exception {\n"
-            + "            from(\"timer:trigger?delay=ImNotANumber\")\n"
-            + "            from(\"timer:trigger?delay=<error descr=\"Invalid integer value: ImNotANumber\">ImNotANumber</error>\")\n"
-            + "                .to(\"file:outbox\");\n"
-            + "        }\n"
-            + "    }";
-    }
-
-    public String getXmlInvalidIntegerePropertyTestData() {
-        return "<route id=\"generateOrder-route\">\n"
-            + "      <from uri=\"timer:trigger?delay=ImNotANumber\"/>\n"
-            + "      <from uri=\"timer:trigger?delay=<error descr=\"Invalid integer value: ImNotANumber\">ImNotANumber</error>\"/>\n"
-            + "      <to uri=\"file:outbox\"/>\n"
-            + "    </route>";
-    }
-
-    public String getJavaInvalidReferencePropertyTestData() {
-        return "public class MyRouteBuilder extends RouteBuilder {\n"
-            + "        public void configure() throws Exception {\n"
-            + "            from(\"jms:queue:myqueue?jmsKeyFormatStrategy=foo\")\n"
-            + "            from(\"jms:queue:myqueue?jmsKeyFormatStrategy=<error descr=\"Invalid enum value: foo. Possible values: "
-            + "[default, passthrough]. Did you mean: [default, passthrough]\">foo</error>\")\n"
-            + "                .to(\"file:outbox\");\n"
-            + "        }\n"
-            + "    }";
-    }
-
-    public String getXmlInvalidReferencePropertyTestData() {
-        return "<route id=\"generateOrder-route\">\n"
-            + "      <from uri=\"jms:queue:myqueue?jmsKeyFormatStrategy=foo\"/>\n"
-            + "      <from uri=\"jms:queue:myqueue?jmsKeyFormatStrategy=<error descr=\"Invalid enum value: foo. Possible values: "
-            + "[default, passthrough]. Did you mean: [default, passthrough]\">foo</error>\"/>\n"
-            + "      <to uri=\"file:outbox\"/>\n"
-            + "    </route>";
-    }
-
-
     public void testAnnotatorInvalidBooleanPropertyValidation() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaInvalidBooleanPropertyTestData());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
+    public void testAnnotatorInvalidBooleanPropertyProducerValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaInvalidBooleanPropertyInProducerTestData());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
+    public void testAnnotatorInvalidBooleanPropertyProducerOpenUriValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaInvalidBooleanPropertyInProducerWithOpenUriTestData());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
+    public void testAnnotatorUnknownOptionValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaUnknownOptionsConsumerTestData());
         myFixture.checkHighlighting(false, false, true, true);
     }
 
@@ -96,12 +54,22 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
         myFixture.checkHighlighting(false, false, true, true);
     }
 
+    public void testXmlMultipleErrorsValidation() {
+        myFixture.configureByText("AnnotatorTestData.xml", getXmlMultipleErrorsTestData());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
     public void testAnnotatorIntegerPropertyValidation() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaInvalidIntegerePropertyTestData());
         myFixture.checkHighlighting(false, false, true, true);
     }
+
     public void testXmlAnnotatorIntegerPropertyValidation() {
         myFixture.configureByText("AnnotatorTestData.xml", getXmlInvalidIntegerePropertyTestData());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+    public void testXmlAnnotatorWithCommentValidation() {
+        myFixture.configureByText("AnnotatorTestData.xml", getXmlWithCommentTestData());
         myFixture.checkHighlighting(false, false, true, true);
     }
 
@@ -113,6 +81,109 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
     public void testXmlAnnotatorReferencePropertyValidation() {
         myFixture.configureByText("AnnotatorTestData.xml", getXmlInvalidReferencePropertyTestData());
         myFixture.checkHighlighting(false, false, true, true);
+    }
+
+    private String getJavaInvalidBooleanPropertyTestData() {
+        return "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger?bridgeErrorHandler=DDDD\")\n"
+            + "            from(\"timer:trigger?bridgeErrorHandler=<error descr=\"Invalid boolean value: DDDD\">DDDD</error>\")\n"
+            + "                .to(\"file:outbox\");\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getJavaInvalidBooleanPropertyInProducerTestData() {
+        return "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger?bridgeErrorHandler=false\")\n"
+            + "                .to(\"file:test?allowNullBody=FISH\");\n"
+            + "                .to(\"file:test?allowNullBody=<error descr=\"Invalid boolean value: FISH\">FISH</error>\")\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getJavaUnknownOptionsConsumerTestData() {
+        return "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger?bridgeErrorHandler=false\")\n"
+            + "                .to(\"file:test?allowNullBody=true&foo=bar\");\n"
+            + "                .to(\"file:test?allowNullBody=true&<error descr=\"Unknown option\">foo</error>=bar\")\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getJavaInvalidBooleanPropertyInProducerWithOpenUriTestData() {
+        return "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger?bridgeErrorHandler=false\")\n"
+            + "                .to(\"file:test?allowNullBody=FISH&\");\n"
+            + "                .to(\"file:test?allowNullBody=<error descr=\"Invalid boolean value: FISH\">FISH</error>\")\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getXmlInvalidBooleanPropertyTestData() {
+        return "<route id=\"generateOrder-route\">\n"
+            + "      <from uri=\"timer:trigger?bridgeErrorHandler=DDDD\"/>\n"
+            + "      <from uri=\"timer:trigger?bridgeErrorHandler=<error descr=\"Invalid boolean value: DDDD\">DDDD</error>\"/>\n"
+            + "      <to uri=\"file:outbox\"/>\n"
+            + "    </route>";
+    }
+
+    private String getXmlMultipleErrorsTestData() {
+        return "<route id=\"generateOrder-route\">\n"
+            + "      <from uri=\"timer:trigger?bridgeErrorHandler=DDDD&amp;foo=bar\"/>\n"
+            + "      <from uri=\"timer:trigger?bridgeErrorHandler=<error descr=\"Invalid boolean value: DDDD\">DDDD</error>&amp;<error descr=\"Unknown option\">foo</error>=bar\"/>\n"
+            + "      <to uri=\"file:outbox\"/>\n"
+            + "    </route>";
+    }
+
+    private String getXmlWithCommentTestData() {
+        return "<route id=\"generateOrder-route\">\n"
+            + "   <!-- Testing with comments inside xml -->\n"
+            + "      <from uri=\"timer:trigger?bridgeErrorHandler=DDDD\"/>\n"
+            + "      <from uri=\"timer:trigger?bridgeErrorHandler=<error descr=\"Invalid boolean value: DDDD\">DDDD</error>\"/>\n"
+            + "      <to uri=\"file:outbox\"/>\n"
+            + "    </route>";
+    }
+
+    private String getJavaInvalidIntegerePropertyTestData() {
+        return "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger?delay=ImNotANumber\")\n"
+            + "            from(\"timer:trigger?delay=<error descr=\"Invalid integer value: ImNotANumber\">ImNotANumber</error>\")\n"
+            + "                .to(\"file:outbox\");\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getXmlInvalidIntegerePropertyTestData() {
+        return "<route id=\"generateOrder-route\">\n"
+            + "      <from uri=\"timer:trigger?delay=ImNotANumber\"/>\n"
+            + "      <from uri=\"timer:trigger?delay=<error descr=\"Invalid integer value: ImNotANumber\">ImNotANumber</error>\"/>\n"
+            + "      <to uri=\"file:outbox\"/>\n"
+            + "    </route>";
+    }
+
+    private String getJavaInvalidReferencePropertyTestData() {
+        return "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"jms:queue:myqueue?jmsKeyFormatStrategy=foo\")\n"
+            + "            from(\"jms:queue:myqueue?jmsKeyFormatStrategy=<error descr=\"Invalid enum value: foo. Possible values: "
+            + "[default, passthrough]. Did you mean: [default, passthrough]\">foo</error>\")\n"
+            + "                .to(\"file:outbox\");\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getXmlInvalidReferencePropertyTestData() {
+        return "<route id=\"generateOrder-route\">\n"
+            + "      <from uri=\"jms:queue:myqueue?jmsKeyFormatStrategy=foo\"/>\n"
+            + "      <from uri=\"jms:queue:myqueue?jmsKeyFormatStrategy=<error descr=\"Invalid enum value: foo. Possible values: "
+            + "[default, passthrough]. Did you mean: [default, passthrough]\">foo</error>\"/>\n"
+            + "      <to uri=\"file:outbox\"/>\n"
+            + "    </route>";
     }
 
 }
