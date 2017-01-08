@@ -49,6 +49,7 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.idea.catalog.CamelCatalogService;
+import org.apache.camel.idea.service.CamelPreferenceService;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.catalog.CatalogHelper.loadText;
@@ -168,13 +169,18 @@ public class CamelService implements Disposable {
                                 camelVersionNotification = null;
                             }
 
-                            // attempt to load new version of camel-catalog to match the version from the project
-                            // use catalog service to load version (which takes care of switching catalog as well)
-                            boolean loaded = getCamelCatalogService(project).loadVersion(version);
-                            if (!loaded) {
-                                camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin cannot download camel-catalog with version " + version
-                                    + ". Will fallback and use version " + getCamelCatalogService(project).get().getCatalogVersion(), NotificationType.WARNING);
-                                camelVersionNotification.notify(project);
+                            // whether download is allowed or not
+                            boolean download = getCamelPreferenceService().isDownloadCatalog();
+
+                            if (download) {
+                                // attempt to load new version of camel-catalog to match the version from the project
+                                // use catalog service to load version (which takes care of switching catalog as well)
+                                boolean loaded = getCamelCatalogService(project).loadVersion(version);
+                                if (!loaded) {
+                                    camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin cannot download camel-catalog with version " + version
+                                        + ". Will fallback and use version " + getCamelCatalogService(project).get().getCatalogVersion(), NotificationType.WARNING);
+                                    camelVersionNotification.notify(project);
+                                }
                             }
                         }
 
@@ -482,6 +488,10 @@ public class CamelService implements Disposable {
 
     private CamelCatalogService getCamelCatalogService(Project project) {
         return ServiceManager.getService(project, CamelCatalogService.class);
+    }
+
+    private CamelPreferenceService getCamelPreferenceService() {
+        return ServiceManager.getService(CamelPreferenceService.class);
     }
 
 }
