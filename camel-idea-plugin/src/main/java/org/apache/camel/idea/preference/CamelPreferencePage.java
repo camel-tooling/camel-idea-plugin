@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,8 +22,8 @@ import javax.swing.*;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.components.JBCheckBox;
-import net.miginfocom.swing.MigLayout;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
@@ -43,18 +43,19 @@ public class CamelPreferencePage implements Configurable {
     public JComponent createComponent() {
         downloadCatalogCheckBox = new JBCheckBox("Allow downloading camel-catalog over the internet");
 
-        JPanel panel = new JPanel(new MigLayout("fillx,wrap 2",
-            "[left]rel[grow,fill]"));
-        panel.setOpaque(false);
+        JPanel c = new JPanel(new BorderLayout());
 
-        panel.add(downloadCatalogCheckBox, "span 2");
+        JPanel settings = new JPanel(new BorderLayout());
+        settings.setBorder(IdeBorderFactory.createTitledBorder("Settings", true));
+        c.add(c = new JPanel(new BorderLayout()), BorderLayout.NORTH);
+        c.add(settings, BorderLayout.NORTH);
 
-        JPanel result = new JPanel(new BorderLayout());
-        result.add(panel, BorderLayout.NORTH);
+        settings.add(downloadCatalogCheckBox, BorderLayout.NORTH);
+        settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
 
         reset();
 
-        return result;
+        return c;
     }
 
     @Nls
