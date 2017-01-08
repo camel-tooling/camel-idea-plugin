@@ -9,6 +9,7 @@
 
       The plugin includes:
       <ul>
+        <li>Validation for Camel endpoints in Java, Groovy, Kotlin, Scala, XML</li>
         <li>Smart completion for Camel endpoints in Java, Groovy, Kotlin, Scala, XML, properties or yaml files (ctrl + space)</li>
         <li>Smart completion for Camel property placeholders (cursor after {{)</li>
         <li>Endpoint options filtered to only include applicable options when used as consumer vs producer only mode</li>
@@ -22,7 +23,8 @@
   <change-notes><![CDATA[
       <ul>
         <li>0.3.0 - Restructured project as multi Maven module to support further work.
-                    Add support for 3rd party Camel components (not from the Apache Camel release).</li>
+                    Add support for 3rd party Camel components (not from the Apache Camel release).
+                    Add support for validate Camel end points.</li>
         <li>0.2.2 - Show Camel icon in gutter where a Camel route starts.
         <li>0.2.1 - Plugin is only in use if the loaded project is a Camel project (has camel-core as library/dependency).
                     Smart completion for Kotlin files.
@@ -103,6 +105,13 @@
     <intentionAction>
       <className>org.apache.camel.idea.intention.CamelAddEndpointIntention</className>
     </intentionAction>
+
+    <!-- Annotator to validate end points-->
+    <annotator language="JAVA" implementationClass="org.apache.camel.idea.annotator.CamelAnnotator"/>
+    <annotator language="XML" implementationClass="org.apache.camel.idea.annotator.CamelAnnotator"/>
+    <annotator language="Groovy" implementationClass="org.apache.camel.idea.annotator.CamelAnnotator"/>
+    <annotator language="kotlin" implementationClass="org.apache.camel.idea.annotator.CamelAnnotator"/>
+    <annotator language="Scala" implementationClass="org.apache.camel.idea.annotator.CamelAnnotator"/>
   </extensions>
 
 </idea-plugin>

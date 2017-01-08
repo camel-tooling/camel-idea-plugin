@@ -17,6 +17,8 @@
 package org.apache.camel.idea.util;
 
 import java.util.Arrays;
+import java.util.List;
+
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
@@ -42,7 +44,7 @@ import static com.intellij.xml.CommonXmlStrings.QUOT;
 public final class IdeaUtils {
 
     private static final String SINGLE_QUOT = "'";
-    private static final String ROUTE_BUILDER_CLASS_QUALIFIED_NAME = "org.apache.camel.builder.RouteBuilder";
+    private static final List<String> ROUTE_BUILDER_CLASS_QUALIFIED_NAME = Arrays.asList("org.apache.camel.builder.RouteBuilder", "org.apache.camel.builder.BuilderSupport");
 
     private IdeaUtils() {
     }
@@ -178,6 +180,49 @@ public final class IdeaUtils {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
                 return isFromScalaMethod(element, "from", "fromF");
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Is the given element a simple of a Camel route, eg <tt>simple</tt>, ot &lt;simple&gt;.
+     */
+    public static boolean isCamelRouteSimpleExpression(PsiElement element) {
+        // java method call
+        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        if (call != null) {
+            return isFromJavaMethod(call, "simple");
+        }
+        // xml
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            String name = xml.getLocalName();
+            XmlTag parentTag = xml.getParentTag();
+            if (parentTag != null) {
+                return "simple".equals(name) && "simple".equals(parentTag.getLocalName());
+            }
+        }
+        // groovy
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Groovy")) {
+                return isFromGroovyMethod(element, "simple");
+            }
+        }
+        // kotlin
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("kotlin")) {
+                return isFromKotlinMethod(element, "simple");
+            }
+        }
+        // scala
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Scala")) {
+                return isFromScalaMethod(element, "simple");
             }
         }
 
@@ -325,8 +370,8 @@ public final class IdeaUtils {
                 String name = method.getName();
 
                 if (Arrays.stream(methods).anyMatch(name::equals)) {
-                    return ROUTE_BUILDER_CLASS_QUALIFIED_NAME.equals(className)
-                            || Arrays.stream(containingClass.getSupers()).anyMatch(psiClass -> ROUTE_BUILDER_CLASS_QUALIFIED_NAME.equals(psiClass.getQualifiedName()));
+                    return ROUTE_BUILDER_CLASS_QUALIFIED_NAME.contains(className)
+                            || Arrays.stream(containingClass.getSupers()).anyMatch(psiClass -> ROUTE_BUILDER_CLASS_QUALIFIED_NAME.contains(psiClass.getQualifiedName()));
                 }
             }
         } else {
@@ -495,4 +540,7 @@ public final class IdeaUtils {
         return text;
     }
 
+    public static boolean isEmpty(String str) {
+        return str == null || str.length() == 0;
+    }
 }
