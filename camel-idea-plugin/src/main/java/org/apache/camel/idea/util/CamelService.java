@@ -64,6 +64,9 @@ public class CamelService implements Disposable {
 
     private static final String MISSING_JSON_SCHEMA_LINK = "https://github.com/davsclaus/camel-idea-plugin/tree/master/custom-components/beverage-component";
 
+    private static final int MIN_MAJOR_VERSION = 2;
+    private static final int MIN_MINOR_VERSION = 16;
+
     private Set<String> processedLibraries = new HashSet<>();
     private volatile boolean camelPresent;
     private Notification camelVersionNotification;
@@ -158,7 +161,7 @@ public class CamelService implements Disposable {
                             // okay no special version was loaded so its the catalog version we are using
                             currentVersion = getCamelCatalogService(project).get().getCatalogVersion();
                         }
-                        if (version != null && !version.equalsIgnoreCase(currentVersion)) {
+                        if (version != null && !version.equalsIgnoreCase(currentVersion) && acceptedVersion(version)) {
                             // there is a different version to be loaded, so expire old notification
                             if (camelVersionNotification != null) {
                                 camelVersionNotification.expire();
@@ -290,6 +293,48 @@ public class CamelService implements Disposable {
         if (added) {
             addLibrary(artifactId);
         }
+    }
+
+    /**
+     * Can the version be accepted to use for switching camel-catalog version.
+     * <p/>
+     * Only newer versions of Camel is accepted, older versions do not have a camel-catalog or the catalog
+     * has invalid data.
+     *
+     * @param version the version from the project
+     * @return <tt>true</tt> to allow to switch version, <tt>false</tt> otherwise.
+     */
+    private static boolean acceptedVersion(String version) {
+        version = version.toLowerCase();
+        if (version.endsWith("snapshot")) {
+            // accept snapshot version which can be Camel team developing on latest Camel source
+            return true;
+        }
+
+        // special issue with 2.16.0 which does not work
+        if ("2.16.0".equals(version)) {
+            return false;
+        }
+
+        int major = -1;
+        int minor = -1;
+
+        // split into major, minor and patch
+        String[] parts = version.split("\\.");
+        if (parts.length >= 2) {
+            major = Integer.valueOf(parts[0]);
+            minor = Integer.valueOf(parts[1]);
+        }
+
+        if (major > MIN_MAJOR_VERSION) {
+            return true;
+        }
+        if (major < MIN_MAJOR_VERSION) {
+            return false;
+        }
+
+        // okay its the same major versiom, then the minor must be equal or higher
+        return minor >= MIN_MINOR_VERSION;
     }
 
     private static URLClassLoader newURLClassLoaderForLibrary(Library library) throws MalformedURLException {
