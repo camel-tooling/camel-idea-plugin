@@ -17,6 +17,10 @@
 package org.apache.camel.idea.util;
 
 import java.util.Arrays;
+import java.util.List;
+
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
@@ -32,6 +36,7 @@ import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
+import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.jetbrains.annotations.Nullable;
 
 import static com.intellij.xml.CommonXmlStrings.QUOT;
@@ -42,7 +47,8 @@ import static com.intellij.xml.CommonXmlStrings.QUOT;
 public final class IdeaUtils {
 
     private static final String SINGLE_QUOT = "'";
-    private static final String ROUTE_BUILDER_CLASS_QUALIFIED_NAME = "org.apache.camel.builder.RouteBuilder";
+    private static final List<String> ROUTE_BUILDER_CLASS_QUALIFIED_NAME = Arrays.asList("org.apache.camel.builder.RouteBuilder",
+        "org.apache.camel.builder.BuilderSupport", "org.apache.camel.model.ProcessorDefinition");
 
     private IdeaUtils() {
     }
@@ -55,13 +61,23 @@ public final class IdeaUtils {
      */
     @Nullable
     public static String extractTextFromElement(PsiElement element) {
+        return extractTextFromElement(element, true);
+    }
+    /**
+     * Extract the text value from the {@link PsiElement} from any of the support languages this plugin works with.
+     *
+     * @param element the element
+     * @param fallBackToGeneric if could find any of the supported languages fallback to generic if true
+     * @return the text or <tt>null</tt> if the element is not a text/literal kind.
+     */
+    @Nullable
+    public static String extractTextFromElement(PsiElement element, boolean fallBackToGeneric) {
         // need the entire line so find the literal expression that would hold the entire string (java)
-        PsiLiteralExpression literal;
+        PsiLiteralExpression literal = null;
         if (element instanceof PsiLiteralExpression) {
             literal = (PsiLiteralExpression) element;
-        } else {
-            literal = PsiTreeUtil.getParentOfType(element, PsiLiteralExpression.class);
         }
+
         if (literal != null) {
             Object o = literal.getValue();
             String text = o != null ? o.toString() : null;
@@ -71,8 +87,8 @@ public final class IdeaUtils {
 
         // maybe its xml then try that
         XmlAttributeValue xml = PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class);
-        if (xml != null) {
-            return xml.getValue();
+        if (element instanceof XmlAttributeValue) {
+            return ((XmlAttributeValue)element).getValue();
         }
 
         // its maybe a property from properties file
@@ -120,10 +136,14 @@ public final class IdeaUtils {
             }
         }
 
-        // fallback to generic
-        String text = element.getText();
-        // the text may be quoted so unwrap that
-        return getInnerText(text);
+        String text = "";
+        if (fallBackToGeneric) {
+            // fallback to generic
+            text = element.getText();
+            // the text may be quoted so unwrap that
+            text = getInnerText(text);
+        }
+        return text;
     }
 
     /**
@@ -178,6 +198,49 @@ public final class IdeaUtils {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
                 return isFromScalaMethod(element, "from", "fromF");
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Is the given element a simple of a Camel route, eg <tt>simple</tt>, ot &lt;simple&gt;.
+     */
+    public static boolean isCamelRouteSimpleExpression(PsiElement element) {
+        // java method call
+        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        if (call != null) {
+            return isFromJavaMethod(call, "simple");
+        }
+        // xml
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            String name = xml.getLocalName();
+            XmlTag parentTag = xml.getParentTag();
+            if (parentTag != null) {
+                return "simple".equals(name) && "simple".equals(parentTag.getLocalName());
+            }
+        }
+        // groovy
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Groovy")) {
+                return isFromGroovyMethod(element, "simple");
+            }
+        }
+        // kotlin
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("kotlin")) {
+                return isFromKotlinMethod(element, "simple");
+            }
+        }
+        // scala
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Scala")) {
+                return isFromScalaMethod(element, "simple");
             }
         }
 
@@ -325,11 +388,12 @@ public final class IdeaUtils {
                 String name = method.getName();
 
                 if (Arrays.stream(methods).anyMatch(name::equals)) {
-                    return ROUTE_BUILDER_CLASS_QUALIFIED_NAME.equals(className)
-                            || Arrays.stream(containingClass.getSupers()).anyMatch(psiClass -> ROUTE_BUILDER_CLASS_QUALIFIED_NAME.equals(psiClass.getQualifiedName()));
+                    return ROUTE_BUILDER_CLASS_QUALIFIED_NAME.contains(className)
+                            || Arrays.stream(containingClass.getSupers()).anyMatch(psiClass -> ROUTE_BUILDER_CLASS_QUALIFIED_NAME.contains(psiClass.getQualifiedName()));
                 }
             }
         } else {
+            // TODO : This should be removed when we figure how to setup language depend SDK classes
             // alternative when we run unit test where IDEA causes the method call expression to include their dummy hack which skews up this logic
             PsiElement child = call.getFirstChild();
             if (child != null) {
@@ -495,4 +559,21 @@ public final class IdeaUtils {
         return text;
     }
 
+    public static boolean isEmpty(String str) {
+        return str == null || str.length() == 0;
+    }
+
+    /**
+     * Validate if the query contain a known camel component
+     */
+    public static boolean isQueryContainingCamelComponent(Project project, String query) {
+        // is this a possible Camel endpoint uri which we know
+        if (query != null && !query.isEmpty()) {
+            String componentName = StringUtils.asComponentName(query);
+            if (componentName != null && ServiceManager.getService(project, CamelCatalogService.class).get().findComponentNames().contains(componentName)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

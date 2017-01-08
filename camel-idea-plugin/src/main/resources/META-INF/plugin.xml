@@ -17,6 +17,7 @@
         <li>Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders</li>
         <li>Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)</li>
         <li>Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)<li>
+        <li>Validation for Camel endpoints in Java, Groovy, Kotlin, Scala, XML</li>
       </ul>
     ]]></description>
 
@@ -25,6 +26,7 @@
         <li>0.3.0 - Restructured project as multi Maven module to support further work.
                     Add support for 3rd party Camel components (not from the Apache Camel release).
                     The plugin will attempt to use same camel-catalog version as the camel-core version used in the project.
+                    Add support for validate Camel end points.
                     Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)<li>
         <li>0.2.2 - Show Camel icon in gutter where a Camel route starts.
         <li>0.2.1 - Plugin is only in use if the loaded project is a Camel project (has camel-core as library/dependency).
@@ -106,6 +108,13 @@
     <intentionAction>
       <className>org.apache.camel.idea.intention.CamelAddEndpointIntention</className>
     </intentionAction>
+
+    <!-- Annotator to validate end points-->
+    <annotator language="JAVA" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
+    <annotator language="XML" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
+    <annotator language="Groovy" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
+    <annotator language="kotlin" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
+    <annotator language="Scala" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
   </extensions>
 
 </idea-plugin>
