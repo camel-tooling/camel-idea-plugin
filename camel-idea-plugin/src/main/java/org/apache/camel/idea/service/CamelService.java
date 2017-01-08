@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.util;
+package org.apache.camel.idea.service;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -49,7 +49,6 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.idea.catalog.CamelCatalogService;
-import org.apache.camel.idea.service.CamelPreferenceService;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.catalog.CatalogHelper.loadText;
@@ -60,8 +59,6 @@ import static org.apache.camel.idea.CamelContributor.CAMEL_NOTIFICATION_GROUP;
  * Service access for Camel libraries
  */
 public class CamelService implements Disposable {
-
-    // TODO: should be moved to some other package than util, eg service
 
     private static final String MISSING_JSON_SCHEMA_LINK = "https://github.com/davsclaus/camel-idea-plugin/tree/master/custom-components/beverage-component";
 

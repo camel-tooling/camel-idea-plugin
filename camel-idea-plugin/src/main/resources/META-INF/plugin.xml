@@ -69,7 +69,7 @@
 
     <!-- services which can be requested from IDEA api -->
     <projectService serviceImplementation="org.apache.camel.idea.catalog.CamelCatalogService"/>
-    <projectService serviceImplementation="org.apache.camel.idea.util.CamelService"/>
+    <projectService serviceImplementation="org.apache.camel.idea.service.CamelService"/>
     <applicationService serviceImplementation="org.apache.camel.idea.service.CamelPreferenceService"/>
 
     <!-- allow smart completion of Camel endpoints-->

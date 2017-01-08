@@ -20,6 +20,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
+import org.apache.camel.idea.service.CamelService;
 
 public class IdeaUtilsIsCamelRouteStartExtendedTestIT extends LightCodeInsightFixtureTestCase {
 

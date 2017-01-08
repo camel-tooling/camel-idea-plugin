@@ -42,7 +42,7 @@ import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
-import org.apache.camel.idea.util.CamelService;
+import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
