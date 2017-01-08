@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.catalog;
+package org.apache.camel.idea.service;
 
 import com.intellij.openapi.Disposable;
 import org.apache.camel.catalog.CamelCatalog;

@@ -25,8 +25,8 @@ import com.intellij.openapi.project.ModuleAdapter;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
-import org.apache.camel.idea.catalog.CamelCatalogService;
-import org.apache.camel.idea.util.CamelService;
+import org.apache.camel.idea.service.CamelCatalogService;
+import org.apache.camel.idea.service.CamelService;
 import org.jetbrains.annotations.NotNull;
 
 /**

@@ -16,9 +16,7 @@
  */
 package org.apache.camel.idea.completion.extension;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Properties;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;

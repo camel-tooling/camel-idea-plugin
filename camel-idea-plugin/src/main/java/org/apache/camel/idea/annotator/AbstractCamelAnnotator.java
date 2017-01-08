@@ -20,7 +20,7 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
-import org.apache.camel.idea.util.CamelService;
+import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
