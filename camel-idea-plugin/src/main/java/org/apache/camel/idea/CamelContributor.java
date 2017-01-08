@@ -25,6 +25,7 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtil;
+import com.intellij.notification.NotificationGroup;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.patterns.InitialPatternCondition;
@@ -46,6 +47,8 @@ import static org.apache.camel.idea.util.IdeaUtils.extractTextFromElement;
 public abstract class CamelContributor extends CompletionContributor {
 
     public static final Icon CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
+
+    public static final NotificationGroup CAMEL_NOTIFICATION_GROUP = NotificationGroup.balloonGroup("Apache Camel");
 
     private final List<CamelCompletionExtension> camelCompletionExtensions = new ArrayList<>();
 

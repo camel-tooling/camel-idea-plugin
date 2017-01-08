@@ -9,7 +9,6 @@
 
       The plugin includes:
       <ul>
-        <li>Validation for Camel endpoints in Java, Groovy, Kotlin, Scala, XML</li>
         <li>Smart completion for Camel endpoints in Java, Groovy, Kotlin, Scala, XML, properties or yaml files (ctrl + space)</li>
         <li>Smart completion for Camel property placeholders (cursor after {{)</li>
         <li>Endpoint options filtered to only include applicable options when used as consumer vs producer only mode</li>
@@ -17,6 +16,8 @@
         <li>Quick documentation for Camel endpoints and external link to Camel component opening in web browser (ctrl + j and shift-F1)</li>
         <li>Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders</li>
         <li>Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)</li>
+        <li>Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)<li>
+        <li>Validation for Camel endpoints in Java, Groovy, Kotlin, Scala, XML</li>
       </ul>
     ]]></description>
 
@@ -24,7 +25,9 @@
       <ul>
         <li>0.3.0 - Restructured project as multi Maven module to support further work.
                     Add support for 3rd party Camel components (not from the Apache Camel release).
-                    Add support for validate Camel end points.</li>
+                    The plugin will attempt to use same camel-catalog version as the camel-core version used in the project.
+                    Add support for validate Camel end points.
+                    Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)<li>
         <li>0.2.2 - Show Camel icon in gutter where a Camel route starts.
         <li>0.2.1 - Plugin is only in use if the loaded project is a Camel project (has camel-core as library/dependency).
                     Smart completion for Kotlin files.

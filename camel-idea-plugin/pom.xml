@@ -73,6 +73,12 @@
       <version>${camel.version}</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-catalog-maven</artifactId>
+      <version>${camel.version}</version>
+      <scope>compile</scope>
+    </dependency>
 
     <!-- IntelliJ Dependencies -->
     <dependency>
