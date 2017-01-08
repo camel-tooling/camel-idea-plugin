@@ -18,7 +18,6 @@ package org.apache.camel.idea.annotator;
 
 import org.apache.camel.catalog.EndpointValidationResult;
 
-
 /**
  * Constructing an error messages to show in the {@link com.intellij.lang.annotation.Annotator}
  * message in the editor from the validation result.
@@ -26,7 +25,8 @@ import org.apache.camel.catalog.EndpointValidationResult;
 public interface CamelAnnotatorEndpointMessage<T> {
 
     /**
-     * Return error messaged constructed to match the validation result
+     * Return error messaged constructed to match the validation result.
+     *
      * @param endpointValidationResult - The validation result return from the {@link org.apache.camel.catalog.CamelCatalog} validator
      * @param valueObj - The key and value object validated.
      */

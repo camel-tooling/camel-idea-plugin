@@ -63,6 +63,7 @@ public final class IdeaUtils {
     public static String extractTextFromElement(PsiElement element) {
         return extractTextFromElement(element, true);
     }
+
     /**
      * Extract the text value from the {@link PsiElement} from any of the support languages this plugin works with.
      *

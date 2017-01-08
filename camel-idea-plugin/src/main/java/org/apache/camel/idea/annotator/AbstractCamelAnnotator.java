@@ -28,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
  * Validate if the URI contains a know Camel component and call the validateEndpoint method
  */
 abstract class AbstractCamelAnnotator implements Annotator {
+
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
         if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
@@ -40,6 +41,7 @@ abstract class AbstractCamelAnnotator implements Annotator {
 
     /**
      * Validate the Camel Endpoint and create error messaged from the validation result.
+     *
      * @param element - Element to parse
      * @param holder - Container for the different error messages and it's test range
      * @param uri - String to validate

@@ -31,7 +31,6 @@ import org.jetbrains.annotations.NotNull;
  */
 public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
 
-
     // TODO : Solve classloader issue class not found when CamelCatalog access a camel core java file.
     // The problem is related to the CamelCatalog is using the plugin classloader, but the Camel core
     // exits on the project/module classloader
@@ -51,7 +50,6 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                     element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
                 holder.createErrorAnnotation(range, error);
             }
-
         }
     }
 
