@@ -72,9 +72,19 @@ First you need to install the "Intellij plugin development with Maven" in your I
  
 Second you need to install the IntelliJ libraries into your local maven repository. The first parameter
 is the version of the IDEA you have installed locally, second is the locations of the IDEA.
+If you have installed IDEA in a different location than shown in the sample below, then make sure to use the correct path.
 
- > - Execute the script file "./install-intellij-libs.sh 2016.3.2 /Applications/IntelliJ\ IDEA\ CE.app/Contents"
+Currently we use IDEA 2016.3.2 as the version and therefore you should download and use that version.
+An alternative is to change the version in `camel-idea-plugin/pom.xml` file to use a different version but its not recommended.
+
+Linux or Mac users:
+
+ > - Execute the script file `./install-intellij-libs.sh 2016.3.2 /Applications/IntelliJ\ IDEA\ CE.app/Contents`
   
+Windows:
+
+ > - Execute the script file `./install-intellij-libs.sh 2016.3.2.bat "C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2016.3.2"`
+
 Next step you need to update the pom.xml file with the right Intellij version number
 
  > - Open the pom.xml file
@@ -130,7 +140,7 @@ Running the test from IDEA community requires to add following settings to the r
   -Didea.test.group=ALL_EXCLUDE_DEFINED
   
 
-> For the Ultimate version no VM options is necessary   
+> For the Ultimate version no VM options is necessary
 
 
 ### Contributing / Hacking on the code
