@@ -26,7 +26,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.catalog.CamelCatalog;
-import org.apache.camel.idea.catalog.CamelCatalogService;
+import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.EndpointOptionModel;
 import org.apache.camel.idea.model.ModelHelper;

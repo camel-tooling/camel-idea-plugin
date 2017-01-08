@@ -48,7 +48,6 @@ import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.camel.catalog.CamelCatalog;
-import org.apache.camel.idea.catalog.CamelCatalogService;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.catalog.CatalogHelper.loadText;

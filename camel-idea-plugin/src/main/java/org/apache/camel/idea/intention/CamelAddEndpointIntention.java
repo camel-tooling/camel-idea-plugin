@@ -39,7 +39,7 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.IncorrectOperationException;
 import org.apache.camel.catalog.CamelCatalog;
-import org.apache.camel.idea.catalog.CamelCatalogService;
+import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
 import org.apache.camel.idea.service.CamelService;

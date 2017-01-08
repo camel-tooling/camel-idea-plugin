@@ -19,6 +19,7 @@ package org.apache.camel.idea.catalog;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.openapi.components.ServiceManager;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelService;
 
 

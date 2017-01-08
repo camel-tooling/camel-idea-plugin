@@ -18,7 +18,7 @@ package org.apache.camel.idea;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
-import org.apache.camel.idea.catalog.CamelCatalogService;
+import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelService;
 
 /**

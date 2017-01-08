@@ -68,7 +68,7 @@
   <extensions defaultExtensionNs="com.intellij">
 
     <!-- services which can be requested from IDEA api -->
-    <projectService serviceImplementation="org.apache.camel.idea.catalog.CamelCatalogService"/>
+    <projectService serviceImplementation="org.apache.camel.idea.service.CamelCatalogService"/>
     <projectService serviceImplementation="org.apache.camel.idea.service.CamelService"/>
     <applicationService serviceImplementation="org.apache.camel.idea.service.CamelPreferenceService"/>
 
