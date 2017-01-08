@@ -10,6 +10,7 @@ The plugin includes:
 
 - Smart completion for Camel endpoints in Java, Groovy, Kotlin, Scala, XML, properties or yaml files (`ctrl + space`)
 - Smart completion for Camel property placeholders (cursor after `{{`)
+- Real time validation for Camel endpoints in Java, Groovy, Kotlin, Scala, XML (underline errors in red)
 - Endpoint options filtered to only include applicable options when used as consumer vs producer only mode
 - Intention to add new Camel endpoint (`alt + enter` in empty string)
 - Quick documentation for Camel endpoints and external link to Camel component opening in web browser (`ctrl + j` and `shift-F1`)
@@ -44,6 +45,12 @@ after the '?' mark and press `ctrl + space`.
 
 Currently its only endpoint options in the URI query section which can be edited. Its planned to add
 support for editing the options in the URI context-path section as well.
+
+
+### Preference
+
+The plugin comes with a preference where you can configure global settings for the plugin such as whether to allow
+downloading camel-catalog over the internet.
 
 
 ### Building from source
