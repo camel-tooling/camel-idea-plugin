@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 public class CamelPreferencePage implements Configurable {
 
     private JBCheckBox downloadCatalogCheckBox;
+    private JBCheckBox camelIconInGutterCheckBox;
 
     public CamelPreferencePage() {
     }
@@ -42,6 +43,7 @@ public class CamelPreferencePage implements Configurable {
     @Override
     public JComponent createComponent() {
         downloadCatalogCheckBox = new JBCheckBox("Allow downloading camel-catalog over the internet");
+        camelIconInGutterCheckBox = new JBCheckBox("Show Camel icon in gutter");
 
         JPanel c = new JPanel(new BorderLayout());
 
@@ -51,6 +53,8 @@ public class CamelPreferencePage implements Configurable {
         c.add(settings, BorderLayout.NORTH);
 
         settings.add(downloadCatalogCheckBox, BorderLayout.NORTH);
+        settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
+        settings.add(camelIconInGutterCheckBox, BorderLayout.NORTH);
         settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
 
         reset();
@@ -72,17 +76,20 @@ public class CamelPreferencePage implements Configurable {
 
     @Override
     public boolean isModified() {
-        return getCamelPreferenceService().isDownloadCatalog() != downloadCatalogCheckBox.isSelected();
+        return getCamelPreferenceService().isDownloadCatalog() != downloadCatalogCheckBox.isSelected()
+            || getCamelPreferenceService().isShowCamelIconInGutter() != camelIconInGutterCheckBox.isSelected();
     }
 
     @Override
     public void apply() throws ConfigurationException {
         getCamelPreferenceService().setDownloadCatalog(downloadCatalogCheckBox.isSelected());
+        getCamelPreferenceService().setShowCamelIconInGutter(camelIconInGutterCheckBox.isSelected());
     }
 
     @Override
     public void reset() {
         downloadCatalogCheckBox.setSelected(getCamelPreferenceService().isDownloadCatalog());
+        camelIconInGutterCheckBox.setSelected(getCamelPreferenceService().isShowCamelIconInGutter());
     }
 
     private CamelPreferenceService getCamelPreferenceService() {

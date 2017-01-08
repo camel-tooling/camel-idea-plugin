@@ -24,6 +24,7 @@ import com.intellij.openapi.Disposable;
 public class CamelPreferenceService implements Disposable {
 
     private boolean downloadCatalog = true;
+    private boolean showCamelIconInGutter = true;
 
     public boolean isDownloadCatalog() {
         return downloadCatalog;
@@ -31,6 +32,14 @@ public class CamelPreferenceService implements Disposable {
 
     public void setDownloadCatalog(boolean downloadCatalog) {
         this.downloadCatalog = downloadCatalog;
+    }
+
+    public boolean isShowCamelIconInGutter() {
+        return showCamelIconInGutter;
+    }
+
+    public void setShowCamelIconInGutter(boolean showCamelIconInGutter) {
+        this.showCamelIconInGutter = showCamelIconInGutter;
     }
 
     @Override

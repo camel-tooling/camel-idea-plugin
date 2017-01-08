@@ -24,6 +24,7 @@ import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.psi.PsiElement;
+import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
@@ -37,7 +38,9 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
     protected void collectNavigationMarkers(@NotNull PsiElement element,
                                             Collection<? super RelatedItemLineMarkerInfo> result) {
 
-        if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
+        boolean showIcon = ServiceManager.getService(CamelPreferenceService.class).isShowCamelIconInGutter();
+
+        if (showIcon && ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
             if (IdeaUtils.isCamelRouteStart(element)) {
                 NavigationGutterIconBuilder<PsiElement> builder =
                     NavigationGutterIconBuilder.create(IconLoader.getIcon("/icons/camel.png")).
