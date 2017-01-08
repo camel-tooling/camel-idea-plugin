@@ -14,13 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.catalog;
+package org.apache.camel.idea.service;
 
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.openapi.components.ServiceManager;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
-import org.apache.camel.idea.service.CamelCatalogService;
-import org.apache.camel.idea.service.CamelService;
 
 
 /**
