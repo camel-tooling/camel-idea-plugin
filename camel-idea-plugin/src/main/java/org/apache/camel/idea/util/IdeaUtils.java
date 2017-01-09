@@ -16,6 +16,10 @@
  */
 package org.apache.camel.idea.util;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,7 +27,10 @@ import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
@@ -40,6 +47,7 @@ import com.intellij.psi.util.PsiUtil;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import org.apache.camel.idea.service.CamelCatalogService;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static com.intellij.xml.CommonXmlStrings.QUOT;
@@ -50,8 +58,9 @@ import static com.intellij.xml.CommonXmlStrings.QUOT;
 public final class IdeaUtils {
 
     private static final String SINGLE_QUOT = "'";
-    private static final List<String> ROUTE_BUILDER_CLASS_QUALIFIED_NAME = Arrays.asList("org.apache.camel.builder.RouteBuilder",
-        "org.apache.camel.builder.BuilderSupport", "org.apache.camel.model.ProcessorDefinition");
+    private static final List<String> ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME = Arrays.asList(
+        "org.apache.camel.builder.RouteBuilder", "org.apache.camel.builder.BuilderSupport",
+        "org.apache.camel.model.ProcessorDefinition", "org.apache.camel.model.language.ExpressionDefinition");
 
     private IdeaUtils() {
     }
@@ -385,6 +394,68 @@ public final class IdeaUtils {
     }
 
     /**
+     * Validate if the query contain a known camel component
+     */
+    public static boolean isQueryContainingCamelComponent(Project project, String query) {
+        // is this a possible Camel endpoint uri which we know
+        if (query != null && !query.isEmpty()) {
+            String componentName = StringUtils.asComponentName(query);
+            if (componentName != null && ServiceManager.getService(project, CamelCatalogService.class).get().findComponentNames().contains(componentName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Creates a URLClassLoader for a given library or libraries
+     *
+     * @param libraries the library or libraries
+     * @return the classloader
+     */
+    public static @Nullable URLClassLoader newURLClassLoaderForLibrary(Library... libraries) throws MalformedURLException {
+        List<URL> urls = new ArrayList<>();
+        for (Library library : libraries) {
+            VirtualFile[] files = library.getFiles(OrderRootType.CLASSES);
+            if (files.length == 1) {
+                VirtualFile vf = files[0];
+                if (vf.getName().toLowerCase().endsWith(".jar")) {
+                    String path = vf.getPath();
+                    if (path.endsWith("!/")) {
+                        path = path.substring(0, path.length() - 2);
+                    }
+                    URL url = new URL("file:" + path);
+                    urls.add(url);
+                }
+            }
+        }
+        if (urls.isEmpty()) {
+            return null;
+        }
+
+        URL[] array = urls.toArray(new URL[urls.size()]);
+        return new URLClassLoader(array);
+    }
+
+    /**
+     * Is the given class or any of its super classes a class with the qualified name.
+     *
+     * @param target  the class
+     * @param fqnClassName the class name to match
+     * @return <tt>true</tt> if the class is a type or subtype of the class name
+     */
+    public static boolean isClassOrParentOf(@Nullable PsiClass target, @NotNull String fqnClassName) {
+        if (target == null) {
+            return false;
+        }
+        if (target.getQualifiedName().equals(fqnClassName)) {
+            return true;
+        } else {
+            return isClassOrParentOf(target.getSuperClass(), fqnClassName);
+        }
+    }
+
+    /**
      * Is the given element from a Java method call with any of the given method names
      *
      * @param call  the psi method call
@@ -396,12 +467,9 @@ public final class IdeaUtils {
         if (method != null) {
             PsiClass containingClass = method.getContainingClass();
             if (containingClass != null) {
-                String className = containingClass.getQualifiedName();
                 String name = method.getName();
-
                 if (Arrays.stream(methods).anyMatch(name::equals)) {
-                    return ROUTE_BUILDER_CLASS_QUALIFIED_NAME.contains(className)
-                            || Arrays.stream(containingClass.getSupers()).anyMatch(psiClass -> ROUTE_BUILDER_CLASS_QUALIFIED_NAME.contains(psiClass.getQualifiedName()));
+                    return ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME.stream().anyMatch((t) -> isClassOrParentOf(containingClass, t));
                 }
             }
         } else {
@@ -571,21 +639,10 @@ public final class IdeaUtils {
         return text;
     }
 
+    // TODO: move to StringUtils
     public static boolean isEmpty(String str) {
         return str == null || str.length() == 0;
     }
 
-    /**
-     * Validate if the query contain a known camel component
-     */
-    public static boolean isQueryContainingCamelComponent(Project project, String query) {
-        // is this a possible Camel endpoint uri which we know
-        if (query != null && !query.isEmpty()) {
-            String componentName = StringUtils.asComponentName(query);
-            if (componentName != null && ServiceManager.getService(project, CamelCatalogService.class).get().findComponentNames().contains(componentName)) {
-                return true;
-            }
-        }
-        return false;
-    }
+
 }
