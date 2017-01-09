@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/davsclaus/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.3.0</version>
+  <version>0.3.1</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -23,27 +23,13 @@
 
   <change-notes><![CDATA[
       <ul>
+        <li>0.3.1 - Allow to turn on or off scanning for third party components.</li>
         <li>0.3.0 - Restructured project as multi Maven module to support further work.
                     Add support for 3rd party Camel components (not from the Apache Camel release).
                     The plugin will attempt to use same camel-catalog version as the camel-core version used in the project.
                     Add support for real time validate Camel endpoints (underline errors in red).
                     Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)
                     Added preference page to configure the plugin.<li>
-        <li>0.2.2 - Show Camel icon in gutter where a Camel route starts.
-        <li>0.2.1 - Plugin is only in use if the loaded project is a Camel project (has camel-core as library/dependency).
-                    Smart completion for Kotlin files.
-                    Endpoint options are now sorted.
-                    Endpoint options filtered to only include applicable options when used as consumer vs producer only mode.
-                    Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders.</li>
-        <li>0.2.0 - Smart completion for Groovy, Scala and XML files</li>
-        <li>0.1.7 - Smart completion for YAML and properties files</li>
-        <li>0.1.6 - Project migrated to Maven and other minor bug fixes</li>
-        <li>0.1.5 - Intention to add Camel endpoint</li>
-        <li>0.1.4 - Smart completion for property placeholders</li>
-        <li>0.1.3 - Internal and external documentation for Camel endpoints</li>
-        <li>0.1.2 - Smart completion for property files</li>
-        <li>0.1.1 - Smart completion for Java DSL</li>
-        <li>0.1.0 - Early prototype</li>
       </ul>
     ]]>
   </change-notes>
