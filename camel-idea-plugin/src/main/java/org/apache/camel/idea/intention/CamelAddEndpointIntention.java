@@ -67,7 +67,7 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         }
 
         // show popup to chose the component
-        JBList list = new JBList(names.toArray(new String[names.size()]));
+        JBList list = new JBList(names.toArray(new Object[names.size()]));
         PopupChooserBuilder builder = JBPopupFactory.getInstance().createListPopupBuilder(list);
         builder.setAdText(names.size() + " components");
         builder.setTitle("Add Camel Endpoint");
