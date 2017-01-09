@@ -49,8 +49,7 @@ support for editing the options in the URI context-path section as well.
 
 ### Preference
 
-The plugin comes with a preference where you can configure global settings for the plugin such as whether to allow
-downloading camel-catalog over the internet.
+The plugin comes with a preference where you can configure global settings for the plugin such as turning on or off the real time validation in the editor, or whether to show the Camel icon in the gutter, etc.
 
 
 ### Building from source
