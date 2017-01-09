@@ -23,7 +23,9 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.1 - Allow to turn on or off scanning for third party components.</li>
+        <li>0.3.1 - Allow to turn on or off scanning for third party components.
+                    Real time validation is now checked for endpoints used outside routes.
+                    Minor bug fixes.</li>
         <li>0.3.0 - Restructured project as multi Maven module to support further work.
                     Add support for 3rd party Camel components (not from the Apache Camel release).
                     The plugin will attempt to use same camel-catalog version as the camel-core version used in the project.
