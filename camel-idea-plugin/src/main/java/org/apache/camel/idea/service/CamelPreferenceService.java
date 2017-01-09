@@ -25,6 +25,8 @@ public class CamelPreferenceService implements Disposable {
 
     private boolean realTimeValidation = true;
     private boolean downloadCatalog = true;
+    private boolean scanThirdPartyComponents = true;
+    private boolean scanThirdPartyLegacyComponents = true;
     private boolean showCamelIconInGutter = true;
 
     public boolean isRealTimeValidation() {
@@ -41,6 +43,22 @@ public class CamelPreferenceService implements Disposable {
 
     public void setDownloadCatalog(boolean downloadCatalog) {
         this.downloadCatalog = downloadCatalog;
+    }
+
+    public boolean isScanThirdPartyComponents() {
+        return scanThirdPartyComponents;
+    }
+
+    public void setScanThirdPartyComponents(boolean scanThirdPartyComponents) {
+        this.scanThirdPartyComponents = scanThirdPartyComponents;
+    }
+
+    public boolean isScanThirdPartyLegacyComponents() {
+        return scanThirdPartyLegacyComponents;
+    }
+
+    public void setScanThirdPartyLegacyComponents(boolean scanThirdPartyLegacyComponents) {
+        this.scanThirdPartyLegacyComponents = scanThirdPartyLegacyComponents;
     }
 
     public boolean isShowCamelIconInGutter() {

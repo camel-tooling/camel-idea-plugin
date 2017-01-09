@@ -209,6 +209,8 @@ public class CamelService implements Disposable {
      * Scan for Camel component (both from Apache Camel and 3rd party components)
      */
     public void scanForCamelDependencies(@NotNull Project project, @NotNull Module module) {
+        boolean thirdParty = getCamelPreferenceService().isScanThirdPartyComponents();
+
         CamelCatalog camelCatalog = getCamelCatalogService(project).get();
 
         List<String> missingJSonSchemas = new ArrayList<>();
@@ -237,7 +239,7 @@ public class CamelService implements Disposable {
 
                     if ("org.apache.camel".equals(groupId)) {
                         addLibrary(artifactId);
-                    } else {
+                    } else if (thirdParty) {
                         addCustomCamelComponentsFromDependency(camelCatalog, library, artifactId, missingJSonSchemas);
                     }
                 }
@@ -256,19 +258,20 @@ public class CamelService implements Disposable {
     }
 
     /**
-     * Adds any discovered custom Camel components from the dependency.
+     * Adds any discovered third party Camel components from the dependency.
      *
      * @param camelCatalog the Camel catalog to add the found custom components
      * @param library      the dependency
      * @param artifactId   the artifact id of the dependency
      */
     private void addCustomCamelComponentsFromDependency(CamelCatalog camelCatalog, Library library, String artifactId, List<String> missingJSonSchemas) {
+        boolean legacyScan = getCamelPreferenceService().isScanThirdPartyLegacyComponents();
         boolean added = false;
 
         try (URLClassLoader classLoader = newURLClassLoaderForLibrary(library)) {
             if (classLoader != null) {
                 // is there any custom Camel components in this library?
-                Properties properties = loadComponentProperties(classLoader);
+                Properties properties = loadComponentProperties(classLoader, legacyScan);
                 if (properties != null) {
                     String components = (String) properties.get("components");
                     if (components != null) {
@@ -361,15 +364,15 @@ public class CamelService implements Disposable {
         return null;
     }
 
-    private static Properties loadComponentProperties(URLClassLoader classLoader) {
+    private static Properties loadComponentProperties(URLClassLoader classLoader, boolean legacyScan) {
         Properties answer = new Properties();
         try {
             // load the component files using the recommended way by a component.properties file
             InputStream is = classLoader.getResourceAsStream("META-INF/services/org/apache/camel/component.properties");
             if (is != null) {
                 answer.load(is);
-            } else {
-                // okay then try to load using a fallback using classpath scanning
+            } else if (legacyScan) {
+                // okay then try to load using a fallback using legacy classpath scanning
                 loadComponentPropertiesClasspathScan(classLoader, answer);
             }
         } catch (Throwable e) {

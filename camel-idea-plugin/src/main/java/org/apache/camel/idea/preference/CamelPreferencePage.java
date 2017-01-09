@@ -35,6 +35,8 @@ public class CamelPreferencePage implements Configurable {
 
     private JBCheckBox realTimeValidationCatalogCheckBox;
     private JBCheckBox downloadCatalogCheckBox;
+    private JBCheckBox scanThirdPartyComponentsCatalogCheckBox;
+    private JBCheckBox scanThirdPartyLegacyComponentsCatalogCheckBox;
     private JBCheckBox camelIconInGutterCheckBox;
 
     public CamelPreferencePage() {
@@ -45,6 +47,8 @@ public class CamelPreferencePage implements Configurable {
     public JComponent createComponent() {
         realTimeValidationCatalogCheckBox = new JBCheckBox("Real time validation of Camel endpoints in editor");
         downloadCatalogCheckBox = new JBCheckBox("Allow downloading camel-catalog over the internet");
+        scanThirdPartyComponentsCatalogCheckBox = new JBCheckBox("Scan for third party Camel components using modern component packaging");
+        scanThirdPartyLegacyComponentsCatalogCheckBox = new JBCheckBox("Scan the classpath for third party Camel components using legacy component packaging");
         camelIconInGutterCheckBox = new JBCheckBox("Show Camel icon in gutter");
 
         JPanel c = new JPanel(new BorderLayout());
@@ -57,6 +61,10 @@ public class CamelPreferencePage implements Configurable {
         settings.add(realTimeValidationCatalogCheckBox, BorderLayout.NORTH);
         settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
         settings.add(downloadCatalogCheckBox, BorderLayout.NORTH);
+        settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
+        settings.add(scanThirdPartyComponentsCatalogCheckBox, BorderLayout.NORTH);
+        settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
+        settings.add(scanThirdPartyLegacyComponentsCatalogCheckBox, BorderLayout.NORTH);
         settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
         settings.add(camelIconInGutterCheckBox, BorderLayout.NORTH);
         settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
@@ -82,6 +90,8 @@ public class CamelPreferencePage implements Configurable {
     public boolean isModified() {
         return getCamelPreferenceService().isRealTimeValidation() != realTimeValidationCatalogCheckBox.isSelected()
             || getCamelPreferenceService().isDownloadCatalog() != downloadCatalogCheckBox.isSelected()
+            || getCamelPreferenceService().isScanThirdPartyComponents() != scanThirdPartyComponentsCatalogCheckBox.isSelected()
+            || getCamelPreferenceService().isScanThirdPartyLegacyComponents() != scanThirdPartyLegacyComponentsCatalogCheckBox.isSelected()
             || getCamelPreferenceService().isShowCamelIconInGutter() != camelIconInGutterCheckBox.isSelected();
     }
 
@@ -89,6 +99,8 @@ public class CamelPreferencePage implements Configurable {
     public void apply() throws ConfigurationException {
         getCamelPreferenceService().setRealTimeValidation(realTimeValidationCatalogCheckBox.isSelected());
         getCamelPreferenceService().setDownloadCatalog(downloadCatalogCheckBox.isSelected());
+        getCamelPreferenceService().setScanThirdPartyComponents(scanThirdPartyComponentsCatalogCheckBox.isSelected());
+        getCamelPreferenceService().setScanThirdPartyLegacyComponents(scanThirdPartyLegacyComponentsCatalogCheckBox.isSelected());
         getCamelPreferenceService().setShowCamelIconInGutter(camelIconInGutterCheckBox.isSelected());
     }
 
@@ -96,6 +108,8 @@ public class CamelPreferencePage implements Configurable {
     public void reset() {
         realTimeValidationCatalogCheckBox.setSelected(getCamelPreferenceService().isRealTimeValidation());
         downloadCatalogCheckBox.setSelected(getCamelPreferenceService().isDownloadCatalog());
+        scanThirdPartyComponentsCatalogCheckBox.setSelected(getCamelPreferenceService().isScanThirdPartyComponents());
+        scanThirdPartyLegacyComponentsCatalogCheckBox.setSelected(getCamelPreferenceService().isScanThirdPartyLegacyComponents());
         camelIconInGutterCheckBox.setSelected(getCamelPreferenceService().isShowCamelIconInGutter());
     }
 
