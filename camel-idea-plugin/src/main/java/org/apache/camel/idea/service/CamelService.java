@@ -141,6 +141,9 @@ public class CamelService implements Disposable {
                         continue;
                     }
                     String[] split = name.split(":");
+                    if (split.length < 3) {
+                        continue;
+                    }
                     String groupId = split[1].trim();
                     String artifactId = split[2].trim();
                     String version = null;
@@ -221,6 +224,9 @@ public class CamelService implements Disposable {
                         continue;
                     }
                     String[] split = name.split(":");
+                    if (split.length < 3) {
+                        continue;
+                    }
                     String groupId = split[1].trim();
                     String artifactId = split[2].trim();
 

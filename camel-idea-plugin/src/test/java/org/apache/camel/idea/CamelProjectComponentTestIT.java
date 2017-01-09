@@ -110,6 +110,24 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         assertEquals(1, service.getLibraries().size());
     }
 
+    public void testAddLegacyPackaging() throws IOException {
+        CamelService service = ServiceManager.getService(myProject, CamelService.class);
+        assertEquals(0, service.getLibraries().size());
+
+        VirtualFile camelCoreVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(createTestArchive("camel-core-2.19.0.jar"));
+        VirtualFile legacyJarPackagingFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(createTestArchive("legacy-custom-file-0.12.snapshot.jar"));
+
+        final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myProject);
+
+        addLibraryToModule(camelCoreVirtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-core:2.19.0-snapshot");
+        addLibraryToModule(legacyJarPackagingFile, projectLibraryTable, "c:\\test\\libs\\legacy-custom-file-0.12.snapshot.jar");
+
+        UIUtil.dispatchAllInvocationEvents();
+        assertEquals(1, service.getLibraries().size());
+        assertEquals(true, service.getLibraries().contains("camel-core"));
+
+    }
+
     private File createTestArchive(String filename) throws IOException {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, filename)
             .addClasses(CamelService.class);
