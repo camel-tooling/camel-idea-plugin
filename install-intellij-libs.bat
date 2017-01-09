@@ -27,8 +27,8 @@ echo Installing IntelliJ artifacts to Maven local repository
 echo IntelliJ home: "%INTELLIJ_HOME%"
 for %%i in ("%INTELLIJ_HOME%\lib\*.jar") do (
   :: %%~ni - file name (n)
-  mvn install:install-file -Dfile="%%i" -DgroupId=com.intellij -DartifactId="%%~ni" -Dversion=%IDEA_VERSION% -Dpackaging=jar
+  call mvn install:install-file -Dfile="%%i" -DgroupId=com.intellij -DartifactId="%%~ni" -Dversion=%IDEA_VERSION% -Dpackaging=jar
 )
 
-mvn install:install-file -Dfile="${INTELLIJ_HOME}/plugins/properties/lib/properties.jar" -DgroupId=com.intellij.plugins -DartifactId=properties -Dversion=%IDEA_VERSION% -Dpackaging=jar
-mvn install:install-file -Dfile="${INTELLIJ_HOME}/plugins/properties/lib/resources_en.jar" -DgroupId=com.intellij.plugins -DartifactId=resources_en -Dversion=%IDEA_VERSION% -Dpackaging=jar
+call mvn install:install-file -Dfile="%INTELLIJ_HOME%/plugins/properties/lib/properties.jar" -DgroupId=com.intellij.plugins -DartifactId=properties -Dversion=%IDEA_VERSION% -Dpackaging=jar
+call mvn install:install-file -Dfile="%INTELLIJ_HOME%/plugins/properties/lib/resources_en.jar" -DgroupId=com.intellij.plugins -DartifactId=resources_en -Dversion=%IDEA_VERSION% -Dpackaging=jar
