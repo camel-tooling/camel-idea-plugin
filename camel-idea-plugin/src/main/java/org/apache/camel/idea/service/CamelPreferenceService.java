@@ -23,8 +23,17 @@ import com.intellij.openapi.Disposable;
  */
 public class CamelPreferenceService implements Disposable {
 
+    private boolean realTimeValidation = true;
     private boolean downloadCatalog = true;
     private boolean showCamelIconInGutter = true;
+
+    public boolean isRealTimeValidation() {
+        return realTimeValidation;
+    }
+
+    public void setRealTimeValidation(boolean realTimeValidation) {
+        this.realTimeValidation = realTimeValidation;
+    }
 
     public boolean isDownloadCatalog() {
         return downloadCatalog;
