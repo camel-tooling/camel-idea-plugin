@@ -43,16 +43,15 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
      * if the URI is not valid a error annotation is created and highlight the invalid value.
      */
     void validateEndpoint(@NotNull PsiElement element, @NotNull AnnotationHolder holder, String uri) {
-        if (IdeaUtils.isProducerEndpoint(element) || IdeaUtils.isConsumerEndpoint(element)) {
-            CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
-            EndpointValidationResult validateEndpointProperties = catalogService.validateEndpointProperties(uri.replaceAll("&amp;", "&"));
-            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidBoolean(), uri, element, holder, new BooleanErrorMsg());
-            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidEnum(), uri, element, holder, new EnumErrorMsg());
-            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidInteger(), uri, element, holder, new IntegerErrorMsg());
-            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidNumber(), uri, element, holder, new NumberErrorMsg());
-            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidReference(), uri, element, holder, new ReferenceErrorMsg());
-            extractSetValue(validateEndpointProperties, validateEndpointProperties.getUnknown(), uri, element, holder, new UnknownErrorMsg());
-        }
+        CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
+        EndpointValidationResult validateEndpointProperties = catalogService.validateEndpointProperties(uri.replaceAll("&amp;", "&"));
+        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidBoolean(), uri, element, holder, new BooleanErrorMsg());
+        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidEnum(), uri, element, holder, new EnumErrorMsg());
+        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidInteger(), uri, element, holder, new IntegerErrorMsg());
+        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidNumber(), uri, element, holder, new NumberErrorMsg());
+        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidReference(), uri, element, holder, new ReferenceErrorMsg());
+        extractSetValue(validateEndpointProperties, validateEndpointProperties.getUnknown(), uri, element, holder, new UnknownErrorMsg());
+
     }
 
     private void extractSetValue(EndpointValidationResult validateEndpointProperties, Set<String> validationSet,

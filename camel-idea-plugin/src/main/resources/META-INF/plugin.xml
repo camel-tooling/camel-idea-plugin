@@ -103,6 +103,8 @@
     <annotator language="Groovy" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
     <annotator language="kotlin" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
     <annotator language="Scala" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
+    <annotator language="Properties" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
+    <annotator language="yaml" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
 
     <!-- preference -->
     <applicationConfigurable id="camel" displayName="Apache Camel" groupId="other"
