@@ -43,16 +43,15 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
      * if the URI is not valid a error annotation is created and highlight the invalid value.
      */
     void validateEndpoint(@NotNull PsiElement element, @NotNull AnnotationHolder holder, String uri) {
-        if (IdeaUtils.isProducerEndpoint(element) || IdeaUtils.isConsumerEndpoint(element)) {
-            CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
-            EndpointValidationResult validateEndpointProperties = catalogService.validateEndpointProperties(uri.replaceAll("&amp;", "&"));
-            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidBoolean(), uri, element, holder, new BooleanErrorMsg());
-            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidEnum(), uri, element, holder, new EnumErrorMsg());
-            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidInteger(), uri, element, holder, new IntegerErrorMsg());
-            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidNumber(), uri, element, holder, new NumberErrorMsg());
-            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidReference(), uri, element, holder, new ReferenceErrorMsg());
-            extractSetValue(validateEndpointProperties, validateEndpointProperties.getUnknown(), uri, element, holder, new UnknownErrorMsg());
-        }
+        CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
+        EndpointValidationResult validateEndpointProperties = catalogService.validateEndpointProperties(uri.replaceAll("&amp;", "&"));
+        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidBoolean(), uri, element, holder, new BooleanErrorMsg());
+        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidEnum(), uri, element, holder, new EnumErrorMsg());
+        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidInteger(), uri, element, holder, new IntegerErrorMsg());
+        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidNumber(), uri, element, holder, new NumberErrorMsg());
+        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidReference(), uri, element, holder, new ReferenceErrorMsg());
+        extractSetValue(validateEndpointProperties, validateEndpointProperties.getUnknown(), uri, element, holder, new UnknownErrorMsg());
+
     }
 
     private void extractSetValue(EndpointValidationResult validateEndpointProperties, Set<String> validationSet,
@@ -65,8 +64,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 int propertyIdx = fromElement.indexOf(propertyValue);
                 int propertyLength = propertyValue.length();
 
-                propertyIdx = element instanceof XmlToken ? propertyIdx : propertyIdx  + 1;
-                //propertyLength = element instanceof XmlToken ? propertyLength : propertyLength  -1;
+                propertyIdx = IdeaUtils.isJavaLanguage(element) || IdeaUtils.isXmlLanguage(element) ? propertyIdx + 1 : propertyIdx;
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
                     element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
@@ -96,7 +94,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 propertyLength = element instanceof XmlToken ? propertyLength - 1 : propertyLength;
 
                 startIdx = propertyValue.isEmpty() ? propertyIdx + 1 : fromElement.indexOf(propertyValue, startIdx) + 1;
-                startIdx = element instanceof XmlToken ? startIdx - 1 : startIdx;
+                startIdx = IdeaUtils.isJavaLanguage(element) || IdeaUtils.isXmlLanguage(element) ? startIdx  : startIdx - 1;
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + startIdx,
                     element.getTextRange().getStartOffset() + startIdx + propertyLength);
