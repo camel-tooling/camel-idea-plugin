@@ -23,6 +23,7 @@ import com.intellij.psi.PsiElement;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.IdeaUtils;
+import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -42,20 +43,20 @@ abstract class AbstractCamelAnnotator implements Annotator {
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
         if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent() && isEnabled()) {
-            String fromElement = IdeaUtils.extractTextFromElement(element, false);
-            if (IdeaUtils.isQueryContainingCamelComponent(element.getProject(), fromElement)) {
-                validateEndpoint(element, holder, fromElement);
+            String text = IdeaUtils.extractTextFromElement(element, false);
+            if (!StringUtils.isEmpty(text)) {
+                validateText(element, holder, text);
             }
         }
     }
 
     /**
-     * Validate the Camel Endpoint and create error messaged from the validation result.
+     * Validate the text and create error messaged from the validation result.
      *
      * @param element - Element to parse
      * @param holder - Container for the different error messages and it's test range
-     * @param uri - String to validate
+     * @param text - String to validate such as an Camel endpoint uri, or a Simple expression
      */
-    abstract void validateEndpoint(@NotNull PsiElement element, @NotNull AnnotationHolder holder, String uri);
+    abstract void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text);
 
 }

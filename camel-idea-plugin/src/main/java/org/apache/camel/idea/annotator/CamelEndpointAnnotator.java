@@ -42,16 +42,22 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
      * Validate endpoint options list aka properties. eg "timer:trigger?delay=1000&bridgeErrorHandler=true"
      * if the URI is not valid a error annotation is created and highlight the invalid value.
      */
-    void validateEndpoint(@NotNull PsiElement element, @NotNull AnnotationHolder holder, String uri) {
-        CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
-        EndpointValidationResult validateEndpointProperties = catalogService.validateEndpointProperties(uri.replaceAll("&amp;", "&"));
-        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidBoolean(), uri, element, holder, new BooleanErrorMsg());
-        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidEnum(), uri, element, holder, new EnumErrorMsg());
-        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidInteger(), uri, element, holder, new IntegerErrorMsg());
-        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidNumber(), uri, element, holder, new NumberErrorMsg());
-        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidReference(), uri, element, holder, new ReferenceErrorMsg());
-        extractSetValue(validateEndpointProperties, validateEndpointProperties.getUnknown(), uri, element, holder, new UnknownErrorMsg());
+    void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
+        if (IdeaUtils.isQueryContainingCamelComponent(element.getProject(), text)) {
+            CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
 
+            // need to ensure XML parameters are unescaped
+            text = text.replaceAll("&amp;", "&");
+
+            EndpointValidationResult validateEndpointProperties = catalogService.validateEndpointProperties(text);
+
+            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidBoolean(), text, element, holder, new BooleanErrorMsg());
+            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidEnum(), text, element, holder, new EnumErrorMsg());
+            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidInteger(), text, element, holder, new IntegerErrorMsg());
+            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidNumber(), text, element, holder, new NumberErrorMsg());
+            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidReference(), text, element, holder, new ReferenceErrorMsg());
+            extractSetValue(validateEndpointProperties, validateEndpointProperties.getUnknown(), text, element, holder, new UnknownErrorMsg());
+        }
     }
 
     private void extractSetValue(EndpointValidationResult validateEndpointProperties, Set<String> validationSet,

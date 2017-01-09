@@ -38,14 +38,14 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
      * Validate simple expression. eg simple("${body}")
      * if the expression is not valid a error annotation is created and highlight the invalid value.
      */
-    void validateEndpoint(@NotNull PsiElement element, @NotNull AnnotationHolder holder, String uri) {
-        if (uri.contains("${") &&  (IdeaUtils.isCamelRouteSimpleExpression(element))) {
+    void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
+        if (text.contains("${") &&  IdeaUtils.isCamelRouteSimpleExpression(element)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
-            SimpleValidationResult validateSimpleResult = catalogService.validateSimpleExpression(uri);
+            SimpleValidationResult validateSimpleResult = catalogService.validateSimpleExpression(text);
             if (!validateSimpleResult.isSuccess()) {
                 String error = validateSimpleResult.getError();
-                int propertyIdx = uri.indexOf("simple");
-                int propertyLength = uri.length() + 8;
+                int propertyIdx = text.indexOf("simple");
+                int propertyLength = text.length() + 8;
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
                     element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
                 holder.createErrorAnnotation(range, error);
