@@ -160,21 +160,6 @@ public final class IdeaUtils {
     }
 
     /**
-     * Is the given element a string literal
-     */
-    @Deprecated
-    public static boolean isStringLiteral(PsiElement element) {
-        if (element instanceof PsiLiteralExpression) {
-            PsiType type = ((PsiLiteralExpression) element).getType();
-            if (type != null) {
-                String txt = type.getCanonicalText();
-                return "java.lang.String".equals(txt);
-            }
-        }
-        return false;
-    }
-
-    /**
      * Is the given element from the start of a Camel route, eg <tt>from</tt>, ot &lt;from&gt;.
      */
     public static boolean isCamelRouteStart(PsiElement element) {
