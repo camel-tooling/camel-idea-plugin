@@ -64,8 +64,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 int propertyIdx = fromElement.indexOf(propertyValue);
                 int propertyLength = propertyValue.length();
 
-                propertyIdx = element instanceof XmlToken ? propertyIdx : propertyIdx  + 1;
-                //propertyLength = element instanceof XmlToken ? propertyLength : propertyLength  -1;
+                propertyIdx = IdeaUtils.isJavaLanguage(element) || IdeaUtils.isXmlLanguage(element) ? propertyIdx + 1 : propertyIdx;
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
                     element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
@@ -95,7 +94,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 propertyLength = element instanceof XmlToken ? propertyLength - 1 : propertyLength;
 
                 startIdx = propertyValue.isEmpty() ? propertyIdx + 1 : fromElement.indexOf(propertyValue, startIdx) + 1;
-                startIdx = element instanceof XmlToken ? startIdx - 1 : startIdx;
+                startIdx = IdeaUtils.isJavaLanguage(element) || IdeaUtils.isXmlLanguage(element) ? startIdx  : startIdx - 1;
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + startIdx,
                     element.getTextRange().getStartOffset() + startIdx + propertyLength);

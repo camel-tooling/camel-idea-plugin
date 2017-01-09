@@ -19,6 +19,8 @@ package org.apache.camel.idea.util;
 import java.util.Arrays;
 import java.util.List;
 
+import com.intellij.lang.java.JavaLanguage;
+import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
@@ -34,6 +36,7 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiUtil;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import org.apache.camel.idea.service.CamelCatalogService;
@@ -371,6 +374,14 @@ public final class IdeaUtils {
         }
         // okay then go up and try super
         return isCamelExpressionOrLanguage(clazz.getSuperClass());
+    }
+
+    public static boolean isJavaLanguage(PsiElement element) {
+        return element != null ? PsiUtil.getNotAnyLanguage(element.getNode()).is(JavaLanguage.INSTANCE) : false;
+    }
+
+    public static boolean isXmlLanguage(PsiElement element) {
+        return element != null ? PsiUtil.getNotAnyLanguage(element.getNode()).is(XMLLanguage.INSTANCE) : false;
     }
 
     /**
