@@ -33,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class CamelPreferencePage implements Configurable {
 
+    private JBCheckBox realTimeValidationCatalogCheckBox;
     private JBCheckBox downloadCatalogCheckBox;
     private JBCheckBox camelIconInGutterCheckBox;
 
@@ -42,6 +43,7 @@ public class CamelPreferencePage implements Configurable {
     @Nullable
     @Override
     public JComponent createComponent() {
+        realTimeValidationCatalogCheckBox = new JBCheckBox("Real time validation of Camel endpoints in editor");
         downloadCatalogCheckBox = new JBCheckBox("Allow downloading camel-catalog over the internet");
         camelIconInGutterCheckBox = new JBCheckBox("Show Camel icon in gutter");
 
@@ -52,6 +54,8 @@ public class CamelPreferencePage implements Configurable {
         c.add(c = new JPanel(new BorderLayout()), BorderLayout.NORTH);
         c.add(settings, BorderLayout.NORTH);
 
+        settings.add(realTimeValidationCatalogCheckBox, BorderLayout.NORTH);
+        settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
         settings.add(downloadCatalogCheckBox, BorderLayout.NORTH);
         settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
         settings.add(camelIconInGutterCheckBox, BorderLayout.NORTH);
@@ -76,18 +80,21 @@ public class CamelPreferencePage implements Configurable {
 
     @Override
     public boolean isModified() {
-        return getCamelPreferenceService().isDownloadCatalog() != downloadCatalogCheckBox.isSelected()
+        return getCamelPreferenceService().isRealTimeValidation() != realTimeValidationCatalogCheckBox.isSelected()
+            || getCamelPreferenceService().isDownloadCatalog() != downloadCatalogCheckBox.isSelected()
             || getCamelPreferenceService().isShowCamelIconInGutter() != camelIconInGutterCheckBox.isSelected();
     }
 
     @Override
     public void apply() throws ConfigurationException {
+        getCamelPreferenceService().setRealTimeValidation(realTimeValidationCatalogCheckBox.isSelected());
         getCamelPreferenceService().setDownloadCatalog(downloadCatalogCheckBox.isSelected());
         getCamelPreferenceService().setShowCamelIconInGutter(camelIconInGutterCheckBox.isSelected());
     }
 
     @Override
     public void reset() {
+        realTimeValidationCatalogCheckBox.setSelected(getCamelPreferenceService().isRealTimeValidation());
         downloadCatalogCheckBox.setSelected(getCamelPreferenceService().isDownloadCatalog());
         camelIconInGutterCheckBox.setSelected(getCamelPreferenceService().isShowCamelIconInGutter());
     }
