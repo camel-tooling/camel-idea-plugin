@@ -3,7 +3,7 @@ Apache Camel IDEA Plugin
 
 [![GitHub tag](https://img.shields.io/github/tag/davsclaus/camel-idea-plugin.svg?style=plastic)]()
 [![Build Status](https://travis-ci.org/davsclaus/camel-idea-plugin.svg?branch=master)](https://travis-ci.org/davsclaus/camel-idea-plugin)
-[![License](https://img.shields.io/badge/license-Apache%202-blue.svg)
+[![License](https://img.shields.io/badge/license-Apache%202-blue.svg)]()
 
 
 Plugin for Intellij IDEA to provide a set of small Apache Camel related capabilities to the code editor.
