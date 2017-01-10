@@ -374,6 +374,10 @@ public final class IdeaUtils {
         return element != null ? PsiUtil.getNotAnyLanguage(element.getNode()).is(JavaLanguage.INSTANCE) : false;
     }
 
+    public static boolean isScalaLanguage(PsiElement element) {
+        return element != null ? PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("Scala") : false;
+    }
+
     public static boolean isXmlLanguage(PsiElement element) {
         return element != null ? PsiUtil.getNotAnyLanguage(element.getNode()).is(XMLLanguage.INSTANCE) : false;
     }
