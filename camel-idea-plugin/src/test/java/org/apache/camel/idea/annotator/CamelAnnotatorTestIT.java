@@ -16,7 +16,6 @@
  */
 package org.apache.camel.idea.annotator;
 
-import com.intellij.openapi.fileTypes.FileType;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
 /**
@@ -71,12 +70,12 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
     }
 
     public void testAnnotatorIntegerPropertyValidation() {
-        myFixture.configureByText("AnnotatorTestData.java", getJavaInvalidIntegerePropertyTestData());
+        myFixture.configureByText("AnnotatorTestData.java", getJavaInvalidIntegerPropertyTestData());
         myFixture.checkHighlighting(false, false, true, true);
     }
 
     public void testXmlAnnotatorIntegerPropertyValidation() {
-        myFixture.configureByText("AnnotatorTestData.xml", getXmlInvalidIntegerePropertyTestData());
+        myFixture.configureByText("AnnotatorTestData.xml", getXmlInvalidIntegerPropertyTestData());
         myFixture.checkHighlighting(false, false, true, true);
     }
     public void testXmlAnnotatorWithCommentValidation() {
@@ -164,7 +163,7 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
             + "    </route>";
     }
 
-    private String getJavaInvalidIntegerePropertyTestData() {
+    private String getJavaInvalidIntegerPropertyTestData() {
         return "public class MyRouteBuilder extends RouteBuilder {\n"
             + "        public void configure() throws Exception {\n"
             + "            from(\"timer:trigger?delay=<error descr=\"Invalid integer value: ImNotANumber\">ImNotANumber</error>\")\n"
@@ -173,7 +172,7 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
             + "    }";
     }
 
-    private String getXmlInvalidIntegerePropertyTestData() {
+    private String getXmlInvalidIntegerPropertyTestData() {
         return "<route id=\"generateOrder-route\">\n"
             + "      <from uri=\"timer:trigger?delay=<error descr=\"Invalid integer value: ImNotANumber\">ImNotANumber</error>\"/>\n"
             + "      <to uri=\"file:outbox\"/>\n"

@@ -19,7 +19,6 @@ package org.apache.camel.idea.service;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -44,15 +43,15 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
-import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
-import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.camel.catalog.CamelCatalog;
+import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.catalog.CatalogHelper.loadText;
 import static org.apache.camel.idea.CamelContributor.CAMEL_ICON;
 import static org.apache.camel.idea.CamelContributor.CAMEL_NOTIFICATION_GROUP;
+import static org.apache.camel.idea.util.IdeaUtils.newURLClassLoaderForLibrary;
 
 /**
  * Service access for Camel libraries
@@ -64,6 +63,9 @@ public class CamelService implements Disposable {
     private static final int MIN_MAJOR_VERSION = 2;
     private static final int MIN_MINOR_VERSION = 16;
 
+    private Library camelCoreLibrary;
+    private Library slf4japiLibrary;
+    private ClassLoader camelCoreClassloader;
     private Set<String> processedLibraries = new HashSet<>();
     private volatile boolean camelPresent;
     private Notification camelVersionNotification;
@@ -81,6 +83,10 @@ public class CamelService implements Disposable {
             camelMissingJSonSchemaNotification.expire();
             camelMissingJSonSchemaNotification = null;
         }
+
+        camelCoreLibrary = null;
+        slf4japiLibrary = null;
+        camelCoreClassloader = null;
     }
 
     /**
@@ -126,6 +132,13 @@ public class CamelService implements Disposable {
     }
 
     /**
+     * Gets the classloader that can load classes from camel-core which is present on the project classpath
+     */
+    public ClassLoader getCamelCoreClassloader() {
+        return camelCoreClassloader;
+    }
+
+    /**
      * Scan for Camel project present and setup {@link CamelCatalog} to use same version of Camel as the project does.
      * These two version needs to be aligned to offer the best tooling support on the given project.
      */
@@ -151,7 +164,10 @@ public class CamelService implements Disposable {
                         version = split[3].trim();
                     }
 
-                    if ("org.apache.camel".equals(groupId) && "camel-core".equals(artifactId)) {
+                    if ("org.slf4j".equals(groupId) && "slf4j-api".equals(artifactId)) {
+                        slf4japiLibrary = library;
+                    } else if ("org.apache.camel".equals(groupId) && "camel-core".equals(artifactId)) {
+                        camelCoreLibrary = library;
 
                         // okay its a camel project
                         setCamelPresent(true);
@@ -196,9 +212,16 @@ public class CamelService implements Disposable {
                             camelVersionNotification.notify(project);
                         }
 
-                        // okay we found camel-core and have setup the project version for it
+                        // okay we found slf4j-api and camel-core and have setup the project version for it
                         // then we should return early
-                        return;
+                        if (camelCoreLibrary != null && slf4japiLibrary != null) {
+                            try {
+                                camelCoreClassloader = IdeaUtils.newURLClassLoaderForLibrary(camelCoreLibrary, slf4japiLibrary);
+                            } catch (Throwable e) {
+                                // ignore
+                                // TODO: log that the classloader cannot be created
+                            }
+                        }
                     }
                 }
             }
@@ -346,22 +369,6 @@ public class CamelService implements Disposable {
 
         // okay its the same major versiom, then the minor must be equal or higher
         return minor >= MIN_MINOR_VERSION;
-    }
-
-    private static URLClassLoader newURLClassLoaderForLibrary(Library library) throws MalformedURLException {
-        VirtualFile[] files = library.getFiles(OrderRootType.CLASSES);
-        if (files.length == 1) {
-            VirtualFile vf = files[0];
-            if (vf.getName().toLowerCase().endsWith(".jar")) {
-                String path = vf.getPath();
-                if (path.endsWith("!/")) {
-                    path = path.substring(0, path.length() - 2);
-                }
-                URL url = new URL("file:" + path);
-                return new URLClassLoader(new URL[] {url});
-            }
-        }
-        return null;
     }
 
     private static Properties loadComponentProperties(URLClassLoader classLoader, boolean legacyScan) {

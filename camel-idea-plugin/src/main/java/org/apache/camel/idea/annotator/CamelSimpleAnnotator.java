@@ -23,6 +23,8 @@ import com.intellij.psi.PsiElement;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.SimpleValidationResult;
 import org.apache.camel.idea.service.CamelCatalogService;
+import org.apache.camel.idea.service.CamelPreferenceService;
+import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,24 +33,37 @@ import org.jetbrains.annotations.NotNull;
  */
 public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
 
-    // TODO : Solve classloader issue class not found when CamelCatalog access a camel core java file.
-    // The problem is related to the CamelCatalog is using the plugin classloader, but the Camel core
-    // exits on the project/module classloader
+    @Override
+    boolean isEnabled() {
+        return ServiceManager.getService(CamelPreferenceService.class).isRealTimeSimpleValidation();
+    }
+
     /**
      * Validate simple expression. eg simple("${body}")
      * if the expression is not valid a error annotation is created and highlight the invalid value.
      */
-    void validateEndpoint(@NotNull PsiElement element, @NotNull AnnotationHolder holder, String uri) {
-        if (uri.contains("${") &&  (IdeaUtils.isCamelRouteSimpleExpression(element))) {
+    void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
+        boolean hasSimple = text.contains("${") || text.contains("$simple{");
+        if (hasSimple && IdeaUtils.isCamelRouteSimpleExpression(element)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
-            SimpleValidationResult validateSimpleResult = catalogService.validateSimpleExpression(uri);
-            if (!validateSimpleResult.isSuccess()) {
-                String error = validateSimpleResult.getError();
-                int propertyIdx = uri.indexOf("simple");
-                int propertyLength = uri.length() + 8;
-                TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
-                    element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
-                holder.createErrorAnnotation(range, error);
+            CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
+
+            try {
+                // need to use the classloader that can load classes from the camel-core
+                ClassLoader loader = camelService.getCamelCoreClassloader();
+                if (loader != null) {
+                    SimpleValidationResult validateSimpleResult = catalogService.validateSimpleExpression(loader, text);
+                    if (!validateSimpleResult.isSuccess()) {
+                        String error = validateSimpleResult.getError();
+                        int propertyIdx = text.indexOf("simple");
+                        int propertyLength = text.length() + 8;
+                        TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
+                            element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
+                        holder.createErrorAnnotation(range, error);
+                    }
+                }
+            } catch (Throwable e) {
+                // ignore
             }
         }
     }

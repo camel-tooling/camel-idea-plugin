@@ -28,6 +28,7 @@ import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.EndpointValidationResult;
 import org.apache.camel.idea.service.CamelCatalogService;
+import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,20 +39,41 @@ import static org.apache.camel.idea.util.StringUtils.isEmpty;
  */
 public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
 
+    @Override
+    boolean isEnabled() {
+        return ServiceManager.getService(CamelPreferenceService.class).isRealTimeEndpointValidation();
+    }
+
     /**
      * Validate endpoint options list aka properties. eg "timer:trigger?delay=1000&bridgeErrorHandler=true"
      * if the URI is not valid a error annotation is created and highlight the invalid value.
      */
-    void validateEndpoint(@NotNull PsiElement element, @NotNull AnnotationHolder holder, String uri) {
-        CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
-        EndpointValidationResult validateEndpointProperties = catalogService.validateEndpointProperties(uri.replaceAll("&amp;", "&"));
-        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidBoolean(), uri, element, holder, new BooleanErrorMsg());
-        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidEnum(), uri, element, holder, new EnumErrorMsg());
-        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidInteger(), uri, element, holder, new IntegerErrorMsg());
-        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidNumber(), uri, element, holder, new NumberErrorMsg());
-        extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidReference(), uri, element, holder, new ReferenceErrorMsg());
-        extractSetValue(validateEndpointProperties, validateEndpointProperties.getUnknown(), uri, element, holder, new UnknownErrorMsg());
+    void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String uri) {
+        if (IdeaUtils.isQueryContainingCamelComponent(element.getProject(), uri)) {
+            CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
 
+            // camel catalog expects &amp; as & when it parses so replace all &amp; as &
+            String camelQuery = uri;
+            camelQuery = camelQuery.replaceAll("&amp;", "&");
+
+            // strip up ending incomplete parameter
+            if (camelQuery.endsWith("&") || camelQuery.endsWith("?")) {
+                camelQuery = camelQuery.substring(0, camelQuery.length() - 1);
+            }
+
+            try {
+                EndpointValidationResult validateEndpointProperties = catalogService.validateEndpointProperties(camelQuery);
+
+                extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidBoolean(), uri, element, holder, new BooleanErrorMsg());
+                extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidEnum(), uri, element, holder, new EnumErrorMsg());
+                extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidInteger(), uri, element, holder, new IntegerErrorMsg());
+                extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidNumber(), uri, element, holder, new NumberErrorMsg());
+                extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidReference(), uri, element, holder, new ReferenceErrorMsg());
+                extractSetValue(validateEndpointProperties, validateEndpointProperties.getUnknown(), uri, element, holder, new UnknownErrorMsg());
+            } catch (Throwable e) {
+                // ignore
+            }
+        }
     }
 
     private void extractSetValue(EndpointValidationResult validateEndpointProperties, Set<String> validationSet,

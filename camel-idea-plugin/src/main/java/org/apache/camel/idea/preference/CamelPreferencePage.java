@@ -33,7 +33,8 @@ import org.jetbrains.annotations.Nullable;
  */
 public class CamelPreferencePage implements Configurable {
 
-    private JBCheckBox realTimeValidationCatalogCheckBox;
+    private JBCheckBox realTimeEndpointValidationCatalogCheckBox;
+    private JBCheckBox realTimeSimpleValidationCatalogCheckBox;
     private JBCheckBox downloadCatalogCheckBox;
     private JBCheckBox scanThirdPartyComponentsCatalogCheckBox;
     private JBCheckBox scanThirdPartyLegacyComponentsCatalogCheckBox;
@@ -45,7 +46,8 @@ public class CamelPreferencePage implements Configurable {
     @Nullable
     @Override
     public JComponent createComponent() {
-        realTimeValidationCatalogCheckBox = new JBCheckBox("Real time validation of Camel endpoints in editor");
+        realTimeEndpointValidationCatalogCheckBox = new JBCheckBox("Real time validation of Camel endpoints in editor");
+        realTimeSimpleValidationCatalogCheckBox = new JBCheckBox("Real time validation of Camel simple language in editor");
         downloadCatalogCheckBox = new JBCheckBox("Allow downloading camel-catalog over the internet");
         scanThirdPartyComponentsCatalogCheckBox = new JBCheckBox("Scan for third party Camel components using modern component packaging");
         scanThirdPartyLegacyComponentsCatalogCheckBox = new JBCheckBox("Scan the classpath for third party Camel components using legacy component packaging");
@@ -58,7 +60,9 @@ public class CamelPreferencePage implements Configurable {
         c.add(c = new JPanel(new BorderLayout()), BorderLayout.NORTH);
         c.add(settings, BorderLayout.NORTH);
 
-        settings.add(realTimeValidationCatalogCheckBox, BorderLayout.NORTH);
+        settings.add(realTimeEndpointValidationCatalogCheckBox, BorderLayout.NORTH);
+        settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
+        settings.add(realTimeSimpleValidationCatalogCheckBox, BorderLayout.NORTH);
         settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
         settings.add(downloadCatalogCheckBox, BorderLayout.NORTH);
         settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
@@ -88,7 +92,8 @@ public class CamelPreferencePage implements Configurable {
 
     @Override
     public boolean isModified() {
-        return getCamelPreferenceService().isRealTimeValidation() != realTimeValidationCatalogCheckBox.isSelected()
+        return getCamelPreferenceService().isRealTimeEndpointValidation() != realTimeEndpointValidationCatalogCheckBox.isSelected()
+            || getCamelPreferenceService().isRealTimeSimpleValidation() != realTimeSimpleValidationCatalogCheckBox.isSelected()
             || getCamelPreferenceService().isDownloadCatalog() != downloadCatalogCheckBox.isSelected()
             || getCamelPreferenceService().isScanThirdPartyComponents() != scanThirdPartyComponentsCatalogCheckBox.isSelected()
             || getCamelPreferenceService().isScanThirdPartyLegacyComponents() != scanThirdPartyLegacyComponentsCatalogCheckBox.isSelected()
@@ -97,7 +102,8 @@ public class CamelPreferencePage implements Configurable {
 
     @Override
     public void apply() throws ConfigurationException {
-        getCamelPreferenceService().setRealTimeValidation(realTimeValidationCatalogCheckBox.isSelected());
+        getCamelPreferenceService().setRealTimeEndpointValidation(realTimeEndpointValidationCatalogCheckBox.isSelected());
+        getCamelPreferenceService().setRealTimeSimpleValidation(realTimeSimpleValidationCatalogCheckBox.isSelected());
         getCamelPreferenceService().setDownloadCatalog(downloadCatalogCheckBox.isSelected());
         getCamelPreferenceService().setScanThirdPartyComponents(scanThirdPartyComponentsCatalogCheckBox.isSelected());
         getCamelPreferenceService().setScanThirdPartyLegacyComponents(scanThirdPartyLegacyComponentsCatalogCheckBox.isSelected());
@@ -106,7 +112,8 @@ public class CamelPreferencePage implements Configurable {
 
     @Override
     public void reset() {
-        realTimeValidationCatalogCheckBox.setSelected(getCamelPreferenceService().isRealTimeValidation());
+        realTimeEndpointValidationCatalogCheckBox.setSelected(getCamelPreferenceService().isRealTimeEndpointValidation());
+        realTimeSimpleValidationCatalogCheckBox.setSelected(getCamelPreferenceService().isRealTimeSimpleValidation());
         downloadCatalogCheckBox.setSelected(getCamelPreferenceService().isDownloadCatalog());
         scanThirdPartyComponentsCatalogCheckBox.setSelected(getCamelPreferenceService().isScanThirdPartyComponents());
         scanThirdPartyLegacyComponentsCatalogCheckBox.setSelected(getCamelPreferenceService().isScanThirdPartyLegacyComponents());
