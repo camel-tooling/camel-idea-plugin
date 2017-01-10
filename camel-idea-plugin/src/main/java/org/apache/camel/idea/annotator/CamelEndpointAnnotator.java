@@ -95,7 +95,12 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
                     element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
-                holder.createErrorAnnotation(range, summaryErrorMessage(result, propertyValue, msg));
+
+                if (msg.isWarnLevel()) {
+                    holder.createWarningAnnotation(range, summaryErrorMessage(result, propertyValue, msg));
+                } else {
+                    holder.createErrorAnnotation(range, summaryErrorMessage(result, propertyValue, msg));
+                }
             }
         }
     }
@@ -238,12 +243,24 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
         public String getErrorMessage(EndpointValidationResult result, String property) {
             return "Option not applicable in consumer only mode";
         }
+
+        @Override
+        public boolean isWarnLevel() {
+            // this is only a warning
+            return true;
+        }
     }
 
     private static class NotProducerOnlyErrorMsg implements CamelAnnotatorEndpointMessage<String> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, String property) {
             return "Option not applicable in producer only mode";
+        }
+
+        @Override
+        public boolean isWarnLevel() {
+            // this is only a warning
+            return true;
         }
     }
 

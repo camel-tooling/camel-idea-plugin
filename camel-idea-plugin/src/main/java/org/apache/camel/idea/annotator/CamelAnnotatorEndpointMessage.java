@@ -31,4 +31,18 @@ public interface CamelAnnotatorEndpointMessage<T> {
      * @param valueObj - The key and value object validated.
      */
     String getErrorMessage(EndpointValidationResult endpointValidationResult, T valueObj);
+
+    /**
+     * Is this an error
+     */
+    default boolean isErrorLevel() {
+        return true;
+    }
+
+    /**
+     * Is this a warning
+     */
+    default boolean isWarnLevel() {
+        return false;
+    }
 }

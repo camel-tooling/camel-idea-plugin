@@ -298,7 +298,7 @@ public final class IdeaUtils {
         // java method call
         PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
         if (call != null) {
-            return isFromJavaMethod(call, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap");
+            return isFromJavaMethod(call, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
         }
         // annotation
         PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
@@ -308,27 +308,27 @@ public final class IdeaUtils {
         // xml
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (xml != null) {
-            return isFromXmlTag(xml, "enrich", "to", "interceptSendToEndpoint", "wireTap");
+            return isFromXmlTag(xml, "enrich", "to", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
         }
         // groovy
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
-                return isFromGroovyMethod(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap");
+                return isFromGroovyMethod(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
             }
         }
         // kotlin
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("kotlin")) {
-                return isFromKotlinMethod(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap");
+                return isFromKotlinMethod(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
             }
         }
         // scala
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
-                return isFromScalaMethod(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap");
+                return isFromScalaMethod(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
             }
         }
 
