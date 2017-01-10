@@ -22,6 +22,7 @@ import java.util.Set;
 
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlToken;
@@ -38,6 +39,8 @@ import static org.apache.camel.idea.util.StringUtils.isEmpty;
  * Validate Camel URI endpoint and simple expression and annotated the specific property to highlight the error in the editor
  */
 public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
+
+    private static final Logger LOG = Logger.getInstance(CamelEndpointAnnotator.class);
 
     @Override
     boolean isEnabled() {
@@ -76,7 +79,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 extractSetValue(result, result.getNotConsumerOnly(), uri, element, holder, new NotConsumerOnlyErrorMsg());
                 extractSetValue(result, result.getNotProducerOnly(), uri, element, holder, new NotProducerOnlyErrorMsg());
             } catch (Throwable e) {
-                // ignore
+                LOG.warn("Error validating Camel endpoint: " + uri, e);
             }
         }
     }

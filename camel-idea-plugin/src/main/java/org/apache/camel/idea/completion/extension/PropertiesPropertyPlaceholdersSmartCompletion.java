@@ -22,6 +22,7 @@ import java.util.Properties;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.PlainPrefixMatcher;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,13 +35,16 @@ import org.jetbrains.annotations.NotNull;
  */
 public class PropertiesPropertyPlaceholdersSmartCompletion implements CamelPropertyCompletion {
 
+    private static final Logger LOG = Logger.getInstance(PropertiesPropertyPlaceholdersSmartCompletion.class);
+
     @NotNull
     private Properties getProperties(VirtualFile virtualFile) {
         Properties properties = new Properties();
         try {
             properties.load(virtualFile.getInputStream());
         } catch (IOException e) {
-        }//TODO : log a warning, but for now we ignore it and continue.
+            LOG.warn("Error loading properties file: " + virtualFile, e);
+        }
 
         return properties;
     }

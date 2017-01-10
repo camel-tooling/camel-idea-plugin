@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.PlainPrefixMatcher;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
@@ -39,6 +40,8 @@ import org.yaml.snakeyaml.Yaml;
  */
 public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCompletion {
 
+    private static final Logger LOG = Logger.getInstance(YamlPropertyPlaceholdersSmartCompletion.class);
+
     @NotNull
     @SuppressWarnings("unchecked")
     private Map<String, Object> getProperties(VirtualFile virtualFile) {
@@ -48,7 +51,7 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
             // Parse the YAML file and return the output as a series of Maps and Lists
             result = (Map<String, Object>) yaml.load(virtualFile.getInputStream());
         } catch (Exception e) {
-            // ignore
+            LOG.warn("Error loading yaml file: " + virtualFile, e);
         }
         return result;
     }
