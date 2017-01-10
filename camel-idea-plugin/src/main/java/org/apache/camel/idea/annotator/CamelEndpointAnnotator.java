@@ -31,7 +31,7 @@ import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
-import static org.apache.camel.idea.util.IdeaUtils.isEmpty;
+import static org.apache.camel.idea.util.StringUtils.isEmpty;
 
 /**
  * Validate Camel URI endpoint and simple expression and annotated the specific property to highlight the error in the editor
