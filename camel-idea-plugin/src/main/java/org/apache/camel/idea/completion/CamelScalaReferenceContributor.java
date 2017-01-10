@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea;
+package org.apache.camel.idea.completion;
 
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.psi.PsiFile;
@@ -23,14 +23,14 @@ import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionEx
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
- * Plugin to hook into the IDEA XML language, to setup Camel smart completion for editing XML source code.
+ * Plugin to hook into the IDEA Scala language, to setup Camel smart completion for editing Scala source code.
  */
-public class CamelXmlReferenceContributor extends CamelContributor {
+public class CamelScalaReferenceContributor extends CamelContributor {
 
-    public CamelXmlReferenceContributor() {
-        addCompletionExtension(new CamelEndpointSmartCompletionExtension(true));
+    public CamelScalaReferenceContributor() {
+        addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
         extend(CompletionType.BASIC,
-                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("xml"))),
+                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("scala"))),
                 new EndpointCompletion(getCamelCompletionExtensions())
         );
     }

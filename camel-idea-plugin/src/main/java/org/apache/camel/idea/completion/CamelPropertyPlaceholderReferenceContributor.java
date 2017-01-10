@@ -14,24 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea;
+package org.apache.camel.idea.completion;
 
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.psi.PsiFile;
-import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionExtension;
+import org.apache.camel.idea.completion.extension.CamelPropertyPlaceholderSmartCompletionExtension;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
- * Plugin to hook into the IDEA completion system, to setup Camel smart completion for editing properties or yaml files.
+ * Plugin to hook into the IDEA completion system, to setup smart completion for Camel property placeholders (eg {{foo}} style)
  */
-public class CamelPropertiesOrYamlFileReferenceContributor extends CamelContributor {
+public class CamelPropertyPlaceholderReferenceContributor extends CamelContributor {
 
-    public CamelPropertiesOrYamlFileReferenceContributor() {
-        // also allow to setup camel endpoints in properties files
-        addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
+    public CamelPropertyPlaceholderReferenceContributor() {
+        // add hook for smart completion for {{ }} placeholders
+        addCompletionExtension(new CamelPropertyPlaceholderSmartCompletionExtension());
         extend(CompletionType.BASIC,
-                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("properties", "yaml", "yml"))),
+                psiElement().notNull(), // this works anywhere
                 new EndpointCompletion(getCamelCompletionExtensions())
         );
     }

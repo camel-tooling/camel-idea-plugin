@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea;
+package org.apache.camel.idea.completion;
 
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.psi.PsiFile;
@@ -23,14 +23,14 @@ import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionEx
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
- * Plugin to hook into the IDEA Groovy language, to setup Camel smart completion for editing Groovy source code.
+ * Plugin to hook into the IDEA Java language, to setup Camel smart completion for editing Java source code.
  */
-public class CamelGroovyReferenceContributor extends CamelContributor {
+public class CamelJavaReferenceContributor extends CamelContributor {
 
-    public CamelGroovyReferenceContributor() {
+    public CamelJavaReferenceContributor() {
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
         extend(CompletionType.BASIC,
-                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("groovy"))),
+                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("java"))),
                 new EndpointCompletion(getCamelCompletionExtensions())
         );
     }

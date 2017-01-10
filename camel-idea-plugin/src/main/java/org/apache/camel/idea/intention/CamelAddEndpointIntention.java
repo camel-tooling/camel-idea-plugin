@@ -47,7 +47,7 @@ import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
-import static org.apache.camel.idea.CamelContributor.CAMEL_ICON;
+import static org.apache.camel.idea.completion.CamelContributor.CAMEL_ICON;
 import static org.apache.camel.idea.util.IdeaUtils.extractTextFromElement;
 
 public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction implements Iconable, LowPriorityAction {

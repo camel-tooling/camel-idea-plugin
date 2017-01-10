@@ -49,8 +49,8 @@ import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.catalog.CatalogHelper.loadText;
-import static org.apache.camel.idea.CamelContributor.CAMEL_ICON;
-import static org.apache.camel.idea.CamelContributor.CAMEL_NOTIFICATION_GROUP;
+import static org.apache.camel.idea.completion.CamelContributor.CAMEL_ICON;
+import static org.apache.camel.idea.completion.CamelContributor.CAMEL_NOTIFICATION_GROUP;
 import static org.apache.camel.idea.util.IdeaUtils.newURLClassLoaderForLibrary;
 
 /**
