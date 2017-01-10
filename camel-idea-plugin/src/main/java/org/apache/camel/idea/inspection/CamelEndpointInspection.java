@@ -200,31 +200,7 @@ public abstract class CamelEndpointInspection extends LocalInspectionTool {
     private static class UnknownErrorMsg implements CamelAnnotatorEndpointMessage<String> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, String property) {
-            // for each invalid option build a reason message
-            String returnMsg = "";
-            if (result.getUnknown() != null) {
-                for (String name : result.getUnknown()) {
-                    if (name.equals(property)) {
-                        if (result.getUnknownSuggestions() != null && result.getUnknownSuggestions().containsKey(name)) {
-                            String[] suggestions = result.getUnknownSuggestions().get(name);
-                            if (suggestions != null && suggestions.length > 0) {
-                                String str = Arrays.asList(suggestions).toString();
-                                returnMsg += name + " is unknown option. Did you mean: " + str;
-                            } else {
-                                returnMsg += name + " is unknown option";
-                            }
-                        } else {
-                            returnMsg = name + " is unknown option";
-                        }
-                    }
-                }
-            }
-            if (result.getRequired() != null) {
-                for (String name : result.getRequired()) {
-                    returnMsg += name + " is required";
-                }
-            }
-            return returnMsg;
+            return property + " is unknown option";
         }
     }
 
