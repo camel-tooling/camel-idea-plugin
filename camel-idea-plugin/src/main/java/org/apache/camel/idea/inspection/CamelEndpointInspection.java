@@ -57,13 +57,13 @@ public class CamelEndpointInspection extends LocalInspectionTool {
     @NotNull
     @Override
     public String getShortName() {
-        return "ValidateCamelEndpoints";
+        return "InpsectCamelEndpoints";
     }
 
     @Nullable
     @Override
     public String getStaticDescription() {
-        return "Validates all Camel endpoints";
+        return "Inspects all Camel endpoints";
     }
 
     @NotNull
@@ -146,11 +146,12 @@ public class CamelEndpointInspection extends LocalInspectionTool {
     private static class BooleanErrorMsg implements CamelAnnotatorEndpointMessage<Map.Entry<String, String>> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, Map.Entry<String, String> entry) {
+            String name = entry.getKey();
             boolean empty = entry.getValue() == null || entry.getValue().length() == 0;
             if (empty) {
-                return "Empty boolean value";
+                return name + " has empty boolean value";
             } else {
-                return "Invalid boolean value: " + entry.getValue();
+                return name + " has invalid boolean value: " + entry.getValue();
             }
         }
     }
@@ -162,7 +163,7 @@ public class CamelEndpointInspection extends LocalInspectionTool {
             String[] choices = result.getInvalidEnumChoices().get(name);
             String defaultValue = result.getDefaultValues() != null ? result.getDefaultValues().get(entry.getKey()) : null;
             String str = Arrays.asList(choices).toString();
-            String msg = "Invalid enum value: " + entry.getValue() + ". Possible values: " + str;
+            String msg = name + " has invalid enum value: " + entry.getValue() + ". Possible values: " + str;
             if (result.getInvalidEnumChoices() != null) {
                 String[] suggestions = result.getInvalidEnumChoices().get(name);
                 if (suggestions != null && suggestions.length > 0) {
@@ -180,13 +181,14 @@ public class CamelEndpointInspection extends LocalInspectionTool {
     private static class ReferenceErrorMsg implements CamelAnnotatorEndpointMessage<Map.Entry<String, String>> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, Map.Entry<String, String> entry) {
+            String name = entry.getKey();
             boolean empty = isEmpty(entry.getValue());
             if (empty) {
-                return "Empty reference value";
+                return name + " has empty reference value";
             } else if (!entry.getValue().startsWith("#")) {
-                return "Invalid reference value: " + entry.getValue() + " must start with #";
+                return name + " has invalid reference value: " + entry.getValue() + " must start with #";
             } else {
-                return "Invalid reference value: " + entry.getValue();
+                return name + " has invalid reference value: " + entry.getValue();
             }
         }
     }
@@ -194,11 +196,12 @@ public class CamelEndpointInspection extends LocalInspectionTool {
     private static class IntegerErrorMsg implements CamelAnnotatorEndpointMessage<Map.Entry<String, String>> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, Map.Entry<String, String> entry) {
+            String name = entry.getKey();
             boolean empty = isEmpty(entry.getValue());
             if (empty) {
-                return "Empty integer value";
+                return name + " is empty integer value";
             } else {
-                return "Invalid integer value: " + entry.getValue();
+                return name + " is invalid integer value: " + entry.getValue();
             }
         }
     }
@@ -215,19 +218,19 @@ public class CamelEndpointInspection extends LocalInspectionTool {
                             String[] suggestions = result.getUnknownSuggestions().get(name);
                             if (suggestions != null && suggestions.length > 0) {
                                 String str = Arrays.asList(suggestions).toString();
-                                returnMsg += "\nUnknown option. Did you mean: " + str;
+                                returnMsg += name + " is unknown option. Did you mean: " + str;
                             } else {
-                                returnMsg += "\nUnknown option";
+                                returnMsg += name + " is unknown option";
                             }
                         } else {
-                            returnMsg = "Unknown option";
+                            returnMsg = name + " is unknown option";
                         }
                     }
                 }
             }
             if (result.getRequired() != null) {
                 for (String name : result.getRequired()) {
-                    returnMsg += "\nMissing required option";
+                    returnMsg += name + " is required";
                 }
             }
             return returnMsg;
@@ -237,11 +240,12 @@ public class CamelEndpointInspection extends LocalInspectionTool {
     private static class NumberErrorMsg implements CamelAnnotatorEndpointMessage<Map.Entry<String, String>> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, Map.Entry<String, String> entry) {
+            String name = entry.getKey();
             boolean empty = isEmpty(entry.getValue());
             if (empty) {
-                return "Empty number value";
+                return name + " has empty numeric value";
             } else {
-                return "Invalid number value: " + entry.getValue();
+                return name + " has invalid numeric value: " + entry.getValue();
             }
         }
     }
@@ -249,7 +253,7 @@ public class CamelEndpointInspection extends LocalInspectionTool {
     private static class NotConsumerOnlyErrorMsg implements CamelAnnotatorEndpointMessage<String> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, String property) {
-            return "Option not applicable in consumer only mode";
+            return property + " is not applicable in consumer only mode";
         }
 
         @Override
@@ -262,7 +266,7 @@ public class CamelEndpointInspection extends LocalInspectionTool {
     private static class NotProducerOnlyErrorMsg implements CamelAnnotatorEndpointMessage<String> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, String property) {
-            return "Option not applicable in producer only mode";
+            return property + " is not applicable in producer only mode";
         }
 
         @Override
