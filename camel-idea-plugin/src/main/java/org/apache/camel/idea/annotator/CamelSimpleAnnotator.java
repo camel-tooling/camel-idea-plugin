@@ -18,6 +18,7 @@ package org.apache.camel.idea.annotator;
 
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import org.apache.camel.catalog.CamelCatalog;
@@ -32,6 +33,8 @@ import org.jetbrains.annotations.NotNull;
  * Validate simple expression and annotated the specific simple expression to highlight the error in the editor
  */
 public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
+
+    private static final Logger LOG = Logger.getInstance(CamelEndpointAnnotator.class);
 
     @Override
     boolean isEnabled() {
@@ -63,7 +66,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                     }
                 }
             } catch (Throwable e) {
-                // ignore
+                LOG.warn("Error validating Camel simple: " + text, e);
             }
         }
     }

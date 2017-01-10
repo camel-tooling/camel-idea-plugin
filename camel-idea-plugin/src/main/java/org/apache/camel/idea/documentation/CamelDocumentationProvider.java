@@ -25,6 +25,7 @@ import com.intellij.lang.documentation.DocumentationProviderEx;
 import com.intellij.lang.documentation.ExternalDocumentationHandler;
 import com.intellij.lang.documentation.ExternalDocumentationProvider;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
@@ -62,6 +63,8 @@ import static org.apache.camel.idea.util.StringUtils.wrapWords;
  * Camel documentation provider to hook into IDEA to show Camel endpoint documentation in popups and various other places.
  */
 public class CamelDocumentationProvider extends DocumentationProviderEx implements ExternalDocumentationProvider, ExternalDocumentationHandler {
+
+    private static final Logger LOG = Logger.getInstance(CamelDocumentationProvider.class);
 
     private static final String GITHUB_EXTERNAL_DOC_URL = "https://github.com/apache/camel/blob/master";
 
@@ -281,7 +284,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         try {
             existing = camelCatalog.endpointProperties(camelQuery);
         } catch (Throwable e) {
-            // ignore
+            LOG.warn("Error parsing Camel endpoint properties with url: " + camelQuery, e);
         }
 
         StringBuilder options = new StringBuilder();

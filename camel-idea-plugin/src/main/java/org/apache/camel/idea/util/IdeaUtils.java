@@ -58,6 +58,7 @@ import static com.intellij.xml.CommonXmlStrings.QUOT;
 public final class IdeaUtils {
 
     private static final String SINGLE_QUOT = "'";
+
     private static final List<String> ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME = Arrays.asList(
         "org.apache.camel.builder.RouteBuilder", "org.apache.camel.builder.BuilderSupport",
         "org.apache.camel.model.ProcessorDefinition", "org.apache.camel.model.language.ExpressionDefinition");

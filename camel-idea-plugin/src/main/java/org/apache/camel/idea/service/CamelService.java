@@ -38,6 +38,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.LibraryOrderEntry;
@@ -57,6 +58,8 @@ import static org.apache.camel.idea.util.IdeaUtils.newURLClassLoaderForLibrary;
  * Service access for Camel libraries
  */
 public class CamelService implements Disposable {
+
+    private static final Logger LOG = Logger.getInstance(CamelService.class);
 
     private static final String MISSING_JSON_SCHEMA_LINK = "https://github.com/davsclaus/camel-idea-plugin/tree/master/custom-components/beverage-component";
 
@@ -84,9 +87,9 @@ public class CamelService implements Disposable {
             camelMissingJSonSchemaNotification = null;
         }
 
+        camelCoreClassloader = null;
         camelCoreLibrary = null;
         slf4japiLibrary = null;
-        camelCoreClassloader = null;
     }
 
     /**
@@ -135,6 +138,13 @@ public class CamelService implements Disposable {
      * Gets the classloader that can load classes from camel-core which is present on the project classpath
      */
     public ClassLoader getCamelCoreClassloader() {
+        if (camelCoreClassloader == null) {
+            try {
+                camelCoreClassloader = IdeaUtils.newURLClassLoaderForLibrary(camelCoreLibrary, slf4japiLibrary);
+            } catch (Throwable e) {
+                LOG.warn("Error creating URLClassLoader for loading classes from camel-core", e);
+            }
+        }
         return camelCoreClassloader;
     }
 
@@ -210,17 +220,6 @@ public class CamelService implements Disposable {
                             camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin is using camel-catalog version "
                                 + currentVersion, NotificationType.INFORMATION);
                             camelVersionNotification.notify(project);
-                        }
-
-                        // okay we found slf4j-api and camel-core and have setup the project version for it
-                        // then we should return early
-                        if (camelCoreLibrary != null && slf4japiLibrary != null) {
-                            try {
-                                camelCoreClassloader = IdeaUtils.newURLClassLoaderForLibrary(camelCoreLibrary, slf4japiLibrary);
-                            } catch (Throwable e) {
-                                // ignore
-                                // TODO: log that the classloader cannot be created
-                            }
                         }
                     }
                 }
@@ -321,7 +320,7 @@ public class CamelService implements Disposable {
                 }
             }
         } catch (IOException e) {
-            // ignore
+            LOG.warn("Error scanning for custom Camel components", e);
         }
 
         if (added) {
@@ -383,7 +382,7 @@ public class CamelService implements Disposable {
                 loadComponentPropertiesClasspathScan(classLoader, answer);
             }
         } catch (Throwable e) {
-            // ignore
+            LOG.warn("Error loading META-INF/services/org/apache/camel/component.properties file", e);
         }
         return answer;
     }
@@ -451,7 +450,7 @@ public class CamelService implements Disposable {
                 }
             }
         } catch (Throwable e) {
-            // ignore
+            LOG.warn("Error finding Camel components in JAR", e);
         }
 
         return entries;
@@ -476,7 +475,7 @@ public class CamelService implements Disposable {
                     answer = loadText(is);
                 }
             } catch (Throwable e) {
-                // ignore
+                LOG.warn("Error loading " + path + " file", e);
             }
         }
 
@@ -492,7 +491,7 @@ public class CamelService implements Disposable {
                 return (String) props.get("class");
             }
         } catch (Throwable e) {
-            // ignore
+            LOG.warn("Error loading META-INF/services/org/apache/camel/component/" + scheme + " file", e);
         }
 
         return null;
