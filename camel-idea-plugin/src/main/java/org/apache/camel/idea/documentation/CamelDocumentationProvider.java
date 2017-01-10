@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.intellij.ide.BrowserUtil;
+import com.intellij.lang.Language;
 import com.intellij.lang.documentation.DocumentationProviderEx;
 import com.intellij.lang.documentation.ExternalDocumentationHandler;
 import com.intellij.lang.documentation.ExternalDocumentationProvider;
@@ -40,11 +41,13 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameterList;
+import com.intellij.psi.impl.light.LightElement;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.JSonSchemaHelper;
 import org.apache.camel.idea.model.ComponentModel;
+import org.apache.camel.idea.model.EndpointOptionModel;
 import org.apache.camel.idea.model.ModelHelper;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelService;
@@ -113,6 +116,10 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public String generateDoc(PsiElement element, @Nullable PsiElement originalElement) {
+        if (element instanceof DocumentationElement) {
+            DocumentationElement documentationElement = (DocumentationElement) element;
+            return generateCamelEndpointOptionDocumentation(documentationElement.getComponentName(), documentationElement.getEndpointOption(), element.getProject());
+        }
         String val = null;
         if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
             val = fetchLiteralForCamelDocumentation(element);
@@ -151,7 +158,21 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public PsiElement getDocumentationElementForLookupItem(PsiManager psiManager, Object object, PsiElement element) {
-        return null;
+        String route = (String) object;
+        String routeParam;
+        route = route.replace("&amp;", "&");
+        //get last option from route
+        if (route.contains("&")) {
+            String[] split = route.split("&");
+            routeParam = split[split.length - 1].replace("=", "");
+        } else if (route.contains("?")) {
+            String[] split = route.split("\\?");
+            routeParam = split[split.length - 1].replace("=", "");
+        } else {
+            return super.getDocumentationElementForLookupItem(psiManager, object, element);
+        }
+
+        return new DocumentationElement(psiManager, element.getLanguage(), element, routeParam, StringUtils.asComponentName(route));
     }
 
     @Nullable
@@ -261,6 +282,25 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         return extractTextFromElement(element);
     }
 
+    /**
+     * Generates documentation for the endpoint option.
+     * @param componentName the name of the Camel component
+     * @param option the name of the Camel component option to generate documentation for
+     * @param project the current project
+     * @return a String representing the HTML documentation
+     */
+    private String generateCamelEndpointOptionDocumentation(String componentName, String option, Project project) {
+        CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
+        String json = camelCatalog.componentJSonSchema(componentName);
+        if (json == null) {
+            return null;
+        }
+        ComponentModel component = ModelHelper.generateComponentModel(json, true);
+
+        EndpointOptionModel endpointOption = component.getEndpointOption(option);
+        return endpointOption.getDescription();
+    }
+
     private String generateCamelComponentDocumentation(String componentName, String val, int wrapLength, Project project) {
         // it is a known Camel component
         CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
@@ -368,5 +408,38 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             text = wrapWords(text, "<br/>", wrapLength, true);
         }
         return text;
+    }
+
+    /**
+     * {@link PsiElement} used only to transfer documentation data.
+     */
+    private static class DocumentationElement extends LightElement {
+        private PsiElement element;
+        private String endpointOption;
+        private String componentName;
+
+        DocumentationElement(@NotNull PsiManager psiManager, @NotNull Language language, PsiElement element, String endpointOption, String componentName) {
+            super(psiManager, language);
+            this.element = element;
+            this.endpointOption = endpointOption;
+            this.componentName = componentName;
+        }
+
+        @Override
+        public String toString() {
+            return element.getText();
+        }
+
+        public PsiElement getElement() {
+            return element;
+        }
+
+        String getEndpointOption() {
+            return endpointOption;
+        }
+
+        String getComponentName() {
+            return componentName;
+        }
     }
 }
