@@ -16,27 +16,21 @@
  */
 package org.apache.camel.idea.inspection;
 
-import org.jetbrains.annotations.NotNull;
+import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
+import com.intellij.testFramework.InspectionTestCase;
 
-public class CamelJavaEndpointInspection extends CamelEndpointInspection {
+public class CamelInspectEndpointTestIT extends InspectionTestCase {
 
-    public CamelJavaEndpointInspection() {
-    }
-
-    public CamelJavaEndpointInspection(boolean forceEnabled) {
-        super(forceEnabled);
-    }
-
-    @NotNull
     @Override
-    public String getDisplayName() {
-        return "Inspect Camel Java endpoints";
+    protected String getTestDataPath() {
+        return "src/test/resources/";
     }
 
-    @NotNull
-    @Override
-    public String getShortName() {
-        return "InspectCamelJavaEndpoints";
+    public void testEndpointInspection() {
+        // force Camel enabled so the inspection test can run
+        CamelJavaEndpointInspection inspection = new CamelJavaEndpointInspection(true);
+
+        doTest("testData/inspectionjava/", new LocalInspectionToolWrapper(inspection), "java 1.8");
     }
 
 }

@@ -201,7 +201,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
     private static class UnknownErrorMsg implements CamelAnnotatorEndpointMessage<String> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, String property) {
-            return property + " is unknown option";
+            return "Unknown option";
         }
     }
 

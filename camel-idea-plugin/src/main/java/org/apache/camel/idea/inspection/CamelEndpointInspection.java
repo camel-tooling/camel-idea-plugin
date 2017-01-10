@@ -24,6 +24,7 @@ import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import org.apache.camel.catalog.CamelCatalog;
@@ -45,6 +46,19 @@ public abstract class CamelEndpointInspection extends LocalInspectionTool {
 
     private static final Logger LOG = Logger.getInstance(CamelEndpointInspection.class);
 
+    private boolean forceEnabled;
+
+    public CamelEndpointInspection() {
+    }
+
+    public CamelEndpointInspection(boolean forceEnabled) {
+        this.forceEnabled = forceEnabled;
+    }
+
+    boolean isInspectionEnabled(Project project) {
+        return forceEnabled || ServiceManager.getService(project, CamelService.class).isCamelPresent();
+    }
+
     @NotNull
     @Override
     public String getGroupDisplayName() {
@@ -60,17 +74,19 @@ public abstract class CamelEndpointInspection extends LocalInspectionTool {
     @NotNull
     @Override
     public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, final boolean isOnTheFly) {
-        return new PsiElementVisitor() {
-            @Override
-            public void visitElement(PsiElement element) {
-                if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
+        if (isInspectionEnabled(holder.getProject())) {
+            return new PsiElementVisitor() {
+                @Override
+                public void visitElement(PsiElement element) {
                     String text = IdeaUtils.extractTextFromElement(element, false);
                     if (!StringUtils.isEmpty(text)) {
                         validateText(element, holder, text, isOnTheFly);
                     }
                 }
-            }
-        };
+            };
+        } else {
+            return PsiElementVisitor.EMPTY_VISITOR;
+        }
     }
 
     /**

@@ -14,29 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.inspection;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.main.Main;
 
-import org.jetbrains.annotations.NotNull;
+public final class JavaEndpointInspectionTestData {
 
-public class CamelJavaEndpointInspection extends CamelEndpointInspection {
+    private JavaEndpointInspectionTestData() { }
 
-    public CamelJavaEndpointInspection() {
+    public static void main(String[] args) {
+        Main main = new Main();
+        main.addRouteBuilder(new MyRouteBuilder());
+        main.run(args);
     }
 
-    public CamelJavaEndpointInspection(boolean forceEnabled) {
-        super(forceEnabled);
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Inspect Camel Java endpoints";
-    }
-
-    @NotNull
-    @Override
-    public String getShortName() {
-        return "InspectCamelJavaEndpoints";
+    public static class MyRouteBuilder extends RouteBuilder {
+        @Override
+        public void configure() throws Exception {
+            from("file:inbox?delete=true")
+                .to("file:outbox?delete=true");
+        }
     }
 
 }
