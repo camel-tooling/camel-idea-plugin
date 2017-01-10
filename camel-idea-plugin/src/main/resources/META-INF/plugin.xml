@@ -114,7 +114,11 @@
     <annotator language="JAVA" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
 
     <!-- inspection to validate endpoints -->
-    <localInspection groupName="Camel" language="JAVA" implementationClass="org.apache.camel.idea.inspection.CamelEndpointInspection"/>
+    <localInspection groupName="Apache Camel" language="JAVA" implementationClass="org.apache.camel.idea.inspection.CamelJavaEndpointInspection"/>
+    <localInspection groupName="Apache Camel" language="XML" implementationClass="org.apache.camel.idea.inspection.CamelXmlEndpointInspection"/>
+    <localInspection groupName="Apache Camel" language="Groovy" implementationClass="org.apache.camel.idea.inspection.CamelGroovyEndpointInspection"/>
+    <localInspection groupName="Apache Camel" language="kotlin" implementationClass="org.apache.camel.idea.inspection.CamelKotlinEndpointInspection"/>
+    <localInspection groupName="Apache Camel" language="Scala" implementationClass="org.apache.camel.idea.inspection.CamelScalaEndpointInspection"/>
 
     <!-- preference -->
     <applicationConfigurable id="camel" displayName="Apache Camel" groupId="other"

@@ -38,7 +38,10 @@ import org.jetbrains.annotations.Nullable;
 
 import static org.apache.camel.idea.util.StringUtils.isEmpty;
 
-public class CamelEndpointInspection extends LocalInspectionTool {
+/**
+ * Camel inspection to validate Camel endpoints.
+ */
+public abstract class CamelEndpointInspection extends LocalInspectionTool {
 
     private static final Logger LOG = Logger.getInstance(CamelEndpointInspection.class);
 
@@ -46,18 +49,6 @@ public class CamelEndpointInspection extends LocalInspectionTool {
     @Override
     public String getGroupDisplayName() {
         return "Apache Camel";
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Inspect Camel endpoints";
-    }
-
-    @NotNull
-    @Override
-    public String getShortName() {
-        return "InpsectCamelEndpoints";
     }
 
     @Nullable
