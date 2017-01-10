@@ -16,11 +16,16 @@
  */
 package org.apache.camel.idea.annotator;
 
+import java.util.List;
+
+import com.intellij.codeInsight.daemon.impl.HighlightInfo;
+import com.intellij.lang.annotation.HighlightSeverity;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
 /**
  * Test Camel URI validation and the expected value is highlighted
  * TODO : Still need to find out how we can make a positive test without it complaining about it can't find SDK classes
+ * TODO: I think I found the solution see testAnnotatorProducerOnly how I grab the highlights and find from that list
  *
  * TIP : Writing highlighting test can be tricky because if the highlight is one character off
  * it will fail, but the error messaged might still be correct. In this case it's likely the TextRange
@@ -78,6 +83,7 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
         myFixture.configureByText("AnnotatorTestData.xml", getXmlInvalidIntegerPropertyTestData());
         myFixture.checkHighlighting(false, false, true, true);
     }
+
     public void testXmlAnnotatorWithCommentValidation() {
         myFixture.configureByText("AnnotatorTestData.xml", getXmlWithCommentTestData());
         myFixture.checkHighlighting(false, false, true, true);
@@ -98,8 +104,35 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
         myFixture.checkHighlighting(false, false, true, true);
     }
 
+    public void testAnnotatorConsumerOnly() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaConsumerOnlyTestData());
+        myFixture.checkHighlighting(false, false, true, true);
+
+        List<HighlightInfo> list = myFixture.doHighlighting();
+
+        // find the warning from the highlights as checkWarning cannot do that for us for warnings
+        boolean found = list.stream().anyMatch((i) -> i.getText().equals("fileExist")
+            && i.getDescription().equals("Option not applicable in consumer only mode")
+            && i.getSeverity().equals(HighlightSeverity.WARNING));
+        assertTrue("Should find the warning", found);
+    }
+
+    public void testAnnotatorProducerOnly() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaProducerOnlyTestData());
+        myFixture.checkHighlighting(false, false, true, true);
+
+        List<HighlightInfo> list = myFixture.doHighlighting();
+
+        // find the warning from the highlights as checkWarning cannot do that for us for warnings
+        boolean found = list.stream().anyMatch((i) -> i.getText().equals("delete")
+            && i.getDescription().equals("Option not applicable in producer only mode")
+            && i.getSeverity().equals(HighlightSeverity.WARNING));
+        assertTrue("Should find the warning", found);
+    }
+
     private String getJavaInvalidBooleanPropertyTestData() {
-        return "public class MyRouteBuilder extends RouteBuilder {\n"
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
             + "        public void configure() throws Exception {\n"
             + "            from(\"timer:trigger?bridgeErrorHandler=<error descr=\"Invalid boolean value: DDDD\">DDDD</error>\")\n"
             + "                .to(\"file:outbox\");\n"
@@ -108,7 +141,8 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
     }
 
     private String getJavaInvalidBooleanPropertyInProducerTestData() {
-        return "public class MyRouteBuilder extends RouteBuilder {\n"
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
             + "        public void configure() throws Exception {\n"
             + "            from(\"timer:trigger?bridgeErrorHandler=false\")\n"
             + "                .to(\"file:test?allowNullBody=<error descr=\"Invalid boolean value: FISH\">FISH</error>\")\n"
@@ -117,7 +151,8 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
     }
 
     private String getJavaUnknownOptionsConsumerTestData() {
-        return "public class MyRouteBuilder extends RouteBuilder {\n"
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
             + "        public void configure() throws Exception {\n"
             + "            from(\"timer:trigger?bridgeErrorHandler=false\")\n"
             + "                .to(\"file:test?allowNullBody=true&<error descr=\"Unknown option\">foo</error>=bar\")\n"
@@ -126,14 +161,16 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
     }
 
     private String getJavaUnknownOptionsConsumerAnnotationTestData() {
-        return "public class MyRouteBuilder extends RouteBuilder {\n"
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
             + "         @Consumer(file:test?allowNullBody=true&<error descr=\"Unknown option\">foo</error>=bar);"
             + "         public void onCheese(String name) {}"
             + "    }";
     }
 
     private String getJavaInvalidBooleanPropertyInProducerWithOpenUriTestData() {
-        return "public class MyRouteBuilder extends RouteBuilder {\n"
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
             + "        public void configure() throws Exception {\n"
             + "            from(\"timer:trigger?bridgeErrorHandler=false\")\n"
             + "                .to(\"file:test?allowNullBody=<error descr=\"Invalid boolean value: FISH\">FISH</error>\")\n"
@@ -164,7 +201,8 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
     }
 
     private String getJavaInvalidIntegerPropertyTestData() {
-        return "public class MyRouteBuilder extends RouteBuilder {\n"
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
             + "        public void configure() throws Exception {\n"
             + "            from(\"timer:trigger?delay=<error descr=\"Invalid integer value: ImNotANumber\">ImNotANumber</error>\")\n"
             + "                .to(\"file:outbox\");\n"
@@ -180,7 +218,8 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
     }
 
     private String getJavaInvalidReferencePropertyTestData() {
-        return "public class MyRouteBuilder extends RouteBuilder {\n"
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
             + "        public void configure() throws Exception {\n"
             + "            from(\"jms:queue:myqueue?jmsKeyFormatStrategy=<error descr=\"Invalid enum value: foo. Possible values: "
             + "[default, passthrough]. Did you mean: [default, passthrough]\">foo</error>\")\n"
@@ -200,5 +239,26 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
     private String getPropertyInvalidReferencePropertyTestData() {
         return "my.jms = jms:queue:myqueue?jmsKeyFormatStrategy=<error descr=\"Invalid enum value: foo. Possible values: [default, passthrough]. Did you mean: [default, passthrough]\">foo</error>";
     }
+
+    private String getJavaConsumerOnlyTestData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"file:inbox?delete=true&fileExist=Append\")\n"
+            + "                .to(\"file:outbox\");\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getJavaProducerOnlyTestData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"file:inbox?delete=true\")\n"
+            + "                .to(\"file:outbox?delete=true&fileExist=Append\");\n"
+            + "        }\n"
+            + "    }";
+    }
+
 
 }
