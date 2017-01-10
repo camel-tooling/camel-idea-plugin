@@ -23,18 +23,27 @@ import com.intellij.openapi.Disposable;
  */
 public class CamelPreferenceService implements Disposable {
 
-    private boolean realTimeValidation = true;
+    private boolean realTimeEndpointValidation = true;
+    private boolean realTimeSimpleValidation = true;
     private boolean downloadCatalog = true;
     private boolean scanThirdPartyComponents = true;
     private boolean scanThirdPartyLegacyComponents = true;
     private boolean showCamelIconInGutter = true;
 
-    public boolean isRealTimeValidation() {
-        return realTimeValidation;
+    public boolean isRealTimeEndpointValidation() {
+        return realTimeEndpointValidation;
     }
 
-    public void setRealTimeValidation(boolean realTimeValidation) {
-        this.realTimeValidation = realTimeValidation;
+    public void setRealTimeEndpointValidation(boolean realTimeEndpointValidation) {
+        this.realTimeEndpointValidation = realTimeEndpointValidation;
+    }
+
+    public boolean isRealTimeSimpleValidation() {
+        return realTimeSimpleValidation;
+    }
+
+    public void setRealTimeSimpleValidation(boolean realTimeSimpleValidation) {
+        this.realTimeSimpleValidation = realTimeSimpleValidation;
     }
 
     public boolean isDownloadCatalog() {

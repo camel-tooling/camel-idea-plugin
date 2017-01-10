@@ -23,7 +23,7 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.2 - TODO</li>
+        <li>0.3.2 - Real time validation of Simple language in editor</li>
         <li>0.3.1 - Allow to turn on or off scanning for third party components.
                     Real time validation is now checked for endpoints used outside routes.
                     Minor bug fixes.</li>
@@ -109,7 +109,7 @@
     <annotator language="Properties" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
     <annotator language="yaml" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
 
-    <!-- annotator to validate simple expressions -->
+    <!-- annotator to validate simple language -->
     <annotator language="JAVA" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
 
     <!-- preference -->

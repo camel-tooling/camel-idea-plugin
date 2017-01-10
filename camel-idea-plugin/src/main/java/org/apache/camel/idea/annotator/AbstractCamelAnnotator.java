@@ -20,7 +20,6 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
-import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.apache.camel.idea.util.StringUtils;
@@ -36,9 +35,7 @@ abstract class AbstractCamelAnnotator implements Annotator {
      * <p/>
      * The user can turn this on or off in the plugin preference.
      */
-    boolean isEnabled() {
-        return ServiceManager.getService(CamelPreferenceService.class).isRealTimeValidation();
-    }
+    abstract boolean isEnabled();
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {

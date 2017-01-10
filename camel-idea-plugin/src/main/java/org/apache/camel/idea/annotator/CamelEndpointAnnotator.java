@@ -28,6 +28,7 @@ import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.EndpointValidationResult;
 import org.apache.camel.idea.service.CamelCatalogService;
+import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,6 +38,11 @@ import static org.apache.camel.idea.util.StringUtils.isEmpty;
  * Validate Camel URI endpoint and simple expression and annotated the specific property to highlight the error in the editor
  */
 public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
+
+    @Override
+    boolean isEnabled() {
+        return ServiceManager.getService(CamelPreferenceService.class).isRealTimeEndpointValidation();
+    }
 
     /**
      * Validate endpoint options list aka properties. eg "timer:trigger?delay=1000&bridgeErrorHandler=true"
