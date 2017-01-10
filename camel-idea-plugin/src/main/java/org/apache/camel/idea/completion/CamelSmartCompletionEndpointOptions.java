@@ -111,7 +111,6 @@ public final class CamelSmartCompletionEndpointOptions {
                         builder = builder.withIcon(AllIcons.Nodes.Class);
                     }
 
-                    // TODO: we could nice with an icon for producer vs consumer etc
                     answer.add(builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
                 }
             }

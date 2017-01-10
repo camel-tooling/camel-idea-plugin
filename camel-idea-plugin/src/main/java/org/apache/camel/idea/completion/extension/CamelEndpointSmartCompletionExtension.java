@@ -23,6 +23,7 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.catalog.CamelCatalog;
@@ -43,6 +44,8 @@ import static org.apache.camel.idea.util.IdeaUtils.isProducerEndpoint;
  * Extension for supporting camel smart completion for camel options and values.
  */
 public class CamelEndpointSmartCompletionExtension implements CamelCompletionExtension {
+
+    private static final Logger LOG = Logger.getInstance(CamelEndpointSmartCompletionExtension.class);
 
     private final boolean xmlMode;
 
@@ -85,7 +88,7 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         try {
             existing = camelCatalog.endpointProperties(camelQuery);
         } catch (Exception e) {
-            // ignore
+            LOG.warn("Error parsing Camel endpoint properties with url: " + camelQuery, e);
         }
 
         // are we editing an existing parameter value
