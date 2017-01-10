@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/davsclaus/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.3.1</version>
+  <version>0.3.2</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -23,6 +23,7 @@
 
   <change-notes><![CDATA[
       <ul>
+        <li>0.3.2 - TODO</li>
         <li>0.3.1 - Allow to turn on or off scanning for third party components.
                     Real time validation is now checked for endpoints used outside routes.
                     Minor bug fixes.</li>
