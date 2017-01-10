@@ -24,7 +24,7 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
  * it will fail, but the error messaged might still be correct. In this case it's likely the TextRange
  * is incorrect.
  */
-public class CamelSimpleAnnotatorTest extends CamelLightCodeInsightFixtureTestCaseIT {
+public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     public void testAnnotatorSimpleValidation() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaWithSimple());
