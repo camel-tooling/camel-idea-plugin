@@ -113,6 +113,9 @@
     <!-- annotator to validate simple language -->
     <annotator language="JAVA" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
 
+    <!-- inspection to validate endpoints -->
+    <localInspection groupName="Camel" language="JAVA" implementationClass="org.apache.camel.idea.inspection.CamelEndpointInspection"/>
+
     <!-- preference -->
     <applicationConfigurable id="camel" displayName="Apache Camel" groupId="other"
                              instance="org.apache.camel.idea.preference.CamelPreferencePage"/>
