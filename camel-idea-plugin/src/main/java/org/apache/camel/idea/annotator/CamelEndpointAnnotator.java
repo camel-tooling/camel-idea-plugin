@@ -42,21 +42,31 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
      * Validate endpoint options list aka properties. eg "timer:trigger?delay=1000&bridgeErrorHandler=true"
      * if the URI is not valid a error annotation is created and highlight the invalid value.
      */
-    void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
-        if (IdeaUtils.isQueryContainingCamelComponent(element.getProject(), text)) {
+    void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String uri) {
+        if (IdeaUtils.isQueryContainingCamelComponent(element.getProject(), uri)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
 
-            // need to ensure XML parameters are unescaped
-            text = text.replaceAll("&amp;", "&");
+            // camel catalog expects &amp; as & when it parses so replace all &amp; as &
+            String camelQuery = uri;
+            camelQuery = camelQuery.replaceAll("&amp;", "&");
 
-            EndpointValidationResult validateEndpointProperties = catalogService.validateEndpointProperties(text);
+            // strip up ending incomplete parameter
+            if (camelQuery.endsWith("&") || camelQuery.endsWith("?")) {
+                camelQuery = camelQuery.substring(0, camelQuery.length() - 1);
+            }
 
-            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidBoolean(), text, element, holder, new BooleanErrorMsg());
-            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidEnum(), text, element, holder, new EnumErrorMsg());
-            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidInteger(), text, element, holder, new IntegerErrorMsg());
-            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidNumber(), text, element, holder, new NumberErrorMsg());
-            extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidReference(), text, element, holder, new ReferenceErrorMsg());
-            extractSetValue(validateEndpointProperties, validateEndpointProperties.getUnknown(), text, element, holder, new UnknownErrorMsg());
+            try {
+                EndpointValidationResult validateEndpointProperties = catalogService.validateEndpointProperties(camelQuery);
+
+                extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidBoolean(), uri, element, holder, new BooleanErrorMsg());
+                extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidEnum(), uri, element, holder, new EnumErrorMsg());
+                extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidInteger(), uri, element, holder, new IntegerErrorMsg());
+                extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidNumber(), uri, element, holder, new NumberErrorMsg());
+                extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidReference(), uri, element, holder, new ReferenceErrorMsg());
+                extractSetValue(validateEndpointProperties, validateEndpointProperties.getUnknown(), uri, element, holder, new UnknownErrorMsg());
+            } catch (Throwable e) {
+                // ignore
+            }
         }
     }
 
