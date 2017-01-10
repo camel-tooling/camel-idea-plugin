@@ -19,7 +19,7 @@ package org.apache.camel.idea.inspection;
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
 import com.intellij.testFramework.InspectionTestCase;
 
-public class CamelInspectEndpointTestIT extends InspectionTestCase {
+public class CamelInspectJavaEndpointTestIT extends InspectionTestCase {
 
     @Override
     protected String getTestDataPath() {
