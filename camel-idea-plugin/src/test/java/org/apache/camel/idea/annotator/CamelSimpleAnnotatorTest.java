@@ -18,8 +18,6 @@ package org.apache.camel.idea.annotator;
 
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
-import static org.junit.Assert.*;
-
 /**
  * Test Camel simple validation and the expected value is highlighted
  * TIP : Writing highlighting test can be tricky because if the highlight is one character off
