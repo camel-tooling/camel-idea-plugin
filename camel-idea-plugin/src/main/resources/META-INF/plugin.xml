@@ -18,13 +18,16 @@
         <li>Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)</li>
         <li>Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)<li>
         <li>Real time validation for Camel endpoints in Java, Groovy, Kotlin, Scala, XML (underline errors in red)</li>
+        <li>Real time validation for Camel simple language in Java (underline errors in red)</li>
+        <li>Inspection (analyze code) to validate Camel endpoints in Java, Groovy, Kotlin, Scala, XML</li>
       </ul>
     ]]></description>
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.2 - Real time validation of Simple language in editor.
-                    Real time validation for Camel endpoints can now check in consumer and producer only mode.</li>
+        <li>0.3.2 - Real time validation of Simple language in editor for Java.
+                    Real time validation for Camel endpoints can now check in consumer and producer only mode.
+                    Inspection (analyze code) to validate Camel endpoints in Java, Groovy, Kotlin, Scala, XML</li>
         <li>0.3.1 - Allow to turn on or off scanning for third party components.
                     Real time validation is now checked for endpoints used outside routes.
                     Minor bug fixes.</li>
@@ -112,6 +115,13 @@
 
     <!-- annotator to validate simple language -->
     <annotator language="JAVA" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
+
+    <!-- inspection to validate endpoints -->
+    <localInspection groupName="Apache Camel" language="JAVA" implementationClass="org.apache.camel.idea.inspection.CamelJavaEndpointInspection"/>
+    <localInspection groupName="Apache Camel" language="XML" implementationClass="org.apache.camel.idea.inspection.CamelXmlEndpointInspection"/>
+    <localInspection groupName="Apache Camel" language="Groovy" implementationClass="org.apache.camel.idea.inspection.CamelGroovyEndpointInspection"/>
+    <localInspection groupName="Apache Camel" language="kotlin" implementationClass="org.apache.camel.idea.inspection.CamelKotlinEndpointInspection"/>
+    <localInspection groupName="Apache Camel" language="Scala" implementationClass="org.apache.camel.idea.inspection.CamelScalaEndpointInspection"/>
 
     <!-- preference -->
     <applicationConfigurable id="camel" displayName="Apache Camel" groupId="other"

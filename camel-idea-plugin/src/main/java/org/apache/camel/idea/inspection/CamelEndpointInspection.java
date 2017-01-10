@@ -14,44 +14,86 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.annotator;
+package org.apache.camel.idea.inspection;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
-import com.intellij.lang.annotation.AnnotationHolder;
+import com.intellij.codeInspection.LocalInspectionTool;
+import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.xml.XmlToken;
+import com.intellij.psi.PsiElementVisitor;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.EndpointValidationResult;
+import org.apache.camel.idea.annotator.CamelAnnotatorEndpointMessage;
 import org.apache.camel.idea.service.CamelCatalogService;
-import org.apache.camel.idea.service.CamelPreferenceService;
+import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.IdeaUtils;
+import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static org.apache.camel.idea.util.StringUtils.isEmpty;
 
 /**
- * Validate Camel URI endpoint and simple expression and annotated the specific property to highlight the error in the editor
+ * Camel inspection to validate Camel endpoints.
  */
-public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
+public abstract class CamelEndpointInspection extends LocalInspectionTool {
 
-    private static final Logger LOG = Logger.getInstance(CamelEndpointAnnotator.class);
+    private static final Logger LOG = Logger.getInstance(CamelEndpointInspection.class);
 
+    private boolean forceEnabled;
+
+    public CamelEndpointInspection() {
+    }
+
+    public CamelEndpointInspection(boolean forceEnabled) {
+        this.forceEnabled = forceEnabled;
+    }
+
+    boolean isInspectionEnabled(Project project) {
+        return forceEnabled || ServiceManager.getService(project, CamelService.class).isCamelPresent();
+    }
+
+    @NotNull
     @Override
-    boolean isEnabled() {
-        return ServiceManager.getService(CamelPreferenceService.class).isRealTimeEndpointValidation();
+    public String getGroupDisplayName() {
+        return "Apache Camel";
+    }
+
+    @Nullable
+    @Override
+    public String getStaticDescription() {
+        return "Inspects all Camel endpoints";
+    }
+
+    @NotNull
+    @Override
+    public PsiElementVisitor buildVisitor(final @NotNull ProblemsHolder holder, final boolean isOnTheFly) {
+        if (isInspectionEnabled(holder.getProject())) {
+            return new PsiElementVisitor() {
+                @Override
+                public void visitElement(PsiElement element) {
+                    String text = IdeaUtils.extractTextFromElement(element, false);
+                    if (!StringUtils.isEmpty(text)) {
+                        validateText(element, holder, text, isOnTheFly);
+                    }
+                }
+            };
+        } else {
+            return PsiElementVisitor.EMPTY_VISITOR;
+        }
     }
 
     /**
      * Validate endpoint options list aka properties. eg "timer:trigger?delay=1000&bridgeErrorHandler=true"
      * if the URI is not valid a error annotation is created and highlight the invalid value.
      */
-    void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String uri) {
+    private void validateText(@NotNull PsiElement element, final @NotNull ProblemsHolder holder, @NotNull String uri, boolean isOnTheFly) {
         if (IdeaUtils.isQueryContainingCamelComponent(element.getProject(), uri)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
 
@@ -70,74 +112,40 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
             try {
                 EndpointValidationResult result = catalogService.validateEndpointProperties(camelQuery, false, consumerOnly, producerOnly);
 
-                extractMapValue(result, result.getInvalidBoolean(), uri, element, holder, new BooleanErrorMsg());
-                extractMapValue(result, result.getInvalidEnum(), uri, element, holder, new EnumErrorMsg());
-                extractMapValue(result, result.getInvalidInteger(), uri, element, holder, new IntegerErrorMsg());
-                extractMapValue(result, result.getInvalidNumber(), uri, element, holder, new NumberErrorMsg());
-                extractMapValue(result, result.getInvalidReference(), uri, element, holder, new ReferenceErrorMsg());
-                extractSetValue(result, result.getUnknown(), uri, element, holder, new UnknownErrorMsg());
-                extractSetValue(result, result.getNotConsumerOnly(), uri, element, holder, new NotConsumerOnlyErrorMsg());
-                extractSetValue(result, result.getNotProducerOnly(), uri, element, holder, new NotProducerOnlyErrorMsg());
+                extractMapValue(result, result.getInvalidBoolean(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.BooleanErrorMsg());
+                extractMapValue(result, result.getInvalidEnum(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.EnumErrorMsg());
+                extractMapValue(result, result.getInvalidInteger(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.IntegerErrorMsg());
+                extractMapValue(result, result.getInvalidNumber(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.NumberErrorMsg());
+                extractMapValue(result, result.getInvalidReference(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.ReferenceErrorMsg());
+                extractSetValue(result, result.getUnknown(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.UnknownErrorMsg());
+                extractSetValue(result, result.getNotConsumerOnly(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.NotConsumerOnlyErrorMsg());
+                extractSetValue(result, result.getNotProducerOnly(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.NotProducerOnlyErrorMsg());
             } catch (Throwable e) {
-                LOG.warn("Error validating Camel endpoint: " + uri, e);
+                LOG.warn("Error inspecting Camel endpoint: " + uri, e);
             }
         }
     }
 
     private void extractSetValue(EndpointValidationResult result, Set<String> validationSet,
-                                 String fromElement, PsiElement element, AnnotationHolder holder, CamelAnnotatorEndpointMessage msg) {
+                                 String fromElement, PsiElement element, final @NotNull ProblemsHolder holder,
+                                 boolean isOnTheFly, CamelAnnotatorEndpointMessage msg) {
+
         if ((!result.isSuccess()) && validationSet != null) {
-
             for (String entry : validationSet) {
-                String propertyValue = entry;
-
-                int startIdxQueryParameters = fromElement.indexOf("?" + propertyValue);
-                startIdxQueryParameters = (startIdxQueryParameters == -1) ? fromElement.indexOf("&" + propertyValue) : fromElement.indexOf("?");
-
-                int propertyIdx = fromElement.indexOf(propertyValue, startIdxQueryParameters);
-                int propertyLength = propertyValue.length();
-
-                propertyIdx = IdeaUtils.isJavaLanguage(element) || IdeaUtils.isXmlLanguage(element) || IdeaUtils.isScalaLanguage(element) ? propertyIdx + 1 : propertyIdx;
-
-                TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
-                    element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
-
-                if (msg.isWarnLevel()) {
-                    holder.createWarningAnnotation(range, summaryErrorMessage(result, propertyValue, msg));
-                } else {
-                    holder.createErrorAnnotation(range, summaryErrorMessage(result, propertyValue, msg));
-                }
+                String desc = summaryErrorMessage(result, entry, msg);
+                holder.registerProblem(element, desc);
             }
         }
     }
 
     private void extractMapValue(EndpointValidationResult result, Map<String, String> validationMap,
-                                 String fromElement, @NotNull PsiElement element, @NotNull AnnotationHolder holder, CamelAnnotatorEndpointMessage msg) {
+                                 String fromElement, @NotNull PsiElement element, final @NotNull ProblemsHolder holder,
+                                 boolean isOnTheFly, CamelAnnotatorEndpointMessage msg) {
+
         if ((!result.isSuccess()) && validationMap != null) {
-
             for (Map.Entry<String, String> entry : validationMap.entrySet()) {
-                String propertyValue = entry.getValue();
-                String propertyKey = entry.getKey();
-                int startIdxQueryParameters = fromElement.indexOf("?");
-
-                int propertyIdx = fromElement.indexOf(propertyKey, startIdxQueryParameters);
-                int startIdx = propertyIdx;
-
-                int equalsSign = fromElement.indexOf("=", propertyIdx);
-
-                if (equalsSign > 0) {
-                    startIdx = equalsSign + 1;
-                }
-
-                int propertyLength = propertyValue.isEmpty() ? propertyKey.length() : propertyValue.length();
-                propertyLength = element instanceof XmlToken ? propertyLength - 1 : propertyLength;
-
-                startIdx = propertyValue.isEmpty() ? propertyIdx + 1 : fromElement.indexOf(propertyValue, startIdx) + 1;
-                startIdx = IdeaUtils.isJavaLanguage(element) || IdeaUtils.isXmlLanguage(element) || IdeaUtils.isScalaLanguage(element) ? startIdx  : startIdx - 1;
-
-                TextRange range = new TextRange(element.getTextRange().getStartOffset() + startIdx,
-                    element.getTextRange().getStartOffset() + startIdx + propertyLength);
-                holder.createErrorAnnotation(range, summaryErrorMessage(result, entry, msg));
+                String desc = summaryErrorMessage(result, entry, msg);
+                holder.registerProblem(element, desc);
             }
         }
     }
@@ -145,11 +153,12 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
     private static class BooleanErrorMsg implements CamelAnnotatorEndpointMessage<Map.Entry<String, String>> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, Map.Entry<String, String> entry) {
+            String name = entry.getKey();
             boolean empty = entry.getValue() == null || entry.getValue().length() == 0;
             if (empty) {
-                return "Empty boolean value";
+                return name + " has empty boolean value";
             } else {
-                return "Invalid boolean value: " + entry.getValue();
+                return name + " has invalid boolean value: " + entry.getValue();
             }
         }
     }
@@ -161,7 +170,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
             String[] choices = result.getInvalidEnumChoices().get(name);
             String defaultValue = result.getDefaultValues() != null ? result.getDefaultValues().get(entry.getKey()) : null;
             String str = Arrays.asList(choices).toString();
-            String msg = "Invalid enum value: " + entry.getValue() + ". Possible values: " + str;
+            String msg = name + " has invalid enum value: " + entry.getValue() + ". Possible values: " + str;
             if (result.getInvalidEnumChoices() != null) {
                 String[] suggestions = result.getInvalidEnumChoices().get(name);
                 if (suggestions != null && suggestions.length > 0) {
@@ -179,13 +188,14 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
     private static class ReferenceErrorMsg implements CamelAnnotatorEndpointMessage<Map.Entry<String, String>> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, Map.Entry<String, String> entry) {
+            String name = entry.getKey();
             boolean empty = isEmpty(entry.getValue());
             if (empty) {
-                return "Empty reference value";
+                return name + " has empty reference value";
             } else if (!entry.getValue().startsWith("#")) {
-                return "Invalid reference value: " + entry.getValue() + " must start with #";
+                return name + " has invalid reference value: " + entry.getValue() + " must start with #";
             } else {
-                return "Invalid reference value: " + entry.getValue();
+                return name + " has invalid reference value: " + entry.getValue();
             }
         }
     }
@@ -193,11 +203,12 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
     private static class IntegerErrorMsg implements CamelAnnotatorEndpointMessage<Map.Entry<String, String>> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, Map.Entry<String, String> entry) {
+            String name = entry.getKey();
             boolean empty = isEmpty(entry.getValue());
             if (empty) {
-                return "Empty integer value";
+                return name + " is empty integer value";
             } else {
-                return "Invalid integer value: " + entry.getValue();
+                return name + " is invalid integer value: " + entry.getValue();
             }
         }
     }
@@ -205,18 +216,19 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
     private static class UnknownErrorMsg implements CamelAnnotatorEndpointMessage<String> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, String property) {
-            return "Unknown option";
+            return property + " is unknown option";
         }
     }
 
     private static class NumberErrorMsg implements CamelAnnotatorEndpointMessage<Map.Entry<String, String>> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, Map.Entry<String, String> entry) {
+            String name = entry.getKey();
             boolean empty = isEmpty(entry.getValue());
             if (empty) {
-                return "Empty number value";
+                return name + " has empty numeric value";
             } else {
-                return "Invalid number value: " + entry.getValue();
+                return name + " has invalid numeric value: " + entry.getValue();
             }
         }
     }
@@ -224,7 +236,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
     private static class NotConsumerOnlyErrorMsg implements CamelAnnotatorEndpointMessage<String> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, String property) {
-            return "Option not applicable in consumer only mode";
+            return property + " is not applicable in consumer only mode";
         }
 
         @Override
@@ -237,7 +249,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
     private static class NotProducerOnlyErrorMsg implements CamelAnnotatorEndpointMessage<String> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, String property) {
-            return "Option not applicable in producer only mode";
+            return property + " is not applicable in producer only mode";
         }
 
         @Override

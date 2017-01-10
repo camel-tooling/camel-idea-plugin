@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>XmlEndpointInspectionTestData.xml</file>
+    <line>20</line>
+    <description>fileExist is not applicable in consumer only mode</description>
+  </problem>
+</problems>
