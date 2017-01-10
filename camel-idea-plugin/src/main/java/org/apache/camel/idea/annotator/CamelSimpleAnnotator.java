@@ -52,9 +52,9 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                 // need to use the classloader that can load classes from the camel-core
                 ClassLoader loader = camelService.getCamelCoreClassloader();
                 if (loader != null) {
-                    SimpleValidationResult validateSimpleResult = catalogService.validateSimpleExpression(loader, text);
-                    if (!validateSimpleResult.isSuccess()) {
-                        String error = validateSimpleResult.getError();
+                    SimpleValidationResult result = catalogService.validateSimpleExpression(loader, text);
+                    if (!result.isSuccess()) {
+                        String error = result.getError();
                         int propertyIdx = text.indexOf("simple");
                         int propertyLength = text.length() + 8;
                         TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,

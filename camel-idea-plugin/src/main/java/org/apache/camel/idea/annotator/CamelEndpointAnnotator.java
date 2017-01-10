@@ -61,24 +61,29 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 camelQuery = camelQuery.substring(0, camelQuery.length() - 1);
             }
 
-            try {
-                EndpointValidationResult validateEndpointProperties = catalogService.validateEndpointProperties(camelQuery);
+            boolean consumerOnly = IdeaUtils.isConsumerEndpoint(element);
+            boolean producerOnly = IdeaUtils.isProducerEndpoint(element);
 
-                extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidBoolean(), uri, element, holder, new BooleanErrorMsg());
-                extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidEnum(), uri, element, holder, new EnumErrorMsg());
-                extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidInteger(), uri, element, holder, new IntegerErrorMsg());
-                extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidNumber(), uri, element, holder, new NumberErrorMsg());
-                extractMapValue(validateEndpointProperties, validateEndpointProperties.getInvalidReference(), uri, element, holder, new ReferenceErrorMsg());
-                extractSetValue(validateEndpointProperties, validateEndpointProperties.getUnknown(), uri, element, holder, new UnknownErrorMsg());
+            try {
+                EndpointValidationResult result = catalogService.validateEndpointProperties(camelQuery, false, consumerOnly, producerOnly);
+
+                extractMapValue(result, result.getInvalidBoolean(), uri, element, holder, new BooleanErrorMsg());
+                extractMapValue(result, result.getInvalidEnum(), uri, element, holder, new EnumErrorMsg());
+                extractMapValue(result, result.getInvalidInteger(), uri, element, holder, new IntegerErrorMsg());
+                extractMapValue(result, result.getInvalidNumber(), uri, element, holder, new NumberErrorMsg());
+                extractMapValue(result, result.getInvalidReference(), uri, element, holder, new ReferenceErrorMsg());
+                extractSetValue(result, result.getUnknown(), uri, element, holder, new UnknownErrorMsg());
+                extractSetValue(result, result.getNotConsumerOnly(), uri, element, holder, new NotConsumerOnlyErrorMsg());
+                extractSetValue(result, result.getNotProducerOnly(), uri, element, holder, new NotProducerOnlyErrorMsg());
             } catch (Throwable e) {
                 // ignore
             }
         }
     }
 
-    private void extractSetValue(EndpointValidationResult validateEndpointProperties, Set<String> validationSet,
+    private void extractSetValue(EndpointValidationResult result, Set<String> validationSet,
                                  String fromElement, PsiElement element, AnnotationHolder holder, CamelAnnotatorEndpointMessage msg) {
-        if ((!validateEndpointProperties.isSuccess()) && validationSet != null) {
+        if ((!result.isSuccess()) && validationSet != null) {
 
             for (String entry : validationSet) {
                 String propertyValue = entry;
@@ -90,14 +95,19 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
                     element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
-                holder.createErrorAnnotation(range, summaryErrorMessage(validateEndpointProperties, propertyValue, msg));
+
+                if (msg.isWarnLevel()) {
+                    holder.createWarningAnnotation(range, summaryErrorMessage(result, propertyValue, msg));
+                } else {
+                    holder.createErrorAnnotation(range, summaryErrorMessage(result, propertyValue, msg));
+                }
             }
         }
     }
 
-    private void extractMapValue(EndpointValidationResult validateEndpointProperties, Map<String, String> validationMap,
+    private void extractMapValue(EndpointValidationResult result, Map<String, String> validationMap,
                                  String fromElement, @NotNull PsiElement element, @NotNull AnnotationHolder holder, CamelAnnotatorEndpointMessage msg) {
-        if ((!validateEndpointProperties.isSuccess()) && validationMap != null) {
+        if ((!result.isSuccess()) && validationMap != null) {
 
             for (Map.Entry<String, String> entry : validationMap.entrySet()) {
                 String propertyValue = entry.getValue();
@@ -120,7 +130,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + startIdx,
                     element.getTextRange().getStartOffset() + startIdx + propertyLength);
-                holder.createErrorAnnotation(range, summaryErrorMessage(validateEndpointProperties, entry, msg));
+                holder.createErrorAnnotation(range, summaryErrorMessage(result, entry, msg));
             }
         }
     }
@@ -223,8 +233,34 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
             if (empty) {
                 return "Empty number value";
             } else {
-                return  "Invalid number value: " + entry.getValue();
+                return "Invalid number value: " + entry.getValue();
             }
+        }
+    }
+
+    private static class NotConsumerOnlyErrorMsg implements CamelAnnotatorEndpointMessage<String> {
+        @Override
+        public String getErrorMessage(EndpointValidationResult result, String property) {
+            return "Option not applicable in consumer only mode";
+        }
+
+        @Override
+        public boolean isWarnLevel() {
+            // this is only a warning
+            return true;
+        }
+    }
+
+    private static class NotProducerOnlyErrorMsg implements CamelAnnotatorEndpointMessage<String> {
+        @Override
+        public String getErrorMessage(EndpointValidationResult result, String property) {
+            return "Option not applicable in producer only mode";
+        }
+
+        @Override
+        public boolean isWarnLevel() {
+            // this is only a warning
+            return true;
         }
     }
 

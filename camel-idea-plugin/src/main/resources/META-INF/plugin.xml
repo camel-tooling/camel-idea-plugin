@@ -23,7 +23,8 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.2 - Real time validation of Simple language in editor</li>
+        <li>0.3.2 - Real time validation of Simple language in editor.
+                    Real time validation for Camel endpoints can now check in consumer and producer only mode.</li>
         <li>0.3.1 - Allow to turn on or off scanning for third party components.
                     Real time validation is now checked for endpoints used outside routes.
                     Minor bug fixes.</li>
