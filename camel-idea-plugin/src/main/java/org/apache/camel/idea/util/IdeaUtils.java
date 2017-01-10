@@ -639,10 +639,4 @@ public final class IdeaUtils {
         return text;
     }
 
-    // TODO: move to StringUtils
-    public static boolean isEmpty(String str) {
-        return str == null || str.length() == 0;
-    }
-
-
 }
