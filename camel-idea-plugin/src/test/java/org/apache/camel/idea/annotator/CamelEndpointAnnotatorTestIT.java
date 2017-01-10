@@ -31,7 +31,7 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
  * it will fail, but the error messaged might still be correct. In this case it's likely the TextRange
  * is incorrect.
  */
-public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
+public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     @Override
     protected String getTestDataPath() {

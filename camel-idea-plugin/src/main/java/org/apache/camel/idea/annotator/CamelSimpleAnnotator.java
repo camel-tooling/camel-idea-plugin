@@ -46,7 +46,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
      * if the expression is not valid a error annotation is created and highlight the invalid value.
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
-        boolean hasSimple = text.contains("${") || text.contains("$simple{");
+        boolean hasSimple = text.contains("$simple{");
         if (hasSimple && IdeaUtils.isCamelRouteSimpleExpression(element)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
             CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
@@ -58,10 +58,10 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                     SimpleValidationResult result = catalogService.validateSimpleExpression(loader, text);
                     if (!result.isSuccess()) {
                         String error = result.getError();
-                        int propertyIdx = text.indexOf("simple");
-                        int propertyLength = text.length() + 8;
-                        TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
-                            element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
+                        int startIdx = result.getIndex() == 0 ? text.indexOf("$") : result.getIndex() + 1;
+                        int propertyLength = ((text.indexOf("}", startIdx) + 1) - startIdx) + 1;
+                        TextRange range = new TextRange(element.getTextRange().getStartOffset() + startIdx,
+                            element.getTextRange().getStartOffset() + startIdx + propertyLength);
                         holder.createErrorAnnotation(range, error);
                     }
                 }
