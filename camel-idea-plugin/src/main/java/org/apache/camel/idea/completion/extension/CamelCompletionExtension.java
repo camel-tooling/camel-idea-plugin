@@ -19,13 +19,14 @@ package org.apache.camel.idea.completion.extension;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.util.ProcessingContext;
+import org.apache.camel.idea.completion.CamelContributor;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Camel Completion extension allow to extend the {@link org.apache.camel.idea.CamelContributor} with additional smart
+ * Camel Completion extension allow to extend the {@link CamelContributor} with additional smart
  * completion.
  * <p>
- * Adding a extension to the {@link org.apache.camel.idea.CamelContributor} will be called when the smart completion
+ * Adding a extension to the {@link CamelContributor} will be called when the smart completion
  * is processed.
  * </p>
  */

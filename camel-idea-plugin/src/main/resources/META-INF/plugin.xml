@@ -62,12 +62,12 @@
     <applicationService serviceImplementation="org.apache.camel.idea.service.CamelPreferenceService"/>
 
     <!-- allow smart completion of Camel endpoints-->
-    <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.CamelJavaReferenceContributor"/>
-    <completion.contributor language="XML" implementationClass="org.apache.camel.idea.CamelXmlReferenceContributor"/>
-    <completion.contributor language="Groovy" implementationClass="org.apache.camel.idea.CamelGroovyReferenceContributor"/>
-    <completion.contributor language="kotlin" implementationClass="org.apache.camel.idea.CamelKotlinReferenceContributor"/>
-    <completion.contributor language="Scala" implementationClass="org.apache.camel.idea.CamelScalaReferenceContributor"/>
-    <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertiesOrYamlFileReferenceContributor"/>
+    <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.completion.CamelJavaReferenceContributor"/>
+    <completion.contributor language="XML" implementationClass="org.apache.camel.idea.completion.CamelXmlReferenceContributor"/>
+    <completion.contributor language="Groovy" implementationClass="org.apache.camel.idea.completion.CamelGroovyReferenceContributor"/>
+    <completion.contributor language="kotlin" implementationClass="org.apache.camel.idea.completion.CamelKotlinReferenceContributor"/>
+    <completion.contributor language="Scala" implementationClass="org.apache.camel.idea.completion.CamelScalaReferenceContributor"/>
+    <completion.contributor language="any" implementationClass="org.apache.camel.idea.completion.CamelPropertiesOrYamlFileReferenceContributor"/>
 
     <!-- puts the Camel icon in the gutter for each line that starts a Camel route -->
     <codeInsight.lineMarkerProvider language="JAVA" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
@@ -77,7 +77,7 @@
     <codeInsight.lineMarkerProvider language="Scala" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
 
     <!-- smart completion of Camel property placeholders, eg {{foo}} style -->
-    <completion.contributor language="any" implementationClass="org.apache.camel.idea.CamelPropertyPlaceholderReferenceContributor"/>
+    <completion.contributor language="any" implementationClass="org.apache.camel.idea.completion.CamelPropertyPlaceholderReferenceContributor"/>
 
     <!-- quick documentation for Camel endpoints -->
     <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"

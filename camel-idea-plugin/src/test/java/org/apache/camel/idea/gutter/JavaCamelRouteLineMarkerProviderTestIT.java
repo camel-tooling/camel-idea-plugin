@@ -20,8 +20,8 @@ import java.util.List;
 import javax.swing.*;
 
 import com.intellij.codeInsight.daemon.GutterMark;
-import org.apache.camel.idea.CamelContributor;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import org.apache.camel.idea.completion.CamelContributor;
 
 /**
  * Testing the Camel icon is shown in the gutter where a Camel route starts in Java DSL

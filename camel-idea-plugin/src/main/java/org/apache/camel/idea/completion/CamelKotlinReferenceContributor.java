@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea;
+package org.apache.camel.idea.completion;
 
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.psi.PsiFile;
@@ -23,14 +23,14 @@ import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionEx
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
- * Plugin to hook into the IDEA Scala language, to setup Camel smart completion for editing Scala source code.
+ * Plugin to hook into the IDEA Kotlin language, to setup Camel smart completion for editing Kotlin source code.
  */
-public class CamelScalaReferenceContributor extends CamelContributor {
+public class CamelKotlinReferenceContributor extends CamelContributor {
 
-    public CamelScalaReferenceContributor() {
+    public CamelKotlinReferenceContributor() {
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
         extend(CompletionType.BASIC,
-                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("scala"))),
+                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("Kotlin"))),
                 new EndpointCompletion(getCamelCompletionExtensions())
         );
     }
