@@ -26,7 +26,7 @@ import org.apache.camel.catalog.SimpleValidationResult;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
-import org.apache.camel.idea.util.IdeaUtils;
+import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -47,7 +47,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
         boolean hasSimple = text.contains("${") || text.contains("$simple{");
-        if (hasSimple && IdeaUtils.isCamelRouteSimpleExpression(element)) {
+        if (hasSimple && CamelIdeaUtils.isCamelRouteSimpleExpression(element)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
             CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
 

@@ -37,8 +37,8 @@ import org.jetbrains.annotations.NotNull;
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointValue.addSmartCompletionForSingleValue;
-import static org.apache.camel.idea.util.IdeaUtils.isConsumerEndpoint;
-import static org.apache.camel.idea.util.IdeaUtils.isProducerEndpoint;
+import static org.apache.camel.idea.util.CamelIdeaUtils.isConsumerEndpoint;
+import static org.apache.camel.idea.util.CamelIdeaUtils.isProducerEndpoint;
 
 /**
  * Extension for supporting camel smart completion for camel options and values.
