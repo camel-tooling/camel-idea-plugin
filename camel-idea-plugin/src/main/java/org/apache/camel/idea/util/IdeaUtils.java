@@ -163,12 +163,18 @@ public final class IdeaUtils {
      * configuration using <tt>property</tt> element.
      */
     public static boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
-        String javaSetter = "set" + Character.toUpperCase(setter.charAt(0)) + setter.substring(1);
-        if (isFromJavaMethodCall(element, javaSetter)) {
-            return true;
+        // java method call
+        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        if (call != null) {
+            PsiMethod resolved = call.resolveMethod();
+            if (resolved != null) {
+                String javaSetter = "set" + Character.toUpperCase(setter.charAt(0)) + setter.substring(1);
+                return javaSetter.equals(resolved.getName());
+            }
+            return false;
         }
+
         // its maybe an XML property
-        // xml
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (xml != null) {
             boolean bean = isFromXmlTag(xml, "bean", "property");
@@ -176,7 +182,9 @@ public final class IdeaUtils {
                 String key = xml.getAttributeValue("name");
                 return setter.equals(key);
             }
+            return false;
         }
+
         return false;
     }
 
@@ -315,6 +323,7 @@ public final class IdeaUtils {
             PsiClass containingClass = method.getContainingClass();
             if (containingClass != null) {
                 String name = method.getName();
+                // TODO: this code should likely be moved to something that requires it from being a Camel RouteBuilder
                 if (Arrays.stream(methods).anyMatch(name::equals)) {
                     return ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME.stream().anyMatch((t) -> isClassOrParentOf(containingClass, t));
                 }
