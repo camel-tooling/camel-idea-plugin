@@ -61,6 +61,13 @@ public abstract class CamelEndpointInspection extends LocalInspectionTool {
         return forceEnabled || ServiceManager.getService(project, CamelService.class).isCamelPresent();
     }
 
+    /**
+     * Override to provide special logic whether to accept the element.
+     */
+    boolean accept(PsiElement element) {
+        return true;
+    }
+
     @NotNull
     @Override
     public String getGroupDisplayName() {
@@ -80,9 +87,11 @@ public abstract class CamelEndpointInspection extends LocalInspectionTool {
             return new PsiElementVisitor() {
                 @Override
                 public void visitElement(PsiElement element) {
-                    String text = IdeaUtils.extractTextFromElement(element, false);
-                    if (!StringUtils.isEmpty(text)) {
-                        validateText(element, holder, text, isOnTheFly);
+                    if (accept(element)) {
+                        String text = IdeaUtils.extractTextFromElement(element, false);
+                        if (!StringUtils.isEmpty(text)) {
+                            validateText(element, holder, text, isOnTheFly);
+                        }
                     }
                 }
             };

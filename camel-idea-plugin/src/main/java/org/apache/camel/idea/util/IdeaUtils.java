@@ -31,6 +31,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethod;
@@ -197,6 +198,31 @@ public final class IdeaUtils {
      */
     public static boolean isXmlLanguage(PsiElement element) {
         return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).is(XMLLanguage.INSTANCE);
+    }
+
+    /**
+     * Is the element from a file of the given extensions such as <tt>java</tt>, <tt>xml</tt>, etc.
+     */
+    public static boolean isFromFileType(PsiElement element, @NotNull String... extensions) {
+        if (extensions.length == 0) {
+            throw new IllegalArgumentException("Extension must be provided");
+        }
+
+        PsiFile file;
+        if (element instanceof PsiFile) {
+            file = (PsiFile) element;
+        } else {
+            file = PsiTreeUtil.getParentOfType(element, PsiFile.class);
+        }
+        if (file != null) {
+            String name = file.getName().toLowerCase();
+            for (String match : extensions) {
+                if (name.endsWith("." + match.toLowerCase())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
