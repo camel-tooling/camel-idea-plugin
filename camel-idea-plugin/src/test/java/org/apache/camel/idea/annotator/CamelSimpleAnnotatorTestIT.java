@@ -16,7 +16,21 @@
  */
 package org.apache.camel.idea.annotator;
 
+import java.io.File;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.roots.ModuleRootModificationUtil;
+import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.libraries.Library;
+import com.intellij.openapi.roots.libraries.LibraryTable;
+import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.pom.java.LanguageLevel;
+import com.intellij.testFramework.IdeaTestUtil;
+import com.intellij.util.ui.UIUtil;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
+
 
 /**
  * Test Camel simple validation and the expected value is highlighted
@@ -25,6 +39,24 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
  * is incorrect.
  */
 public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
+
+    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.19.0-SNAPSHOT";
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        File[] mavenArtifacts = getMavenArtifacts(CAMEL_CORE_MAVEN_ARTIFACT);
+        VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(mavenArtifacts[0]);
+        final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myModule.getProject());
+        ApplicationManager.getApplication().runWriteAction(() -> {
+            Library library = projectLibraryTable.createLibrary("Maven: " + CAMEL_CORE_MAVEN_ARTIFACT);
+            final Library.ModifiableModel libraryModifiableModel = library.getModifiableModel();
+            libraryModifiableModel.addRoot(virtualFile, OrderRootType.CLASSES);
+            libraryModifiableModel.commit();
+            ModuleRootModificationUtil.addDependency(myModule, library);
+        });
+        UIUtil.dispatchAllInvocationEvents();
+    }
 
     public void testAnnotatorSimpleValidation() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaWithSimple());
@@ -38,7 +70,8 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
             + "            from(\"netty-http:http://localhost/cdi?matchOnUriPrefix=true&nettySharedHttpServer=#httpServer\")\n"
             + "            .id(\"http-route-cdi\")\n"
             + "            .transform()\n"
-            + "            .simple(\"Response from Camel CDI on route ${xrouteId} using thread: ${threadName}\""
+            + "            .simple(\"Response from Camel CDI on route <error descr=\"Unknown function: xrouteId at location 33 Response "
+            + "from Camel CDI on route ${xrouteId} using thread: ${threadName}\">${xrouteId}</error> using thread: ${threadName}\");"
             + "        }\n"
             + "    }";
     }

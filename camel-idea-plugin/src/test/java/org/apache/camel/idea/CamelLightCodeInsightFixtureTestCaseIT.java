@@ -16,16 +16,20 @@
  */
 package org.apache.camel.idea;
 
+import java.io.File;
+import java.io.IOException;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelService;
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+
 
 /**
  * Super class for Camel Plugin Testing. If you are testing plug-in code with LightCodeInsightFixtureTestCase
  * you should extend this class to make sure it is setup as expected and clean up on tearDown
  */
-public class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeInsightFixtureTestCase {
+public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeInsightFixtureTestCase {
 
     @Override
     protected void setUp() throws Exception {
@@ -41,9 +45,16 @@ public class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeInsightFixt
     }
 
     /**
-     * To work around the problem with IDEA fail with "No tests found in org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT"
+     * Get a list of artifact declared as dependencies in the pom.xml file.
+     * <p>
+     *   The method take a String arrays off "G:A:P:C:?" "org.apache.camel:camel-core:2.19.0-SNAPSHOT"
+     * </p>
+     * @param mavneAritfiact - Array of maven artifact to resolve
+     * @return Array of artifact files
+     * @throws IOException
      */
-    public void testDummy() {
-        assertTrue(true);
+    protected File[] getMavenArtifacts(String... mavneAritfiact) throws IOException {
+        File[] libs = Maven.resolver().loadPomFromFile("pom.xml").resolve(mavneAritfiact).withoutTransitivity().asFile();
+        return libs;
     }
 }
