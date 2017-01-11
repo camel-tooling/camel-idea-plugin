@@ -41,6 +41,7 @@
     <snakeyaml.version>1.6</snakeyaml.version>
     <junit.version>4.12</junit.version>
     <shrikwrap.version>1.2.6</shrikwrap.version>
+    <shrikwrap.resolver.version>2.2.2</shrikwrap.resolver.version>
   </properties>
 
   <scm>

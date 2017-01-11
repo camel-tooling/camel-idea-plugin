@@ -243,16 +243,18 @@ public final class IdeaUtils {
     public static @Nullable URLClassLoader newURLClassLoaderForLibrary(Library... libraries) throws MalformedURLException {
         List<URL> urls = new ArrayList<>();
         for (Library library : libraries) {
-            VirtualFile[] files = library.getFiles(OrderRootType.CLASSES);
-            if (files.length == 1) {
-                VirtualFile vf = files[0];
-                if (vf.getName().toLowerCase().endsWith(".jar")) {
-                    String path = vf.getPath();
-                    if (path.endsWith("!/")) {
-                        path = path.substring(0, path.length() - 2);
+            if (library != null) {
+                VirtualFile[] files = library.getFiles(OrderRootType.CLASSES);
+                if (files.length == 1) {
+                    VirtualFile vf = files[0];
+                    if (vf.getName().toLowerCase().endsWith(".jar")) {
+                        String path = vf.getPath();
+                        if (path.endsWith("!/")) {
+                            path = path.substring(0, path.length() - 2);
+                        }
+                        URL url = new URL("file:" + path);
+                        urls.add(url);
                     }
-                    URL url = new URL("file:" + path);
-                    urls.add(url);
                 }
             }
         }
