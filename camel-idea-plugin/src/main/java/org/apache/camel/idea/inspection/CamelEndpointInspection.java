@@ -106,6 +106,14 @@ public abstract class CamelEndpointInspection extends LocalInspectionTool {
                 camelQuery = camelQuery.substring(0, camelQuery.length() - 1);
             }
 
+            boolean stringFormat = IdeaUtils.isFromStringFormatEndpoint(element);
+            if (stringFormat) {
+                // if the node is fromF or toF, then replace all %X with {{%X}} as we cannot parse that value
+                camelQuery = camelQuery.replaceAll("%s", "\\{\\{\\%s\\}\\}");
+                camelQuery = camelQuery.replaceAll("%d", "\\{\\{\\%d\\}\\}");
+                camelQuery = camelQuery.replaceAll("%b", "\\{\\{\\%b\\}\\}");
+            }
+
             boolean consumerOnly = IdeaUtils.isConsumerEndpoint(element);
             boolean producerOnly = IdeaUtils.isProducerEndpoint(element);
 
