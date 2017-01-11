@@ -43,7 +43,7 @@ import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelService;
-import org.apache.camel.idea.util.IdeaUtils;
+import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
@@ -58,7 +58,7 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         Set<String> artifacts = ServiceManager.getService(project, CamelService.class).getLibraries();
 
         // find the camel component from those libraries
-        boolean consumerOnly = IdeaUtils.isConsumerEndpoint(element);
+        boolean consumerOnly = CamelIdeaUtils.isConsumerEndpoint(element);
         List<String> names = findCamelComponentNamesInArtifact(artifacts, consumerOnly, project);
 
         // no camel endpoints then exit

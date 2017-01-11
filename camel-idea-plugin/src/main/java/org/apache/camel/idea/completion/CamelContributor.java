@@ -39,6 +39,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static org.apache.camel.idea.util.IdeaUtils.extractTextFromElement;
+import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 
 /**
  * Hook into the IDEA language completion system, to setup Camel smart completion.
@@ -144,13 +145,7 @@ public abstract class CamelContributor extends CompletionContributor {
             @Override
             public boolean accepts(@Nullable Object o, ProcessingContext context) {
                 if (o instanceof PsiFile) {
-                    String ext = ((PsiFile) o).getFileType().getName();
-                    for (String match : extensions) {
-                        if (match.equalsIgnoreCase(ext)) {
-                            return true;
-                        }
-                    }
-                    return false;
+                    return isFromFileType((PsiElement) o, extensions);
                 }
                 return false;
             }

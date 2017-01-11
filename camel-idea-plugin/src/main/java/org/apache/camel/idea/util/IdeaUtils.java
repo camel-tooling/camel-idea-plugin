@@ -25,16 +25,14 @@ import java.util.List;
 
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
+import com.intellij.psi.PsiConstructorCall;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethod;
@@ -45,7 +43,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
-import org.apache.camel.idea.service.CamelCatalogService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,6 +50,8 @@ import static com.intellij.xml.CommonXmlStrings.QUOT;
 
 /**
  * Utility methods to work with IDEA {@link PsiElement}s.
+ * <p/>
+ * This class is only for IDEA APIs. If you need Camel related APIs as well then use {@link CamelIdeaUtils} instead.
  */
 public final class IdeaUtils {
 
@@ -160,244 +159,33 @@ public final class IdeaUtils {
     }
 
     /**
-     * Is the given element from the start of a Camel route, eg <tt>from</tt>, ot &lt;from&gt;.
+     * Is the element from a java setter method (eg setBrokerURL) or from a XML configured <tt>bean</tt> style
+     * configuration using <tt>property</tt> element.
      */
-    public static boolean isCamelRouteStart(PsiElement element) {
+    public static boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
         // java method call
-        if (isFromJavaMethodCall(element, "from", "fromF")) {
-            return true;
-        }
-        // xml
-        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        if (xml != null) {
-            String name = xml.getLocalName();
-            XmlTag parentTag = xml.getParentTag();
-            if (parentTag != null) {
-                return "from".equals(name) && "route".equals(parentTag.getLocalName());
+        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        if (call != null) {
+            PsiMethod resolved = call.resolveMethod();
+            if (resolved != null) {
+                String javaSetter = "set" + Character.toUpperCase(setter.charAt(0)) + setter.substring(1);
+                return javaSetter.equals(resolved.getName());
             }
-        }
-        // groovy
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Groovy")) {
-                return isFromGroovyMethod(element, "from", "fromF");
-            }
-        }
-        // kotlin
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("kotlin")) {
-                return isFromKotlinMethod(element, "from", "fromF");
-            }
-        }
-        // scala
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Scala")) {
-                return isFromScalaMethod(element, "from", "fromF");
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Is the given element a simple of a Camel route, eg <tt>simple</tt>, ot &lt;simple&gt;.
-     */
-    public static boolean isCamelRouteSimpleExpression(PsiElement element) {
-        // java method call
-        if (isFromJavaMethodCall(element, "simple")) {
-            return true;
-        }
-        // xml
-        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        if (xml != null) {
-            String name = xml.getLocalName();
-            XmlTag parentTag = xml.getParentTag();
-            if (parentTag != null) {
-                return "simple".equals(name) && "simple".equals(parentTag.getLocalName());
-            }
-        }
-        // groovy
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Groovy")) {
-                return isFromGroovyMethod(element, "simple");
-            }
-        }
-        // kotlin
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("kotlin")) {
-                return isFromKotlinMethod(element, "simple");
-            }
-        }
-        // scala
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Scala")) {
-                return isFromScalaMethod(element, "simple");
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Is the given element from a consumer endpoint used in a route from a <tt>from</tt>, <tt>fromF</tt>,
-     * <tt>interceptFrom</tt>, or <tt>pollEnrich</tt> pattern.
-     */
-    public static boolean isConsumerEndpoint(PsiElement element) {
-        // java method call
-        if (isFromJavaMethodCall(element, "from", "fromF", "interceptFrom", "pollEnrich")) {
-            return true;
-        }
-        // annotation
-        PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
-        if (annotation != null && annotation.getQualifiedName() != null) {
-            return annotation.getQualifiedName().equals("org.apache.camel.Consume");
-        }
-        // xml
-        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        if (xml != null) {
-            return isFromXmlTag(xml, "pollEnrich", "from", "interceptFrom");
-        }
-        // groovy
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Groovy")) {
-                return isFromGroovyMethod(element, "from", "fromF", "interceptFrom", "pollEnrich");
-            }
-        }
-        // kotlin
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("kotlin")) {
-                return isFromKotlinMethod(element, "from", "fromF", "interceptFrom", "pollEnrich");
-            }
-        }
-        // scala
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Scala")) {
-                return isFromScalaMethod(element, "from", "fromF", "interceptFrom", "pollEnrich");
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Is the given element from a producer endpoint used in a route from a <tt>to</tt>, <tt>toF</tt>,
-     * <tt>interceptSendToEndpoint</tt>, <tt>wireTap</tt>, or <tt>enrich</tt> pattern.
-     */
-    public static boolean isProducerEndpoint(PsiElement element) {
-        // java method call
-        if (isFromJavaMethodCall(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel")) {
-            return true;
-        }
-        // annotation
-        PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
-        if (annotation != null && annotation.getQualifiedName() != null) {
-            return annotation.getQualifiedName().equals("org.apache.camel.Produce");
-        }
-        // xml
-        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        if (xml != null) {
-            return isFromXmlTag(xml, "enrich", "to", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
-        }
-        // groovy
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Groovy")) {
-                return isFromGroovyMethod(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
-            }
-        }
-        // kotlin
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("kotlin")) {
-                return isFromKotlinMethod(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
-            }
-        }
-        // scala
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Scala")) {
-                return isFromScalaMethod(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Is the given element from a method call named <tt>fromF</tt> or <tt>toF</tt> which supports the
-     * {@link String#format(String, Object...)} syntax and therefore we need special handling.
-     */
-    public static boolean isFromStringFormatEndpoint(PsiElement element) {
-        // java method call
-        if (isFromJavaMethodCall(element, "fromF", "toF")) {
-            return true;
-        }
-        // groovy
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Groovy")) {
-                return isFromGroovyMethod(element, "fromF", "toF");
-            }
-        }
-        // kotlin
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("kotlin")) {
-                return isFromKotlinMethod(element, "fromF", "toF");
-            }
-        }
-        // scala
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Scala")) {
-                return isFromScalaMethod(element, "fromF", "toF");
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Is the class a Camel expression class
-     *
-     * @param clazz  the class
-     * @return <tt>true</tt> if its a Camel expression class, <tt>false</tt> otherwise.
-     */
-    public static boolean isCamelExpressionOrLanguage(PsiClass clazz) {
-        if (clazz == null) {
             return false;
         }
-        String fqn = clazz.getQualifiedName();
-        if ("org.apache.camel.Expression".equals(fqn)
-            || "org.apache.camel.Predicate".equals(fqn)
-            || "org.apache.camel.model.language.ExpressionDefinition".equals(fqn)
-            || "org.apache.camel.builder.ExpressionClause".equals(fqn)) {
-            return true;
-        }
-        // try implements first
-        for (PsiClassType ct : clazz.getImplementsListTypes()) {
-            PsiClass resolved = ct.resolve();
-            if (isCamelExpressionOrLanguage(resolved)) {
-                return true;
+
+        // its maybe an XML property
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            boolean bean = isFromXmlTag(xml, "bean", "property");
+            if (bean) {
+                String key = xml.getAttributeValue("name");
+                return setter.equals(key);
             }
+            return false;
         }
-        // then fallback as extends
-        for (PsiClassType ct : clazz.getExtendsListTypes()) {
-            PsiClass resolved = ct.resolve();
-            if (isCamelExpressionOrLanguage(resolved)) {
-                return true;
-            }
-        }
-        // okay then go up and try super
-        return isCamelExpressionOrLanguage(clazz.getSuperClass());
+
+        return false;
     }
 
     /**
@@ -422,14 +210,25 @@ public final class IdeaUtils {
     }
 
     /**
-     * Validate if the query contain a known camel component
+     * Is the element from a file of the given extensions such as <tt>java</tt>, <tt>xml</tt>, etc.
      */
-    public static boolean isQueryContainingCamelComponent(Project project, String query) {
-        // is this a possible Camel endpoint uri which we know
-        if (query != null && !query.isEmpty()) {
-            String componentName = StringUtils.asComponentName(query);
-            if (componentName != null && ServiceManager.getService(project, CamelCatalogService.class).get().findComponentNames().contains(componentName)) {
-                return true;
+    public static boolean isFromFileType(PsiElement element, @NotNull String... extensions) {
+        if (extensions.length == 0) {
+            throw new IllegalArgumentException("Extension must be provided");
+        }
+
+        PsiFile file;
+        if (element instanceof PsiFile) {
+            file = (PsiFile) element;
+        } else {
+            file = PsiTreeUtil.getParentOfType(element, PsiFile.class);
+        }
+        if (file != null) {
+            String name = file.getName().toLowerCase();
+            for (String match : extensions) {
+                if (name.endsWith("." + match.toLowerCase())) {
+                    return true;
+                }
             }
         }
         return false;
@@ -484,6 +283,25 @@ public final class IdeaUtils {
     }
 
     /**
+     * Is the element from a constructor call with the given constructor name (eg class name)
+     *
+     * @param element  the element
+     * @param constructorName the name of the constructor (eg class)
+     * @return <tt>true</tt> if its a constructor call from the given name, <tt>false</tt> otherwise
+     */
+    public static boolean isFromConstructor(@NotNull PsiElement element, @NotNull String constructorName) {
+        // java constructor
+        PsiConstructorCall call = PsiTreeUtil.getParentOfType(element, PsiConstructorCall.class);
+        if (call != null) {
+            PsiMethod resolved = call.resolveConstructor();
+            if (resolved != null) {
+                return constructorName.equals(resolved.getName());
+            }
+        }
+        return false;
+    }
+
+    /**
      * Is the given element from a Java method call with any of the given method names
      *
      * @param element  the psi element
@@ -505,6 +323,7 @@ public final class IdeaUtils {
             PsiClass containingClass = method.getContainingClass();
             if (containingClass != null) {
                 String name = method.getName();
+                // TODO: this code should likely be moved to something that requires it from being a Camel RouteBuilder
                 if (Arrays.stream(methods).anyMatch(name::equals)) {
                     return ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME.stream().anyMatch((t) -> isClassOrParentOf(containingClass, t));
                 }
@@ -532,7 +351,7 @@ public final class IdeaUtils {
      * @param methods  xml tag names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    private static boolean isFromXmlTag(XmlTag xml, String parentTag, String... methods) {
+    public static boolean isFromXmlTag(XmlTag xml, String parentTag, String... methods) {
         String name = xml.getLocalName();
         // special check for enrich/pollEnrich where we add the endpoint on a child node (camel expression)
         XmlTag parent = xml.getParentTag();
@@ -549,7 +368,7 @@ public final class IdeaUtils {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    private static boolean isFromGroovyMethod(PsiElement element, String... methods) {
+    public static boolean isFromGroovyMethod(PsiElement element, String... methods) {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // must be a groovy string kind
         String kind = element.toString();
@@ -594,7 +413,7 @@ public final class IdeaUtils {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    private static boolean isFromScalaMethod(PsiElement element, String... methods) {
+    public static boolean isFromScalaMethod(PsiElement element, String... methods) {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // (yes we need to go up till 5 levels up to find the method call expression
         String kind = element.toString();
@@ -626,7 +445,7 @@ public final class IdeaUtils {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    private static boolean isFromKotlinMethod(PsiElement element, String... methods) {
+    public static boolean isFromKotlinMethod(PsiElement element, String... methods) {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // (yes we need to go up till 6 levels up to find the method call expression
         String kind = element.toString();

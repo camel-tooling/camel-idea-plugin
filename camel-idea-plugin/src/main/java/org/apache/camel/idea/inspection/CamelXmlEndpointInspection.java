@@ -16,7 +16,10 @@
  */
 package org.apache.camel.idea.inspection;
 
+import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
+
+import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 
 public class CamelXmlEndpointInspection extends CamelEndpointInspection {
 
@@ -39,4 +42,9 @@ public class CamelXmlEndpointInspection extends CamelEndpointInspection {
         return "InspectCamelXMLEndpoints";
     }
 
+    @Override
+    boolean accept(PsiElement element) {
+        // must be from XML file
+        return isFromFileType(element, "xml");
+    }
 }

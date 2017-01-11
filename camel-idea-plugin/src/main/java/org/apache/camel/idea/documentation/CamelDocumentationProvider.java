@@ -51,7 +51,7 @@ import org.apache.camel.idea.model.EndpointOptionModel;
 import org.apache.camel.idea.model.ModelHelper;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelService;
-import org.apache.camel.idea.util.IdeaUtils;
+import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -384,7 +384,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             PsiClassReferenceType clazz = (PsiClassReferenceType) type;
             PsiClass resolved = clazz.resolve();
             if (resolved != null) {
-                boolean language = IdeaUtils.isCamelExpressionOrLanguage(resolved);
+                boolean language = CamelIdeaUtils.isCamelExpressionOrLanguage(resolved);
                 // try parent using some weird/nasty stub stuff which is how complex IDEA AST
                 // is when its parsing the Camel route builder
                 if (!language) {
@@ -393,7 +393,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                         elem = elem.getParent();
                     }
                     if (elem instanceof PsiClass) {
-                        language = IdeaUtils.isCamelExpressionOrLanguage((PsiClass) elem);
+                        language = CamelIdeaUtils.isCamelExpressionOrLanguage((PsiClass) elem);
                     }
                 }
                 return language;

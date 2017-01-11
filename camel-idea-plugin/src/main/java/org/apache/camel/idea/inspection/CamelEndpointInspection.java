@@ -32,11 +32,13 @@ import org.apache.camel.catalog.EndpointValidationResult;
 import org.apache.camel.idea.annotator.CamelAnnotatorEndpointMessage;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelService;
+import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static org.apache.camel.idea.util.CamelIdeaUtils.skipEndpointValidation;
 import static org.apache.camel.idea.util.StringUtils.isEmpty;
 
 /**
@@ -59,6 +61,13 @@ public abstract class CamelEndpointInspection extends LocalInspectionTool {
         return forceEnabled || ServiceManager.getService(project, CamelService.class).isCamelPresent();
     }
 
+    /**
+     * Override to provide special logic whether to accept the element.
+     */
+    boolean accept(PsiElement element) {
+        return true;
+    }
+
     @NotNull
     @Override
     public String getGroupDisplayName() {
@@ -78,9 +87,11 @@ public abstract class CamelEndpointInspection extends LocalInspectionTool {
             return new PsiElementVisitor() {
                 @Override
                 public void visitElement(PsiElement element) {
-                    String text = IdeaUtils.extractTextFromElement(element, false);
-                    if (!StringUtils.isEmpty(text)) {
-                        validateText(element, holder, text, isOnTheFly);
+                    if (accept(element)) {
+                        String text = IdeaUtils.extractTextFromElement(element, false);
+                        if (!StringUtils.isEmpty(text)) {
+                            validateText(element, holder, text, isOnTheFly);
+                        }
                     }
                 }
             };
@@ -94,8 +105,14 @@ public abstract class CamelEndpointInspection extends LocalInspectionTool {
      * if the URI is not valid a error annotation is created and highlight the invalid value.
      */
     private void validateText(@NotNull PsiElement element, final @NotNull ProblemsHolder holder, @NotNull String uri, boolean isOnTheFly) {
-        if (IdeaUtils.isQueryContainingCamelComponent(element.getProject(), uri)) {
+        if (CamelIdeaUtils.isQueryContainingCamelComponent(element.getProject(), uri)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
+
+            // skip special values such as configuring ActiveMQ brokerURL
+            if (skipEndpointValidation(element)) {
+                LOG.debug("Skipping element " + element + " for validation with text: " + uri);
+                return;
+            }
 
             // camel catalog expects &amp; as & when it parses so replace all &amp; as &
             String camelQuery = uri;
@@ -106,7 +123,7 @@ public abstract class CamelEndpointInspection extends LocalInspectionTool {
                 camelQuery = camelQuery.substring(0, camelQuery.length() - 1);
             }
 
-            boolean stringFormat = IdeaUtils.isFromStringFormatEndpoint(element);
+            boolean stringFormat = CamelIdeaUtils.isFromStringFormatEndpoint(element);
             if (stringFormat) {
                 // if the node is fromF or toF, then replace all %X with {{%X}} as we cannot parse that value
                 camelQuery = camelQuery.replaceAll("%s", "\\{\\{\\%s\\}\\}");
@@ -114,8 +131,8 @@ public abstract class CamelEndpointInspection extends LocalInspectionTool {
                 camelQuery = camelQuery.replaceAll("%b", "\\{\\{\\%b\\}\\}");
             }
 
-            boolean consumerOnly = IdeaUtils.isConsumerEndpoint(element);
-            boolean producerOnly = IdeaUtils.isProducerEndpoint(element);
+            boolean consumerOnly = CamelIdeaUtils.isConsumerEndpoint(element);
+            boolean producerOnly = CamelIdeaUtils.isProducerEndpoint(element);
 
             try {
                 EndpointValidationResult result = catalogService.validateEndpointProperties(camelQuery, false, consumerOnly, producerOnly);

@@ -30,9 +30,11 @@ import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.EndpointValidationResult;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelPreferenceService;
+import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
+import static org.apache.camel.idea.util.CamelIdeaUtils.skipEndpointValidation;
 import static org.apache.camel.idea.util.StringUtils.isEmpty;
 
 /**
@@ -52,8 +54,14 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
      * if the URI is not valid a error annotation is created and highlight the invalid value.
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String uri) {
-        if (IdeaUtils.isQueryContainingCamelComponent(element.getProject(), uri)) {
+        if (CamelIdeaUtils.isQueryContainingCamelComponent(element.getProject(), uri)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
+
+            // skip special values such as configuring ActiveMQ brokerURL
+            if (skipEndpointValidation(element)) {
+                LOG.debug("Skipping element " + element + " for validation with text: " + uri);
+                return;
+            }
 
             // camel catalog expects &amp; as & when it parses so replace all &amp; as &
             String camelQuery = uri;
@@ -64,7 +72,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 camelQuery = camelQuery.substring(0, camelQuery.length() - 1);
             }
 
-            boolean stringFormat = IdeaUtils.isFromStringFormatEndpoint(element);
+            boolean stringFormat = CamelIdeaUtils.isFromStringFormatEndpoint(element);
             if (stringFormat) {
                 // if the node is fromF or toF, then replace all %X with {{%X}} as we cannot parse that value
                 camelQuery = camelQuery.replaceAll("%s", "\\{\\{\\%s\\}\\}");
@@ -72,8 +80,8 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 camelQuery = camelQuery.replaceAll("%b", "\\{\\{\\%b\\}\\}");
             }
 
-            boolean consumerOnly = IdeaUtils.isConsumerEndpoint(element);
-            boolean producerOnly = IdeaUtils.isProducerEndpoint(element);
+            boolean consumerOnly = CamelIdeaUtils.isConsumerEndpoint(element);
+            boolean producerOnly = CamelIdeaUtils.isProducerEndpoint(element);
 
             try {
                 EndpointValidationResult result = catalogService.validateEndpointProperties(camelQuery, false, consumerOnly, producerOnly);
