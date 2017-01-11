@@ -25,7 +25,7 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.2 - Real time validation of Simple language in editor for Java, Groovy, Kotlin, Scana, and XML.
+        <li>0.3.2 - Real time validation of Simple language in editor for Java, Groovy, Kotlin, Scala, and XML.
                     Real time validation for Camel endpoints can now check in consumer and producer only mode.
                     Inspection (analyze code) to validate Camel endpoints in Java, Groovy, Kotlin, Scala, and XML.
                     Smart completion can show quick document for the selected option in the list (cltr + j)</li>
