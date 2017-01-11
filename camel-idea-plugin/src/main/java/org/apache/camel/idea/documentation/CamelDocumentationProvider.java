@@ -430,6 +430,11 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             return element.getText();
         }
 
+        @Override
+        public String getText() {
+            return endpointOption;
+        }
+
         public PsiElement getElement() {
             return element;
         }
