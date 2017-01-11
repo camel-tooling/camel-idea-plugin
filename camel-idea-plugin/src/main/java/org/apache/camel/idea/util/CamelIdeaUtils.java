@@ -302,6 +302,16 @@ public final class CamelIdeaUtils {
         if (isElementFromSetterProperty(element, "brokerURL")) {
             return true;
         }
+
+        // skip CXF xml configuration
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            String ns = xml.getNamespace();
+            if (ns.contains("cxf.apache.org")) {
+                return true;
+            }
+        }
+
         return false;
     }
 
