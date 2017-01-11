@@ -38,7 +38,7 @@ import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static org.apache.camel.idea.util.IdeaUtils.isElementFromSetterProperty;
+import static org.apache.camel.idea.util.CamelIdeaUtils.skipEndpointValidation;
 import static org.apache.camel.idea.util.StringUtils.isEmpty;
 
 /**
@@ -108,10 +108,9 @@ public abstract class CamelEndpointInspection extends LocalInspectionTool {
         if (CamelIdeaUtils.isQueryContainingCamelComponent(element.getProject(), uri)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
 
-            // TODO: move this to a common class for reuse
-            // skip special values which are from configuring ActiveMQ broker url
-            if (isElementFromSetterProperty(element, "brokerURL")) {
-                LOG.debug("Skipping ActiveMQ brokerURL: " + uri);
+            // skip special values such as configuring ActiveMQ brokerURL
+            if (skipEndpointValidation(element)) {
+                LOG.debug("Skipping element " + element + " for validation with text: " + uri);
                 return;
             }
 

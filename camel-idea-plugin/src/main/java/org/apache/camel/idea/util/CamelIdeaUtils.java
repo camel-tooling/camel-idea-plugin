@@ -28,6 +28,8 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import org.apache.camel.idea.service.CamelCatalogService;
 
+import static org.apache.camel.idea.util.IdeaUtils.isElementFromSetterProperty;
+
 /**
  * Utility methods to work with Camel related {@link com.intellij.psi.PsiElement} elements.
  * <p/>
@@ -292,4 +294,15 @@ public final class CamelIdeaUtils {
         }
         return false;
     }
+
+    /**
+     * Certain elements should be skipped for endpoint validation such as ActiveMQ brokerURL property and others.
+     */
+    public static boolean skipEndpointValidation(PsiElement element) {
+        if (isElementFromSetterProperty(element, "brokerURL")) {
+            return true;
+        }
+        return false;
+    }
+
 }
