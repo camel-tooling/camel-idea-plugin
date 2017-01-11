@@ -33,6 +33,7 @@ import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
+import static org.apache.camel.idea.util.IdeaUtils.isElementFromSetterProperty;
 import static org.apache.camel.idea.util.StringUtils.isEmpty;
 
 /**
@@ -54,6 +55,13 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String uri) {
         if (IdeaUtils.isQueryContainingCamelComponent(element.getProject(), uri)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
+
+            // TODO: move this to a common class for reuse
+            // skip special values which are from configuring ActiveMQ broker url
+            if (isElementFromSetterProperty(element, "brokerURL")) {
+                LOG.debug("Skipping ActiveMQ brokerURL: " + uri);
+                return;
+            }
 
             // camel catalog expects &amp; as & when it parses so replace all &amp; as &
             String camelQuery = uri;

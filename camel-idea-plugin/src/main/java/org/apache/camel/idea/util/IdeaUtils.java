@@ -56,6 +56,8 @@ import static com.intellij.xml.CommonXmlStrings.QUOT;
  */
 public final class IdeaUtils {
 
+    // TODO: Move Camel util methods which are using CamelCatalog etc to its own class
+
     private static final String SINGLE_QUOT = "'";
 
     private static final List<String> ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME = Arrays.asList(
@@ -362,6 +364,28 @@ public final class IdeaUtils {
             }
         }
 
+        return false;
+    }
+
+    /**
+     * Is the element from a java setter method (eg setBrokerURL) or from a XML configured <tt>bean</tt> style
+     * configuration using <tt>property</tt> element.
+     */
+    public static boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
+        String javaSetter = "set" + Character.toUpperCase(setter.charAt(0)) + setter.substring(1);
+        if (isFromJavaMethodCall(element, javaSetter)) {
+            return true;
+        }
+        // its maybe an XML property
+        // xml
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            boolean bean = isFromXmlTag(xml, "bean", "property");
+            if (bean) {
+                String key = xml.getAttributeValue("name");
+                return setter.equals(key);
+            }
+        }
         return false;
     }
 

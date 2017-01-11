@@ -37,6 +37,7 @@ import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static org.apache.camel.idea.util.IdeaUtils.isElementFromSetterProperty;
 import static org.apache.camel.idea.util.StringUtils.isEmpty;
 
 /**
@@ -96,6 +97,13 @@ public abstract class CamelEndpointInspection extends LocalInspectionTool {
     private void validateText(@NotNull PsiElement element, final @NotNull ProblemsHolder holder, @NotNull String uri, boolean isOnTheFly) {
         if (IdeaUtils.isQueryContainingCamelComponent(element.getProject(), uri)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
+
+            // TODO: move this to a common class for reuse
+            // skip special values which are from configuring ActiveMQ broker url
+            if (isElementFromSetterProperty(element, "brokerURL")) {
+                LOG.debug("Skipping ActiveMQ brokerURL: " + uri);
+                return;
+            }
 
             // camel catalog expects &amp; as & when it parses so replace all &amp; as &
             String camelQuery = uri;
