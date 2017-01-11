@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/davsclaus/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.3.2</version>
+  <version>0.3.3</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -25,6 +25,7 @@
 
   <change-notes><![CDATA[
       <ul>
+        <li>0.3.3 - TODO</li>
         <li>0.3.2 - Real time validation of Simple language in editor for Java, Groovy, Kotlin, Scala, and XML.
                     Real time validation for Camel endpoints can now check in consumer and producer only mode.
                     Inspection (analyze code) to validate Camel endpoints in Java, Groovy, Kotlin, Scala, and XML.
