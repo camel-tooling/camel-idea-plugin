@@ -19,15 +19,15 @@
         <li>Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)<li>
         <li>Real time validation for Camel endpoints in Java, Groovy, Kotlin, Scala, XML (underline errors in red)</li>
         <li>Real time validation for Camel simple language in Java (underline errors in red)</li>
-        <li>Inspection (analyze code) to validate Camel endpoints in Java, Groovy, Kotlin, Scala, XML</li>
+        <li>Inspection (analyze code) to validate Camel endpoints in Java, Groovy, Kotlin, Scala, and XML</li>
       </ul>
     ]]></description>
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.2 - Real time validation of Simple language in editor for Java.
+        <li>0.3.2 - Real time validation of Simple language in editor for Java, Groovy, Kotlin, Scana, and XML.
                     Real time validation for Camel endpoints can now check in consumer and producer only mode.
-                    Inspection (analyze code) to validate Camel endpoints in Java, Groovy, Kotlin, Scala, XML.
+                    Inspection (analyze code) to validate Camel endpoints in Java, Groovy, Kotlin, Scala, and XML.
                     Smart completion can show quick document for the selected option in the list (cltr + j)</li>
         <li>0.3.1 - Allow to turn on or off scanning for third party components.
                     Real time validation is now checked for endpoints used outside routes.
