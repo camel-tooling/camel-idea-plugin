@@ -22,7 +22,6 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
@@ -406,6 +405,13 @@ public final class IdeaUtils {
      */
     public static boolean isJavaLanguage(PsiElement element) {
         return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).is(JavaLanguage.INSTANCE);
+    }
+
+    /**
+     * Is the element from Scala language
+     */
+    public static boolean isScalaLanguage(PsiElement element) {
+        return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("Scala");
     }
 
     /**
