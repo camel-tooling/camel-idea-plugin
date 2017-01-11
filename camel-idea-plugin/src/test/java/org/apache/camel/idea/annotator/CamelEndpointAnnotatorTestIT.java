@@ -25,7 +25,6 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 /**
  * Test Camel URI validation and the expected value is highlighted
  * TODO : Still need to find out how we can make a positive test without it complaining about it can't find SDK classes
- * TODO: I think I found the solution see testAnnotatorProducerOnly how I grab the highlights and find from that list
  *
  * TIP : Writing highlighting test can be tricky because if the highlight is one character off
  * it will fail, but the error messaged might still be correct. In this case it's likely the TextRange
@@ -138,6 +137,17 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
             && i.getDescription().equals("Option not applicable in producer only mode")
             && i.getSeverity().equals(HighlightSeverity.WARNING));
         assertTrue("Should find the warning", found);
+    }
+
+    public void testAnnotatorFromF() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaFromFTestData());
+        myFixture.checkHighlighting(false, false, true, true);
+
+        List<HighlightInfo> list = myFixture.doHighlighting();
+
+        // there should not be any invalid boolean warnings as fromF should work
+        boolean found = list.stream().anyMatch((i) -> i.getDescription() != null && i.getDescription().startsWith("Invalid boolean value"));
+        assertFalse("Should not find any warning", found);
     }
 
     private String getJavaInvalidBooleanPropertyTestData() {
@@ -286,6 +296,16 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
             + "        public void configure() throws Exception {\n"
             + "            from(\"file:inbox?delete=true\")\n"
             + "                .to(\"file:outbox?delete=true&fileExist=Append\");\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getJavaFromFTestData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            fromF(\"file:inbox?delete=%s\", true)\n"
+            + "                .to(\"file:outbox\");\n"
             + "        }\n"
             + "    }";
     }

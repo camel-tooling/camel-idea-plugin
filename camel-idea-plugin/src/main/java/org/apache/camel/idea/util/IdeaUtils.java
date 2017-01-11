@@ -39,7 +39,6 @@ import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -165,9 +164,8 @@ public final class IdeaUtils {
      */
     public static boolean isCamelRouteStart(PsiElement element) {
         // java method call
-        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-        if (call != null) {
-            return isFromJavaMethod(call, "from", "fromF");
+        if (isFromJavaMethodCall(element, "from", "fromF")) {
+            return true;
         }
         // xml
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
@@ -208,9 +206,8 @@ public final class IdeaUtils {
      */
     public static boolean isCamelRouteSimpleExpression(PsiElement element) {
         // java method call
-        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-        if (call != null) {
-            return isFromJavaMethod(call, "simple");
+        if (isFromJavaMethodCall(element, "simple")) {
+            return true;
         }
         // xml
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
@@ -252,9 +249,8 @@ public final class IdeaUtils {
      */
     public static boolean isConsumerEndpoint(PsiElement element) {
         // java method call
-        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-        if (call != null) {
-            return isFromJavaMethod(call, "from", "fromF", "interceptFrom", "pollEnrich");
+        if (isFromJavaMethodCall(element, "from", "fromF", "interceptFrom", "pollEnrich")) {
+            return true;
         }
         // annotation
         PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
@@ -297,9 +293,8 @@ public final class IdeaUtils {
      */
     public static boolean isProducerEndpoint(PsiElement element) {
         // java method call
-        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-        if (call != null) {
-            return isFromJavaMethod(call, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
+        if (isFromJavaMethodCall(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel")) {
+            return true;
         }
         // annotation
         PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
@@ -330,6 +325,40 @@ public final class IdeaUtils {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
                 return isFromScalaMethod(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Is the given element from a method call named <tt>fromF</tt> or <tt>toF</tt> which supports the
+     * {@link String#format(String, Object...)} syntax and therefore we need special handling.
+     */
+    public static boolean isFromStringFormatEndpoint(PsiElement element) {
+        // java method call
+        if (isFromJavaMethodCall(element, "fromF", "toF")) {
+            return true;
+        }
+        // groovy
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Groovy")) {
+                return isFromGroovyMethod(element, "fromF", "toF");
+            }
+        }
+        // kotlin
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("kotlin")) {
+                return isFromKotlinMethod(element, "fromF", "toF");
+            }
+        }
+        // scala
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Scala")) {
+                return isFromScalaMethod(element, "fromF", "toF");
             }
         }
 
@@ -371,16 +400,25 @@ public final class IdeaUtils {
         return isCamelExpressionOrLanguage(clazz.getSuperClass());
     }
 
+    /**
+     * Is the element from Java language
+     */
     public static boolean isJavaLanguage(PsiElement element) {
-        return element != null ? PsiUtil.getNotAnyLanguage(element.getNode()).is(JavaLanguage.INSTANCE) : false;
+        return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).is(JavaLanguage.INSTANCE);
     }
 
+    /**
+     * Is the element from Scala language
+     */
     public static boolean isScalaLanguage(PsiElement element) {
-        return element != null ? PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("Scala") : false;
+        return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("Scala");
     }
 
+    /**
+     * Is the element from XML language
+     */
     public static boolean isXmlLanguage(PsiElement element) {
-        return element != null ? PsiUtil.getNotAnyLanguage(element.getNode()).is(XMLLanguage.INSTANCE) : false;
+        return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).is(XMLLanguage.INSTANCE);
     }
 
     /**
@@ -448,11 +486,20 @@ public final class IdeaUtils {
     /**
      * Is the given element from a Java method call with any of the given method names
      *
-     * @param call  the psi method call
+     * @param element  the psi element
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    private static boolean isFromJavaMethod(PsiMethodCallExpression call, String... methods) {
+    public static boolean isFromJavaMethodCall(PsiElement element, String... methods) {
+        // java method call
+        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        if (call != null) {
+            return doIsFromJavaMethod(call, methods);
+        }
+        return false;
+    }
+
+    private static boolean doIsFromJavaMethod(PsiMethodCallExpression call, String... methods) {
         PsiMethod method = call.resolveMethod();
         if (method != null) {
             PsiClass containingClass = method.getContainingClass();
