@@ -91,10 +91,13 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
             for (String entry : validationSet) {
                 String propertyValue = entry;
 
-                int propertyIdx = fromElement.indexOf(propertyValue);
+                int startIdxQueryParameters = fromElement.indexOf("?" + propertyValue);
+                startIdxQueryParameters = (startIdxQueryParameters == -1) ? fromElement.indexOf("&" + propertyValue) : fromElement.indexOf("?");
+
+                int propertyIdx = fromElement.indexOf(propertyValue, startIdxQueryParameters);
                 int propertyLength = propertyValue.length();
 
-                propertyIdx = IdeaUtils.isJavaLanguage(element) || IdeaUtils.isXmlLanguage(element) ? propertyIdx + 1 : propertyIdx;
+                propertyIdx = IdeaUtils.isJavaLanguage(element) || IdeaUtils.isXmlLanguage(element) || IdeaUtils.isScalaLanguage(element) ? propertyIdx + 1 : propertyIdx;
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
                     element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
@@ -115,8 +118,9 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
             for (Map.Entry<String, String> entry : validationMap.entrySet()) {
                 String propertyValue = entry.getValue();
                 String propertyKey = entry.getKey();
+                int startIdxQueryParameters = fromElement.indexOf("?");
 
-                int propertyIdx = fromElement.indexOf(propertyKey);
+                int propertyIdx = fromElement.indexOf(propertyKey, startIdxQueryParameters);
                 int startIdx = propertyIdx;
 
                 int equalsSign = fromElement.indexOf("=", propertyIdx);
@@ -129,7 +133,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 propertyLength = element instanceof XmlToken ? propertyLength - 1 : propertyLength;
 
                 startIdx = propertyValue.isEmpty() ? propertyIdx + 1 : fromElement.indexOf(propertyValue, startIdx) + 1;
-                startIdx = IdeaUtils.isJavaLanguage(element) || IdeaUtils.isXmlLanguage(element) ? startIdx  : startIdx - 1;
+                startIdx = IdeaUtils.isJavaLanguage(element) || IdeaUtils.isXmlLanguage(element) || IdeaUtils.isScalaLanguage(element) ? startIdx  : startIdx - 1;
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + startIdx,
                     element.getTextRange().getStartOffset() + startIdx + propertyLength);

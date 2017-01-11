@@ -31,7 +31,7 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
  * it will fail, but the error messaged might still be correct. In this case it's likely the TextRange
  * is incorrect.
  */
-public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
+public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     @Override
     protected String getTestDataPath() {
@@ -55,6 +55,16 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
 
     public void testAnnotatorUnknownOptionValidation() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaUnknownOptionsConsumerTestData());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
+    public void testAnnotatorWithTheSameWordTwiceValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaWithSameWordTwiceTestData());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
+    public void testAnnotatorUnknownOptionWithPAthValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaUnknownOptionsWithPathConsumerTestData());
         myFixture.checkHighlighting(false, false, true, true);
     }
 
@@ -160,6 +170,26 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
             + "    }";
     }
 
+    private String getJavaWithSameWordTwiceTestData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger?delay=<error descr=\"Invalid integer value: foo\">foo</error>&<error descr=\"Unknown option\">foo</error>=bar\")\n"
+            + "                .to(\"file:test?allowNullBody=true&<error descr=\"Unknown option\">foo</error>=bar\")\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getJavaUnknownOptionsWithPathConsumerTestData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger?bridgeErrorHandler=false\")\n"
+            + "                .to(\"file:foo?allowNullBody=true&<error descr=\"Unknown option\">foo</error>=bar\")\n"
+            + "        }\n"
+            + "    }";
+    }
+
     private String getJavaUnknownOptionsConsumerAnnotationTestData() {
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
@@ -259,6 +289,5 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
             + "        }\n"
             + "    }";
     }
-
 
 }

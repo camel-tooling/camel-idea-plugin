@@ -58,10 +58,10 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                     SimpleValidationResult result = catalogService.validateSimpleExpression(loader, text);
                     if (!result.isSuccess()) {
                         String error = result.getError();
-                        int propertyIdx = text.indexOf("simple");
-                        int propertyLength = text.length() + 8;
-                        TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
-                            element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
+                        int startIdx = result.getIndex() == 0 ? text.indexOf("$") : result.getIndex() + 1;
+                        int propertyLength = ((text.indexOf("}", startIdx) + 1) - startIdx) + 1;
+                        TextRange range = new TextRange(element.getTextRange().getStartOffset() + startIdx,
+                            element.getTextRange().getStartOffset() + startIdx + propertyLength);
                         holder.createErrorAnnotation(range, error);
                     }
                 }
