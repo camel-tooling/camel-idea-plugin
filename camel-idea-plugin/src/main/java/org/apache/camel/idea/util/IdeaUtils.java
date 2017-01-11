@@ -30,6 +30,7 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiConstructorCall;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
@@ -271,6 +272,25 @@ public final class IdeaUtils {
         } else {
             return isClassOrParentOf(target.getSuperClass(), fqnClassName);
         }
+    }
+
+    /**
+     * Is the element from a constructor call with the given constructor name (eg class name)
+     *
+     * @param element  the element
+     * @param constructorName the name of the constructor (eg class)
+     * @return <tt>true</tt> if its a constructor call from the given name, <tt>false</tt> otherwise
+     */
+    public static boolean isFromConstructor(@NotNull PsiElement element, @NotNull String constructorName) {
+        // java constructor
+        PsiConstructorCall call = PsiTreeUtil.getParentOfType(element, PsiConstructorCall.class);
+        if (call != null) {
+            PsiMethod resolved = call.resolveConstructor();
+            if (resolved != null) {
+                return constructorName.equals(resolved.getName());
+            }
+        }
+        return false;
     }
 
     /**

@@ -29,6 +29,7 @@ import com.intellij.psi.xml.XmlTag;
 import org.apache.camel.idea.service.CamelCatalogService;
 
 import static org.apache.camel.idea.util.IdeaUtils.isElementFromSetterProperty;
+import static org.apache.camel.idea.util.IdeaUtils.isFromConstructor;
 
 /**
  * Utility methods to work with Camel related {@link com.intellij.psi.PsiElement} elements.
@@ -300,6 +301,9 @@ public final class CamelIdeaUtils {
      */
     public static boolean skipEndpointValidation(PsiElement element) {
         if (isElementFromSetterProperty(element, "brokerURL")) {
+            return true;
+        }
+        if (isFromConstructor(element, "ActiveMQConnectionFactory")) {
             return true;
         }
 
