@@ -130,6 +130,17 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
         assertTrue("Should find the warning", found);
     }
 
+    public void testAnnotatorFromF() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaFromFTestData());
+        myFixture.checkHighlighting(false, false, true, true);
+
+        List<HighlightInfo> list = myFixture.doHighlighting();
+
+        // there should not be any invalid boolean warnings as fromF should work
+        boolean found = list.stream().anyMatch((i) -> i.getDescription() != null && i.getDescription().startsWith("Invalid boolean value"));
+        assertFalse("Should not find any warning", found);
+    }
+
     private String getJavaInvalidBooleanPropertyTestData() {
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
@@ -256,6 +267,16 @@ public class CamelAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT
             + "        public void configure() throws Exception {\n"
             + "            from(\"file:inbox?delete=true\")\n"
             + "                .to(\"file:outbox?delete=true&fileExist=Append\");\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getJavaFromFTestData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            fromF(\"file:inbox?delete=%s\", true)\n"
+            + "                .to(\"file:outbox\");\n"
             + "        }\n"
             + "    }";
     }
