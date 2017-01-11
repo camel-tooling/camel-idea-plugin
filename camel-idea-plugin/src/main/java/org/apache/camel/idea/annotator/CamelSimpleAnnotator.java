@@ -46,7 +46,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
      * if the expression is not valid a error annotation is created and highlight the invalid value.
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
-        boolean hasSimple = text.contains("$simple{");
+        boolean hasSimple = text.contains("${") || text.contains("$simple{");
         if (hasSimple && IdeaUtils.isCamelRouteSimpleExpression(element)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
             CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
