@@ -116,10 +116,12 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public String generateDoc(PsiElement element, @Nullable PsiElement originalElement) {
+
         if (element instanceof DocumentationElement) {
             DocumentationElement documentationElement = (DocumentationElement) element;
             return generateCamelEndpointOptionDocumentation(documentationElement.getComponentName(), documentationElement.getEndpointOption(), element.getProject());
         }
+
         String val = null;
         if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
             val = fetchLiteralForCamelDocumentation(element);
@@ -173,7 +175,31 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                 option = option.substring(0, pos);
             }
             LOG.debug("getDocumentationElementForLookupItem: " + option);
-            return new DocumentationElement(psiManager, element.getLanguage(), element, option, StringUtils.asComponentName(lookup));
+
+            String componentName = StringUtils.asComponentName(lookup);
+
+            if (option.endsWith(".")) {
+                CamelCatalog camelCatalog = ServiceManager.getService(psiManager.getProject(), CamelCatalogService.class).get();
+                String json = camelCatalog.componentJSonSchema(componentName);
+                if (json == null) {
+                    return null;
+                }
+                ComponentModel component = ModelHelper.generateComponentModel(json, true);
+
+                final String prefixOption = option;
+
+                // find the line with this prefix as prefix and multivalue
+                EndpointOptionModel endpointOption = component.getEndpointOptions().stream().filter(
+                    (o) -> "true".equals(o.getMultiValue()) && prefixOption.equals(o.getPrefix()))
+                    .findFirst().orElse(null);
+
+                // use the real option name instead of the prefix
+                if (endpointOption != null) {
+                    option = endpointOption.getName();
+                }
+            }
+
+            return new DocumentationElement(psiManager, element.getLanguage(), element, option, componentName);
         }
 
         return null;
@@ -301,7 +327,15 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         }
         ComponentModel component = ModelHelper.generateComponentModel(json, true);
 
-        EndpointOptionModel endpointOption = component.getEndpointOption(option);
+        EndpointOptionModel endpointOption;
+        if (option.endsWith(".")) {
+            // find the line with this prefix as prefix and multivalue
+            endpointOption = component.getEndpointOptions().stream().filter(
+                (o) -> "true".equals(o.getMultiValue()) && option.equals(o.getPrefix()))
+                .findFirst().orElse(null);
+        } else {
+            endpointOption = component.getEndpointOption(option);
+        }
         return endpointOption != null ? endpointOption.getDescription() : null;
     }
 
