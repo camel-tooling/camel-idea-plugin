@@ -351,19 +351,36 @@ public final class IdeaUtils {
      * Is the given element from a XML tag with any of the given tag names
      *
      * @param xml  the xml tag
+     * @param methods  xml tag names
+     * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
+     */
+    public static boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
+        String name = xml.getLocalName();
+        return Arrays.stream(methods).anyMatch(name::equals);
+    }
+
+    /**
+     * Is the given element from a XML tag with any of the given tag names
+     *
+     * @param xml  the xml tag
+     * @param parentTag a special parent tag name to match first
+     * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
+     */
+    public static boolean hasParentXmlTag(@NotNull XmlTag xml, @NotNull String parentTag) {
+        XmlTag parent = xml.getParentTag();
+        return parent != null && parent.getLocalName().equals(parentTag);
+    }
+
+    /**
+     * Is the given element from a XML tag with the parent and is of any of the given tag names
+     *
+     * @param xml  the xml tag
      * @param parentTag a special parent tag name to match first
      * @param methods  xml tag names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    public static boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String parentTag, @NotNull String... methods) {
-        String name = xml.getLocalName();
-        // special check for enrich/pollEnrich where we add the endpoint on a child node (camel expression)
-        XmlTag parent = xml.getParentTag();
-        if (parent != null && parent.getLocalName().equals(parentTag)) {
-            return Arrays.stream(methods).anyMatch(name::equals);
-        } else {
-            return false;
-        }
+    public static boolean hasParentAndFromXmlTag(@NotNull XmlTag xml, @NotNull String parentTag, @NotNull String... methods) {
+        return hasParentXmlTag(xml, parentTag) && isFromFileType(xml, methods);
     }
 
     /**

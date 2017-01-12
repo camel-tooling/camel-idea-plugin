@@ -220,7 +220,8 @@ public final class CamelIdeaUtils {
         // xml
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (xml != null) {
-            return IdeaUtils.isFromXmlTag(xml, "pollEnrich", "from", "interceptFrom");
+            return IdeaUtils.hasParentXmlTag(xml, "pollEnrich")
+                || IdeaUtils.isFromXmlTag(xml, "from", "interceptFrom");
         }
         // groovy
         if (element instanceof LeafPsiElement) {
@@ -264,7 +265,8 @@ public final class CamelIdeaUtils {
         // xml
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (xml != null) {
-            return IdeaUtils.isFromXmlTag(xml, "enrich", "to", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
+            return IdeaUtils.hasParentXmlTag(xml, "enrich")
+                || IdeaUtils.isFromXmlTag(xml, "to", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
         }
         // groovy
         if (element instanceof LeafPsiElement) {
