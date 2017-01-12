@@ -48,13 +48,14 @@ public class CamelSmartCompletionDocumentationTestIT extends CamelLightCodeInsig
         myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestData());
 
         PsiElement element = myFixture.findElementByText("\"file:inbox?\"", PsiLiteralExpression.class);
-        String lookup = "file:inbox?delete";
+        String componentName = "file";
+        String lookup = componentName + ":inbox?delete";
         PsiManager manager = myFixture.getPsiManager();
 
         PsiElement docInfo = new CamelDocumentationProvider().getDocumentationElementForLookupItem(manager, lookup, element);
 
         CamelDocumentationProvider.DocumentationElement de = (CamelDocumentationProvider.DocumentationElement) docInfo;
-        assertEquals("file", de.getComponentName());
+        assertEquals(componentName, de.getComponentName());
         assertEquals("delete", de.getText());
         assertEquals("delete", de.getEndpointOption());
     }

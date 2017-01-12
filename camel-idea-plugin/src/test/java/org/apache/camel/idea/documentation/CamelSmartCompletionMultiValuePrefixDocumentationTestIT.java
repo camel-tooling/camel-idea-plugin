@@ -47,13 +47,14 @@ public class CamelSmartCompletionMultiValuePrefixDocumentationTestIT extends Cam
         myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestData());
 
         PsiElement element = myFixture.findElementByText("\"file:inbox?\"", PsiLiteralExpression.class);
-        String lookup = "file:inbox?scheduler.";
+        String componentName = "file";
+        String lookup = componentName + ":inbox?scheduler.";
         PsiManager manager = myFixture.getPsiManager();
 
         PsiElement docInfo = new CamelDocumentationProvider().getDocumentationElementForLookupItem(manager, lookup, element);
 
         CamelDocumentationProvider.DocumentationElement de = (CamelDocumentationProvider.DocumentationElement) docInfo;
-        assertEquals("file", de.getComponentName());
+        assertEquals(componentName, de.getComponentName());
         assertEquals("schedulerProperties", de.getText());
         assertEquals("schedulerProperties", de.getEndpointOption());
     }
