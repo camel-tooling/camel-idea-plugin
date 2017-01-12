@@ -20,6 +20,10 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.TokenType;
+import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.xml.XmlElement;
+import com.intellij.psi.xml.XmlElementType;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.apache.camel.idea.util.StringUtils;
@@ -40,11 +44,37 @@ abstract class AbstractCamelAnnotator implements Annotator {
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
         if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent() && isEnabled()) {
-            String text = IdeaUtils.extractTextFromElement(element, false);
-            if (!StringUtils.isEmpty(text)) {
-                validateText(element, holder, text);
+            boolean accept = accept(element);
+            if (accept) {
+                String text = IdeaUtils.extractTextFromElement(element, false);
+                if (!StringUtils.isEmpty(text)) {
+                    validateText(element, holder, text);
+                }
             }
         }
+    }
+
+    /**
+     * To filter unwanted elements
+     *
+     * @return <ttt>true</ttt> to accept or <tt>false</tt> to drop
+     */
+    boolean accept(PsiElement element) {
+        // skip whitespace noise
+        IElementType type = element.getNode().getElementType();
+        if (type == TokenType.WHITE_SPACE) {
+            return false;
+        }
+
+        boolean accept = true;
+
+        // we only want xml attributes or text value elements
+        if (element instanceof XmlElement) {
+            accept = type == XmlElementType.XML_ATTRIBUTE_VALUE
+                || type == XmlElementType.XML_TEXT;
+        }
+
+        return accept;
     }
 
     /**

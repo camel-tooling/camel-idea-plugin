@@ -25,11 +25,12 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.3 - TODO</li>
+        <li>0.3.3 - Real time validation of Simple language now validates predicates vs expression mode.
+                    Added XML language to real time validation of Simple language in editor</li>
         <li>0.3.2 - Real time validation of Simple language in editor for Java, Groovy, Kotlin, Scala, and XML.
                     Real time validation for Camel endpoints can now check in consumer and producer only mode.
                     Inspection (analyze code) to validate Camel endpoints in Java, Groovy, Kotlin, Scala, and XML.
-                    Smart completion can show quick document for the selected option in the list (cltr + j)</li>
+                    Smart completion can show quick document for the selected option in the list (ctrl + j)</li>
         <li>0.3.1 - Allow to turn on or off scanning for third party components.
                     Real time validation is now checked for endpoints used outside routes.
                     Minor bug fixes.</li>
@@ -117,6 +118,7 @@
 
     <!-- annotator to validate simple language -->
     <annotator language="JAVA" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
+    <annotator language="XML" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
 
     <!-- inspection to validate endpoints -->
     <localInspection groupName="Apache Camel" language="JAVA" implementationClass="org.apache.camel.idea.inspection.CamelJavaEndpointInspection"/>
