@@ -17,8 +17,8 @@
 package org.apache.camel.idea.annotator;
 
 import java.io.File;
+
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
@@ -26,8 +26,6 @@ import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.pom.java.LanguageLevel;
-import com.intellij.testFramework.IdeaTestUtil;
 import com.intellij.util.ui.UIUtil;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
@@ -70,8 +68,7 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
             + "            from(\"netty-http:http://localhost/cdi?matchOnUriPrefix=true&nettySharedHttpServer=#httpServer\")\n"
             + "            .id(\"http-route-cdi\")\n"
             + "            .transform()\n"
-            + "            .simple(\"Response from Camel CDI on route <error descr=\"Unknown function: xrouteId at location 33 Response "
-            + "from Camel CDI on route ${xrouteId} using thread: ${threadName}\">${xrouteId}</error> using thread: ${threadName}\");"
+            + "            .simple(\"Response from Camel CDI on route<error descr=\"Unknown function: xrouteId\"> ${xrouteId} using thread: ${threadName}</error>\");"
             + "        }\n"
             + "    }";
     }
