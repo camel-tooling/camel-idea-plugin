@@ -478,7 +478,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     /**
      * {@link PsiElement} used only to transfer documentation data.
      */
-    private static class DocumentationElement extends LightElement {
+    static class DocumentationElement extends LightElement {
         private PsiElement element;
         private String endpointOption;
         private String componentName;
