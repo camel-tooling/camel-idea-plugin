@@ -178,6 +178,8 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
             String componentName = StringUtils.asComponentName(lookup);
 
+            // if the option ends with a dot then its a prefixed/multi value option which we need special logic
+            // find its real option name and documentation which we want to show in the quick doc window
             if (option.endsWith(".")) {
                 CamelCatalog camelCatalog = ServiceManager.getService(psiManager.getProject(), CamelCatalogService.class).get();
                 String json = camelCatalog.componentJSonSchema(componentName);
