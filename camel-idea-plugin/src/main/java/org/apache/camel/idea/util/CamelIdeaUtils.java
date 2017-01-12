@@ -175,7 +175,15 @@ public final class CamelIdeaUtils {
         // xml
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (xml != null) {
-            return Arrays.stream(SIMPLE_PREDICATE).anyMatch((n) -> IdeaUtils.isFromXmlTag(xml, n, "simple"));
+            // special for loop which can be both expression or predicate
+            if (IdeaUtils.hasParentXmlTag(xml, "loop")) {
+                XmlTag parent = PsiTreeUtil.getParentOfType(xml, XmlTag.class);
+                if (parent != null) {
+                    String doWhile = parent.getAttributeValue("doWhile");
+                    return "true".equalsIgnoreCase(doWhile);
+                }
+            }
+            return Arrays.stream(SIMPLE_PREDICATE).anyMatch((n) -> IdeaUtils.hasParentXmlTag(xml, n));
         }
 
         // groovy

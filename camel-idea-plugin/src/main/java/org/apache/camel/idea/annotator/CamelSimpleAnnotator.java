@@ -60,8 +60,10 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                     SimpleValidationResult result;
                     boolean predicate = isCameSimpleExpressionUsedAsPredicate(element);
                     if (predicate) {
+                        LOG.debug("Validate simple predicate: " + text);
                         result = catalogService.validateSimplePredicate(loader, text);
                     } else {
+                        LOG.debug("Validate simple expression: " + text);
                         result = catalogService.validateSimpleExpression(loader, text);
                     }
                     if (!result.isSuccess()) {
