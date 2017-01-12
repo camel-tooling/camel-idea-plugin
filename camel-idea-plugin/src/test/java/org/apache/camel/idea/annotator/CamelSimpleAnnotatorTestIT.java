@@ -61,6 +61,22 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
         myFixture.checkHighlighting(false, false, true, true);
     }
 
+    public void testAnnotatorOpenBracketSimpleValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaOpenBracketWithSimple());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
+    public void testAnnotatorMultipleOpenBracketSimpleValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaMutlipleOpenBracketWithSimple());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
+    public void testAnnotatorPredicateValidation() {
+        // TODO: Need to fix the issue with JDK classes are not resolved
+       // myFixture.configureByText("AnnotatorTestData.java", getJavaWithPredicate());
+       // myFixture.checkHighlighting(false, false, true, true);
+    }
+
     private String getJavaWithSimple() {
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
@@ -68,7 +84,45 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
             + "            from(\"netty-http:http://localhost/cdi?matchOnUriPrefix=true&nettySharedHttpServer=#httpServer\")\n"
             + "            .id(\"http-route-cdi\")\n"
             + "            .transform()\n"
-            + "            .simple(\"Response from Camel CDI on route<error descr=\"Unknown function: xrouteId\"> ${xrouteId} using thread: ${threadName}</error>\");"
+            + "            .simple(\"Response from Camel CDI on route<error descr=\"Unknown function: xrouteId\">${xrouteId}</error> using thread: ${threadName}\");"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getJavaOpenBracketWithSimple() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"netty-http:http://localhost/cdi?matchOnUriPrefix=true&nettySharedHttpServer=#httpServer\")\n"
+            + "            .id(\"http-route-cdi\")\n"
+            + "            .transform()\n"
+            + "            .simple(\"Response from Camel CDI on route${routeId} using thread: ${threadNam<error descr=\"expected symbol functionEnd but was eol\">e</error>\");"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getJavaMutlipleOpenBracketWithSimple() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"netty-http:http://localhost/cdi?matchOnUriPrefix=true&nettySharedHttpServer=#httpServer\")\n"
+            + "            .id(\"http-route-cdi\")\n"
+            + "            .transform()\n"
+            + "            .simple(\"Response from Camel CDI on route${routeId} using thread: ${threadNam<error descr=\"expected symbol functionEnd but was eol\">e</error>\");"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getJavaWithPredicate() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "              from(\"direct:start\")\n"
+            + "                .loopDoWhile(simple(\"${body.length} <error descr=\"Unknown function: xrouteId\">=!=</error> 12\"))\n"
+            + "                .to(\"mock:loop\")\n"
+            + "                .transform(body().append(\"A\"))\n"
+            + "                .end()\n"
+            + "                .to(\"mock:result\");"
             + "        }\n"
             + "    }";
     }

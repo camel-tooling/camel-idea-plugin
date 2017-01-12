@@ -158,7 +158,7 @@ public final class CamelIdeaUtils {
                         element = element.getParent();
                     }
                     if (element instanceof PsiMethodCallExpression) {
-                        exp = (PsiMethodCallExpression) element;
+                        exp = PsiTreeUtil.getParentOfType(element.getParent(), PsiMethodCallExpression.class);
                     }
                 }
                 if (exp instanceof PsiMethodCallExpression) {

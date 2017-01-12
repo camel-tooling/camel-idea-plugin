@@ -69,9 +69,14 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                     if (!result.isSuccess()) {
                         String error = result.getShortError();
                         TextRange range = element.getTextRange();
+                        int startIdx = result.getIndex() == 0 ? text.indexOf("$") : result.getIndex();
+
+                        int endIdx = text.indexOf("}", startIdx);
+                        endIdx = endIdx == -1 ? text.indexOf(" ", startIdx) - 1 : endIdx;
+
+                        int propertyLength = (((endIdx < 0 ? text.length() - 1 : endIdx) + 1) - startIdx) + 1;
                         if (result.getIndex() > 0) {
-                            // use -1 to skip the last quote sign
-                            range = TextRange.create(range.getStartOffset() + result.getIndex(), range.getEndOffset() - 1);
+                            range = TextRange.create(range.getStartOffset() + startIdx + 1, range.getStartOffset() + startIdx + propertyLength);
                         }
                         holder.createErrorAnnotation(range, error);
                     }
