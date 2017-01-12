@@ -29,6 +29,8 @@ import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
+import static org.apache.camel.idea.util.CamelIdeaUtils.isCameSimpleExpressionUsedAsPredicate;
+
 /**
  * Validate simple expression and annotated the specific simple expression to highlight the error in the editor
  */
@@ -47,7 +49,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
         boolean hasSimple = text.contains("${") || text.contains("$simple{");
-        if (hasSimple && CamelIdeaUtils.isCamelRouteSimpleExpression(element)) {
+        if (hasSimple && CamelIdeaUtils.isCamelSimpleExpression(element)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
             CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
 
@@ -55,14 +57,20 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                 // need to use the classloader that can load classes from the camel-core
                 ClassLoader loader = camelService.getCamelCoreClassloader();
                 if (loader != null) {
-                    SimpleValidationResult result = catalogService.validateSimpleExpression(loader, text);
+                    SimpleValidationResult result;
+                    boolean predicate = isCameSimpleExpressionUsedAsPredicate(element);
+                    if (predicate) {
+                        result = catalogService.validateSimplePredicate(loader, text);
+                    } else {
+                        result = catalogService.validateSimpleExpression(loader, text);
+                    }
                     if (!result.isSuccess()) {
-                        String error = result.getError().replaceAll("\\n", " ");
-                        error = error.substring(0, error.lastIndexOf("*") - 1).trim();
-                        int startIdx = result.getIndex() == 0 ? text.indexOf("$") : result.getIndex() + 1;
-                        int propertyLength = ((text.indexOf("}", startIdx) + 1) - startIdx) + 1;
-                        TextRange range = new TextRange(element.getTextRange().getStartOffset() + startIdx,
-                            element.getTextRange().getStartOffset() + startIdx + propertyLength);
+                        String error = result.getShortError();
+                        TextRange range = element.getTextRange();
+                        if (result.getIndex() > 0) {
+                            // use -1 to skip the last quote sign
+                            range = TextRange.create(range.getStartOffset() + result.getIndex(), range.getEndOffset() - 1);
+                        }
                         holder.createErrorAnnotation(range, error);
                     }
                 }

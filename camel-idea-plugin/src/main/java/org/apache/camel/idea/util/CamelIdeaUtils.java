@@ -16,12 +16,19 @@
  */
 package org.apache.camel.idea.util;
 
+import java.util.Arrays;
+
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiExpressionList;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -38,6 +45,12 @@ import static org.apache.camel.idea.util.IdeaUtils.isFromConstructor;
  */
 public final class CamelIdeaUtils {
 
+    private static final String[] ROUTE_START = new String[]{"from", "fromF"};
+    private static final String[] CONSUMER_ENDPOINT = new String[]{"from", "fromF", "interceptFrom", "pollEnrich"};
+    private static final String[] PRODUCER_ENDPOINT = new String[]{"to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel"};
+    private static final String[] STRING_FORMAT_ENDPOINT = new String[]{"fromF", "toF"};
+    private static final String[] SIMPLE_PREDICATE = new String[]{"completion", "completionPredicate", "when", "onWhen", "handled", "continued", "retryWhile", "filter", "validate", "loopDoWhile"};
+
     private CamelIdeaUtils() {
     }
 
@@ -46,7 +59,7 @@ public final class CamelIdeaUtils {
      */
     public static boolean isCamelRouteStart(PsiElement element) {
         // java method call
-        if (IdeaUtils.isFromJavaMethodCall(element, "from", "fromF")) {
+        if (IdeaUtils.isFromJavaMethodCall(element, ROUTE_START)) {
             return true;
         }
         // xml
@@ -62,21 +75,21 @@ public final class CamelIdeaUtils {
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
-                return IdeaUtils.isFromGroovyMethod(element, "from", "fromF");
+                return IdeaUtils.isFromGroovyMethod(element, ROUTE_START);
             }
         }
         // kotlin
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("kotlin")) {
-                return IdeaUtils.isFromKotlinMethod(element, "from", "fromF");
+                return IdeaUtils.isFromKotlinMethod(element, ROUTE_START);
             }
         }
         // scala
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
-                return IdeaUtils.isFromScalaMethod(element, "from", "fromF");
+                return IdeaUtils.isFromScalaMethod(element, ROUTE_START);
             }
         }
 
@@ -84,9 +97,9 @@ public final class CamelIdeaUtils {
     }
 
     /**
-     * Is the given element a simple of a Camel route, eg <tt>simple</tt>, ot &lt;simple&gt;.
+     * Is the given element a simple of a Camel DSL, eg <tt>simple</tt>, ot &lt;simple&gt;.
      */
-    public static boolean isCamelRouteSimpleExpression(PsiElement element) {
+    public static boolean isCamelSimpleExpression(PsiElement element) {
         // java method call
         if (IdeaUtils.isFromJavaMethodCall(element, "simple")) {
             return true;
@@ -126,12 +139,70 @@ public final class CamelIdeaUtils {
     }
 
     /**
+     * Is the given element a simple of a Camel route, eg <tt>simple</tt>, ot &lt;simple&gt;.
+     */
+    public static boolean isCameSimpleExpressionUsedAsPredicate(PsiElement element) {
+
+        // this code requires a fair bit of looking in the AST to find what we need
+        element = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        if (element != null) {
+            PsiElement child = element.getFirstChild();
+            if (child instanceof PsiReferenceExpression) {
+                PsiExpression exp = ((PsiReferenceExpression) child).getQualifierExpression();
+                if (exp == null) {
+                    // okay it was not a direct method call, so see if it was passed in as a parameter instead (expression list)
+                    element = element.getParent();
+                    if (element instanceof PsiExpressionList) {
+                        element = element.getParent();
+                    }
+                    if (element instanceof PsiMethodCallExpression) {
+                        exp = (PsiMethodCallExpression) element;
+                    }
+                }
+                if (exp instanceof PsiMethodCallExpression) {
+                    PsiMethod method = ((PsiMethodCallExpression) exp).resolveMethod();
+                    if (method != null) {
+                        String name = method.getName();
+                        return Arrays.stream(SIMPLE_PREDICATE).anyMatch(name::equals);
+                    }
+                }
+            }
+        }
+
+        // xml
+        // TODO
+        // groovy
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Groovy")) {
+                return IdeaUtils.isFromGroovyMethod(element, SIMPLE_PREDICATE);
+            }
+        }
+        // kotlin
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("kotlin")) {
+                return IdeaUtils.isFromKotlinMethod(element, SIMPLE_PREDICATE);
+            }
+        }
+        // scala
+        if (element instanceof LeafPsiElement) {
+            IElementType type = ((LeafPsiElement) element).getElementType();
+            if (type.getLanguage().isKindOf("Scala")) {
+                return IdeaUtils.isFromScalaMethod(element, SIMPLE_PREDICATE);
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Is the given element from a consumer endpoint used in a route from a <tt>from</tt>, <tt>fromF</tt>,
      * <tt>interceptFrom</tt>, or <tt>pollEnrich</tt> pattern.
      */
     public static boolean isConsumerEndpoint(PsiElement element) {
         // java method call
-        if (IdeaUtils.isFromJavaMethodCall(element, "from", "fromF", "interceptFrom", "pollEnrich")) {
+        if (IdeaUtils.isFromJavaMethodCall(element, CONSUMER_ENDPOINT)) {
             return true;
         }
         // annotation
@@ -148,21 +219,21 @@ public final class CamelIdeaUtils {
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
-                return IdeaUtils.isFromGroovyMethod(element, "from", "fromF", "interceptFrom", "pollEnrich");
+                return IdeaUtils.isFromGroovyMethod(element, CONSUMER_ENDPOINT);
             }
         }
         // kotlin
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("kotlin")) {
-                return IdeaUtils.isFromKotlinMethod(element, "from", "fromF", "interceptFrom", "pollEnrich");
+                return IdeaUtils.isFromKotlinMethod(element, CONSUMER_ENDPOINT);
             }
         }
         // scala
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
-                return IdeaUtils.isFromScalaMethod(element, "from", "fromF", "interceptFrom", "pollEnrich");
+                return IdeaUtils.isFromScalaMethod(element, CONSUMER_ENDPOINT);
             }
         }
 
@@ -175,7 +246,7 @@ public final class CamelIdeaUtils {
      */
     public static boolean isProducerEndpoint(PsiElement element) {
         // java method call
-        if (IdeaUtils.isFromJavaMethodCall(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel")) {
+        if (IdeaUtils.isFromJavaMethodCall(element, PRODUCER_ENDPOINT)) {
             return true;
         }
         // annotation
@@ -192,21 +263,21 @@ public final class CamelIdeaUtils {
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
-                return IdeaUtils.isFromGroovyMethod(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
+                return IdeaUtils.isFromGroovyMethod(element, PRODUCER_ENDPOINT);
             }
         }
         // kotlin
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("kotlin")) {
-                return IdeaUtils.isFromKotlinMethod(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
+                return IdeaUtils.isFromKotlinMethod(element, PRODUCER_ENDPOINT);
             }
         }
         // scala
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
-                return IdeaUtils.isFromScalaMethod(element, "to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
+                return IdeaUtils.isFromScalaMethod(element, PRODUCER_ENDPOINT);
             }
         }
 
@@ -219,28 +290,28 @@ public final class CamelIdeaUtils {
      */
     public static boolean isFromStringFormatEndpoint(PsiElement element) {
         // java method call
-        if (IdeaUtils.isFromJavaMethodCall(element, "fromF", "toF")) {
+        if (IdeaUtils.isFromJavaMethodCall(element, STRING_FORMAT_ENDPOINT)) {
             return true;
         }
         // groovy
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
-                return IdeaUtils.isFromGroovyMethod(element, "fromF", "toF");
+                return IdeaUtils.isFromGroovyMethod(element, STRING_FORMAT_ENDPOINT);
             }
         }
         // kotlin
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("kotlin")) {
-                return IdeaUtils.isFromKotlinMethod(element, "fromF", "toF");
+                return IdeaUtils.isFromKotlinMethod(element, STRING_FORMAT_ENDPOINT);
             }
         }
         // scala
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
-                return IdeaUtils.isFromScalaMethod(element, "fromF", "toF");
+                return IdeaUtils.isFromScalaMethod(element, STRING_FORMAT_ENDPOINT);
             }
         }
 
