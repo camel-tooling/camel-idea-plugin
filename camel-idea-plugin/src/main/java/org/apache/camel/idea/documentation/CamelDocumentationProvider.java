@@ -351,11 +351,6 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             required = true;
         }
         builder.append("<strong>Required: </strong>").append(required).append("<br/>");
-        boolean multiValue = false;
-        if (!endpointOption.getRequired().equals("")) {
-            multiValue = true;
-        }
-        builder.append("<strong>Multi value: </strong>").append(multiValue).append("<br/>");
         if (!endpointOption.getEnums().equals("")) {
             builder.append("<strong>Possible values: </strong>").append(endpointOption.getEnums().replace(",", ", ")).append("<br/>");
         }
