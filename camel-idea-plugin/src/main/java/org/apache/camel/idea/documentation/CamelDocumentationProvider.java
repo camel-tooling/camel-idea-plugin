@@ -338,7 +338,32 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         } else {
             endpointOption = component.getEndpointOption(option);
         }
-        return endpointOption != null ? endpointOption.getDescription() : null;
+        if (endpointOption == null) {
+            return null;
+        }
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("<strong>").append(endpointOption.getName()).append("</strong><br/><br/>");
+        builder.append("<strong>Group: </strong>").append(endpointOption.getGroup()).append("<br/>");
+        builder.append("<strong>Type: </strong>").append("<tt>").append(endpointOption.getJavaType()).append("</tt>").append("<br/>");
+        boolean required = false;
+        if (!endpointOption.getRequired().equals("")) {
+            required = true;
+        }
+        builder.append("<strong>Required: </strong>").append(required).append("<br/>");
+        boolean multiValue = false;
+        if (!endpointOption.getRequired().equals("")) {
+            multiValue = true;
+        }
+        builder.append("<strong>Multi value: </strong>").append(multiValue).append("<br/>");
+        if (!endpointOption.getEnums().equals("")) {
+            builder.append("<strong>Possible values: </strong>").append(endpointOption.getEnums().replace(",", ", ")).append("<br/>");
+        }
+        if (!endpointOption.getDefaultValue().equals("")) {
+            builder.append("<strong>Default value: </strong>").append(endpointOption.getDefaultValue()).append("<br/>");
+        }
+        builder.append("<br/><div>").append(endpointOption.getDescription()).append("</div>");
+        return builder.toString();
     }
 
     private String generateCamelComponentDocumentation(String componentName, String val, int wrapLength, Project project) {
