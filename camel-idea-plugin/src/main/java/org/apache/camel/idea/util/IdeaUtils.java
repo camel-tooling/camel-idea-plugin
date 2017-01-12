@@ -43,6 +43,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.XmlText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -98,9 +99,10 @@ public final class IdeaUtils {
         }
 
         // maybe its xml then try that
-        XmlAttributeValue xml = PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class);
         if (element instanceof XmlAttributeValue) {
-            return ((XmlAttributeValue)element).getValue();
+            return ((XmlAttributeValue) element).getValue();
+        } else if (element instanceof XmlText) {
+            return ((XmlText) element).getValue();
         }
 
         // its maybe a property from properties file
@@ -353,14 +355,15 @@ public final class IdeaUtils {
      * @param methods  xml tag names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    public static boolean isFromXmlTag(XmlTag xml, String parentTag, String... methods) {
+    public static boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String parentTag, @NotNull String... methods) {
         String name = xml.getLocalName();
         // special check for enrich/pollEnrich where we add the endpoint on a child node (camel expression)
         XmlTag parent = xml.getParentTag();
         if (parent != null && parent.getLocalName().equals(parentTag)) {
-            return true;
+            return Arrays.stream(methods).anyMatch(name::equals);
+        } else {
+            return false;
         }
-        return Arrays.stream(methods).anyMatch(name::equals);
     }
 
     /**

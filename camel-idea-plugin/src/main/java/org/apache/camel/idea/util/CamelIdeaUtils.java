@@ -105,13 +105,15 @@ public final class CamelIdeaUtils {
             return true;
         }
         // xml
-        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        XmlTag xml;
+        if (element instanceof XmlTag) {
+            xml = (XmlTag) element;
+        } else {
+            xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        }
         if (xml != null) {
             String name = xml.getLocalName();
-            XmlTag parentTag = xml.getParentTag();
-            if (parentTag != null) {
-                return "simple".equals(name) && "simple".equals(parentTag.getLocalName());
-            }
+            return "simple".equals(name);
         }
         // groovy
         if (element instanceof LeafPsiElement) {
@@ -143,10 +145,10 @@ public final class CamelIdeaUtils {
      */
     public static boolean isCameSimpleExpressionUsedAsPredicate(PsiElement element) {
 
-        // this code requires a fair bit of looking in the AST to find what we need
-        element = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-        if (element != null) {
-            PsiElement child = element.getFirstChild();
+        // java
+        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        if (call != null) {
+            PsiElement child = call.getFirstChild();
             if (child instanceof PsiReferenceExpression) {
                 PsiExpression exp = ((PsiReferenceExpression) child).getQualifierExpression();
                 if (exp == null) {
@@ -167,10 +169,15 @@ public final class CamelIdeaUtils {
                     }
                 }
             }
+            return false;
         }
 
         // xml
-        // TODO
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            return Arrays.stream(SIMPLE_PREDICATE).anyMatch((n) -> IdeaUtils.isFromXmlTag(xml, n, "simple"));
+        }
+
         // groovy
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
