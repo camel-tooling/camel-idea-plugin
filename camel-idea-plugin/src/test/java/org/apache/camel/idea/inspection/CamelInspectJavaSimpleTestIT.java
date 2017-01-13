@@ -66,7 +66,8 @@ public class CamelInspectJavaSimpleTestIT extends InspectionTestCase {
         // force Camel enabled so the inspection test can run
         CamelJavaInspection inspection = new CamelJavaInspection(true);
 
-        doTest("testData/darn/", new LocalInspectionToolWrapper(inspection), "java 1.8");
+        // must be called fooroute as inspectionsimplejava fails for some odd reason
+        doTest("testData/fooroute/", new LocalInspectionToolWrapper(inspection), "java 1.8");
     }
 
 }
