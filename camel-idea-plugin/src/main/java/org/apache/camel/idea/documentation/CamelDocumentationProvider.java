@@ -116,10 +116,12 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public String generateDoc(PsiElement element, @Nullable PsiElement originalElement) {
+
         if (element instanceof DocumentationElement) {
             DocumentationElement documentationElement = (DocumentationElement) element;
             return generateCamelEndpointOptionDocumentation(documentationElement.getComponentName(), documentationElement.getEndpointOption(), element.getProject());
         }
+
         String val = null;
         if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
             val = fetchLiteralForCamelDocumentation(element);
@@ -158,21 +160,51 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public PsiElement getDocumentationElementForLookupItem(PsiManager psiManager, Object object, PsiElement element) {
-        String route = (String) object;
-        String routeParam;
-        route = route.replace("&amp;", "&");
-        //get last option from route
-        if (route.contains("&")) {
-            String[] split = route.split("&");
-            routeParam = split[split.length - 1].replace("=", "");
-        } else if (route.contains("?")) {
-            String[] split = route.split("\\?");
-            routeParam = split[split.length - 1].replace("=", "");
-        } else {
-            return super.getDocumentationElementForLookupItem(psiManager, object, element);
+        String lookup = (String) object;
+
+        // unescape xml &
+        lookup = lookup.replaceAll("&amp;", "&");
+
+        // get last option from lookup line
+        int pos = Math.max(lookup.lastIndexOf("&"), lookup.lastIndexOf("?"));
+        if (pos > 0) {
+            String option = lookup.substring(pos + 1);
+            // if the option has a value then drop that
+            pos = option.indexOf("=");
+            if (pos != -1) {
+                option = option.substring(0, pos);
+            }
+            LOG.debug("getDocumentationElementForLookupItem: " + option);
+
+            String componentName = StringUtils.asComponentName(lookup);
+
+            // if the option ends with a dot then its a prefixed/multi value option which we need special logic
+            // find its real option name and documentation which we want to show in the quick doc window
+            if (option.endsWith(".")) {
+                CamelCatalog camelCatalog = ServiceManager.getService(psiManager.getProject(), CamelCatalogService.class).get();
+                String json = camelCatalog.componentJSonSchema(componentName);
+                if (json == null) {
+                    return null;
+                }
+                ComponentModel component = ModelHelper.generateComponentModel(json, true);
+
+                final String prefixOption = option;
+
+                // find the line with this prefix as prefix and multivalue
+                EndpointOptionModel endpointOption = component.getEndpointOptions().stream().filter(
+                    (o) -> "true".equals(o.getMultiValue()) && prefixOption.equals(o.getPrefix()))
+                    .findFirst().orElse(null);
+
+                // use the real option name instead of the prefix
+                if (endpointOption != null) {
+                    option = endpointOption.getName();
+                }
+            }
+
+            return new DocumentationElement(psiManager, element.getLanguage(), element, option, componentName);
         }
 
-        return new DocumentationElement(psiManager, element.getLanguage(), element, routeParam, StringUtils.asComponentName(route));
+        return null;
     }
 
     @Nullable
@@ -297,8 +329,41 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         }
         ComponentModel component = ModelHelper.generateComponentModel(json, true);
 
-        EndpointOptionModel endpointOption = component.getEndpointOption(option);
-        return endpointOption.getDescription();
+        EndpointOptionModel endpointOption;
+        if (option.endsWith(".")) {
+            // find the line with this prefix as prefix and multivalue
+            endpointOption = component.getEndpointOptions().stream().filter(
+                (o) -> "true".equals(o.getMultiValue()) && option.equals(o.getPrefix()))
+                .findFirst().orElse(null);
+        } else {
+            endpointOption = component.getEndpointOption(option);
+        }
+        if (endpointOption == null) {
+            return null;
+        }
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("<strong>").append(endpointOption.getName()).append("</strong><br/><br/>");
+        builder.append("<strong>Group: </strong>").append(endpointOption.getGroup()).append("<br/>");
+        builder.append("<strong>Type: </strong>").append("<tt>").append(endpointOption.getJavaType()).append("</tt>").append("<br/>");
+        boolean required = false;
+        if (!endpointOption.getRequired().equals("")) {
+            required = true;
+        }
+        builder.append("<strong>Required: </strong>").append(required).append("<br/>");
+        boolean multiValue = false;
+        if (!endpointOption.getRequired().equals("")) {
+            multiValue = true;
+        }
+        builder.append("<strong>Multi value: </strong>").append(multiValue).append("<br/>");
+        if (!endpointOption.getEnums().equals("")) {
+            builder.append("<strong>Possible values: </strong>").append(endpointOption.getEnums().replace(",", ", ")).append("<br/>");
+        }
+        if (!endpointOption.getDefaultValue().equals("")) {
+            builder.append("<strong>Default value: </strong>").append(endpointOption.getDefaultValue()).append("<br/>");
+        }
+        builder.append("<br/><div>").append(endpointOption.getDescription()).append("</div>");
+        return builder.toString();
     }
 
     private String generateCamelComponentDocumentation(String componentName, String val, int wrapLength, Project project) {
@@ -413,7 +478,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     /**
      * {@link PsiElement} used only to transfer documentation data.
      */
-    private static class DocumentationElement extends LightElement {
+    static class DocumentationElement extends LightElement {
         private PsiElement element;
         private String endpointOption;
         private String componentName;
