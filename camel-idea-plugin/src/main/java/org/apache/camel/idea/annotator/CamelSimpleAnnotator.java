@@ -58,10 +58,12 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                 ClassLoader loader = camelService.getCamelCoreClassloader();
                 if (loader != null) {
                     SimpleValidationResult result;
+                    int correctMinusOneOff = 2;
                     boolean predicate = isCameSimpleExpressionUsedAsPredicate(element);
                     if (predicate) {
                         LOG.debug("Validate simple predicate: " + text);
                         result = catalogService.validateSimplePredicate(loader, text);
+                        correctMinusOneOff = 1; // the result for predicate index is minus one off
                     } else {
                         LOG.debug("Validate simple expression: " + text);
                         result = catalogService.validateSimpleExpression(loader, text);
@@ -72,11 +74,13 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                         int startIdx = result.getIndex() == 0 ? text.indexOf("$") : result.getIndex();
 
                         int endIdx = text.indexOf("}", startIdx);
-                        endIdx = endIdx == -1 ? text.indexOf(" ", startIdx) - 1 : endIdx;
+                        if (endIdx == -1) {
+                            endIdx = text.indexOf(" ", startIdx);
+                        }
+                        endIdx = endIdx == -1 ? (range.getEndOffset() - 1) : (range.getStartOffset() + endIdx) + correctMinusOneOff;
 
-                        int propertyLength = (((endIdx < 0 ? text.length() - 1 : endIdx) + 1) - startIdx) + 1;
                         if (result.getIndex() > 0) {
-                            range = TextRange.create(range.getStartOffset() + startIdx + 1, range.getStartOffset() + startIdx + propertyLength);
+                            range = TextRange.create(range.getStartOffset() + result.getIndex() + 1, endIdx);
                         }
                         holder.createErrorAnnotation(range, error);
                     }
