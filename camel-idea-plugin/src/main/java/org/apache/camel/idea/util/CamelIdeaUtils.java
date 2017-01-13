@@ -34,7 +34,6 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
-import org.apache.camel.idea.inspection.CamelEndpointInspection;
 import org.apache.camel.idea.service.CamelCatalogService;
 
 import static org.apache.camel.idea.util.IdeaUtils.isElementFromSetterProperty;

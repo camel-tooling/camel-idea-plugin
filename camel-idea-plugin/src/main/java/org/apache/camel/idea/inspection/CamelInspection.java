@@ -29,6 +29,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.EndpointValidationResult;
+import org.apache.camel.catalog.SimpleValidationResult;
 import org.apache.camel.idea.annotator.CamelAnnotatorEndpointMessage;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelService;
@@ -38,22 +39,23 @@ import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static org.apache.camel.idea.util.CamelIdeaUtils.isCameSimpleExpressionUsedAsPredicate;
 import static org.apache.camel.idea.util.CamelIdeaUtils.skipEndpointValidation;
 import static org.apache.camel.idea.util.StringUtils.isEmpty;
 
 /**
- * Camel inspection to validate Camel endpoints.
+ * Camel inspection to validate Camel endpoints and languages such as simple.
  */
-public abstract class CamelEndpointInspection extends LocalInspectionTool {
+public abstract class CamelInspection extends LocalInspectionTool {
 
-    private static final Logger LOG = Logger.getInstance(CamelEndpointInspection.class);
+    private static final Logger LOG = Logger.getInstance(CamelInspection.class);
 
     private boolean forceEnabled;
 
-    public CamelEndpointInspection() {
+    public CamelInspection() {
     }
 
-    public CamelEndpointInspection(boolean forceEnabled) {
+    public CamelInspection(boolean forceEnabled) {
         this.forceEnabled = forceEnabled;
     }
 
@@ -104,50 +106,88 @@ public abstract class CamelEndpointInspection extends LocalInspectionTool {
      * Validate endpoint options list aka properties. eg "timer:trigger?delay=1000&bridgeErrorHandler=true"
      * if the URI is not valid a error annotation is created and highlight the invalid value.
      */
-    private void validateText(@NotNull PsiElement element, final @NotNull ProblemsHolder holder, @NotNull String uri, boolean isOnTheFly) {
-        if (CamelIdeaUtils.isQueryContainingCamelComponent(element.getProject(), uri)) {
-            CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
+    private void validateText(@NotNull PsiElement element, final @NotNull ProblemsHolder holder, @NotNull String text, boolean isOnTheFly) {
+        boolean hasSimple = text.contains("${") || text.contains("$simple{");
+        if (hasSimple && CamelIdeaUtils.isCamelSimpleExpression(element)) {
+            validateSimple(element, holder, text, isOnTheFly);
+        } else if (CamelIdeaUtils.isQueryContainingCamelComponent(element.getProject(), text)) {
+            validateEndpoint(element, holder, text, isOnTheFly);
+        }
+    }
 
-            // skip special values such as configuring ActiveMQ brokerURL
-            if (skipEndpointValidation(element)) {
-                LOG.debug("Skipping element " + element + " for validation with text: " + uri);
-                return;
+    private void validateSimple(@NotNull PsiElement element, final @NotNull ProblemsHolder holder, @NotNull String text, boolean isOnTheFly) {
+        CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
+        CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
+
+        try {
+            // need to use the classloader that can load classes from the camel-core
+            ClassLoader loader = camelService.getCamelCoreClassloader();
+            if (loader != null) {
+                SimpleValidationResult result;
+                boolean predicate = isCameSimpleExpressionUsedAsPredicate(element);
+                if (predicate) {
+                    LOG.debug("Inspecting simple predicate: " + text);
+                    result = catalogService.validateSimplePredicate(loader, text);
+                } else {
+                    LOG.debug("Inspecting simple expression: " + text);
+                    result = catalogService.validateSimpleExpression(loader, text);
+                }
+                if (!result.isSuccess()) {
+                    // favor the short error message
+                    String msg = result.getShortError();
+                    if (msg == null) {
+                        msg = result.getError();
+                    }
+                    holder.registerProblem(element, msg);
+                }
             }
+        } catch (Throwable e) {
+            LOG.warn("Error inspection Camel simple: " + text, e);
+        }
+    }
 
-            // camel catalog expects &amp; as & when it parses so replace all &amp; as &
-            String camelQuery = uri;
-            camelQuery = camelQuery.replaceAll("&amp;", "&");
+    private void validateEndpoint(@NotNull PsiElement element, final @NotNull ProblemsHolder holder, @NotNull String text, boolean isOnTheFly) {
+        CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
 
-            // strip up ending incomplete parameter
-            if (camelQuery.endsWith("&") || camelQuery.endsWith("?")) {
-                camelQuery = camelQuery.substring(0, camelQuery.length() - 1);
-            }
+        // skip special values such as configuring ActiveMQ brokerURL
+        if (skipEndpointValidation(element)) {
+            LOG.debug("Skipping element " + element + " for validation with text: " + text);
+            return;
+        }
 
-            boolean stringFormat = CamelIdeaUtils.isFromStringFormatEndpoint(element);
-            if (stringFormat) {
-                // if the node is fromF or toF, then replace all %X with {{%X}} as we cannot parse that value
-                camelQuery = camelQuery.replaceAll("%s", "\\{\\{\\%s\\}\\}");
-                camelQuery = camelQuery.replaceAll("%d", "\\{\\{\\%d\\}\\}");
-                camelQuery = camelQuery.replaceAll("%b", "\\{\\{\\%b\\}\\}");
-            }
+        // camel catalog expects &amp; as & when it parses so replace all &amp; as &
+        String camelQuery = text;
+        camelQuery = camelQuery.replaceAll("&amp;", "&");
 
-            boolean consumerOnly = CamelIdeaUtils.isConsumerEndpoint(element);
-            boolean producerOnly = CamelIdeaUtils.isProducerEndpoint(element);
+        // strip up ending incomplete parameter
+        if (camelQuery.endsWith("&") || camelQuery.endsWith("?")) {
+            camelQuery = camelQuery.substring(0, camelQuery.length() - 1);
+        }
 
-            try {
-                EndpointValidationResult result = catalogService.validateEndpointProperties(camelQuery, false, consumerOnly, producerOnly);
+        boolean stringFormat = CamelIdeaUtils.isFromStringFormatEndpoint(element);
+        if (stringFormat) {
+            // if the node is fromF or toF, then replace all %X with {{%X}} as we cannot parse that value
+            camelQuery = camelQuery.replaceAll("%s", "\\{\\{\\%s\\}\\}");
+            camelQuery = camelQuery.replaceAll("%d", "\\{\\{\\%d\\}\\}");
+            camelQuery = camelQuery.replaceAll("%b", "\\{\\{\\%b\\}\\}");
+        }
 
-                extractMapValue(result, result.getInvalidBoolean(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.BooleanErrorMsg());
-                extractMapValue(result, result.getInvalidEnum(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.EnumErrorMsg());
-                extractMapValue(result, result.getInvalidInteger(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.IntegerErrorMsg());
-                extractMapValue(result, result.getInvalidNumber(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.NumberErrorMsg());
-                extractMapValue(result, result.getInvalidReference(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.ReferenceErrorMsg());
-                extractSetValue(result, result.getUnknown(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.UnknownErrorMsg());
-                extractSetValue(result, result.getNotConsumerOnly(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.NotConsumerOnlyErrorMsg());
-                extractSetValue(result, result.getNotProducerOnly(), uri, element, holder, isOnTheFly, new CamelEndpointInspection.NotProducerOnlyErrorMsg());
-            } catch (Throwable e) {
-                LOG.warn("Error inspecting Camel endpoint: " + uri, e);
-            }
+        boolean consumerOnly = CamelIdeaUtils.isConsumerEndpoint(element);
+        boolean producerOnly = CamelIdeaUtils.isProducerEndpoint(element);
+
+        try {
+            EndpointValidationResult result = catalogService.validateEndpointProperties(camelQuery, false, consumerOnly, producerOnly);
+
+            extractMapValue(result, result.getInvalidBoolean(), text, element, holder, isOnTheFly, new CamelInspection.BooleanErrorMsg());
+            extractMapValue(result, result.getInvalidEnum(), text, element, holder, isOnTheFly, new CamelInspection.EnumErrorMsg());
+            extractMapValue(result, result.getInvalidInteger(), text, element, holder, isOnTheFly, new CamelInspection.IntegerErrorMsg());
+            extractMapValue(result, result.getInvalidNumber(), text, element, holder, isOnTheFly, new CamelInspection.NumberErrorMsg());
+            extractMapValue(result, result.getInvalidReference(), text, element, holder, isOnTheFly, new CamelInspection.ReferenceErrorMsg());
+            extractSetValue(result, result.getUnknown(), text, element, holder, isOnTheFly, new CamelInspection.UnknownErrorMsg());
+            extractSetValue(result, result.getNotConsumerOnly(), text, element, holder, isOnTheFly, new CamelInspection.NotConsumerOnlyErrorMsg());
+            extractSetValue(result, result.getNotProducerOnly(), text, element, holder, isOnTheFly, new CamelInspection.NotProducerOnlyErrorMsg());
+        } catch (Throwable e) {
+            LOG.warn("Error inspecting Camel endpoint: " + text, e);
         }
     }
 
