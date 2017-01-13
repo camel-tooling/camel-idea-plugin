@@ -29,6 +29,18 @@ However currently the code is located at github to allow faster and wider collab
 
 ![Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/01-endpoint-options.png)
 
+### IDEA Compatability
+
+The Camel IDEA plugin currently requires IDEA 2016.2 or newer.
+
+We are considering the possibility of supporting older versions, however we would appreciate help from the community to test the plugin on older versions, as the core developers are using the latest IDEA release such as 2016.3.
+
+We currently also run a twitter poll to get some data of the usage: https://twitter.com/davsclaus/status/819881627266465792
+
+The current plugin uses `since-build 162`
+
+IDEA provides more information about their SDK versions here: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
+
 
 ### How to install
 
