@@ -132,6 +132,8 @@
     <applicationConfigurable id="camel" displayName="Apache Camel" groupId="other"
                              instance="org.apache.camel.idea.preference.CamelPreferencePage"/>
 
+    <facetType implementation="org.apache.camel.idea.facet.CamelFacetType"/>
+    <framework.detector implementation="org.apache.camel.idea.facet.CamelFrameworkDetector"/>
   </extensions>
 
 </idea-plugin>
