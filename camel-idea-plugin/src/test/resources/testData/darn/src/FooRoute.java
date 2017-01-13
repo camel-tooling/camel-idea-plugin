@@ -14,31 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.inspection;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.main.Main;
 
-import com.intellij.psi.PsiElement;
-import org.jetbrains.annotations.NotNull;
+public final class FooRoute {
 
-import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
+    private FooRoute() { }
 
-public class CamelScalaInspection extends CamelInspection {
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Inspect Camel Scala";
+    public static void main(String[] args) {
+        Main main = new Main();
+        main.addRouteBuilder(new MyRouteBuilder());
+        main.run(args);
     }
 
-    @NotNull
-    @Override
-    public String getShortName() {
-        return "InspectCamelScala";
-    }
-
-    @Override
-    boolean accept(PsiElement element) {
-        // must be from Scala file
-        return isFromFileType(element, "scala");
+    public static class MyRouteBuilder extends RouteBuilder {
+        @Override
+        public void configure() throws Exception {
+            from("direct:start")
+                .transform().simple("Hello ${foo}")
+                .to("mock:result");
+        }
     }
 
 }

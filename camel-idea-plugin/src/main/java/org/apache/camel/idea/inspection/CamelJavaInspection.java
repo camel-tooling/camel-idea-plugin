@@ -16,7 +16,10 @@
  */
 package org.apache.camel.idea.inspection;
 
+import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
+
+import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 
 public class CamelJavaInspection extends CamelInspection {
 
@@ -37,6 +40,12 @@ public class CamelJavaInspection extends CamelInspection {
     @Override
     public String getShortName() {
         return "InspectCamelJava";
+    }
+
+    @Override
+    boolean accept(PsiElement element) {
+        // must be from Java file
+        return isFromFileType(element, "java");
     }
 
 }

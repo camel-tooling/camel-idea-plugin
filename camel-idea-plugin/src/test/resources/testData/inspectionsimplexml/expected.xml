@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>XmlSimpleInspectionTestData.xml</file>
+    <line>22</line>
+    <description>Unknown function: foo</description>
+  </problem>
+</problems>

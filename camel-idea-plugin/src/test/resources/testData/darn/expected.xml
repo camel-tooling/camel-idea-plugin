@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>FooRoute.java</file>
+    <line>34</line>
+    <description>Unknown function: foo</description>
+  </problem>
+</problems>

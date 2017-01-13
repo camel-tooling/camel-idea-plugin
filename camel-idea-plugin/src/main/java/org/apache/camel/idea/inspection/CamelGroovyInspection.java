@@ -16,7 +16,10 @@
  */
 package org.apache.camel.idea.inspection;
 
+import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
+
+import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 
 public class CamelGroovyInspection extends CamelInspection {
 
@@ -30,6 +33,12 @@ public class CamelGroovyInspection extends CamelInspection {
     @Override
     public String getShortName() {
         return "InspectCamelGroovy";
+    }
+
+    @Override
+    boolean accept(PsiElement element) {
+        // must be from Groovy file
+        return isFromFileType(element, "groovy");
     }
 
 }
