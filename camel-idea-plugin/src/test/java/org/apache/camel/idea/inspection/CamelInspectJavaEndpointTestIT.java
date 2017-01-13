@@ -28,7 +28,7 @@ public class CamelInspectJavaEndpointTestIT extends InspectionTestCase {
 
     public void testEndpointInspection() {
         // force Camel enabled so the inspection test can run
-        CamelJavaEndpointInspection inspection = new CamelJavaEndpointInspection(true);
+        CamelJavaInspection inspection = new CamelJavaInspection(true);
 
         doTest("testData/inspectionjava/", new LocalInspectionToolWrapper(inspection), "java 1.8");
     }

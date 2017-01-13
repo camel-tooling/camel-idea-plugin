@@ -16,20 +16,35 @@
  */
 package org.apache.camel.idea.inspection;
 
+import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 
-public class CamelScalaEndpointInspection extends CamelEndpointInspection {
+import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
+
+public class CamelXmlInspection extends CamelInspection {
+
+    public CamelXmlInspection() {
+    }
+
+    public CamelXmlInspection(boolean forceEnabled) {
+        super(forceEnabled);
+    }
 
     @NotNull
     @Override
     public String getDisplayName() {
-        return "Inspect Camel Scala endpoints";
+        return "Inspect Camel XML";
     }
 
     @NotNull
     @Override
     public String getShortName() {
-        return "InspectCamelScalaEndpoints";
+        return "InspectCamelXML";
     }
 
+    @Override
+    boolean accept(PsiElement element) {
+        // must be from XML file
+        return isFromFileType(element, "xml");
+    }
 }

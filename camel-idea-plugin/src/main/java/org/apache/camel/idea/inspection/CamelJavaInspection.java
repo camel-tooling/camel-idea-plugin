@@ -18,18 +18,25 @@ package org.apache.camel.idea.inspection;
 
 import org.jetbrains.annotations.NotNull;
 
-public class CamelKotlinEndpointInspection extends CamelEndpointInspection {
+public class CamelJavaInspection extends CamelInspection {
+
+    public CamelJavaInspection() {
+    }
+
+    public CamelJavaInspection(boolean forceEnabled) {
+        super(forceEnabled);
+    }
 
     @NotNull
     @Override
     public String getDisplayName() {
-        return "Inspect Camel Kotlin endpoints";
+        return "Inspect Camel Java";
     }
 
     @NotNull
     @Override
     public String getShortName() {
-        return "InspectCamelKotlinEndpoints";
+        return "InspectCamelJava";
     }
 
 }
