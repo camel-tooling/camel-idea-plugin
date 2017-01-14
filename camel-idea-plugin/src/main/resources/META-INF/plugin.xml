@@ -27,7 +27,8 @@
       <ul>
         <li>0.3.3 - Real time validation of Simple language now validates predicates vs expression mode.
                     Add Simple language to inspection (analyze code).
-                    Added XML language to real time validation of Simple language in editor</li>
+                    Added XML language to real time validation of Simple language in editor
+                    Custom Camel icon can be configured in the preference.</li>
         <li>0.3.2 - Real time validation of Simple language in editor for Java, Groovy, Kotlin, Scala, and XML.
                     Real time validation for Camel endpoints can now check in consumer and producer only mode.
                     Inspection (analyze code) to validate Camel endpoints in Java, Groovy, Kotlin, Scala, and XML.

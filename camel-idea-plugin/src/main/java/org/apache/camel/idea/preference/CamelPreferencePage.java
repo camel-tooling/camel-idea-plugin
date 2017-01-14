@@ -22,14 +22,11 @@ import javax.swing.*;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
-import com.intellij.openapi.fileTypes.FileType;
-import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.components.JBCheckBox;
-import org.apache.camel.idea.completion.CamelContributor;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
@@ -59,7 +56,7 @@ public class CamelPreferencePage implements Configurable {
         scanThirdPartyComponentsCatalogCheckBox = new JBCheckBox("Scan for third party Camel components using modern component packaging");
         scanThirdPartyLegacyComponentsCatalogCheckBox = new JBCheckBox("Scan the classpath for third party Camel components using legacy component packaging");
         camelIconInGutterCheckBox = new JBCheckBox("Show Camel icon in gutter");
-        customIconButton = new TextFieldWithBrowseButton(new JTextField("Custom Camel Icon"));
+        customIconButton = new TextFieldWithBrowseButton();
         customIconButton.addBrowseFolderListener("Choose Custom Camel Icon", "The icon should be a small 16x16 png file", null, FileChooserDescriptorFactory.createSingleFileDescriptor("png"));
 
         JPanel c = new JPanel(new BorderLayout());
@@ -81,7 +78,12 @@ public class CamelPreferencePage implements Configurable {
         settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
         settings.add(camelIconInGutterCheckBox, BorderLayout.NORTH);
         settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
-        settings.add(customIconButton, BorderLayout.NORTH);
+
+        JPanel iconPanel = new JPanel(new BorderLayout());
+        iconPanel.add(new JLabel("Custom Camel icon"), BorderLayout.WEST);
+        iconPanel.add(customIconButton, BorderLayout.EAST);
+
+        settings.add(iconPanel, BorderLayout.NORTH);
         settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
 
         reset();
