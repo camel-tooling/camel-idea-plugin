@@ -19,10 +19,17 @@ package org.apache.camel.idea;
 import java.io.File;
 import java.io.IOException;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.roots.ContentEntry;
+import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.testFramework.LightProjectDescriptor;
+import com.intellij.testFramework.PsiTestUtil;
+import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelService;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.jetbrains.annotations.NotNull;
 
 
 /**
@@ -31,6 +38,17 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
  */
 public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeInsightFixtureTestCase {
 
+    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.19.0-SNAPSHOT";
+    private static File[] mavenArtifacts;
+    private boolean ignoreCamelCoreLib;
+
+    static {
+        try {
+            mavenArtifacts = getMavenArtifacts(CAMEL_CORE_MAVEN_ARTIFACT);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -39,6 +57,19 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(true);
     }
 
+    @Override
+    protected LightProjectDescriptor getProjectDescriptor() {
+
+        return new DefaultLightProjectDescriptor() {
+            @Override
+            public void configureModule(@NotNull Module module, @NotNull ModifiableRootModel model, @NotNull ContentEntry contentEntry) {
+                super.configureModule(module, model, contentEntry);
+                if (!isIgnoreCamelCoreLib()) {
+                    PsiTestUtil.addLibrary(module, model, "Maven: " + CAMEL_CORE_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
+                }
+            }
+        };
+    }
     @Override
     protected String getTestDataPath() {
         return "src/test/resources/testData/";
@@ -53,8 +84,18 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
      * @return Array of artifact files
      * @throws IOException
      */
-    protected File[] getMavenArtifacts(String... mavneAritfiact) throws IOException {
-        File[] libs = Maven.resolver().loadPomFromFile("pom.xml").resolve(mavneAritfiact).withoutTransitivity().asFile();
+    protected static File[] getMavenArtifacts(String... mavneAritfiact) throws IOException {
+        File[] libs = Maven.configureResolver().withMavenCentralRepo(false)
+            .withRemoteRepo("apache.snapshots", "http://repository.apache.org/snapshots/", "default")
+            .resolve(mavneAritfiact).withoutTransitivity().asFile();
         return libs;
+    }
+
+    public boolean isIgnoreCamelCoreLib() {
+        return this.ignoreCamelCoreLib;
+    }
+
+    public void setIgnoreCamelCoreLib(boolean ignoreCamelCoreLib) {
+        this.ignoreCamelCoreLib = ignoreCamelCoreLib;
     }
 }

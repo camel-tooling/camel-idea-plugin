@@ -26,8 +26,10 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
  */
 public class CamelCatalogServiceTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
+
     @Override
     protected void setUp() throws Exception {
+        setIgnoreCamelCoreLib(true);
         super.setUp();
         ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(false);
     }

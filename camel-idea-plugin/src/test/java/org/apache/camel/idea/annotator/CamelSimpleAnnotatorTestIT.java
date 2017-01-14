@@ -16,17 +16,6 @@
  */
 package org.apache.camel.idea.annotator;
 
-import java.io.File;
-
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.roots.ModuleRootModificationUtil;
-import com.intellij.openapi.roots.OrderRootType;
-import com.intellij.openapi.roots.libraries.Library;
-import com.intellij.openapi.roots.libraries.LibraryTable;
-import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.ui.UIUtil;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
 
@@ -35,25 +24,16 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
  * TIP : Writing highlighting test can be tricky because if the highlight is one character off
  * it will fail, but the error messaged might still be correct. In this case it's likely the TextRange
  * is incorrect.
+ *
+ * So far we can have been able to avoid pointing the -Didea.home.path=<location of Intellij CI source code>
+ * because it's didn't really matter it could not resolve JDK classes when testing highlight. If you need
+ * to resolve the JDK classes you will have to point the idea.home.path to the right location
  */
 public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
-    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.19.0-SNAPSHOT";
-
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        File[] mavenArtifacts = getMavenArtifacts(CAMEL_CORE_MAVEN_ARTIFACT);
-        VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(mavenArtifacts[0]);
-        final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myModule.getProject());
-        ApplicationManager.getApplication().runWriteAction(() -> {
-            Library library = projectLibraryTable.createLibrary("Maven: " + CAMEL_CORE_MAVEN_ARTIFACT);
-            final Library.ModifiableModel libraryModifiableModel = library.getModifiableModel();
-            libraryModifiableModel.addRoot(virtualFile, OrderRootType.CLASSES);
-            libraryModifiableModel.commit();
-            ModuleRootModificationUtil.addDependency(myModule, library);
-        });
-        UIUtil.dispatchAllInvocationEvents();
+    protected String getTestDataPath() {
+        return "src/test/resources/testData/annotator";
     }
 
     public void testAnnotatorSimpleValidation() {
@@ -71,10 +51,24 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
         myFixture.checkHighlighting(false, false, true, true);
     }
 
-    public void testAnnotatorPredicateValidation() {
-        // TODO: Need to fix the issue with JDK classes are not resolved
-       // myFixture.configureByText("AnnotatorTestData.java", getJavaWithPredicate());
-       // myFixture.checkHighlighting(false, false, true, true);
+    public void testAnnotatorCamelPredicateValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaWithCamelPredicate());
+        myFixture.checkHighlighting(false, false, false, true);
+    }
+
+    public void testAnnotatorCamelPredicateValidation2() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaWithCamelPredicate2());
+        myFixture.checkHighlighting(false, false, false, true);
+    }
+
+    public void testXmlAnnotatorSimpleValidation2() {
+        myFixture.configureByText("AnnotatorTestData.xml", getXmlWithSimple());
+        myFixture.checkHighlighting(false, false, false, true);
+    }
+
+    public void testXmlAnnotatorPredicateValidation2() {
+        myFixture.configureByText("AnnotatorTestData.xml", getXmlWithPredicate());
+        myFixture.checkHighlighting(false, false, false, true);
     }
 
     private String getJavaWithSimple() {
@@ -113,17 +107,56 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
             + "    }";
     }
 
-    private String getJavaWithPredicate() {
+    private String getJavaWithCamelPredicate() {
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
             + "        public void configure() throws Exception {\n"
             + "              from(\"direct:start\")\n"
-            + "                .loopDoWhile(simple(\"${body.length} <error descr=\"Unknown function: xrouteId\">=!=</error> 12\"))\n"
+            + "                .loopDoWhile(simple(\"${body.length} <error descr=\"Unexpected token =\">=!=</error> 12\"))\n"
             + "                .to(\"mock:loop\")\n"
             + "                .transform(body().append(\"A\"))\n"
             + "                .end()\n"
             + "                .to(\"mock:result\");"
             + "        }\n"
             + "    }";
+    }
+
+    private String getJavaWithCamelPredicate2() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "              from(\"direct:start\")\n"
+            + "                .loopDoWhile(simple(\"${body.length} != 12\"))\n"
+            + "                .filter().simple(<error descr=\"Unexpected token x\">\"xxxx\"</error>)\n"
+            + "                .filter(simple(<error descr=\"Unexpected token y\">\"yyyy\"</error>))\n"
+            + "                .to(\"mock:loop\")\n"
+            + "                .transform(body().append(\"A\"))\n"
+            + "                .end()\n"
+            + "                .to(\"mock:result\");"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getXmlWithSimple() {
+        return "<camelContext xmlns=\"http://camel.apache.org/schema/spring\">\n"
+            + "  <route id=\"timerToInRoute\">\n"
+            + "  <from uri=\"timer:foo?period=1s\"/>\n"
+            + "  <transform>\n"
+            + "  <simple>Message at <error descr=\"Unknown function: daxcdte:now:yyyy-MM-dd HH:mm:ss\">${daxcdte:now:yyyy-MM-dd HH:mm:ss}</error></simple>\n"
+            + "  </transform>\n"
+            + "  <to uri=\"activemq:queue:inbox\"/>\n"
+            + "  </camelContext>";
+    }
+
+    private String getXmlWithPredicate() {
+        return "<from uri=\"direct:start\"/>\n"
+            + "    <loop doWhile=\"true\">\n"
+            + "      <simple>${body.length} !s1= 12</simple>\n"
+            + "      <filter/><simple><error descr=\"Unexpected token x\">xxxx</error></simple>\n"
+            + "      <filter>\n"
+            + "        <simple><error descr=\"Unexpected token y\">yyyy</error></simple>\n"
+            + "      </filter>\n"
+            + "    </loop>\n"
+            + "    <to>mock:result</to>";
     }
 }
