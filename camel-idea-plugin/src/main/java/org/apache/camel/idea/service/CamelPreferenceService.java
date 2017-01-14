@@ -31,9 +31,10 @@ import org.apache.camel.idea.util.StringUtils;
  */
 public class CamelPreferenceService implements Disposable {
 
-    private static final Logger LOG = Logger.getInstance(CamelPreferenceService.class);
+    public static final Icon DEFAULT_CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
+    public static final Icon ALTERNATIVE_CAMEL_ICON = IconLoader.getIcon("/icons/camel2.png");
 
-    private static final Icon DEFAULT_CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
+    private static final Logger LOG = Logger.getInstance(CamelPreferenceService.class);
 
     private volatile Icon currentCustomIcon;
     private volatile String currentCustomIconPath;
@@ -44,7 +45,8 @@ public class CamelPreferenceService implements Disposable {
     private boolean scanThirdPartyComponents = true;
     private boolean scanThirdPartyLegacyComponents = true;
     private boolean showCamelIconInGutter = true;
-    private String customIcon;
+    private String chosenCamelIcon = "Default Icon";
+    private String customIconFilePath;
 
     public boolean isRealTimeEndpointValidation() {
         return realTimeEndpointValidation;
@@ -94,25 +96,39 @@ public class CamelPreferenceService implements Disposable {
         this.showCamelIconInGutter = showCamelIconInGutter;
     }
 
-    public String getCustomIcon() {
-        return customIcon;
+    public String getChosenCamelIcon() {
+        return chosenCamelIcon;
     }
 
-    public void setCustomIcon(String customIcon) {
-        this.customIcon = customIcon;
+    public void setChosenCamelIcon(String chosenCamelIcon) {
+        this.chosenCamelIcon = chosenCamelIcon;
+    }
+
+    public String getCustomIconFilePath() {
+        return customIconFilePath;
+    }
+
+    public void setCustomIconFilePath(String customIconFilePath) {
+        this.customIconFilePath = customIconFilePath;
     }
 
     public Icon getCamelIcon() {
-        if (StringUtils.isNotEmpty(customIcon)) {
+        if (chosenCamelIcon.equals("Default Icon")) {
+            return DEFAULT_CAMEL_ICON;
+        } else if (chosenCamelIcon.equals("Alternative Icon")) {
+            return ALTERNATIVE_CAMEL_ICON;
+        }
+
+        if (StringUtils.isNotEmpty(customIconFilePath)) {
 
             // use cached current icon
-            if (customIcon.equals(currentCustomIconPath)) {
+            if (customIconFilePath.equals(currentCustomIconPath)) {
                 return currentCustomIcon;
             }
 
-            Icon icon = IconLoader.findIcon(customIcon);
+            Icon icon = IconLoader.findIcon(customIconFilePath);
             if (icon == null) {
-                File file = new File(customIcon);
+                File file = new File(customIconFilePath);
                 if (file.exists() && file.isFile()) {
                     try {
                         URL url = new URL("file:" + file.getAbsolutePath());
@@ -126,7 +142,7 @@ public class CamelPreferenceService implements Disposable {
             if (icon != null) {
                 // cache current icon
                 currentCustomIcon = icon;
-                currentCustomIconPath = customIcon;
+                currentCustomIconPath = customIconFilePath;
                 return currentCustomIcon;
             }
         }
