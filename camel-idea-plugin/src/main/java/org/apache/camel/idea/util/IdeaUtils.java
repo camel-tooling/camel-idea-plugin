@@ -429,28 +429,69 @@ public final class IdeaUtils {
     }
 
     public static boolean isPrevSiblingFromGroovyMethod(PsiElement element, String... methods) {
+        boolean found = false;
+
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // must be a groovy string kind
         String kind = element.toString();
         if (kind.contains("Gstring") || kind.contains("(string)")) {
-            PsiElement parent = element.getParent();
-            if (parent != null) {
-                parent = parent.getParent();
+
+            // there are two ways to dig into the groovy ast so try first and then second
+            PsiElement first = element.getParent();
+            if (first != null) {
+                first = first.getParent();
             }
-            if (parent != null) {
-                element = parent.getPrevSibling();
+            if (first != null) {
+                first = first.getPrevSibling();
             }
-            if (element != null) {
-                element = element.getFirstChild();
+            if (first != null) {
+                first = first.getFirstChild();
             }
-            if (element != null) {
-                element = element.getFirstChild();
+            if (first != null) {
+                first = first.getFirstChild();
             }
-            if (element != null) {
-                element = element.getLastChild();
+            if (first != null) {
+                first = first.getLastChild();
+            }
+            if (first != null) {
+                kind = first.toString();
+                found = kind.contains("identifier");
+                if (found) {
+                    element = first;
+                }
+            }
+
+            if (!found) {
+                PsiElement second = element.getParent();
+                if (second != null) {
+                    second = second.getParent();
+                }
+                if (second != null) {
+                    second = second.getParent();
+                }
+                if (second != null) {
+                    second = second.getPrevSibling();
+                }
+                if (second != null) {
+                    second = second.getParent();
+                }
+                if (second != null) {
+                    second = second.getPrevSibling();
+                }
+                if (second != null) {
+                    second = second.getLastChild();
+                }
+                if (second != null) {
+                    kind = second.toString();
+                    found = kind.contains("identifier");
+                    if (found) {
+                        element = second;
+                    }
+                }
             }
         }
-        if (element != null) {
+
+        if (found) {
             kind = element.toString();
             // must be an identifier which is part of the method call
             if (kind.contains("identifier")) {
