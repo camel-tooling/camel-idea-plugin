@@ -120,7 +120,7 @@
     <dependency>
       <groupId>com.miglayout</groupId>
       <artifactId>miglayout-swing</artifactId>
-      <version>5.0</version>
+      <version>${miglayout.version}</version>
     </dependency>
 
     <!-- Test -->
