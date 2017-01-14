@@ -17,6 +17,8 @@
 package org.apache.camel.idea.service;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import javax.swing.*;
 
 import com.intellij.openapi.Disposable;
@@ -112,14 +114,21 @@ public class CamelPreferenceService implements Disposable {
             if (icon == null) {
                 File file = new File(customIcon);
                 if (file.exists() && file.isFile()) {
-                    icon = new ImageIcon(customIcon);
+                    try {
+                        URL url = new URL("file:" + file.getAbsolutePath());
+                        icon = IconLoader.findIcon(url, true);
+                    } catch (MalformedURLException e) {
+                        LOG.warn("Error loading custom icon", e);
+                    }
                 }
             }
 
-            // cache current icon
-            currentCustomIcon = icon;
-            currentCustomIconPath = customIcon;
-            return currentCustomIcon;
+            if (icon != null) {
+                // cache current icon
+                currentCustomIcon = icon;
+                currentCustomIconPath = customIcon;
+                return currentCustomIcon;
+            }
         }
 
         return DEFAULT_CAMEL_ICON;
