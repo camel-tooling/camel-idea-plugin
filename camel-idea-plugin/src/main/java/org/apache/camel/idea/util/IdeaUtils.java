@@ -394,13 +394,57 @@ public final class IdeaUtils {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // must be a groovy string kind
         String kind = element.toString();
-        if (kind.contains("Gstring")) {
+        if (kind.contains("Gstring") || kind.contains("(string)")) {
             PsiElement parent = element.getParent();
             if (parent != null) {
                 parent = parent.getParent();
             }
             if (parent != null) {
                 element = parent.getPrevSibling();
+            }
+            if (element != null) {
+                element = element.getLastChild();
+            }
+        }
+        if (element != null) {
+            kind = element.toString();
+            // must be an identifier which is part of the method call
+            if (kind.contains("identifier")) {
+                String name = element.getText();
+                boolean match = Arrays.stream(methods).anyMatch(name::equals);
+                if (match) {
+                    // sanity check that "from" was from a from a method call
+                    PsiElement parent = element.getParent();
+                    if (parent != null) {
+                        parent = parent.getParent();
+                    }
+                    if (parent != null) {
+                        kind = parent.toString();
+                    }
+                    return kind.contains("Method call");
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean isPrevSiblingFromGroovyMethod(PsiElement element, String... methods) {
+        // need to walk a bit into the psi tree to find the element that holds the method call name
+        // must be a groovy string kind
+        String kind = element.toString();
+        if (kind.contains("Gstring") || kind.contains("(string)")) {
+            PsiElement parent = element.getParent();
+            if (parent != null) {
+                parent = parent.getParent();
+            }
+            if (parent != null) {
+                element = parent.getPrevSibling();
+            }
+            if (element != null) {
+                element = element.getFirstChild();
+            }
+            if (element != null) {
+                element = element.getFirstChild();
             }
             if (element != null) {
                 element = element.getLastChild();
