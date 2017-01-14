@@ -25,8 +25,8 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.components.JBCheckBox;
+import net.miginfocom.swing.MigLayout;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
@@ -59,36 +59,26 @@ public class CamelPreferencePage implements Configurable {
         customIconButton = new TextFieldWithBrowseButton();
         customIconButton.addBrowseFolderListener("Choose Custom Camel Icon", "The icon should be a small 16x16 png file", null, FileChooserDescriptorFactory.createSingleFileDescriptor("png"));
 
-        JPanel c = new JPanel(new BorderLayout());
+        // use mig layout which is like a spread-sheet with 2 columns, which we can span if we only have one element
+        JPanel panel = new JPanel(new MigLayout("fillx,wrap 2", "[left]rel[grow,fill]"));
+        panel.setOpaque(false);
 
-        JPanel settings = new JPanel(new BorderLayout());
-        settings.setBorder(IdeBorderFactory.createTitledBorder("Settings", true));
-        c.add(c = new JPanel(new BorderLayout()), BorderLayout.NORTH);
-        c.add(settings, BorderLayout.NORTH);
+        panel.add(realTimeEndpointValidationCatalogCheckBox, "span 2");
+        panel.add(realTimeSimpleValidationCatalogCheckBox, "span 2");
+        panel.add(downloadCatalogCheckBox, "span 2");
+        panel.add(scanThirdPartyComponentsCatalogCheckBox, "span 2");
+        panel.add(scanThirdPartyLegacyComponentsCatalogCheckBox, "span 2");
+        panel.add(camelIconInGutterCheckBox, "span 2");
 
-        settings.add(realTimeEndpointValidationCatalogCheckBox, BorderLayout.NORTH);
-        settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
-        settings.add(realTimeSimpleValidationCatalogCheckBox, BorderLayout.NORTH);
-        settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
-        settings.add(downloadCatalogCheckBox, BorderLayout.NORTH);
-        settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
-        settings.add(scanThirdPartyComponentsCatalogCheckBox, BorderLayout.NORTH);
-        settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
-        settings.add(scanThirdPartyLegacyComponentsCatalogCheckBox, BorderLayout.NORTH);
-        settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
-        settings.add(camelIconInGutterCheckBox, BorderLayout.NORTH);
-        settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
+        panel.add(new JLabel("Custom Camel Icon"));
+        panel.add(customIconButton);
 
-        JPanel iconPanel = new JPanel(new BorderLayout());
-        iconPanel.add(new JLabel("Custom Camel icon"), BorderLayout.WEST);
-        iconPanel.add(customIconButton, BorderLayout.EAST);
-
-        settings.add(iconPanel, BorderLayout.NORTH);
-        settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
+        JPanel result = new JPanel(new BorderLayout());
+        result.add(panel, BorderLayout.NORTH);
 
         reset();
 
-        return c;
+        return result;
     }
 
     @Nls
