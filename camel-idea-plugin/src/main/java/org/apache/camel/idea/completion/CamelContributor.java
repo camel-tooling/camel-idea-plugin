@@ -47,8 +47,6 @@ import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
  */
 public abstract class CamelContributor extends CompletionContributor {
 
-    public static final Icon CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
-
     public static final NotificationGroup CAMEL_NOTIFICATION_GROUP = NotificationGroup.balloonGroup("Apache Camel");
 
     private final List<CamelCompletionExtension> camelCompletionExtensions = new ArrayList<>();

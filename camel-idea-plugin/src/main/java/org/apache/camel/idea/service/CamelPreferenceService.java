@@ -16,12 +16,27 @@
  */
 package org.apache.camel.idea.service;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.swing.*;
+
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.IconLoader;
+import org.apache.camel.idea.util.StringUtils;
 
 /**
  * Service for holding preference for this plugin.
  */
 public class CamelPreferenceService implements Disposable {
+
+    private static final Logger LOG = Logger.getInstance(CamelPreferenceService.class);
+
+    private static final Icon DEFAULT_CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
+
+    private volatile Icon currentCustomIcon;
+    private volatile String currentCustomIconPath;
 
     private boolean realTimeEndpointValidation = true;
     private boolean realTimeSimpleValidation = true;
@@ -29,6 +44,7 @@ public class CamelPreferenceService implements Disposable {
     private boolean scanThirdPartyComponents = true;
     private boolean scanThirdPartyLegacyComponents = true;
     private boolean showCamelIconInGutter = true;
+    private String customIcon;
 
     public boolean isRealTimeEndpointValidation() {
         return realTimeEndpointValidation;
@@ -76,6 +92,46 @@ public class CamelPreferenceService implements Disposable {
 
     public void setShowCamelIconInGutter(boolean showCamelIconInGutter) {
         this.showCamelIconInGutter = showCamelIconInGutter;
+    }
+
+    public String getCustomIcon() {
+        return customIcon;
+    }
+
+    public void setCustomIcon(String customIcon) {
+        this.customIcon = customIcon;
+    }
+
+    public Icon getCamelIcon() {
+        if (StringUtils.isNotEmpty(customIcon)) {
+
+            // use cached current icon
+            if (customIcon.equals(currentCustomIconPath)) {
+                return currentCustomIcon;
+            }
+
+            Icon icon = IconLoader.findIcon(customIcon);
+            if (icon == null) {
+                File file = new File(customIcon);
+                if (file.exists() && file.isFile()) {
+                    try {
+                        URL url = new URL("file:" + file.getAbsolutePath());
+                        icon = IconLoader.findIcon(url, true);
+                    } catch (MalformedURLException e) {
+                        LOG.warn("Error loading custom icon", e);
+                    }
+                }
+            }
+
+            if (icon != null) {
+                // cache current icon
+                currentCustomIcon = icon;
+                currentCustomIconPath = customIcon;
+                return currentCustomIcon;
+            }
+        }
+
+        return DEFAULT_CAMEL_ICON;
     }
 
     @Override

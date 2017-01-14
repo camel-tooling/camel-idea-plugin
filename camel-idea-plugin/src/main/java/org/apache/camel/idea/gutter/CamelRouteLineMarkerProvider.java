@@ -17,12 +17,12 @@
 package org.apache.camel.idea.gutter;
 
 import java.util.Collection;
+import javax.swing.*;
 
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.psi.PsiElement;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
@@ -38,17 +38,22 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
     protected void collectNavigationMarkers(@NotNull PsiElement element,
                                             Collection<? super RelatedItemLineMarkerInfo> result) {
 
-        boolean showIcon = ServiceManager.getService(CamelPreferenceService.class).isShowCamelIconInGutter();
+        boolean showIcon = getCamelPreferenceService().isShowCamelIconInGutter();
+        Icon icon = getCamelPreferenceService().getCamelIcon();
 
         if (showIcon && ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
             if (CamelIdeaUtils.isCamelRouteStart(element)) {
                 NavigationGutterIconBuilder<PsiElement> builder =
-                    NavigationGutterIconBuilder.create(IconLoader.getIcon("/icons/camel.png")).
+                    NavigationGutterIconBuilder.create(icon).
                         setTargets(element).
                         setTooltipText("Camel route");
                 result.add(builder.createLineMarkerInfo(element));
             }
         }
+    }
+
+    private CamelPreferenceService getCamelPreferenceService() {
+        return ServiceManager.getService(CamelPreferenceService.class);
     }
 
 }
