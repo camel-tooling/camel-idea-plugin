@@ -70,7 +70,7 @@ public class CamelPreferencePage implements Configurable {
         panel.add(scanThirdPartyLegacyComponentsCatalogCheckBox, "span 2");
         panel.add(camelIconInGutterCheckBox, "span 2");
 
-        panel.add(new JLabel("Custom Camel Icon"));
+        panel.add(new JLabel("Custom Camel icon"));
         panel.add(customIconButton);
 
         JPanel result = new JPanel(new BorderLayout());
