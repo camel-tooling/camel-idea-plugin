@@ -42,12 +42,12 @@ import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.ModelHelper;
 import org.apache.camel.idea.service.CamelCatalogService;
+import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
-import static org.apache.camel.idea.completion.CamelContributor.CAMEL_ICON;
 import static org.apache.camel.idea.util.IdeaUtils.extractTextFromElement;
 
 public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction implements Iconable, LowPriorityAction {
@@ -125,7 +125,7 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
     @Override
     public Icon getIcon(@IconFlags int flags) {
-        return CAMEL_ICON;
+        return getCamelPreferenceService().getCamelIcon();
     }
 
     private static List<String> findCamelComponentNamesInArtifact(Set<String> artifactIds, boolean consumerOnly, Project project) {
@@ -154,6 +154,10 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         Collections.sort(names);
 
         return names;
+    }
+
+    private CamelPreferenceService getCamelPreferenceService() {
+        return ServiceManager.getService(CamelPreferenceService.class);
     }
 
 }

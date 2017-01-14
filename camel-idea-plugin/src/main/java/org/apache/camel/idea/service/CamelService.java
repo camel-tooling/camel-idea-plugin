@@ -34,6 +34,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.stream.Collectors;
 
+import javax.swing.*;
+
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.Disposable;
@@ -50,7 +52,6 @@ import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.catalog.CatalogHelper.loadText;
-import static org.apache.camel.idea.completion.CamelContributor.CAMEL_ICON;
 import static org.apache.camel.idea.completion.CamelContributor.CAMEL_NOTIFICATION_GROUP;
 import static org.apache.camel.idea.util.IdeaUtils.newURLClassLoaderForLibrary;
 
@@ -274,7 +275,8 @@ public class CamelService implements Disposable {
                 + "] does not include component JSon schema metadata which is required for the Camel IDEA plugin to support these components."
                 + "\nSee more details at: " + MISSING_JSON_SCHEMA_LINK;
 
-            camelMissingJSonSchemaNotification = CAMEL_NOTIFICATION_GROUP.createNotification(message, NotificationType.WARNING).setImportant(true).setIcon(CAMEL_ICON);
+            Icon icon = getCamelPreferenceService().getCamelIcon();
+            camelMissingJSonSchemaNotification = CAMEL_NOTIFICATION_GROUP.createNotification(message, NotificationType.WARNING).setImportant(true).setIcon(icon);
             camelMissingJSonSchemaNotification.notify(project);
         }
     }

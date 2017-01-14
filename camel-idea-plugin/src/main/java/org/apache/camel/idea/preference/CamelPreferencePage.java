@@ -17,13 +17,19 @@
 package org.apache.camel.idea.preference;
 
 import java.awt.*;
+import java.util.Objects;
 import javax.swing.*;
 
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.components.JBCheckBox;
+import org.apache.camel.idea.completion.CamelContributor;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
@@ -39,6 +45,7 @@ public class CamelPreferencePage implements Configurable {
     private JBCheckBox scanThirdPartyComponentsCatalogCheckBox;
     private JBCheckBox scanThirdPartyLegacyComponentsCatalogCheckBox;
     private JBCheckBox camelIconInGutterCheckBox;
+    private TextFieldWithBrowseButton customIconButton;
 
     public CamelPreferencePage() {
     }
@@ -52,6 +59,8 @@ public class CamelPreferencePage implements Configurable {
         scanThirdPartyComponentsCatalogCheckBox = new JBCheckBox("Scan for third party Camel components using modern component packaging");
         scanThirdPartyLegacyComponentsCatalogCheckBox = new JBCheckBox("Scan the classpath for third party Camel components using legacy component packaging");
         camelIconInGutterCheckBox = new JBCheckBox("Show Camel icon in gutter");
+        customIconButton = new TextFieldWithBrowseButton(new JTextField("Custom Camel Icon"));
+        customIconButton.addBrowseFolderListener("Choose Custom Camel Icon", "The icon should be a small 16x16 png file", null, FileChooserDescriptorFactory.createSingleFileDescriptor("png"));
 
         JPanel c = new JPanel(new BorderLayout());
 
@@ -71,6 +80,8 @@ public class CamelPreferencePage implements Configurable {
         settings.add(scanThirdPartyLegacyComponentsCatalogCheckBox, BorderLayout.NORTH);
         settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
         settings.add(camelIconInGutterCheckBox, BorderLayout.NORTH);
+        settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
+        settings.add(customIconButton, BorderLayout.NORTH);
         settings.add(settings = new JPanel(new BorderLayout()), BorderLayout.SOUTH);
 
         reset();
@@ -97,7 +108,8 @@ public class CamelPreferencePage implements Configurable {
             || getCamelPreferenceService().isDownloadCatalog() != downloadCatalogCheckBox.isSelected()
             || getCamelPreferenceService().isScanThirdPartyComponents() != scanThirdPartyComponentsCatalogCheckBox.isSelected()
             || getCamelPreferenceService().isScanThirdPartyLegacyComponents() != scanThirdPartyLegacyComponentsCatalogCheckBox.isSelected()
-            || getCamelPreferenceService().isShowCamelIconInGutter() != camelIconInGutterCheckBox.isSelected();
+            || getCamelPreferenceService().isShowCamelIconInGutter() != camelIconInGutterCheckBox.isSelected()
+            || !Objects.equals(getCamelPreferenceService().getCustomIcon(), customIconButton.getText());
     }
 
     @Override
@@ -108,6 +120,7 @@ public class CamelPreferencePage implements Configurable {
         getCamelPreferenceService().setScanThirdPartyComponents(scanThirdPartyComponentsCatalogCheckBox.isSelected());
         getCamelPreferenceService().setScanThirdPartyLegacyComponents(scanThirdPartyLegacyComponentsCatalogCheckBox.isSelected());
         getCamelPreferenceService().setShowCamelIconInGutter(camelIconInGutterCheckBox.isSelected());
+        getCamelPreferenceService().setCustomIcon(customIconButton.getText());
     }
 
     @Override
@@ -118,6 +131,7 @@ public class CamelPreferencePage implements Configurable {
         scanThirdPartyComponentsCatalogCheckBox.setSelected(getCamelPreferenceService().isScanThirdPartyComponents());
         scanThirdPartyLegacyComponentsCatalogCheckBox.setSelected(getCamelPreferenceService().isScanThirdPartyLegacyComponents());
         camelIconInGutterCheckBox.setSelected(getCamelPreferenceService().isShowCamelIconInGutter());
+        customIconButton.setText(getCamelPreferenceService().getCustomIcon());
     }
 
     private CamelPreferenceService getCamelPreferenceService() {
