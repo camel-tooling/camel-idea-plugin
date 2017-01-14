@@ -121,6 +121,7 @@
     <!-- annotator to validate simple language -->
     <annotator language="JAVA" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
     <annotator language="XML" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
+    <annotator language="Groovy" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
 
     <!-- inspection to validate endpoints -->
     <localInspection groupName="Apache Camel" language="JAVA" implementationClass="org.apache.camel.idea.inspection.CamelJavaInspection"/>

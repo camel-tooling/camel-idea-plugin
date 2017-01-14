@@ -49,7 +49,8 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
         boolean hasSimple = text.contains("${") || text.contains("$simple{");
-        if (hasSimple && CamelIdeaUtils.isCamelSimpleExpression(element)) {
+        if (hasSimple
+            && CamelIdeaUtils.isCamelSimpleExpression(element)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
             CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
 
