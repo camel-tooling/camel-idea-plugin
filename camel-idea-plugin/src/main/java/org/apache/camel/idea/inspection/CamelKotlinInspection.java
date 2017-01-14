@@ -16,21 +16,29 @@
  */
 package org.apache.camel.idea.inspection;
 
-import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
-import com.intellij.testFramework.InspectionTestCase;
+import com.intellij.psi.PsiElement;
+import org.jetbrains.annotations.NotNull;
 
-public class CamelInspectJavaEndpointTestIT extends InspectionTestCase {
+import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 
+public class CamelKotlinInspection extends CamelInspection {
+
+    @NotNull
     @Override
-    protected String getTestDataPath() {
-        return "src/test/resources/";
+    public String getDisplayName() {
+        return "Inspect Camel Kotlin";
     }
 
-    public void testEndpointInspection() {
-        // force Camel enabled so the inspection test can run
-        CamelJavaInspection inspection = new CamelJavaInspection(true);
+    @NotNull
+    @Override
+    public String getShortName() {
+        return "InspectCamelKotlin";
+    }
 
-        doTest("testData/inspectionjava/", new LocalInspectionToolWrapper(inspection), "java 1.8");
+    @Override
+    boolean accept(PsiElement element) {
+        // must be from Kotlin file
+        return isFromFileType(element, "kt");
     }
 
 }

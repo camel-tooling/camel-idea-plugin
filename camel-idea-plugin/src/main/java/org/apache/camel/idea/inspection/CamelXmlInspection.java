@@ -21,25 +21,25 @@ import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 
-public class CamelXmlEndpointInspection extends CamelEndpointInspection {
+public class CamelXmlInspection extends CamelInspection {
 
-    public CamelXmlEndpointInspection() {
+    public CamelXmlInspection() {
     }
 
-    public CamelXmlEndpointInspection(boolean forceEnabled) {
+    public CamelXmlInspection(boolean forceEnabled) {
         super(forceEnabled);
     }
 
     @NotNull
     @Override
     public String getDisplayName() {
-        return "Inspect Camel XML endpoints";
+        return "Inspect Camel XML";
     }
 
     @NotNull
     @Override
     public String getShortName() {
-        return "InspectCamelXMLEndpoints";
+        return "InspectCamelXML";
     }
 
     @Override

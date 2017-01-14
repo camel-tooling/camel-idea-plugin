@@ -21,6 +21,7 @@ The plugin includes:
 - Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)
 - Attempts to use same version as camel-core dependency from the loaded project (requires Camel 2.16.1 or newer and may require download over internet)
 - Inspection (analyze code) to validate Camel endpoints in Java, Groovy, Kotlin, Scala, XML
+- Camel icon in gutter can be customized by either the two provided icons or load a custom from file system 
 
 When the plugin becomes more complete and stable then the intention is to donate the source code
 to Apache Software Foundation to be included out of the box at Apache Camel.
@@ -28,6 +29,18 @@ to Apache Software Foundation to be included out of the box at Apache Camel.
 However currently the code is located at github to allow faster and wider collaboration in the community.
 
 ![Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/01-endpoint-options.png)
+
+### IDEA Compatability
+
+The Camel IDEA plugin currently requires IDEA 2016.2 or newer.
+
+We are considering the possibility of supporting older versions, however we would appreciate help from the community to test the plugin on older versions, as the core developers are using the latest IDEA release such as 2016.3.
+
+We currently also run a twitter poll to get some data of the usage: https://twitter.com/davsclaus/status/819881627266465792
+
+The current plugin uses `since-build 162`
+
+IDEA provides more information about their SDK versions here: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
 
 
 ### How to install

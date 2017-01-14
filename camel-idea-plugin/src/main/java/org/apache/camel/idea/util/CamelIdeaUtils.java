@@ -19,6 +19,7 @@ package org.apache.camel.idea.util;
 import java.util.Arrays;
 
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
@@ -44,6 +45,15 @@ import static org.apache.camel.idea.util.IdeaUtils.isFromConstructor;
  * This class is only for Camel related IDEA APIs. If you need only IDEA APIs then use {@link IdeaUtils} instead.
  */
 public final class CamelIdeaUtils {
+
+    private static final Logger LOG = Logger.getInstance(CamelIdeaUtils.class);
+
+    private static final String[] ACCEPTED_NAMESPACES = new String[]{
+        "http://camel.apache.org/schema/spring",
+        "http://camel.apache.org/schema/blueprint",
+        "http://www.springframework.org/schema/beans",
+        "http://www.osgi.org/xmlns/blueprint"
+    };
 
     private static final String[] ROUTE_START = new String[]{"from", "fromF"};
     private static final String[] CONSUMER_ENDPOINT = new String[]{"from", "fromF", "interceptFrom", "pollEnrich"};
@@ -395,13 +405,14 @@ public final class CamelIdeaUtils {
             return true;
         }
 
-        // skip CXF xml configuration
+        // only accept xml tags from namespaces we
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (xml != null) {
             String ns = xml.getNamespace();
-            if (ns.contains("cxf.apache.org")) {
-                return true;
-            }
+            // accept empty namespace which can be from testing
+            boolean accepted = StringUtils.isEmpty(ns) || Arrays.stream(ACCEPTED_NAMESPACES).anyMatch(ns::contains);
+            LOG.trace("XmlTag " + xml.getName() + " with namespace: " + ns + " is accepted namespace: " + accepted);
+            return !accepted; // skip is the opposite
         }
 
         return false;

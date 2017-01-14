@@ -116,6 +116,13 @@
       <version>${snakeyaml.version}</version>
     </dependency>
 
+    <!-- Swing MigLayout -->
+    <dependency>
+      <groupId>com.miglayout</groupId>
+      <artifactId>miglayout-swing</artifactId>
+      <version>${miglayout.version}</version>
+    </dependency>
+
     <!-- Test -->
     <dependency>
       <groupId>org.apache.camel</groupId>

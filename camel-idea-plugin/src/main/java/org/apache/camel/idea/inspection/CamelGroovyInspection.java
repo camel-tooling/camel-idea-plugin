@@ -16,20 +16,29 @@
  */
 package org.apache.camel.idea.inspection;
 
+import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 
-public class CamelGroovyEndpointInspection extends CamelEndpointInspection {
+import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
+
+public class CamelGroovyInspection extends CamelInspection {
 
     @NotNull
     @Override
     public String getDisplayName() {
-        return "Inspect Camel Groovy endpoints";
+        return "Inspect Camel Groovy";
     }
 
     @NotNull
     @Override
     public String getShortName() {
-        return "InspectCamelGroovyEndpoints";
+        return "InspectCamelGroovy";
+    }
+
+    @Override
+    boolean accept(PsiElement element) {
+        // must be from Groovy file
+        return isFromFileType(element, "groovy");
     }
 
 }

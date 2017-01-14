@@ -20,8 +20,9 @@ import java.util.List;
 import javax.swing.*;
 
 import com.intellij.codeInsight.daemon.GutterMark;
+import com.intellij.openapi.components.ServiceManager;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
-import org.apache.camel.idea.completion.CamelContributor;
+import org.apache.camel.idea.service.CamelPreferenceService;
 
 /**
  * Testing the Camel icon is shown in the gutter where a Camel route starts in XML DSL
@@ -38,8 +39,10 @@ public class XmlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsight
 
         assertEquals("<html>Camel route</html>", gutter.getTooltipText());
 
+        Icon defaultIcon = ServiceManager.getService(CamelPreferenceService.class).getCamelIcon();
         Icon icon = gutter.getIcon();
-        assertSame(CamelContributor.CAMEL_ICON, icon);
+
+        assertSame(defaultIcon, icon);
     }
 
 }

@@ -205,4 +205,12 @@ public final class StringUtils {
     public static boolean isEmpty(String str) {
         return str == null || str.trim().length() == 0;
     }
+
+    /**
+     * Is the string NOT empty
+     */
+    public static boolean isNotEmpty(String str) {
+        return !isEmpty(str);
+    }
+
 }

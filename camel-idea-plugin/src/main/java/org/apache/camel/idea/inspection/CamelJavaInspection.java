@@ -16,20 +16,36 @@
  */
 package org.apache.camel.idea.inspection;
 
+import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 
-public class CamelKotlinEndpointInspection extends CamelEndpointInspection {
+import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
+
+public class CamelJavaInspection extends CamelInspection {
+
+    public CamelJavaInspection() {
+    }
+
+    public CamelJavaInspection(boolean forceEnabled) {
+        super(forceEnabled);
+    }
 
     @NotNull
     @Override
     public String getDisplayName() {
-        return "Inspect Camel Kotlin endpoints";
+        return "Inspect Camel Java";
     }
 
     @NotNull
     @Override
     public String getShortName() {
-        return "InspectCamelKotlinEndpoints";
+        return "InspectCamelJava";
+    }
+
+    @Override
+    boolean accept(PsiElement element) {
+        // must be from Java file
+        return isFromFileType(element, "java");
     }
 
 }

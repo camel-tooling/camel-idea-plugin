@@ -16,12 +16,28 @@
  */
 package org.apache.camel.idea.service;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.swing.*;
+
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.IconLoader;
+import org.apache.camel.idea.util.StringUtils;
 
 /**
  * Service for holding preference for this plugin.
  */
 public class CamelPreferenceService implements Disposable {
+
+    public static final Icon DEFAULT_CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
+    public static final Icon ALTERNATIVE_CAMEL_ICON = IconLoader.getIcon("/icons/camel2.png");
+
+    private static final Logger LOG = Logger.getInstance(CamelPreferenceService.class);
+
+    private volatile Icon currentCustomIcon;
+    private volatile String currentCustomIconPath;
 
     private boolean realTimeEndpointValidation = true;
     private boolean realTimeSimpleValidation = true;
@@ -29,6 +45,8 @@ public class CamelPreferenceService implements Disposable {
     private boolean scanThirdPartyComponents = true;
     private boolean scanThirdPartyLegacyComponents = true;
     private boolean showCamelIconInGutter = true;
+    private String chosenCamelIcon = "Default Icon";
+    private String customIconFilePath;
 
     public boolean isRealTimeEndpointValidation() {
         return realTimeEndpointValidation;
@@ -76,6 +94,60 @@ public class CamelPreferenceService implements Disposable {
 
     public void setShowCamelIconInGutter(boolean showCamelIconInGutter) {
         this.showCamelIconInGutter = showCamelIconInGutter;
+    }
+
+    public String getChosenCamelIcon() {
+        return chosenCamelIcon;
+    }
+
+    public void setChosenCamelIcon(String chosenCamelIcon) {
+        this.chosenCamelIcon = chosenCamelIcon;
+    }
+
+    public String getCustomIconFilePath() {
+        return customIconFilePath;
+    }
+
+    public void setCustomIconFilePath(String customIconFilePath) {
+        this.customIconFilePath = customIconFilePath;
+    }
+
+    public Icon getCamelIcon() {
+        if (chosenCamelIcon.equals("Default Icon")) {
+            return DEFAULT_CAMEL_ICON;
+        } else if (chosenCamelIcon.equals("Alternative Icon")) {
+            return ALTERNATIVE_CAMEL_ICON;
+        }
+
+        if (StringUtils.isNotEmpty(customIconFilePath)) {
+
+            // use cached current icon
+            if (customIconFilePath.equals(currentCustomIconPath)) {
+                return currentCustomIcon;
+            }
+
+            Icon icon = IconLoader.findIcon(customIconFilePath);
+            if (icon == null) {
+                File file = new File(customIconFilePath);
+                if (file.exists() && file.isFile()) {
+                    try {
+                        URL url = new URL("file:" + file.getAbsolutePath());
+                        icon = IconLoader.findIcon(url, true);
+                    } catch (MalformedURLException e) {
+                        LOG.warn("Error loading custom icon", e);
+                    }
+                }
+            }
+
+            if (icon != null) {
+                // cache current icon
+                currentCustomIcon = icon;
+                currentCustomIconPath = customIconFilePath;
+                return currentCustomIcon;
+            }
+        }
+
+        return DEFAULT_CAMEL_ICON;
     }
 
     @Override

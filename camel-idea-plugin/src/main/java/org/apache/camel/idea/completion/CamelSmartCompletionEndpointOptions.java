@@ -25,8 +25,10 @@ import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.components.ServiceManager;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.EndpointOptionModel;
+import org.apache.camel.idea.service.CamelPreferenceService;
 
 /**
  * Smart completion for editing a Camel endpoint uri, to show a list of possible endpoint options which can be added.
@@ -125,7 +127,7 @@ public final class CamelSmartCompletionEndpointOptions {
 
         // show the syntax as the only choice for now
         LookupElementBuilder builder = LookupElementBuilder.create(val);
-        builder = builder.withIcon(CamelContributor.CAMEL_ICON);
+        builder = builder.withIcon(getCamelPreferenceService().getCamelIcon());
         builder = builder.withBoldness(true);
         builder = builder.withPresentableText(component.getSyntax());
 
@@ -196,5 +198,10 @@ public final class CamelSmartCompletionEndpointOptions {
 
         return answer;
     }
+
+    private static CamelPreferenceService getCamelPreferenceService() {
+        return ServiceManager.getService(CamelPreferenceService.class);
+    }
+
 
 }
