@@ -21,13 +21,14 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl;
+import com.intellij.psi.xml.XmlAttributeValue;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.SimpleValidationResult;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
-import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.idea.util.CamelIdeaUtils.isCameSimpleExpressionUsedAsPredicate;
@@ -63,21 +64,10 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                 ClassLoader loader = camelService.getCamelCoreClassloader();
                 if (loader != null) {
                     SimpleValidationResult result;
-
-                    int correctEndOffsetMinusOneOff = 2;
-                    int correctStartOffsetMinusOneOff = 1;
-
-                    if (IdeaUtils.isXmlLanguage(element)) {
-                        // the xml text range is one off compare to java text range
-                        correctEndOffsetMinusOneOff = 1;
-                        correctStartOffsetMinusOneOff = 0;
-                    }
-
                     predicate = isCameSimpleExpressionUsedAsPredicate(element);
                     if (predicate) {
                         LOG.debug("Validate simple predicate: " + text);
                         result = catalogService.validateSimplePredicate(loader, text);
-                        correctEndOffsetMinusOneOff = 1; // the result for predicate index is minus one off compare to simple expression
                     } else {
                         LOG.debug("Validate simple expression: " + text);
                         result = catalogService.validateSimpleExpression(loader, text);
@@ -86,17 +76,8 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                         String error = result.getShortError();
                         TextRange range = element.getTextRange();
                         if (result.getIndex() > 0) {
-                            //we need to calculate the correct start and end position to be sure we highlight the correct word
-                            int startIdx = result.getIndex();
-                            //test if the simple expression is closed correctly
-                            int endIdx = text.indexOf("}", startIdx);
-                            if (endIdx == -1) {
-                                //the expression is not closed, test for first " " to see if can stop text range here
-                                endIdx = text.indexOf(" ", startIdx);
-                            }
-                            //calc the end index for highlighted word
-                            endIdx = endIdx == -1 ? (range.getEndOffset() - 1) : (range.getStartOffset() + endIdx) + correctEndOffsetMinusOneOff;
-                            range = TextRange.create(range.getStartOffset() + result.getIndex() + correctStartOffsetMinusOneOff, endIdx);
+                            range = getAdjustedTextRange(element, range, text, result);
+
                         }
                         holder.createErrorAnnotation(range, error);
                     }
@@ -105,6 +86,34 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                 LOG.warn("Error validating Camel simple " + (predicate ? "predicate" : "expression") + ": " + text, e);
             }
         }
+    }
+
+    /**
+     * Adjust the text range according to the type of ${@link PsiElement}
+     * @return a new text range
+     */
+    private TextRange getAdjustedTextRange(@NotNull PsiElement element, TextRange range, String text, SimpleValidationResult result) {
+        if (element instanceof XmlAttributeValue) {
+            range = ((XmlAttributeValue) element).getValueTextRange();
+        } else if (element instanceof PsiLiteralExpressionImpl) {
+            range = TextRange.create(range.getStartOffset() + 1, range.getEndOffset());
+        }
+        //we need to calculate the correct start and end position to be sure we highlight the correct word
+        int startIdx = result.getIndex();
+        //test if the simple expression is closed correctly
+        int endIdx = text.indexOf("}", startIdx);
+        if (endIdx == -1) {
+            //the expression is not closed, test for first " " to see if can stop text range here
+            endIdx = text.indexOf(" ", startIdx) - 1;
+        }
+        //calc the end index for highlighted word
+        endIdx = endIdx < 0 ? (range.getEndOffset() - 1) : (range.getStartOffset() + endIdx) + 1;
+
+        if (endIdx <= startIdx) {
+            endIdx = range.getEndOffset();
+        }
+        range = TextRange.create(range.getStartOffset() + result.getIndex(), endIdx);
+        return range;
     }
 
 }
