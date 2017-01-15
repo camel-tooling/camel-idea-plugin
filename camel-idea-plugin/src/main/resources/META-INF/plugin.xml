@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/davsclaus/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.3.3</version>
+  <version>0.3.4</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -25,6 +25,7 @@
 
   <change-notes><![CDATA[
       <ul>
+        <li>0.3.4 - TODO</li>
         <li>0.3.3 - Real time validation of Simple language now validates predicates vs expression mode.
                     Add Simple language to inspection (analyze code).
                     Added XML and Groovy language to real time validation of Simple language in editor.
