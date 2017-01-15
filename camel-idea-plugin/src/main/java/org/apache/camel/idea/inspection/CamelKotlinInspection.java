@@ -29,12 +29,6 @@ public class CamelKotlinInspection extends CamelInspection {
         return "Inspect Camel Kotlin";
     }
 
-    @NotNull
-    @Override
-    public String getShortName() {
-        return "InspectCamelKotlin";
-    }
-
     @Override
     boolean accept(PsiElement element) {
         // must be from Kotlin file

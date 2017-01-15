@@ -36,12 +36,6 @@ public class CamelJavaInspection extends CamelInspection {
         return "Inspect Camel Java";
     }
 
-    @NotNull
-    @Override
-    public String getShortName() {
-        return "InspectCamelJava";
-    }
-
     @Override
     boolean accept(PsiElement element) {
         // must be from Java file

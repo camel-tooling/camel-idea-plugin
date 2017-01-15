@@ -29,12 +29,6 @@ public class CamelGroovyInspection extends CamelInspection {
         return "Inspect Camel Groovy";
     }
 
-    @NotNull
-    @Override
-    public String getShortName() {
-        return "InspectCamelGroovy";
-    }
-
     @Override
     boolean accept(PsiElement element) {
         // must be from Groovy file
