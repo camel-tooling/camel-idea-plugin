@@ -29,12 +29,6 @@ public class CamelScalaInspection extends CamelInspection {
         return "Inspect Camel Scala";
     }
 
-    @NotNull
-    @Override
-    public String getShortName() {
-        return "InspectCamelScala";
-    }
-
     @Override
     boolean accept(PsiElement element) {
         // must be from Scala file
