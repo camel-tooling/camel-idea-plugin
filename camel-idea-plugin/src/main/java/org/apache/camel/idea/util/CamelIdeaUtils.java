@@ -129,7 +129,7 @@ public final class CamelIdeaUtils {
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
-                return IdeaUtils.isFromGroovyMethod(element, "simple");
+                return IdeaUtils.isFromGroovyMethod(element, "simple", "log");
             }
         }
         // kotlin
