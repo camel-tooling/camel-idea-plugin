@@ -41,6 +41,11 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
         myFixture.checkHighlighting(false, false, true, true);
     }
 
+    public void testAnnotatorExpressionValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaWithExpression());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
     public void testAnnotatorOpenBracketSimpleValidation() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaOpenBracketWithSimple());
         myFixture.checkHighlighting(false, false, true, true);
@@ -81,6 +86,19 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
             + "            .simple(\"Response from Camel CDI on route<error descr=\"Unknown function: xrouteId\">${xrouteId}</error> using thread: ${threadName}\");"
             + "        }\n"
             + "    }";
+    }
+
+    private String getJavaWithExpression() {
+        return "import org.apache.camel.builder.RouteBuilder;"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "    public void configure() throws Exception {\n"
+            + "      from(\"timer:stream?repeatCount=1\")\n"
+            + "           .log(\"Result from query <error descr=\"Unknown function: xbody\">${xbody}</error>\")\n"
+            + "           .process(exchange -> {\n"
+            + "                exchange.getIn().setBody(Arrays.asList(\"fharms\"));\n"
+            + "           .to(\"file:test.txt\");\n"
+            + "    }"
+            + " }";
     }
 
     private String getJavaOpenBracketWithSimple() {
