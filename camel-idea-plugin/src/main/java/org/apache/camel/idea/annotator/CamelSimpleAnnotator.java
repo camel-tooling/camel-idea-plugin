@@ -27,6 +27,7 @@ import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
+import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.idea.util.CamelIdeaUtils.isCameSimpleExpressionUsedAsPredicate;
@@ -49,7 +50,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
         boolean hasSimple = text.contains("${") || text.contains("$simple{");
-        if (hasSimple && CamelIdeaUtils.isCamelSimpleExpression(element)) {
+        if (hasSimple || CamelIdeaUtils.isCamelSimpleExpression(element)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
             CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
 
@@ -58,10 +59,21 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                 ClassLoader loader = camelService.getCamelCoreClassloader();
                 if (loader != null) {
                     SimpleValidationResult result;
+
+                    int correctEndOffsetMinusOneOff = 2;
+                    int correctStartOffsetMinusOneOff = 1;
+
+                    if (IdeaUtils.isXmlLanguage(element)) {
+                        // the xml text range is one off compare to java text range
+                        correctEndOffsetMinusOneOff = 1;
+                        correctStartOffsetMinusOneOff = 0;
+                    }
+
                     boolean predicate = isCameSimpleExpressionUsedAsPredicate(element);
                     if (predicate) {
                         LOG.debug("Validate simple predicate: " + text);
                         result = catalogService.validateSimplePredicate(loader, text);
+                        correctEndOffsetMinusOneOff = 1; // the result for predicate index is minus one off compare to simple expression
                     } else {
                         LOG.debug("Validate simple expression: " + text);
                         result = catalogService.validateSimpleExpression(loader, text);
@@ -70,8 +82,17 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                         String error = result.getShortError();
                         TextRange range = element.getTextRange();
                         if (result.getIndex() > 0) {
-                            // use -1 to skip the last quote sign
-                            range = TextRange.create(range.getStartOffset() + result.getIndex(), range.getEndOffset() - 1);
+                            //we need to calculate the correct start and end position to be sure we highlight the correct word
+                            int startIdx = result.getIndex();
+                            //test if the simple expression is closed correctly
+                            int endIdx = text.indexOf("}", startIdx);
+                            if (endIdx == -1) {
+                                //the expression is not closed, test for first " " to see if can stop text range here
+                                endIdx = text.indexOf(" ", startIdx);
+                            }
+                            //calc the end index for highlighted word
+                            endIdx = endIdx == -1 ? (range.getEndOffset() - 1) : (range.getStartOffset() + endIdx) + correctEndOffsetMinusOneOff;
+                            range = TextRange.create(range.getStartOffset() + result.getIndex() + correctStartOffsetMinusOneOff, endIdx);
                         }
                         holder.createErrorAnnotation(range, error);
                     }
