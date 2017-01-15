@@ -18,7 +18,7 @@
         <li>Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)</li>
         <li>Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)<li>
         <li>Real time validation for Camel endpoints in Java, Groovy, Kotlin, Scala, XML (underline errors in red)</li>
-        <li>Real time validation for Camel simple language in Java (underline errors in red)</li>
+        <li>Real time validation for Camel simple language in Java, XML and Groovy (underline errors in red)</li>
         <li>Inspection (analyze code) to validate Camel endpoints and Simple language in Java, Groovy, Kotlin, Scala, and XML</li>
       </ul>
     ]]></description>
@@ -27,7 +27,7 @@
       <ul>
         <li>0.3.3 - Real time validation of Simple language now validates predicates vs expression mode.
                     Add Simple language to inspection (analyze code).
-                    Added XML language to real time validation of Simple language in editor.
+                    Added XML and Groovy language to real time validation of Simple language in editor.
                     Added alternative Camel icon to choose from preference.</li>
         <li>0.3.2 - Real time validation of Simple language in editor for Java, Groovy, Kotlin, Scala, and XML.
                     Real time validation for Camel endpoints can now check in consumer and producer only mode.
