@@ -394,7 +394,7 @@ public final class IdeaUtils {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // must be a groovy string kind
         String kind = element.toString();
-        if (kind.contains("Gstring")) {
+        if (kind.contains("Gstring") || kind.contains("(string)")) {
             PsiElement parent = element.getParent();
             if (parent != null) {
                 parent = parent.getParent();
@@ -407,6 +407,91 @@ public final class IdeaUtils {
             }
         }
         if (element != null) {
+            kind = element.toString();
+            // must be an identifier which is part of the method call
+            if (kind.contains("identifier")) {
+                String name = element.getText();
+                boolean match = Arrays.stream(methods).anyMatch(name::equals);
+                if (match) {
+                    // sanity check that "from" was from a from a method call
+                    PsiElement parent = element.getParent();
+                    if (parent != null) {
+                        parent = parent.getParent();
+                    }
+                    if (parent != null) {
+                        kind = parent.toString();
+                    }
+                    return kind.contains("Method call");
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean isPrevSiblingFromGroovyMethod(PsiElement element, String... methods) {
+        boolean found = false;
+
+        // need to walk a bit into the psi tree to find the element that holds the method call name
+        // must be a groovy string kind
+        String kind = element.toString();
+        if (kind.contains("Gstring") || kind.contains("(string)")) {
+
+            // there are two ways to dig into the groovy ast so try first and then second
+            PsiElement first = element.getParent();
+            if (first != null) {
+                first = first.getParent();
+            }
+            if (first != null) {
+                first = first.getPrevSibling();
+            }
+            if (first != null) {
+                first = first.getFirstChild();
+            }
+            if (first != null) {
+                first = first.getFirstChild();
+            }
+            if (first != null) {
+                first = first.getLastChild();
+            }
+            if (first != null) {
+                kind = first.toString();
+                found = kind.contains("identifier");
+                if (found) {
+                    element = first;
+                }
+            }
+
+            if (!found) {
+                PsiElement second = element.getParent();
+                if (second != null) {
+                    second = second.getParent();
+                }
+                if (second != null) {
+                    second = second.getParent();
+                }
+                if (second != null) {
+                    second = second.getPrevSibling();
+                }
+                if (second != null) {
+                    second = second.getParent();
+                }
+                if (second != null) {
+                    second = second.getPrevSibling();
+                }
+                if (second != null) {
+                    second = second.getLastChild();
+                }
+                if (second != null) {
+                    kind = second.toString();
+                    found = kind.contains("identifier");
+                    if (found) {
+                        element = second;
+                    }
+                }
+            }
+        }
+
+        if (found) {
             kind = element.toString();
             // must be an identifier which is part of the method call
             if (kind.contains("identifier")) {

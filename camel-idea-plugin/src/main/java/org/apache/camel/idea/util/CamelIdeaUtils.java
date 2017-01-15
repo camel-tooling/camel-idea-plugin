@@ -200,13 +200,14 @@ public final class CamelIdeaUtils {
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
-                return IdeaUtils.isFromGroovyMethod(element, SIMPLE_PREDICATE);
+                return IdeaUtils.isPrevSiblingFromGroovyMethod(element, SIMPLE_PREDICATE);
             }
         }
         // kotlin
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("kotlin")) {
+                // TODO: need to do like in groovy prev sibiling
                 return IdeaUtils.isFromKotlinMethod(element, SIMPLE_PREDICATE);
             }
         }
