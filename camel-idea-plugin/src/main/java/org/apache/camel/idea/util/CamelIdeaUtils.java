@@ -107,7 +107,7 @@ public final class CamelIdeaUtils {
     }
 
     /**
-     * Is the given element a simple of a Camel DSL, eg <tt>simple</tt>, ot &lt;simple&gt;.
+     * Is the given element a simple of a Camel DSL, eg <tt>simple</tt> or &lt;simple&gt;, <tt>log</tt> or &lt;log&gt;.
      */
     public static boolean isCamelSimpleExpression(PsiElement element) {
         // java method call
