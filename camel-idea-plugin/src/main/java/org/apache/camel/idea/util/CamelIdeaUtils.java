@@ -107,11 +107,11 @@ public final class CamelIdeaUtils {
     }
 
     /**
-     * Is the given element a simple of a Camel DSL, eg <tt>simple</tt>, ot &lt;simple&gt;.
+     * Is the given element a simple of a Camel DSL, eg <tt>simple</tt> or &lt;simple&gt;, <tt>log</tt> or &lt;log&gt;.
      */
     public static boolean isCamelSimpleExpression(PsiElement element) {
         // java method call
-        if (IdeaUtils.isFromJavaMethodCall(element, "simple")) {
+        if (IdeaUtils.isFromJavaMethodCall(element, "simple", "log")) {
             return true;
         }
         // xml
@@ -123,7 +123,7 @@ public final class CamelIdeaUtils {
         }
         if (xml != null) {
             String name = xml.getLocalName();
-            return "simple".equals(name);
+            return "simple".equals(name) || "log".equals(name);
         }
         // groovy
         if (element instanceof LeafPsiElement) {

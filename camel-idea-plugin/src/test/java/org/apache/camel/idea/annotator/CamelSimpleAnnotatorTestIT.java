@@ -42,10 +42,9 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
         myFixture.checkHighlighting(false, false, true, true);
     }
 
-    @Ignore("Log validation not yet supported")
     public void testAnnotatorLogValidation() {
-        // myFixture.configureByText("AnnotatorTestData.java", getJavaWithLog());
-        // myFixture.checkHighlighting(false, false, true, true);
+        myFixture.configureByText("AnnotatorTestData.java", getJavaWithLog());
+        myFixture.checkHighlighting(false, false, true, true);
     }
 
     public void testAnnotatorOpenBracketSimpleValidation() {
@@ -73,8 +72,13 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
         myFixture.checkHighlighting(false, false, false, true);
     }
 
-    public void testXmlAnnotatorPredicateValidation2() {
+    public void     testXmlAnnotatorPredicateValidation2() {
         myFixture.configureByText("AnnotatorTestData.xml", getXmlWithPredicate());
+        myFixture.checkHighlighting(false, false, false, true);
+    }
+
+    public void testXmlAnnotatorWithLogValidation() {
+        myFixture.configureByText("AnnotatorTestData.xml", getXmlWithLog());
         myFixture.checkHighlighting(false, false, false, true);
     }
 
@@ -164,6 +168,16 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
             + "      <simple>Message at <error descr=\"Unknown function: daxcdte:now:yyyy-MM-dd HH:mm:ss\">${daxcdte:now:yyyy-MM-dd HH:mm:ss}</error></simple>\n"
             + "    </transform>\n"
             + "    <to uri=\"activemq:queue:inbox\"/>\n"
+            + "  </route>\n"
+            + "</camelContext>";
+    }
+
+    private String getXmlWithLog() {
+        return "<camelContext xmlns=\"http://camel.apache.org/schema/spring\">\n"
+            + "  <route id=\"timerToInRoute\">\n"
+            + "    <from uri=\"timer:foo?period=1s\"/>\n"
+            + "         <log message=\"Hello <error descr=\"Unknown function: xbody\">${xbody}</error>\"/>\n"
+            + "    <to uri=\"file:test.txt\"/>\n"
             + "  </route>\n"
             + "</camelContext>";
     }
