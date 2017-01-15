@@ -17,6 +17,7 @@
 package org.apache.camel.idea.annotator;
 
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import org.junit.Ignore;
 
 
 /**
@@ -41,9 +42,10 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
         myFixture.checkHighlighting(false, false, true, true);
     }
 
-    public void testAnnotatorExpressionValidation() {
-        myFixture.configureByText("AnnotatorTestData.java", getJavaWithExpression());
-        myFixture.checkHighlighting(false, false, true, true);
+    @Ignore("Log validation not yet supported")
+    public void testAnnotatorLogValidation() {
+        // myFixture.configureByText("AnnotatorTestData.java", getJavaWithLog());
+        // myFixture.checkHighlighting(false, false, true, true);
     }
 
     public void testAnnotatorOpenBracketSimpleValidation() {
@@ -88,7 +90,7 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
             + "    }";
     }
 
-    private String getJavaWithExpression() {
+    private String getJavaWithLog() {
         return "import org.apache.camel.builder.RouteBuilder;"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
             + "    public void configure() throws Exception {\n"
@@ -132,7 +134,6 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
             + "              from(\"direct:start\")\n"
             + "                .loopDoWhile(simple(\"${body.length} <error descr=\"Unexpected token =\">=!=</error> 12\"))\n"
             + "                .to(\"mock:loop\")\n"
-            + "                .transform(body().append(\"A\"))\n"
             + "                .end()\n"
             + "                .to(\"mock:result\");"
             + "        }\n"
@@ -145,8 +146,8 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
             + "        public void configure() throws Exception {\n"
             + "              from(\"direct:start\")\n"
             + "                .loopDoWhile(simple(\"${body.length} != 12\"))\n"
-            + "                .filter().simple(<error descr=\"Unexpected token x\">\"xxxx\"</error>)\n"
-            + "                .filter(simple(<error descr=\"Unexpected token y\">\"yyyy\"</error>))\n"
+            + "                .filter().simple(<error descr=\"Unknown function: xxxx\">\"${xxxx}\"</error>)\n"
+            + "                .filter(simple(<error descr=\"Unknown function: yyyy\">\"${yyyy}\"</error>))\n"
             + "                .to(\"mock:loop\")\n"
             + "                .transform(body().append(\"A\"))\n"
             + "                .end()\n"
@@ -158,23 +159,31 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
     private String getXmlWithSimple() {
         return "<camelContext xmlns=\"http://camel.apache.org/schema/spring\">\n"
             + "  <route id=\"timerToInRoute\">\n"
-            + "  <from uri=\"timer:foo?period=1s\"/>\n"
-            + "  <transform>\n"
-            + "  <simple>Message at <error descr=\"Unknown function: daxcdte:now:yyyy-MM-dd HH:mm:ss\">${daxcdte:now:yyyy-MM-dd HH:mm:ss}</error></simple>\n"
-            + "  </transform>\n"
-            + "  <to uri=\"activemq:queue:inbox\"/>\n"
-            + "  </camelContext>";
+            + "    <from uri=\"timer:foo?period=1s\"/>\n"
+            + "    <transform>\n"
+            + "      <simple>Message at <error descr=\"Unknown function: daxcdte:now:yyyy-MM-dd HH:mm:ss\">${daxcdte:now:yyyy-MM-dd HH:mm:ss}</error></simple>\n"
+            + "    </transform>\n"
+            + "    <to uri=\"activemq:queue:inbox\"/>\n"
+            + "  </route>\n"
+            + "</camelContext>";
     }
 
     private String getXmlWithPredicate() {
-        return "<from uri=\"direct:start\"/>\n"
+        return "<camelContext xmlns=\"http://camel.apache.org/schema/spring\">\n"
+            + "  <route id=\"foo\">\n"
             + "    <loop doWhile=\"true\">\n"
-            + "      <simple>${body.length} !s1= 12</simple>\n"
-            + "      <filter/><simple><error descr=\"Unexpected token x\">xxxx</error></simple>\n"
+            + "      <simple>${body.length} &gt; 12</simple>\n"
             + "      <filter>\n"
-            + "        <simple><error descr=\"Unexpected token y\">yyyy</error></simple>\n"
+            + "        <simple>${body.length} &g<error descr=\"Binary operator > does not support token t\">t; thousan</error>d</simple>\n"
+            + "        <to uri=\"mock:high\"/>\n"
+            + "      </filter>\n"
+            + "      <filter>\n"
+            + "        <simple>${body} contains <error descr=\"Unknown function: yyyy\">${yyyy}</error></simple>\n"
+            + "        <to uri=\"mock:contain\"/>\n"
             + "      </filter>\n"
             + "    </loop>\n"
-            + "    <to>mock:result</to>";
+            + "    <to uri=\"mock:result\"/>"
+            + "  </route>\n"
+            + "</camelContext>";
     }
 }

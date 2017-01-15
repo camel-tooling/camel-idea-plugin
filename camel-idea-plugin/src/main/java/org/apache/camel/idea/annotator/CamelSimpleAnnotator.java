@@ -49,11 +49,15 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
      * if the expression is not valid a error annotation is created and highlight the invalid value.
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
+        // TODO: add support for .log / <log message> EIP which uses simple expression (not as predicate)
+
+        // we only want to evaluate if there is a simple function as plain text without functions dont make sense to validate
         boolean hasSimple = text.contains("${") || text.contains("$simple{");
-        if (hasSimple || CamelIdeaUtils.isCamelSimpleExpression(element)) {
+        if (hasSimple && CamelIdeaUtils.isCamelSimpleExpression(element)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
             CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
 
+            boolean predicate = false;
             try {
                 // need to use the classloader that can load classes from the camel-core
                 ClassLoader loader = camelService.getCamelCoreClassloader();
@@ -69,7 +73,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                         correctStartOffsetMinusOneOff = 0;
                     }
 
-                    boolean predicate = isCameSimpleExpressionUsedAsPredicate(element);
+                    predicate = isCameSimpleExpressionUsedAsPredicate(element);
                     if (predicate) {
                         LOG.debug("Validate simple predicate: " + text);
                         result = catalogService.validateSimplePredicate(loader, text);
@@ -98,7 +102,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                     }
                 }
             } catch (Throwable e) {
-                LOG.warn("Error validating Camel simple: " + text, e);
+                LOG.warn("Error validating Camel simple " + (predicate ? "predicate" : "expression") + ": " + text, e);
             }
         }
     }
