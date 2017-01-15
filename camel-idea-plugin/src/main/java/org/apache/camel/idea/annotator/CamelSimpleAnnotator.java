@@ -53,8 +53,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
 
         // we only want to evaluate if there is a simple function as plain text without functions dont make sense to validate
         boolean hasSimple = text.contains("${") || text.contains("$simple{");
-        if (hasSimple
-            && CamelIdeaUtils.isCamelSimpleExpression(element)) {
+        if (hasSimple && CamelIdeaUtils.isCamelSimpleExpression(element)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
             CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
 

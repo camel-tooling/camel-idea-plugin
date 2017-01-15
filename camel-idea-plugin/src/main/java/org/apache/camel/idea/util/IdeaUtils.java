@@ -411,18 +411,7 @@ public final class IdeaUtils {
             // must be an identifier which is part of the method call
             if (kind.contains("identifier")) {
                 String name = element.getText();
-                boolean match = Arrays.stream(methods).anyMatch(name::equals);
-                if (match) {
-                    // sanity check that "from" was from a from a method call
-                    PsiElement parent = element.getParent();
-                    if (parent != null) {
-                        parent = parent.getParent();
-                    }
-                    if (parent != null) {
-                        kind = parent.toString();
-                    }
-                    return kind.contains("Method call");
-                }
+                return Arrays.stream(methods).anyMatch(name::equals);
             }
         }
         return false;
@@ -496,18 +485,7 @@ public final class IdeaUtils {
             // must be an identifier which is part of the method call
             if (kind.contains("identifier")) {
                 String name = element.getText();
-                boolean match = Arrays.stream(methods).anyMatch(name::equals);
-                if (match) {
-                    // sanity check that "from" was from a from a method call
-                    PsiElement parent = element.getParent();
-                    if (parent != null) {
-                        parent = parent.getParent();
-                    }
-                    if (parent != null) {
-                        kind = parent.toString();
-                    }
-                    return kind.contains("Method call");
-                }
+                return Arrays.stream(methods).anyMatch(name::equals);
             }
         }
         return false;

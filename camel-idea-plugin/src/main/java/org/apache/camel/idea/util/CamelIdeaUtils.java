@@ -207,7 +207,7 @@ public final class CamelIdeaUtils {
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("kotlin")) {
-                // TODO: need to do like in groovy prev sibiling
+                // TODO: need to do like in groovy prev sibling
                 return IdeaUtils.isFromKotlinMethod(element, SIMPLE_PREDICATE);
             }
         }
@@ -215,6 +215,7 @@ public final class CamelIdeaUtils {
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
+                // TODO: need to do like in groovy prev sibling
                 return IdeaUtils.isFromScalaMethod(element, SIMPLE_PREDICATE);
             }
         }
