@@ -27,13 +27,14 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.stream.Collectors;
-
 import javax.swing.*;
 
 import com.intellij.notification.Notification;
@@ -47,13 +48,20 @@ import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.roots.libraries.Library;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import static org.apache.camel.catalog.CatalogHelper.loadText;
 import static org.apache.camel.idea.completion.CamelContributor.CAMEL_NOTIFICATION_GROUP;
 import static org.apache.camel.idea.util.IdeaUtils.newURLClassLoaderForLibrary;
+import static org.apache.camel.idea.util.XmlUtils.getChildNodeByTagName;
+import static org.apache.camel.idea.util.XmlUtils.loadDocument;
 
 /**
  * Service access for Camel libraries
@@ -201,7 +209,11 @@ public class CamelService implements Disposable {
                             if (download) {
                                 // attempt to load new version of camel-catalog to match the version from the project
                                 // use catalog service to load version (which takes care of switching catalog as well)
-                                boolean loaded = getCamelCatalogService(project).loadVersion(version);
+
+                                // find out the third party maven repositories
+                                Map<String, String> repos = scanThirdPartyMavenRepositories(module);
+
+                                boolean loaded = getCamelCatalogService(project).loadVersion(version, repos);
                                 if (!loaded) {
                                     camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin cannot download camel-catalog with version " + version
                                         + ". Will fallback and use version " + getCamelCatalogService(project).get().getCatalogVersion(), NotificationType.WARNING);
@@ -279,6 +291,50 @@ public class CamelService implements Disposable {
             camelMissingJSonSchemaNotification = CAMEL_NOTIFICATION_GROUP.createNotification(message, NotificationType.WARNING).setImportant(true).setIcon(icon);
             camelMissingJSonSchemaNotification.notify(project);
         }
+    }
+
+    /**
+     * Scans for third party maven repositories in the root pom.xml file of the module.
+     *
+     * @param module  the module
+     * @return a map with repo id and url for each found repository. The map may be empty if no third party repository is defined in the pom.xml file
+     */
+    private @NotNull Map<String, String> scanThirdPartyMavenRepositories(@NotNull Module module) {
+        Map<String, String> answer = new LinkedHashMap<>();
+
+        VirtualFile vf = module.getProject().getBaseDir().findFileByRelativePath("pom.xml");
+        if (vf != null) {
+            try {
+                InputStream is = vf.getInputStream();
+                Document dom = loadDocument(is, false);
+                if (dom != null) {
+                    NodeList list = dom.getElementsByTagName("repositories");
+                    if (list != null && list.getLength() == 1) {
+                        Node repos = list.item(0);
+                        if (repos instanceof Element) {
+                            Element element = (Element) repos;
+                            list = element.getElementsByTagName("repository");
+                            if (list != null && list.getLength() > 0) {
+                                for (int i = 0; i < list.getLength(); i++) {
+                                    Node node = list.item(i);
+                                    // grab id and url
+                                    Node id = getChildNodeByTagName(node, "id");
+                                    Node url = getChildNodeByTagName(node, "url");
+                                    if (id != null && url != null) {
+                                        LOG.info("Found third party Maven repository id: " + id.getTextContent() + " url:" + url.getTextContent());
+                                        answer.put(id.getTextContent(), url.getTextContent());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (Throwable e) {
+                LOG.warn("Error parsing Maven pon.xml file", e);
+            }
+        }
+
+        return answer;
     }
 
     /**
