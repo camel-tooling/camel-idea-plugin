@@ -37,6 +37,11 @@ import java.util.jar.JarInputStream;
 import java.util.stream.Collectors;
 import javax.swing.*;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.Disposable;
@@ -52,10 +57,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import static org.apache.camel.catalog.CatalogHelper.loadText;
 import static org.apache.camel.idea.completion.CamelContributor.CAMEL_NOTIFICATION_GROUP;
@@ -307,23 +308,21 @@ public class CamelService implements Disposable {
             try {
                 InputStream is = vf.getInputStream();
                 Document dom = loadDocument(is, false);
-                if (dom != null) {
-                    NodeList list = dom.getElementsByTagName("repositories");
-                    if (list != null && list.getLength() == 1) {
-                        Node repos = list.item(0);
-                        if (repos instanceof Element) {
-                            Element element = (Element) repos;
-                            list = element.getElementsByTagName("repository");
-                            if (list != null && list.getLength() > 0) {
-                                for (int i = 0; i < list.getLength(); i++) {
-                                    Node node = list.item(i);
-                                    // grab id and url
-                                    Node id = getChildNodeByTagName(node, "id");
-                                    Node url = getChildNodeByTagName(node, "url");
-                                    if (id != null && url != null) {
-                                        LOG.info("Found third party Maven repository id: " + id.getTextContent() + " url:" + url.getTextContent());
-                                        answer.put(id.getTextContent(), url.getTextContent());
-                                    }
+                NodeList list = dom.getElementsByTagName("repositories");
+                if (list != null && list.getLength() == 1) {
+                    Node repos = list.item(0);
+                    if (repos instanceof Element) {
+                        Element element = (Element) repos;
+                        list = element.getElementsByTagName("repository");
+                        if (list != null && list.getLength() > 0) {
+                            for (int i = 0; i < list.getLength(); i++) {
+                                Node node = list.item(i);
+                                // grab id and url
+                                Node id = getChildNodeByTagName(node, "id");
+                                Node url = getChildNodeByTagName(node, "url");
+                                if (id != null && url != null) {
+                                    LOG.info("Found third party Maven repository id: " + id.getTextContent() + " url:" + url.getTextContent());
+                                    answer.put(id.getTextContent(), url.getTextContent());
                                 }
                             }
                         }

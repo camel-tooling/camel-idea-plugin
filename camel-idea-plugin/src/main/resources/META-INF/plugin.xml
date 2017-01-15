@@ -28,7 +28,8 @@
         <li>0.3.3 - Real time validation of Simple language now validates predicates vs expression mode.
                     Add Simple language to inspection (analyze code).
                     Added XML and Groovy language to real time validation of Simple language in editor.
-                    Added alternative Camel icon to choose from preference.</li>
+                    Added alternative Camel icon to choose from preference.
+                    Add support for downloading camel-catalog from 3rd party repositories defined in pom.xml such as JBoss Fuse.</li>
         <li>0.3.2 - Real time validation of Simple language in editor for Java, Groovy, Kotlin, Scala, and XML.
                     Real time validation for Camel endpoints can now check in consumer and producer only mode.
                     Inspection (analyze code) to validate Camel endpoints in Java, Groovy, Kotlin, Scala, and XML.
