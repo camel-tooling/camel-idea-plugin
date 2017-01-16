@@ -203,5 +203,4 @@ public final class CamelSmartCompletionEndpointOptions {
         return ServiceManager.getService(CamelPreferenceService.class);
     }
 
-
 }
