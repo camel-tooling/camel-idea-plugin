@@ -395,7 +395,16 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                 String name = entry.getKey();
                 String value = entry.getValue();
 
-                Map<String, String> row = JSonSchemaHelper.getRow(lines, name);
+                Map<String, String> row;
+
+                // is it a multi valued option then we need to find the option name to use for lookup
+                String option = JSonSchemaHelper.getPropertyNameFromNameWithPrefix(lines, name);
+                if (option != null && JSonSchemaHelper.isPropertyMultiValue(lines, option)) {
+                    row = JSonSchemaHelper.getRow(lines, option);
+                } else {
+                    row = JSonSchemaHelper.getRow(lines, name);
+                }
+
                 if (row != null) {
                     String kind = row.get("kind");
 
@@ -411,6 +420,27 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                     String summary = row.get("description");
                     options.append(wrapText(summary, wrapLength)).append("<br/>");
                 }
+            }
+        }
+
+        // append any lenient options as well
+        Map<String, String> extra = null;
+        try {
+            extra = camelCatalog.endpointLenientProperties(camelQuery);
+        } catch (Throwable e) {
+            LOG.warn("Error parsing Camel endpoint properties with url: " + camelQuery, e);
+        }
+        if (extra != null && !extra.isEmpty()) {
+            for (Map.Entry<String, String> entry : extra.entrySet()) {
+                String name = entry.getKey();
+                String value = entry.getValue();
+
+                String line = name + "=" + value + "<br/>";
+                options.append("<br/>");
+                options.append("<b>").append(line).append("</b>");
+
+                String summary = "This option is a custom option that is not part of the Camel componet";
+                options.append(wrapText(summary, wrapLength)).append("<br/>");
             }
         }
 
