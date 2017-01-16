@@ -25,25 +25,12 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.4 - TODO</li>
+        <li>0.3.4 - Endpoints that support extra options like HTTP based are now highlighted in code editor and shown in quick documentation</li>
         <li>0.3.3 - Real time validation of Simple language now validates predicates vs expression mode.
                     Add Simple language to inspection (analyze code).
                     Added XML and Groovy language to real time validation of Simple language in editor.
                     Added alternative Camel icon to choose from preference.
                     Add support for downloading camel-catalog from 3rd party repositories defined in pom.xml such as JBoss Fuse.</li>
-        <li>0.3.2 - Real time validation of Simple language in editor for Java, Groovy, Kotlin, Scala, and XML.
-                    Real time validation for Camel endpoints can now check in consumer and producer only mode.
-                    Inspection (analyze code) to validate Camel endpoints in Java, Groovy, Kotlin, Scala, and XML.
-                    Smart completion can show quick document for the selected option in the list (ctrl + j)</li>
-        <li>0.3.1 - Allow to turn on or off scanning for third party components.
-                    Real time validation is now checked for endpoints used outside routes.
-                    Minor bug fixes.</li>
-        <li>0.3.0 - Restructured project as multi Maven module to support further work.
-                    Add support for 3rd party Camel components (not from the Apache Camel release).
-                    The plugin will attempt to use same camel-catalog version as the camel-core version used in the project.
-                    Add support for real time validate Camel endpoints (underline errors in red).
-                    Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)
-                    Added preference page to configure the plugin.<li>
       </ul>
     ]]>
   </change-notes>
