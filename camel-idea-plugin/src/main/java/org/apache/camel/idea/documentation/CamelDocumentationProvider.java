@@ -160,9 +160,16 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public PsiElement getDocumentationElementForLookupItem(PsiManager psiManager, Object object, PsiElement element) {
-        String lookup = object != null ? object.toString() : null;
+        // we only support literal - string types where Camel endpoints can be specified
+        if (object == null || !(object instanceof String)) {
+            return null;
+        }
 
-        if (lookup == null) {
+        String lookup = object.toString();
+
+        // must be a Camel component
+        String componentName = StringUtils.asComponentName(lookup);
+        if (componentName == null) {
             return null;
         }
 
@@ -179,8 +186,6 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                 option = option.substring(0, pos);
             }
             LOG.debug("getDocumentationElementForLookupItem: " + option);
-
-            String componentName = StringUtils.asComponentName(lookup);
 
             // if the option ends with a dot then its a prefixed/multi value option which we need special logic
             // find its real option name and documentation which we want to show in the quick doc window
