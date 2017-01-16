@@ -45,4 +45,11 @@ public interface CamelAnnotatorEndpointMessage<T> {
     default boolean isWarnLevel() {
         return false;
     }
+
+    /**
+     * Is this a information
+     */
+    default boolean isInfoLevel() {
+        return false;
+    }
 }
