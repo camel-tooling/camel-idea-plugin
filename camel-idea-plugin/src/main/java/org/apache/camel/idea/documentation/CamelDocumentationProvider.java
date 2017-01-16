@@ -160,7 +160,11 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public PsiElement getDocumentationElementForLookupItem(PsiManager psiManager, Object object, PsiElement element) {
-        String lookup = (String) object;
+        String lookup = object != null ? object.toString() : null;
+
+        if (lookup == null) {
+            return null;
+        }
 
         // unescape xml &
         lookup = lookup.replaceAll("&amp;", "&");
