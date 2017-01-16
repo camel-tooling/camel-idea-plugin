@@ -441,7 +441,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                 options.append("<br/>");
                 options.append("<b>").append(line).append("</b>");
 
-                String summary = "This option is a custom option that is not part of the Camel componet";
+                String summary = "This option is a custom option that is not part of the Camel component";
                 options.append(wrapText(summary, wrapLength)).append("<br/>");
             }
         }

@@ -234,13 +234,13 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
 
         private final boolean highlight;
 
-        public LenientOptionMsg(boolean highlight) {
+        LenientOptionMsg(boolean highlight) {
             this.highlight = highlight;
         }
 
         @Override
         public String getErrorMessage(EndpointValidationResult result, String property) {
-            return property + " is a custom option";
+            return property + " is a custom option that is not part of the Camel componet";
         }
 
         @Override
