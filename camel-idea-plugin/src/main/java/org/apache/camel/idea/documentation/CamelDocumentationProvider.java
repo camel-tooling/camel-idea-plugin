@@ -418,6 +418,8 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                     options.append("<b>").append(line).append("</b>");
 
                     String summary = row.get("description");
+                    // the text looks a bit weird when using single /
+                    summary = summary.replace('/', ' ');
                     options.append(wrapText(summary, wrapLength)).append("<br/>");
                 }
             }
