@@ -65,7 +65,8 @@ support for editing the options in the URI context-path section as well.
 The plugin comes with a preference where you can configure global settings for the plugin such as turning on or off the real time validation in the editor, or whether to show the Camel icon in the gutter, etc.
 
 
-### Building from source
+
+### <a name="buildingfromsource"></a> Building from source
 
 You can build the plugin from source code, which requires to setup IDEA for plugin development.
 
@@ -129,12 +130,10 @@ project. Otherwise running the test will not work from IDEA
 
 The plugin is tested with `IDEA 2016.2` or newer, but if you want to try with a older version you can follow this guide
 
-> - Download the latest zip file from [releases](https://github.com/davsclaus/camel-idea-plugin/releases)
-> - Unzip the the file with `unzip -x camel-idea-plugin-<version>.zip`
-> - Unzip the file with `unzip -x camel-idea-plugin/lib/camel-idea-plugin-<version>.jar -d camel-idea-plugin-<version>-SNAPSHOT/`
-> - Edit the file `camel-idea-plugin-<version>-SNAPSHOT/META-INF/plug-in.xml` and change the `<idea-version since-build="162.0"/> to match the version of your IDEA
-> - Zip the JAR file you have changed `cd camel-idea-plugin-<version>-SNAPSHOT; zip -r -X ../camel-idea-plugin/lib/camel-idea-plugin-<version>-SNAPSHOT.jar *`
-> - Zip the complete plugin again `cd ../camel-idea-plugin/; zip -r -X ../camel-idea-plugin-<version-newversion>.zip *`
+> - Follow the guide [build from source](#buildingfromsource)
+> - Change the attribute `<idea-version since-build="162.0"/>` in `camel-idea-plugin/src/main/resources/META-INF/plugin.xml` to match the version. please see [document](http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html) for build number description 
+> - Build the source with `mvn install` 
+> - The new plugin zip file `camel-idea-plugin-<version>-SNAPSHOT.jar` is located in `camel-idea-plugin/target`
 > - Install the plugin from disk in IDEA preferences
 
 
