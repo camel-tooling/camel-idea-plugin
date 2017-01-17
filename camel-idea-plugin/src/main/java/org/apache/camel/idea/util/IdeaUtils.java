@@ -29,14 +29,17 @@ import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiConstructorCall;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
+import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.impl.source.tree.JavaElementType;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -86,13 +89,10 @@ public final class IdeaUtils {
      */
     @Nullable
     public static String extractTextFromElement(PsiElement element, boolean fallBackToGeneric) {
-        // need the entire line so find the literal expression that would hold the entire string (java)
-        PsiLiteralExpression literal = null;
-        if (element instanceof PsiLiteralExpression) {
-            literal = (PsiLiteralExpression) element;
-        }
 
-        if (literal != null) {
+        if (element instanceof PsiLiteralExpression) {
+            // need the entire line so find the literal expression that would hold the entire string (java)
+            PsiLiteralExpression literal = (PsiLiteralExpression) element;
             Object o = literal.getValue();
             String text = o != null ? o.toString() : null;
             // unwrap literal string which can happen in java too
@@ -157,14 +157,14 @@ public final class IdeaUtils {
             }
         }
 
-        String text = "";
         if (fallBackToGeneric) {
             // fallback to generic
-            text = element.getText();
+            String text = element.getText();
             // the text may be quoted so unwrap that
-            text = getInnerText(text);
+            return getInnerText(text);
         }
-        return text;
+
+        return null;
     }
 
     /**
@@ -566,7 +566,7 @@ public final class IdeaUtils {
      * Code from com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl#getInnerText()
      */
     @Nullable
-    private static String getInnerText(String text) {
+    public static String getInnerText(String text) {
         if (text == null) {
             return null;
         }

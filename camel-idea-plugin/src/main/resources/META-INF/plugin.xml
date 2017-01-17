@@ -26,7 +26,8 @@
   <change-notes><![CDATA[
       <ul>
         <li>0.3.4 - Endpoints that support extra options like HTTP based are now highlighted in code editor and shown in quick documentation.
-                    Inspection (analyze code) combined into a single inspection instead of individual per language.</li>
+                    Inspection (analyze code) combined into a single inspection instead of individual per language.
+                    Minor bug fixes.</li>
         <li>0.3.3 - Real time validation of Simple language now validates predicates vs expression mode.
                     Add Simple language to inspection (analyze code).
                     Added XML and Groovy language to real time validation of Simple language in editor.
