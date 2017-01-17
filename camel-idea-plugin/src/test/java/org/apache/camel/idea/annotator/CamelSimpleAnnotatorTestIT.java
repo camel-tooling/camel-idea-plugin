@@ -47,6 +47,11 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
         myFixture.checkHighlighting(false, false, true, true);
     }
 
+    public void testAnnotatorLogValidation2() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaWithFilterAndLog());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
     public void testAnnotatorOpenBracketSimpleValidation() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaOpenBracketWithSimple());
         myFixture.checkHighlighting(false, false, true, true);
@@ -72,7 +77,7 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
         myFixture.checkHighlighting(false, false, false, true);
     }
 
-    public void     testXmlAnnotatorPredicateValidation2() {
+    public void testXmlAnnotatorPredicateValidation2() {
         myFixture.configureByText("AnnotatorTestData.xml", getXmlWithPredicate());
         myFixture.checkHighlighting(false, false, false, true);
     }
@@ -104,6 +109,18 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
             + "                exchange.getIn().setBody(Arrays.asList(\"fharms\"));\n"
             + "           .to(\"file:test.txt\");\n"
             + "    }"
+            + " }";
+    }
+
+    private String getJavaWithFilterAndLog() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "    public void configure() throws Exception {\n"
+            + "      from(\"direct:foo\")\n"
+            + "         .filter(header(Exchange.REDELIVERED))\n"
+            + "           .log(LoggingLevel.WARN, \"Processed ${body} after ${header.CamelRedeliveryCount} retries\")\n"
+            + "           .to(\"mock:out\");\n"
+            + "    }\n"
             + " }";
     }
 

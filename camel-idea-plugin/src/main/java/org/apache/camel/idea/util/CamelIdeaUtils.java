@@ -152,13 +152,24 @@ public final class CamelIdeaUtils {
     }
 
     /**
-     * Is the given element a simple of a Camel route, eg <tt>simple</tt>, ot &lt;simple&gt;.
+     * Is the given element a simple of a Camel route, eg <tt>simple</tt>, ot &lt;simple&gt;
      */
     public static boolean isCameSimpleExpressionUsedAsPredicate(PsiElement element) {
 
         // java
         PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
         if (call != null) {
+
+            PsiMethod method = call.resolveMethod();
+            if (method != null) {
+                // if its coming from the log EIP then its not a predicate
+                String name = method.getName();
+                if ("log".equals(name)) {
+                    return false;
+                }
+            }
+
+            // okay dive into the psi and find out which EIP are using the simple
             PsiElement child = call.getFirstChild();
             if (child instanceof PsiReferenceExpression) {
                 PsiExpression exp = ((PsiReferenceExpression) child).getQualifierExpression();
@@ -173,7 +184,7 @@ public final class CamelIdeaUtils {
                     }
                 }
                 if (exp instanceof PsiMethodCallExpression) {
-                    PsiMethod method = ((PsiMethodCallExpression) exp).resolveMethod();
+                    method = ((PsiMethodCallExpression) exp).resolveMethod();
                     if (method != null) {
                         String name = method.getName();
                         return Arrays.stream(SIMPLE_PREDICATE).anyMatch(name::equals);
@@ -186,6 +197,11 @@ public final class CamelIdeaUtils {
         // xml
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (xml != null) {
+            // if its coming from the log EIP then its not a predicate
+            if (xml.getLocalName().equals("log")) {
+                return false;
+            }
+
             // special for loop which can be both expression or predicate
             if (IdeaUtils.hasParentXmlTag(xml, "loop")) {
                 XmlTag parent = PsiTreeUtil.getParentOfType(xml, XmlTag.class);
@@ -201,6 +217,10 @@ public final class CamelIdeaUtils {
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
+                if (IdeaUtils.isFromGroovyMethod(element, "log")) {
+                    // if its coming from the log EIP then its not a predicate
+                    return false;
+                }
                 return IdeaUtils.isPrevSiblingFromGroovyMethod(element, SIMPLE_PREDICATE);
             }
         }
@@ -208,6 +228,10 @@ public final class CamelIdeaUtils {
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("kotlin")) {
+                if (IdeaUtils.isFromKotlinMethod(element, "log")) {
+                    // if its coming from the log EIP then its not a predicate
+                    return false;
+                }
                 // TODO: need to do like in groovy prev sibling
                 return IdeaUtils.isFromKotlinMethod(element, SIMPLE_PREDICATE);
             }
@@ -216,6 +240,10 @@ public final class CamelIdeaUtils {
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
+                if (IdeaUtils.isFromScalaMethod(element, "log")) {
+                    // if its coming from the log EIP then its not a predicate
+                    return false;
+                }
                 // TODO: need to do like in groovy prev sibling
                 return IdeaUtils.isFromScalaMethod(element, SIMPLE_PREDICATE);
             }
