@@ -17,6 +17,7 @@
 package org.apache.camel.idea.inspection;
 
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.xml.XmlToken;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
@@ -38,7 +39,8 @@ public class CamelXmlInspection extends CamelInspection {
 
     @Override
     boolean accept(PsiElement element) {
-        // must be from XML file
-        return isFromFileType(element, "xml");
+        // skip tokens as we want to only trigger on attributes and xml value
+        boolean token = element instanceof XmlToken;
+        return !token && isFromFileType(element, "xml");
     }
 }

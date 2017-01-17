@@ -44,6 +44,7 @@ import com.intellij.psi.util.PsiUtil;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
+import com.intellij.psi.xml.XmlToken;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -103,6 +104,12 @@ public final class IdeaUtils {
             return ((XmlAttributeValue) element).getValue();
         } else if (element instanceof XmlText) {
             return ((XmlText) element).getValue();
+        } else if (element instanceof XmlToken) {
+            // it may be a token which is a part of an combined attribute
+            XmlAttributeValue xml = PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class);
+            if (xml != null) {
+                return xml.getValue();
+            }
         }
 
         // its maybe a property from properties file
