@@ -31,6 +31,7 @@ import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
+import static org.apache.camel.idea.util.CamelIdeaUtils.acceptForAnnotatorOrInspection;
 import static org.apache.camel.idea.util.CamelIdeaUtils.isCameSimpleExpressionUsedAsPredicate;
 
 /**
@@ -50,13 +51,17 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
      * if the expression is not valid a error annotation is created and highlight the invalid value.
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
-        // TODO: add support for .log / <log message> EIP which uses simple expression (not as predicate)
 
         // we only want to evaluate if there is a simple function as plain text without functions dont make sense to validate
         boolean hasSimple = text.contains("${") || text.contains("$simple{");
         if (hasSimple && CamelIdeaUtils.isCamelSimpleExpression(element)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
             CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
+
+            if (!acceptForAnnotatorOrInspection(element)) {
+                LOG.debug("Skipping complex element  " + element + " for validation simple: " + text);
+                return;
+            }
 
             boolean predicate = false;
             try {

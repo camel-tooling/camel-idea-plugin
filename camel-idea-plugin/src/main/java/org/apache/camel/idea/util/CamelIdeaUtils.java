@@ -38,6 +38,7 @@ import org.apache.camel.idea.service.CamelCatalogService;
 
 import static org.apache.camel.idea.util.IdeaUtils.isElementFromSetterProperty;
 import static org.apache.camel.idea.util.IdeaUtils.isFromConstructor;
+import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 
 /**
  * Utility methods to work with Camel related {@link com.intellij.psi.PsiElement} elements.
@@ -407,7 +408,7 @@ public final class CamelIdeaUtils {
             return true;
         }
 
-        // only accept xml tags from namespaces we
+        // only accept xml tags from namespaces we support
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (xml != null) {
             String ns = xml.getNamespace();
@@ -418,6 +419,44 @@ public final class CamelIdeaUtils {
         }
 
         return false;
+    }
+
+    /**
+     * Whether the element can be accepted for the annator or inspection.
+     * <p/>
+     * Some elements are too complex structured which we cannot support such as complex programming structures to concat string values together.
+     *
+     * @param element the element
+     * @return <tt>true</tt> to accept, <tt>false</tt> to skip
+     */
+    public static boolean acceptForAnnotatorOrInspection(PsiElement element) {
+        // skip XML limit on siblings
+        boolean xml = isFromFileType(element, "xml");
+        if (!xml) {
+            // for programming languages you can have complex structures with concat which we dont support yet
+            int siblings = countSiblings(element);
+            if (siblings > 1) {
+                // we currently only support one liners, so check how many siblings the element has (it has 1 with ending parenthesis which is okay)
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Count the number of siblings there are in the chain the element has
+     *
+     * @param element the element
+     * @return number of siblings added up in the chain
+     */
+    public static int countSiblings(PsiElement element) {
+        int count = 0;
+        PsiElement sibling = element.getNextSibling();
+        while (sibling != null) {
+            count++;
+            sibling = sibling.getNextSibling();
+        }
+        return count;
     }
 
 }

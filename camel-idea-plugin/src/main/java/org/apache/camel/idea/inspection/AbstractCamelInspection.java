@@ -27,6 +27,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
+import com.intellij.psi.tree.IElementType;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.EndpointValidationResult;
 import org.apache.camel.catalog.SimpleValidationResult;
@@ -39,6 +40,7 @@ import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static org.apache.camel.idea.util.CamelIdeaUtils.acceptForAnnotatorOrInspection;
 import static org.apache.camel.idea.util.CamelIdeaUtils.isCameSimpleExpressionUsedAsPredicate;
 import static org.apache.camel.idea.util.CamelIdeaUtils.skipEndpointValidation;
 import static org.apache.camel.idea.util.StringUtils.isEmpty;
@@ -107,6 +109,11 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
      * if the URI is not valid a error annotation is created and highlight the invalid value.
      */
     private void validateText(@NotNull PsiElement element, final @NotNull ProblemsHolder holder, @NotNull String text, boolean isOnTheFly) {
+        if (!acceptForAnnotatorOrInspection(element)) {
+            LOG.debug("Skipping complex element  " + element + " for inspecting text: " + text);
+            return;
+        }
+
         boolean hasSimple = text.contains("${") || text.contains("$simple{");
         if (hasSimple && CamelIdeaUtils.isCamelSimpleExpression(element)) {
             validateSimple(element, holder, text, isOnTheFly);
@@ -118,6 +125,9 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
     private void validateSimple(@NotNull PsiElement element, final @NotNull ProblemsHolder holder, @NotNull String text, boolean isOnTheFly) {
         CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
         CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
+
+        IElementType type = element.getNode().getElementType();
+        LOG.trace("Element " + element + " of type: " + type + " to inspect simple: " + text);
 
         try {
             // need to use the classloader that can load classes from the camel-core
@@ -148,6 +158,9 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
 
     private void validateEndpoint(@NotNull PsiElement element, final @NotNull ProblemsHolder holder, @NotNull String text, boolean isOnTheFly) {
         CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
+
+        IElementType type = element.getNode().getElementType();
+        LOG.trace("Element " + element + " of type: " + type + " to inspect endpoint uri: " + text);
 
         // skip special values such as configuring ActiveMQ brokerURL
         if (skipEndpointValidation(element)) {
