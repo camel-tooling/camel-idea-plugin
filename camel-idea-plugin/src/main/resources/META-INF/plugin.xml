@@ -25,7 +25,8 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.4 - Endpoints that support extra options like HTTP based are now highlighted in code editor and shown in quick documentation</li>
+        <li>0.3.4 - Endpoints that support extra options like HTTP based are now highlighted in code editor and shown in quick documentation.
+                    Inspection (analyze code) combined into a single inspection instead of individual per language.</li>
         <li>0.3.3 - Real time validation of Simple language now validates predicates vs expression mode.
                     Add Simple language to inspection (analyze code).
                     Added XML and Groovy language to real time validation of Simple language in editor.
@@ -113,11 +114,7 @@
     <annotator language="Groovy" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
 
     <!-- inspection to validate endpoints -->
-    <localInspection groupName="Apache Camel" language="JAVA" implementationClass="org.apache.camel.idea.inspection.CamelJavaInspection"/>
-    <localInspection groupName="Apache Camel" language="XML" implementationClass="org.apache.camel.idea.inspection.CamelXmlInspection"/>
-    <localInspection groupName="Apache Camel" language="Groovy" implementationClass="org.apache.camel.idea.inspection.CamelGroovyInspection"/>
-    <localInspection groupName="Apache Camel" language="kotlin" implementationClass="org.apache.camel.idea.inspection.CamelKotlinInspection"/>
-    <localInspection groupName="Apache Camel" language="Scala" implementationClass="org.apache.camel.idea.inspection.CamelScalaInspection"/>
+    <localInspection groupName="Apache Camel" implementationClass="org.apache.camel.idea.inspection.CamelInspection"/>
 
     <!-- preference -->
     <applicationConfigurable id="camel" displayName="Apache Camel" groupId="other"
