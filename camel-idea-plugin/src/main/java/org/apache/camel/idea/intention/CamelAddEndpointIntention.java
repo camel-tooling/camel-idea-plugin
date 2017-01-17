@@ -104,7 +104,8 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
                 }
             }
 
-            String text = extractTextFromElement(element);
+            // should be a literal element and therefore dont fallback to generic
+            String text = extractTextFromElement(element, false);
             return text != null && text.trim().isEmpty();
         }
         return false;
