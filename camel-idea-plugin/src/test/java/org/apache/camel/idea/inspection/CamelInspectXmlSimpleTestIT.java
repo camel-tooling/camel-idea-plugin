@@ -64,7 +64,7 @@ public class CamelInspectXmlSimpleTestIT extends InspectionTestCase {
 
     public void testSimpleInspection() {
         // force Camel enabled so the inspection test can run
-        CamelXmlInspection inspection = new CamelXmlInspection(true);
+        CamelInspection inspection = new CamelInspection(true);
 
         doTest("testData/inspectionsimplexml/", new LocalInspectionToolWrapper(inspection), "java 1.8");
     }

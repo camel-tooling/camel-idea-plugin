@@ -21,7 +21,7 @@
 
   <groupId>org.apache.camel</groupId>
   <artifactId>camel-ide</artifactId>
-  <version>0.3.3-SNAPSHOT</version>
+  <version>0.3.4-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Apache Camel IDE :: Parent</name>
  
@@ -51,7 +51,7 @@
     <connection>scm:git:git://github.com/davsclaus/camel-idea-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:davsclaus/camel-idea-plugin.git</developerConnection>
     <url>davsclaus/camel-idea-plugin.git</url>
-    <tag>0.3.3-SNAPSHOT</tag>
+    <tag>0.3.4-SNAPSHOT</tag>
   </scm>
 
   <!-- TODO: until we use a released version of camel-catalog -->

@@ -84,6 +84,8 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
             boolean producerOnly = CamelIdeaUtils.isProducerEndpoint(element);
 
             try {
+                CamelPreferenceService preference = getCamelPreferenceService();
+
                 EndpointValidationResult result = catalogService.validateEndpointProperties(camelQuery, false, consumerOnly, producerOnly);
 
                 extractMapValue(result, result.getInvalidBoolean(), uri, element, holder, new BooleanErrorMsg());
@@ -91,18 +93,19 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 extractMapValue(result, result.getInvalidInteger(), uri, element, holder, new IntegerErrorMsg());
                 extractMapValue(result, result.getInvalidNumber(), uri, element, holder, new NumberErrorMsg());
                 extractMapValue(result, result.getInvalidReference(), uri, element, holder, new ReferenceErrorMsg());
-                extractSetValue(result, result.getUnknown(), uri, element, holder, new UnknownErrorMsg());
-                extractSetValue(result, result.getNotConsumerOnly(), uri, element, holder, new NotConsumerOnlyErrorMsg());
-                extractSetValue(result, result.getNotProducerOnly(), uri, element, holder, new NotProducerOnlyErrorMsg());
+                extractSetValue(result, result.getUnknown(), uri, element, holder, new UnknownErrorMsg(), false);
+                extractSetValue(result, result.getLenient(), uri, element, holder, new LenientOptionMsg(preference.isHighlightCustomOptions()), true);
+                extractSetValue(result, result.getNotConsumerOnly(), uri, element, holder, new NotConsumerOnlyErrorMsg(), false);
+                extractSetValue(result, result.getNotProducerOnly(), uri, element, holder, new NotProducerOnlyErrorMsg(), false);
             } catch (Throwable e) {
                 LOG.warn("Error validating Camel endpoint: " + uri, e);
             }
         }
     }
 
-    private void extractSetValue(EndpointValidationResult result, Set<String> validationSet,
-                                 String fromElement, PsiElement element, AnnotationHolder holder, CamelAnnotatorEndpointMessage msg) {
-        if ((!result.isSuccess()) && validationSet != null) {
+    private void extractSetValue(EndpointValidationResult result, Set<String> validationSet, String fromElement, PsiElement element,
+                                 AnnotationHolder holder, CamelAnnotatorEndpointMessage msg, boolean lenient) {
+        if (validationSet != null && (lenient || !result.isSuccess())) {
 
             for (String entry : validationSet) {
                 String propertyValue = entry;
@@ -118,10 +121,12 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
                     element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
 
-                if (msg.isWarnLevel()) {
-                    holder.createWarningAnnotation(range, summaryErrorMessage(result, propertyValue, msg));
+                if (msg.isInfoLevel()) {
+                    holder.createInfoAnnotation(range, summaryMessage(result, propertyValue, msg));
+                } else if (msg.isWarnLevel()) {
+                    holder.createWarningAnnotation(range, summaryMessage(result, propertyValue, msg));
                 } else {
-                    holder.createErrorAnnotation(range, summaryErrorMessage(result, propertyValue, msg));
+                    holder.createErrorAnnotation(range, summaryMessage(result, propertyValue, msg));
                 }
             }
         }
@@ -153,7 +158,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + startIdx,
                     element.getTextRange().getStartOffset() + startIdx + propertyLength);
-                holder.createErrorAnnotation(range, summaryErrorMessage(result, entry, msg));
+                holder.createErrorAnnotation(range, summaryMessage(result, entry, msg));
             }
         }
     }
@@ -225,6 +230,30 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
         }
     }
 
+    private static class LenientOptionMsg implements CamelAnnotatorEndpointMessage<String> {
+
+        private final boolean highlight;
+
+        LenientOptionMsg(boolean highlight) {
+            this.highlight = highlight;
+        }
+
+        @Override
+        public String getErrorMessage(EndpointValidationResult result, String property) {
+            return property + " is a custom option that is not part of the Camel componet";
+        }
+
+        @Override
+        public boolean isInfoLevel() {
+            return !highlight;
+        }
+
+        @Override
+        public boolean isWarnLevel() {
+            return highlight;
+        }
+    }
+
     private static class NumberErrorMsg implements CamelAnnotatorEndpointMessage<Map.Entry<String, String>> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, Map.Entry<String, String> entry) {
@@ -264,12 +293,12 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
     }
 
     /**
-     * A human readable summary of the validation errors.
+     * A human readable summary of the validation.
      *
      * @return the summary, or <tt>empty</tt> if no validation errors
      */
     @SuppressWarnings("unchecked")
-    private <T> String summaryErrorMessage(EndpointValidationResult result, T entry, CamelAnnotatorEndpointMessage msg) {
+    private <T> String summaryMessage(EndpointValidationResult result, T entry, CamelAnnotatorEndpointMessage msg) {
         if (result.getIncapable() != null) {
             return "Incapable of parsing uri: " + result.getIncapable();
         } else if (result.getSyntaxError() != null) {
@@ -279,6 +308,10 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
         }
 
         return msg.getErrorMessage(result, entry);
+    }
+
+    private static CamelPreferenceService getCamelPreferenceService() {
+        return ServiceManager.getService(CamelPreferenceService.class);
     }
 
 }
