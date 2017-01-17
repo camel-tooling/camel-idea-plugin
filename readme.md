@@ -32,11 +32,7 @@ However currently the code is located at github to allow faster and wider collab
 
 ### IDEA Compatability
 
-The Camel IDEA plugin currently requires IDEA 2016.2 or newer.
-
-We are considering the possibility of supporting older versions, however we would appreciate help from the community to test the plugin on older versions, as the core developers are using the latest IDEA release such as 2016.3.
-
-We currently also run a twitter poll to get some data of the usage: https://twitter.com/davsclaus/status/819881627266465792
+The Camel IDEA plugin currently requires IDEA 2016.2 or newer. If you are using a older version of IDEA and still want to try the plugin follow the guide here
 
 The current plugin uses `since-build 162`
 
@@ -102,7 +98,7 @@ An alternative is to change the version in `camel-idea-plugin/pom.xml` file to u
 
 Linux or Mac users:
 
- > - Execute the script file `./install-intellij-libs.sh 2016.3.2 /Applications/IntelliJ\ IDEA\ CE.app/Contents`
+ > - Execute the script file `./install-intellij-libs.sh 2016.3.2 /Applications/IntelliJ\ IDEA\ CE.app/Contents /Users/joe/.m2` 
   
 Windows:
 
@@ -128,6 +124,18 @@ project. Otherwise running the test will not work from IDEA
 > - Press next and finish
 > - Open the "Module Settings" and select the tab "Plug-in Deployment" 
 > - Make sure the path to the "META-INF/plugin.xml" point to the "src/main/resources/" directory
+
+#### Running for the plug-in with previous versions of IDEA
+
+The plugin is tested with `IDEA 2016.2` or newer, but if you want to try with a older version you can follow this guide
+
+> - Download the latest zip file from [releases](https://github.com/davsclaus/camel-idea-plugin/releases)
+> - Unzip the the file with `unzip -x camel-idea-plugin-<version>.zip`
+> - Unzip the file with `unzip -x camel-idea-plugin/lib/camel-idea-plugin-<version>.jar -d camel-idea-plugin-<version>-SNAPSHOT/`
+> - Edit the file `camel-idea-plugin-<version>-SNAPSHOT/META-INF/plug-in.xml` and change the `<idea-version since-build="162.0"/> to match the version of your IDEA
+> - Zip the JAR file you have changed `cd camel-idea-plugin-<version>-SNAPSHOT; zip -r -X ../camel-idea-plugin/lib/camel-idea-plugin-<version>-SNAPSHOT.jar *`
+> - Zip the complete plugin again `cd ../camel-idea-plugin/; zip -r -X ../camel-idea-plugin-<version-newversion>.zip *`
+> - Install the plugin from disk in IDEA preferences
 
 
 ### Running and debugging the plugin from source
