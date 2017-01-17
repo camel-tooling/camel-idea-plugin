@@ -25,6 +25,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.EndpointValidationResult;
@@ -34,6 +35,7 @@ import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
+import static org.apache.camel.idea.util.CamelIdeaUtils.acceptForAnnotatorOrInspection;
 import static org.apache.camel.idea.util.CamelIdeaUtils.skipEndpointValidation;
 import static org.apache.camel.idea.util.StringUtils.isEmpty;
 
@@ -57,9 +59,17 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
         if (CamelIdeaUtils.isQueryContainingCamelComponent(element.getProject(), uri)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
 
+            IElementType type = element.getNode().getElementType();
+            LOG.trace("Element " + element + " of type: " + type + " to validate endpoint uri: " + uri);
+
             // skip special values such as configuring ActiveMQ brokerURL
             if (skipEndpointValidation(element)) {
                 LOG.debug("Skipping element " + element + " for validation with text: " + uri);
+                return;
+            }
+
+            if (!acceptForAnnotatorOrInspection(element)) {
+                LOG.debug("Skipping complex element  " + element + " for validation with text: " + uri);
                 return;
             }
 
