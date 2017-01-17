@@ -33,7 +33,7 @@ However currently the code is located at github to allow faster and wider collab
 
 ### IDEA Compatability
 
-The Camel IDEA plugin currently requires IDEA 2016.2 or newer. If you are using a older version of IDEA and still want to try the plugin follow the guide here
+The Camel IDEA plugin currently requires IDEA 2016.2 or newer. If you are using a older version of IDEA and still want to try the plugin, follow the guide [here](#runningwithpreviousversion)
 
 The current plugin uses `since-build 162`
 
@@ -64,8 +64,6 @@ support for editing the options in the URI context-path section as well.
 ### Preference
 
 The plugin comes with a preference where you can configure global settings for the plugin such as turning on or off the real time validation in the editor, or whether to show the Camel icon in the gutter, etc.
-
-
 
 ### <a name="buildingfromsource"></a> Building from source
 
@@ -127,7 +125,7 @@ project. Otherwise running the test will not work from IDEA
 > - Open the "Module Settings" and select the tab "Plug-in Deployment" 
 > - Make sure the path to the "META-INF/plugin.xml" point to the "src/main/resources/" directory
 
-#### Running for the plug-in with previous versions of IDEA
+#### <a name="runningwithpreviousversion"></a>Running the plug-in with a previous versions of IDEA
 
 The plugin is tested with `IDEA 2016.2` or newer, but if you want to try with a older version you can follow this guide
 
