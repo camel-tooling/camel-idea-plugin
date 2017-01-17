@@ -116,7 +116,6 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public String generateDoc(PsiElement element, @Nullable PsiElement originalElement) {
-
         if (element instanceof DocumentationElement) {
             DocumentationElement documentationElement = (DocumentationElement) element;
             return generateCamelEndpointOptionDocumentation(documentationElement.getComponentName(), documentationElement.getEndpointOption(), element.getProject());
@@ -227,7 +226,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     public PsiElement getCustomDocumentationElement(@NotNull Editor editor, @NotNull PsiFile file, @Nullable PsiElement contextElement) {
         // documentation from properties file will cause IDEA to call this method where we can tell IDEA we can provide
         // documentation for the element if we can detect its a Camel component
-        if (ServiceManager.getService(contextElement.getProject(), CamelService.class).isCamelPresent() && hasDocumentationForCamelComponent(contextElement)) {
+        if (hasDocumentationForCamelComponent(contextElement)) {
             return contextElement;
         }
         return null;
