@@ -33,7 +33,9 @@ import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.PopupChooserBuilder;
 import com.intellij.openapi.util.Iconable;
+import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBList;
@@ -49,6 +51,7 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.idea.util.IdeaUtils.extractTextFromElement;
+import static org.apache.camel.idea.util.IdeaUtils.getInnerText;
 
 public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction implements Iconable, LowPriorityAction {
 
@@ -104,10 +107,23 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
                 }
             }
 
-            // should be a literal element and therefore dont fallback to generic
-            String text = extractTextFromElement(element, false);
+            String text = null;
+
+            // special for java token
+            if (element instanceof PsiJavaToken) {
+                // if its a string literal
+                PsiJavaToken token = (PsiJavaToken) element;
+                if (token.getTokenType() == JavaTokenType.STRING_LITERAL) {
+                    text = getInnerText(token.getText());
+                }
+            } else {
+                // should be a literal element and therefore dont fallback to generic
+                text = extractTextFromElement(element, false);
+            }
+
             return text != null && text.trim().isEmpty();
         }
+
         return false;
     }
 

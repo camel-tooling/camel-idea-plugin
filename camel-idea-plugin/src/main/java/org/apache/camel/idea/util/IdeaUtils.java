@@ -97,12 +97,6 @@ public final class IdeaUtils {
             String text = o != null ? o.toString() : null;
             // unwrap literal string which can happen in java too
             return getInnerText(text);
-        } else if (element instanceof PsiJavaToken) {
-            // if its a string literal
-            PsiJavaToken token = (PsiJavaToken) element;
-            if (token.getTokenType() ==  JavaTokenType.STRING_LITERAL) {
-                return getInnerText(token.getText());
-            }
         }
 
         // maybe its xml then try that
@@ -572,7 +566,7 @@ public final class IdeaUtils {
      * Code from com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl#getInnerText()
      */
     @Nullable
-    private static String getInnerText(String text) {
+    public static String getInnerText(String text) {
         if (text == null) {
             return null;
         }
