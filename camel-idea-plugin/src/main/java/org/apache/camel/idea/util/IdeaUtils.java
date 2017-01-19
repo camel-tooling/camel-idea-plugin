@@ -530,6 +530,61 @@ public final class IdeaUtils {
         return false;
     }
 
+    public static boolean isPrevSiblingFromScalaMethod(PsiElement element, String... methods) {
+        boolean found = false;
+
+        // need to walk a bit into the psi tree to find the element that holds the method call name
+        // must be a scala string kind
+        String kind = element.toString();
+        if (kind.contains("string")) {
+
+            // there are two ways to dig into the groovy ast so try first and then second
+            PsiElement first = element.getParent();
+            if (first != null) {
+                first = first.getPrevSibling();
+            }
+            if (first != null) {
+                first = first.getParent();
+            }
+            if (first != null) {
+                first = first.getPrevSibling();
+            }
+            if (first != null) {
+                first = first.getParent();
+            }
+            if (first != null) {
+                first = first.getPrevSibling();
+            }
+            if (first != null) {
+                first = first.getParent();
+            }
+            if (first != null) {
+                first = first.getPrevSibling();
+            }
+            if (first != null) {
+                first = first.getFirstChild();
+            }
+
+            if (first != null) {
+                kind = first.toString();
+                found = kind.contains("identifier");
+                if (found) {
+                    element = first;
+                }
+            }
+
+        }
+
+        if (found) {
+            kind = element.toString();
+            if (kind.contains("identifier")) {
+                String name = element.getText();
+                return Arrays.stream(methods).anyMatch(name::equals);
+            }
+        }
+        return false;
+    }
+
     /**
      * Is the given element from a Kotlin method call with any of the given method names
      *

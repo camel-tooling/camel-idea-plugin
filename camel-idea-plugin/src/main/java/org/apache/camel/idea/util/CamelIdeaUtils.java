@@ -244,8 +244,7 @@ public final class CamelIdeaUtils {
                     // if its coming from the log EIP then its not a predicate
                     return false;
                 }
-                // TODO: need to do like in groovy prev sibling
-                return IdeaUtils.isFromScalaMethod(element, SIMPLE_PREDICATE);
+                return IdeaUtils.isPrevSiblingFromScalaMethod(element, SIMPLE_PREDICATE);
             }
         }
 
