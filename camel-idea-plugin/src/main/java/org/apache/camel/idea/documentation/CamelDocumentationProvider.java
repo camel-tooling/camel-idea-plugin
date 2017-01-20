@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.intellij.ide.BrowserUtil;
+import com.intellij.lang.ASTNode;
 import com.intellij.lang.Language;
 import com.intellij.lang.documentation.DocumentationProviderEx;
 import com.intellij.lang.documentation.ExternalDocumentationHandler;
@@ -44,6 +45,8 @@ import com.intellij.psi.PsiTypeParameterList;
 import com.intellij.psi.impl.light.LightElement;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlToken;
+import com.intellij.psi.xml.XmlTokenType;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.JSonSchemaHelper;
 import org.apache.camel.idea.model.ComponentModel;
@@ -226,6 +229,20 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     public PsiElement getCustomDocumentationElement(@NotNull Editor editor, @NotNull PsiFile file, @Nullable PsiElement contextElement) {
         // documentation from properties file will cause IDEA to call this method where we can tell IDEA we can provide
         // documentation for the element if we can detect its a Camel component
+
+        ASTNode node = contextElement.getNode();
+        if (node != null && node instanceof XmlToken) {
+            //there is an &amp; in the route that splits the route in separated PsiElements
+            if (node.getElementType() == XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN
+                    //the caret is at the end of the route next to the " character
+                    || node.getElementType() == XmlTokenType.XML_ATTRIBUTE_VALUE_END_DELIMITER
+                    //the caret is placed on an &amp; element
+                    || contextElement.getText().equals("&amp;")) {
+                if (hasDocumentationForCamelComponent(contextElement.getParent())) {
+                    return contextElement.getParent();
+                }
+            }
+        }
         if (hasDocumentationForCamelComponent(contextElement)) {
             return contextElement;
         }
