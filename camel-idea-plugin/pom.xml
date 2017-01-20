@@ -111,6 +111,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>jdom</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
       <version>${snakeyaml.version}</version>
@@ -159,12 +165,6 @@
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>bootstrap</artifactId>
-      <version>${idea.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>jdom</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
