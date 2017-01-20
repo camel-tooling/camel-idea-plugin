@@ -17,7 +17,7 @@
 -->
 <routes>
   <route>
-    <from uri="file:inbox<caret>"/>
+    <<caret>from uri="file:inbox"/>
     <to uroi="file:outbox"/>
   </route>
 </routes>

@@ -37,7 +37,7 @@ public class XmlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsight
         assertEquals(1, gutters.size());
         GutterMark gutter = gutters.get(0);
 
-        assertEquals("<html>Camel route</html>", gutter.getTooltipText());
+        assertEquals("Camel route", gutter.getTooltipText());
 
         Icon defaultIcon = ServiceManager.getService(CamelPreferenceService.class).getCamelIcon();
         Icon icon = gutter.getIcon();

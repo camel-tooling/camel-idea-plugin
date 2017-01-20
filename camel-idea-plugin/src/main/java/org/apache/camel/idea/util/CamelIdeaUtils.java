@@ -74,12 +74,14 @@ public final class CamelIdeaUtils {
             return true;
         }
         // xml
-        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        if (xml != null) {
-            String name = xml.getLocalName();
-            XmlTag parentTag = xml.getParentTag();
-            if (parentTag != null) {
-                return "from".equals(name) && "route".equals(parentTag.getLocalName());
+        if (element.getText().equals("from")) {
+            XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+            if (xml != null) {
+                String name = xml.getLocalName();
+                XmlTag parentTag = xml.getParentTag();
+                if (parentTag != null) {
+                    return "from".equals(name) && "route".equals(parentTag.getLocalName());
+                }
             }
         }
         // groovy
