@@ -22,12 +22,12 @@
   <parent>
     <groupId>org.apache.camel</groupId>
     <artifactId>camel-ide</artifactId>
-    <version>0.3.4-SNAPSHOT</version>
+    <version>0.3.5-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <artifactId>camel-ide-custom-components</artifactId>
-  <version>0.3.4-SNAPSHOT</version>
+  <version>0.3.5-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Apache Camel IDE :: Custom Components</name>
 

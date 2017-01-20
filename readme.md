@@ -10,8 +10,8 @@ Plugin for Intellij IDEA to provide a set of small Apache Camel related capabili
 
 The plugin includes:
 
-- Smart completion for Camel endpoints in Java, Groovy, Kotlin, Scala, XML, properties or yaml files (`ctrl + space`)
-- Smart completion for Camel property placeholders (cursor after `{{`)
+- Code completion for Camel endpoints in Java, Groovy, Kotlin, Scala, XML, properties or yaml files (`ctrl + space`)
+- Code completion for Camel property placeholders (cursor after `{{`)
 - Real time validation for Camel endpoints in Java, Groovy, Kotlin, Scala, XML (underline errors in red)
 - Real time validation for Camel simple language in Java, Groovy, XML (underline errors in red)
 - Endpoint options filtered to only include applicable options when used as consumer vs producer only mode
