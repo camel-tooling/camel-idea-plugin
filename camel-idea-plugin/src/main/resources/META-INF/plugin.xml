@@ -131,7 +131,7 @@
     <localInspection groupName="Apache Camel" language="Scala" implementationClass="org.apache.camel.idea.inspection.CamelScalaInspection"/>
 
     <!-- preference -->
-    <applicationConfigurable id="camel" displayName="Apache Camel" groupId="other"
+    <applicationConfigurable id="camel" displayName="Apache Camel" groupId="language"
                              instance="org.apache.camel.idea.preference.CamelPreferencePage"/>
 
   </extensions>
