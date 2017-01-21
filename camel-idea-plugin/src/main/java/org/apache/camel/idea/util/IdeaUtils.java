@@ -29,14 +29,17 @@ import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiConstructorCall;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
+import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.impl.source.tree.JavaElementType;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -44,6 +47,7 @@ import com.intellij.psi.util.PsiUtil;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
+import com.intellij.psi.xml.XmlToken;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,13 +89,10 @@ public final class IdeaUtils {
      */
     @Nullable
     public static String extractTextFromElement(PsiElement element, boolean fallBackToGeneric) {
-        // need the entire line so find the literal expression that would hold the entire string (java)
-        PsiLiteralExpression literal = null;
-        if (element instanceof PsiLiteralExpression) {
-            literal = (PsiLiteralExpression) element;
-        }
 
-        if (literal != null) {
+        if (element instanceof PsiLiteralExpression) {
+            // need the entire line so find the literal expression that would hold the entire string (java)
+            PsiLiteralExpression literal = (PsiLiteralExpression) element;
             Object o = literal.getValue();
             String text = o != null ? o.toString() : null;
             // unwrap literal string which can happen in java too
@@ -103,6 +104,12 @@ public final class IdeaUtils {
             return ((XmlAttributeValue) element).getValue();
         } else if (element instanceof XmlText) {
             return ((XmlText) element).getValue();
+        } else if (element instanceof XmlToken) {
+            // it may be a token which is a part of an combined attribute
+            XmlAttributeValue xml = PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class);
+            if (xml != null) {
+                return xml.getValue();
+            }
         }
 
         // its maybe a property from properties file
@@ -150,14 +157,14 @@ public final class IdeaUtils {
             }
         }
 
-        String text = "";
         if (fallBackToGeneric) {
             // fallback to generic
-            text = element.getText();
+            String text = element.getText();
             // the text may be quoted so unwrap that
-            text = getInnerText(text);
+            return getInnerText(text);
         }
-        return text;
+
+        return null;
     }
 
     /**
@@ -523,6 +530,61 @@ public final class IdeaUtils {
         return false;
     }
 
+    public static boolean isPrevSiblingFromScalaMethod(PsiElement element, String... methods) {
+        boolean found = false;
+
+        // need to walk a bit into the psi tree to find the element that holds the method call name
+        // must be a scala string kind
+        String kind = element.toString();
+        if (kind.contains("string")) {
+
+            // there are two ways to dig into the groovy ast so try first and then second
+            PsiElement first = element.getParent();
+            if (first != null) {
+                first = first.getPrevSibling();
+            }
+            if (first != null) {
+                first = first.getParent();
+            }
+            if (first != null) {
+                first = first.getPrevSibling();
+            }
+            if (first != null) {
+                first = first.getParent();
+            }
+            if (first != null) {
+                first = first.getPrevSibling();
+            }
+            if (first != null) {
+                first = first.getParent();
+            }
+            if (first != null) {
+                first = first.getPrevSibling();
+            }
+            if (first != null) {
+                first = first.getFirstChild();
+            }
+
+            if (first != null) {
+                kind = first.toString();
+                found = kind.contains("identifier");
+                if (found) {
+                    element = first;
+                }
+            }
+
+        }
+
+        if (found) {
+            kind = element.toString();
+            if (kind.contains("identifier")) {
+                String name = element.getText();
+                return Arrays.stream(methods).anyMatch(name::equals);
+            }
+        }
+        return false;
+    }
+
     /**
      * Is the given element from a Kotlin method call with any of the given method names
      *
@@ -559,7 +621,7 @@ public final class IdeaUtils {
      * Code from com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl#getInnerText()
      */
     @Nullable
-    private static String getInnerText(String text) {
+    public static String getInnerText(String text) {
         if (text == null) {
             return null;
         }

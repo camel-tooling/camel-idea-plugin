@@ -17,6 +17,7 @@
 package org.apache.camel.idea.gutter;
 
 import java.util.Collection;
+import java.util.Collections;
 import javax.swing.*;
 
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
@@ -29,6 +30,8 @@ import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
+import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
+
 /**
  * Provider that adds the Camel icon in the gutter when it detects a Camel route.
  */
@@ -39,16 +42,26 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                                             Collection<? super RelatedItemLineMarkerInfo> result) {
 
         boolean showIcon = getCamelPreferenceService().isShowCamelIconInGutter();
+        boolean camelPresent = ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent();
+
+        if (!showIcon || !camelPresent) {
+            return;
+        }
+
+        // must be in valid file
+        boolean validFile = isFromFileType(element, "java", "xml", "groovy", "kotlin", "scala");
+        if (!validFile) {
+            return;
+        }
+
         Icon icon = getCamelPreferenceService().getCamelIcon();
 
-        if (showIcon && ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
-            if (CamelIdeaUtils.isCamelRouteStart(element)) {
-                NavigationGutterIconBuilder<PsiElement> builder =
-                    NavigationGutterIconBuilder.create(icon).
-                        setTargets(element).
-                        setTooltipText("Camel route");
-                result.add(builder.createLineMarkerInfo(element));
-            }
+        if (CamelIdeaUtils.isCamelRouteStart(element)) {
+            NavigationGutterIconBuilder<PsiElement> builder =
+                NavigationGutterIconBuilder.create(icon).
+                    setTargets(Collections.emptyList()).
+                    setTooltipText("Camel route");
+            result.add(builder.createLineMarkerInfo(element));
         }
     }
 

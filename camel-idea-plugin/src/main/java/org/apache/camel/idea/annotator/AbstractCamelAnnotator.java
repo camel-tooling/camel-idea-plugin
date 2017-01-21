@@ -19,8 +19,10 @@ package org.apache.camel.idea.annotator;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.TokenType;
+import com.intellij.psi.impl.source.tree.JavaDocElementType;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.xml.XmlElement;
 import com.intellij.psi.xml.XmlElementType;
@@ -60,9 +62,19 @@ abstract class AbstractCamelAnnotator implements Annotator {
      * @return <ttt>true</ttt> to accept or <tt>false</tt> to drop
      */
     boolean accept(PsiElement element) {
+
+        if (element == null || element.getNode() == null) {
+            return false;
+        }
+
         // skip whitespace noise
         IElementType type = element.getNode().getElementType();
         if (type == TokenType.WHITE_SPACE) {
+            return false;
+        }
+
+        // skip java doc noise
+        if (JavaDocElementType.ALL_JAVADOC_ELEMENTS.contains(type)) {
             return false;
         }
 

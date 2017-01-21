@@ -62,6 +62,7 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
 
     private boolean realTimeEndpointValidation = true;
     private boolean realTimeSimpleValidation = true;
+    private boolean highlightCustomOptions = true;
     private boolean downloadCatalog = true;
     private boolean scanThirdPartyComponents = true;
     private boolean scanThirdPartyLegacyComponents = true;
@@ -87,6 +88,14 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
 
     public void setRealTimeSimpleValidation(boolean realTimeSimpleValidation) {
         this.realTimeSimpleValidation = realTimeSimpleValidation;
+    }
+
+    public boolean isHighlightCustomOptions() {
+        return highlightCustomOptions;
+    }
+
+    public void setHighlightCustomOptions(boolean highlightCustomOptions) {
+        this.highlightCustomOptions = highlightCustomOptions;
     }
 
     public boolean isDownloadCatalog() {
