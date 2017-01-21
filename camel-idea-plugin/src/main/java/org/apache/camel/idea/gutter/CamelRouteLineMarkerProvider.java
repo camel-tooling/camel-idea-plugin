@@ -17,6 +17,7 @@
 package org.apache.camel.idea.gutter;
 
 import java.util.Collection;
+import java.util.Collections;
 import javax.swing.*;
 
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
@@ -58,7 +59,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         if (CamelIdeaUtils.isCamelRouteStart(element)) {
             NavigationGutterIconBuilder<PsiElement> builder =
                 NavigationGutterIconBuilder.create(icon).
-                    setTargets(element).
+                    setTargets(Collections.emptyList()).
                     setTooltipText("Camel route");
             result.add(builder.createLineMarkerInfo(element));
         }
