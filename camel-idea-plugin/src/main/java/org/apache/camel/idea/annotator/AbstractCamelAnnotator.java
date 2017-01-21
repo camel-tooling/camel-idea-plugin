@@ -62,6 +62,11 @@ abstract class AbstractCamelAnnotator implements Annotator {
      * @return <ttt>true</ttt> to accept or <tt>false</tt> to drop
      */
     boolean accept(PsiElement element) {
+
+        if (element == null || element.getNode() == null) {
+            return false;
+        }
+
         // skip whitespace noise
         IElementType type = element.getNode().getElementType();
         if (type == TokenType.WHITE_SPACE) {
