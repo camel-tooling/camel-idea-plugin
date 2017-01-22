@@ -19,22 +19,43 @@ package org.apache.camel.idea.service;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import javax.swing.*;
 
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.components.PersistentStateComponent;
+import com.intellij.openapi.components.State;
+import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.util.xmlb.XmlSerializerUtil;
+import com.intellij.util.xmlb.annotations.Transient;
 import org.apache.camel.idea.util.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Service for holding preference for this plugin.
  */
-public class CamelPreferenceService implements Disposable {
+@State(
+    name = "CamelPreferences",
+    storages = {@Storage("apachecamelplugin.xml")})
+public class CamelPreferenceService implements PersistentStateComponent<CamelPreferenceService>, Disposable {
 
+    @Transient
     public static final Icon DEFAULT_CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
+    @Transient
     public static final Icon ALTERNATIVE_CAMEL_ICON = IconLoader.getIcon("/icons/camel2.png");
-
+    @Transient
     private static final Logger LOG = Logger.getInstance(CamelPreferenceService.class);
+    @Transient
+    private static String[] defaultIgnoreProperties = {
+        // ignore java and logger prefixes
+        "java.", "Logger.", "logger", "appender.", "rootLogger.",
+        // ignore camel-spring-boot auto configuration prefixes
+        "camel.springboot.", "camel.component.", "camel.dataformat.", "camel.language."};
 
     private volatile Icon currentCustomIcon;
     private volatile String currentCustomIconPath;
@@ -46,8 +67,12 @@ public class CamelPreferenceService implements Disposable {
     private boolean scanThirdPartyComponents = true;
     private boolean scanThirdPartyLegacyComponents = true;
     private boolean showCamelIconInGutter = true;
+    @Transient
     private String chosenCamelIcon = "Default Icon";
     private String customIconFilePath;
+    private List<String> ignorePropertyList = new ArrayList<>();
+
+    CamelPreferenceService() { }
 
     public boolean isRealTimeEndpointValidation() {
         return realTimeEndpointValidation;
@@ -121,6 +146,22 @@ public class CamelPreferenceService implements Disposable {
         this.customIconFilePath = customIconFilePath;
     }
 
+    public List<String> getIgnorePropertyTemplateList() {
+        return new ArrayList<>(Arrays.asList(defaultIgnoreProperties));
+    }
+
+    public List<String> getIgnorePropertyList() {
+        if (ignorePropertyList.isEmpty()) {
+            ignorePropertyList = new ArrayList<>(Arrays.asList(defaultIgnoreProperties));
+        }
+        return ignorePropertyList;
+    }
+
+    // called with reflection when loadState is called
+    public void setIgnorePropertyList(List<String> ignorePropertyList) {
+        this.ignorePropertyList = ignorePropertyList;
+    }
+
     public Icon getCamelIcon() {
         if (chosenCamelIcon.equals("Default Icon")) {
             return DEFAULT_CAMEL_ICON;
@@ -162,5 +203,50 @@ public class CamelPreferenceService implements Disposable {
     @Override
     public void dispose() {
         // noop
+    }
+
+    @Nullable
+    @Override
+    public CamelPreferenceService getState() {
+        if (ignorePropertyList.isEmpty()) {
+            ignorePropertyList = new ArrayList<>(Arrays.asList(defaultIgnoreProperties));
+        }
+        return this;
+    }
+
+    @Override
+    public void loadState(CamelPreferenceService state) {
+        XmlSerializerUtil.copyBean(state, this);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        CamelPreferenceService that = (CamelPreferenceService) o;
+        return realTimeEndpointValidation == that.realTimeEndpointValidation
+            && realTimeSimpleValidation == that.realTimeSimpleValidation
+            && downloadCatalog == that.downloadCatalog
+            && scanThirdPartyComponents == that.scanThirdPartyComponents
+            && scanThirdPartyLegacyComponents == that.scanThirdPartyLegacyComponents
+            && showCamelIconInGutter == that.showCamelIconInGutter
+            && Objects.equals(currentCustomIcon, that.currentCustomIcon)
+            && Objects.equals(currentCustomIconPath, that.currentCustomIconPath)
+            && Objects.equals(chosenCamelIcon, that.chosenCamelIcon)
+            && Objects.equals(customIconFilePath, that.customIconFilePath)
+            && Objects.equals(ignorePropertyList, that.ignorePropertyList);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(currentCustomIcon, currentCustomIconPath,
+            realTimeEndpointValidation, realTimeSimpleValidation,
+            downloadCatalog, scanThirdPartyComponents,
+            scanThirdPartyLegacyComponents, showCamelIconInGutter,
+            chosenCamelIcon, customIconFilePath, ignorePropertyList);
     }
 }

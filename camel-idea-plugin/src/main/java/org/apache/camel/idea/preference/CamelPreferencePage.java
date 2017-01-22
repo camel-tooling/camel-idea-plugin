@@ -17,25 +17,30 @@
 package org.apache.camel.idea.preference;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Objects;
 import javax.swing.*;
-
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
-import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.ui.IdeBorderFactory;
+import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBCheckBox;
+import com.intellij.util.ui.JBUI;
 import net.miginfocom.swing.MigLayout;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.jetbrains.annotations.Nls;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 
 /**
  * Preference UI for this plugin.
  */
-public class CamelPreferencePage implements Configurable {
+public class CamelPreferencePage implements SearchableConfigurable {
 
     private JBCheckBox realTimeEndpointValidationCatalogCheckBox;
     private JBCheckBox realTimeSimpleValidationCatalogCheckBox;
@@ -46,6 +51,7 @@ public class CamelPreferencePage implements Configurable {
     private JBCheckBox camelIconInGutterCheckBox;
     private JComboBox<String> camelIconsComboBox;
     private TextFieldWithBrowseButton customIconButton;
+    private CamelIgnorePropertyTable ignorePropertyTable;
 
     public CamelPreferencePage() {
     }
@@ -88,12 +94,43 @@ public class CamelPreferencePage implements Configurable {
         panel.add(new JLabel("Custom icon file path"));
         panel.add(customIconButton);
 
+
+        JPanel mainPanel = createPropertyIgnoreTable();
+
         JPanel result = new JPanel(new BorderLayout());
         result.add(panel, BorderLayout.NORTH);
+        result.add(mainPanel, -1);
 
         reset();
-
         return result;
+    }
+
+    private JPanel createPropertyIgnoreTable() {
+        final JPanel mainPanel = new JPanel(new GridLayout(1, 1));
+        mainPanel.setPreferredSize(JBUI.size(300, 300));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
+
+        ignorePropertyTable = new CamelIgnorePropertyTable(new CamelIgnorePropertyModel(getCamelPreferenceService().getIgnorePropertyList())) {
+            @Override
+            protected void apply(@NotNull java.util.List<CamelIgnorePropertyModel> configurations) {
+                final java.util.List<CamelIgnorePropertyModel> copied = new ArrayList<>();
+                try {
+                    for (final CamelIgnorePropertyModel configuration : configurations) {
+                        copied.add(configuration.clone());
+                    }
+                } catch (CloneNotSupportedException e) {
+                    //
+                }
+            }
+
+        };
+
+        final JPanel ignorePropertyCamelpanel = ToolbarDecorator.createDecorator(ignorePropertyTable).createPanel();
+        final JPanel localPanel = new JPanel(new BorderLayout());
+        localPanel.setBorder(IdeBorderFactory.createTitledBorder("Property ignore list", false));
+        localPanel.add(ignorePropertyCamelpanel, BorderLayout.CENTER);
+        mainPanel.add(localPanel);
+        return mainPanel;
     }
 
     @Nls
@@ -123,7 +160,9 @@ public class CamelPreferencePage implements Configurable {
         boolean b2 = !Objects.equals(getCamelPreferenceService().getChosenCamelIcon(), camelIconsComboBox.getSelectedItem())
             || !Objects.equals(getCamelPreferenceService().getCustomIconFilePath(), customIconButton.getText());
 
-        return b1 || b2;
+        boolean isIgnorePropertiesModified = ignorePropertyTable.isModified();
+
+        return b1 || b2 || isIgnorePropertiesModified;
     }
 
     @Override
@@ -137,6 +176,7 @@ public class CamelPreferencePage implements Configurable {
         getCamelPreferenceService().setShowCamelIconInGutter(camelIconInGutterCheckBox.isSelected());
         getCamelPreferenceService().setChosenCamelIcon(camelIconsComboBox.getSelectedItem().toString());
         getCamelPreferenceService().setCustomIconFilePath(customIconButton.getText());
+        getCamelPreferenceService().setIgnorePropertyList(ignorePropertyTable.getIgnoredProperties());
     }
 
     @Override
@@ -151,10 +191,16 @@ public class CamelPreferencePage implements Configurable {
         camelIconsComboBox.setSelectedItem(getCamelPreferenceService().getChosenCamelIcon());
         customIconButton.setText(getCamelPreferenceService().getCustomIconFilePath());
         customIconButton.setEnabled("Custom Icon".equals(camelIconsComboBox.getSelectedItem()));
+        ignorePropertyTable.reset();
     }
 
     private CamelPreferenceService getCamelPreferenceService() {
         return ServiceManager.getService(CamelPreferenceService.class);
     }
 
+    @NotNull
+    @Override
+    public String getId() {
+        return "preference.CamelConfigurable";
+    }
 }

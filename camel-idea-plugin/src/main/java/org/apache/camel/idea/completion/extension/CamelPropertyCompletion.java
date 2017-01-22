@@ -18,18 +18,15 @@ package org.apache.camel.idea.completion.extension;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.apache.camel.idea.service.CamelPreferenceService;
+
+import static com.intellij.openapi.components.ServiceManager.getService;
 
 /**
  * Completion handler for building property result set. Hook into the process when
  * scanning for property files and building the completion list in the {@link CamelPropertyPlaceholderSmartCompletionExtension}
  */
 public interface CamelPropertyCompletion {
-    String[] IGNORE_PROPERTIES = {
-        // ignore java and logger prefixes
-        "java.", "Logger.", "logger", "appender.", "rootLogger.",
-        // ignore camel-spring-boot auto configuration prefixes
-        "camel.springboot.", "camel.component.", "camel.dataformat.", "camel.language."};
-
     /**
      * @return true if it match the property file it should process
      */
@@ -44,7 +41,7 @@ public interface CamelPropertyCompletion {
      * Test if the property is on the ignore list
      */
     default boolean isIgnored(String key) {
-        for (String ignore : IGNORE_PROPERTIES) {
+        for (String ignore : getService(CamelPreferenceService.class).getIgnorePropertyList()) {
             if (key.startsWith(ignore)) {
                 return true;
             }
