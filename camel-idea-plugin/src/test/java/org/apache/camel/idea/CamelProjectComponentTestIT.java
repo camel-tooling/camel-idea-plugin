@@ -125,6 +125,21 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         UIUtil.dispatchAllInvocationEvents();
         assertEquals(1, service.getLibraries().size());
         assertEquals(true, service.getLibraries().contains("camel-core"));
+    }
+
+    public void testAddLibWithoutMavenPackaging() throws IOException {
+        CamelService service = ServiceManager.getService(myProject, CamelService.class);
+        assertEquals(0, service.getLibraries().size());
+
+        VirtualFile camelCoreVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(createTestArchive("camel-core-2.19.0.jar"));
+
+        final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myProject);
+
+        addLibraryToModule(camelCoreVirtualFile, projectLibraryTable, "org.apache.camel:camel-core:2.19.0-snapshot");
+
+        UIUtil.dispatchAllInvocationEvents();
+        assertEquals(1, service.getLibraries().size());
+        assertEquals(true, service.getLibraries().contains("camel-core"));
 
     }
 

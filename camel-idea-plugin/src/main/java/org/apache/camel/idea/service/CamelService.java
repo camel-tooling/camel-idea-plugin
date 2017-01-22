@@ -177,11 +177,15 @@ public class CamelService implements Disposable {
                     if (split.length < 3) {
                         continue;
                     }
-                    String groupId = split[1].trim();
-                    String artifactId = split[2].trim();
+                    int startIdx = 1;
+                    if (!split[0].equalsIgnoreCase("maven")) {
+                        startIdx = 0;
+                    }
+                    String groupId = split[startIdx++].trim();
+                    String artifactId = split[startIdx++].trim();
                     String version = null;
                     if (split.length > 2) {
-                        version = split[3].trim();
+                        version = split[startIdx].trim();
                     }
 
                     if ("org.slf4j".equals(groupId) && "slf4j-api".equals(artifactId)) {
@@ -265,8 +269,12 @@ public class CamelService implements Disposable {
                     if (split.length < 3) {
                         continue;
                     }
-                    String groupId = split[1].trim();
-                    String artifactId = split[2].trim();
+                    int startIdx = 1;
+                    if (!split[0].equalsIgnoreCase("maven")) {
+                        startIdx = 0;
+                    }
+                    String groupId = split[startIdx++].trim();
+                    String artifactId = split[startIdx].trim();
 
                     // is it a known library then continue
                     if (containsLibrary(artifactId)) {
