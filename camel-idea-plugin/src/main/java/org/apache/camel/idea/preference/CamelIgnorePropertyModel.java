@@ -23,39 +23,39 @@ import java.util.List;
  * Table view model for the property ignore list
  */
 public class CamelIgnorePropertyModel implements Cloneable {
-    private List<String> propertyValues;
+    private List<String> propertyNames;
 
-    public CamelIgnorePropertyModel(List<String> propertyValues) {
-        this.propertyValues = propertyValues;
+    public CamelIgnorePropertyModel(List<String> propertyNames) {
+        this.propertyNames = propertyNames;
     }
 
-    public List<String> getPropertyValues() {
-        return propertyValues;
+    public List<String> getPropertyNames() {
+        return propertyNames;
     }
 
     public int size() {
-        return propertyValues.size();
+        return propertyNames.size();
     }
 
     public String get(int rowIndex) {
-        return propertyValues.get(rowIndex);
+        return propertyNames.get(rowIndex);
     }
 
     public void add(String propertyValue) {
-        this.propertyValues.add(propertyValue);
+        this.propertyNames.add(propertyValue);
     }
 
     public void add(int newIndex, String propertyValue) {
-        this.propertyValues.add(newIndex, propertyValue);
+        this.propertyNames.add(newIndex, propertyValue);
     }
 
     public String remove(int index) {
-        return propertyValues.remove(index);
+        return propertyNames.remove(index);
     }
 
     @Override
     protected CamelIgnorePropertyModel clone() throws CloneNotSupportedException {
-        CamelIgnorePropertyModel camelIgnorePropertyModel = new CamelIgnorePropertyModel(new ArrayList<>(getPropertyValues()));
+        CamelIgnorePropertyModel camelIgnorePropertyModel = new CamelIgnorePropertyModel(new ArrayList<>(getPropertyNames()));
         return camelIgnorePropertyModel;
     }
 

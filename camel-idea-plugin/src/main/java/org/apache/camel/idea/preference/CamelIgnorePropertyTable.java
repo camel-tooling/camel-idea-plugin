@@ -113,7 +113,7 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
         }
         String pattern = Messages.showInputDialog("Enter pattern", "Ignore property", null, (String) at, null);
 
-        if (!pattern.isEmpty()) {
+        if (pattern != null && !pattern.isEmpty()) {
             getModel().setValueAt(pattern, row, column);
             return true;
         }
@@ -126,7 +126,7 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
 
         private ModelAdapter(final CamelIgnorePropertyModel model) {
             myConfigurations = model
-                .getPropertyValues()
+                .getPropertyNames()
                 .stream()
                 .collect(Collectors.toList());
             this.configurations = model;
@@ -154,7 +154,7 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
         public void setIgnoreProperties(CamelIgnorePropertyModel model) {
             configurations = model;
             myConfigurations = configurations
-                .getPropertyValues()
+                .getPropertyNames()
                 .stream()
                 .collect(Collectors.toList());
             fireTableDataChanged();
@@ -177,7 +177,7 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
         public void addRow() {
             String pattern = Messages.showInputDialog("", "Enter pattern", null);
 
-            if (!pattern.isEmpty()) {
+            if (pattern != null && !pattern.isEmpty()) {
                 configurations.add(pattern);
                 myConfigurations.add(pattern);
                 int i = myConfigurations.size() - 1;
@@ -233,12 +233,12 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
             setText(text == null ? "" : text);
         }
 
-        Icon getIcon(String propertyValue) {
+        Icon getIcon(String propertyName) {
             return null;
         }
 
-        String getText(String propertyValue) {
-            return propertyValue;
+        String getText(String propertyName) {
+            return propertyName;
         }
     }
 }
