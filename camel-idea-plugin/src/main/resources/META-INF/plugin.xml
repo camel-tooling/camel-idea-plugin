@@ -20,6 +20,7 @@
         <li>Real time validation for Camel endpoints in Java, Groovy, Kotlin, Scala, XML (underline errors in red)</li>
         <li>Real time validation for Camel simple language in Java, XML and Groovy (underline errors in red)</li>
         <li>Inspection (analyze code) to validate Camel endpoints and Simple language in Java, Groovy, Kotlin, Scala, and XML</li>
+        <li>Preference page to customize property ignore list for property completion</li>
       </ul>
     ]]></description>
 
@@ -27,6 +28,7 @@
       <ul>
         <li>0.3.5 - Add icons for retina displays.
                     Improved real time simple validation for Groovy.
+                    Add preference page to customize property ignore list
                     Minor bug fixes.</li>
         <li>0.3.4 - Real time validation of complex string values that use string concat, fields or other code structures is current skipped and not red-flagged.
                     Endpoints that support extra options like HTTP based are now highlighted in code editor and shown in quick documentation.
