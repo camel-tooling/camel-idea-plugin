@@ -36,7 +36,6 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-
 /**
  * Preference UI for this plugin.
  */
@@ -61,14 +60,14 @@ public class CamelPreferencePage implements SearchableConfigurable {
     public JComponent createComponent() {
         realTimeEndpointValidationCatalogCheckBox = new JBCheckBox("Real time validation of Camel endpoints in editor");
         realTimeSimpleValidationCatalogCheckBox = new JBCheckBox("Real time validation of Camel simple language in editor");
-        highlightCustomOptionsCheckBox = new JBCheckBox("Highlight custom options as warnings in editor");
+        highlightCustomOptionsCheckBox = new JBCheckBox("Highlight custom endpoint options as warnings in editor");
         downloadCatalogCheckBox = new JBCheckBox("Allow downloading camel-catalog over the internet");
-        scanThirdPartyComponentsCatalogCheckBox = new JBCheckBox("Scan for third party Camel components using modern component packaging");
-        scanThirdPartyLegacyComponentsCatalogCheckBox = new JBCheckBox("Scan the classpath for third party Camel components using legacy component packaging");
+        scanThirdPartyComponentsCatalogCheckBox = new JBCheckBox("Scan classpath for third party Camel components using modern component packaging");
+        scanThirdPartyLegacyComponentsCatalogCheckBox = new JBCheckBox("Scan classpath for third party Camel components using legacy component packaging");
         camelIconInGutterCheckBox = new JBCheckBox("Show Camel icon in gutter");
         camelIconsComboBox = new ComboBox<>(new String[] {"Default Icon", "Alternative Icon", "Custom Icon"});
         customIconButton = new TextFieldWithBrowseButton();
-        customIconButton.addBrowseFolderListener("Choose Custom Camel Icon", "The icon should be a small 16x16 png file", null, FileChooserDescriptorFactory.createSingleFileDescriptor("png"));
+        customIconButton.addBrowseFolderListener("Choose Custom Camel Icon", "The icon should be a 16x16 png file", null, FileChooserDescriptorFactory.createSingleFileDescriptor("png"));
 
         camelIconsComboBox.setRenderer(new CamelChosenIconCellRender(customIconButton));
         camelIconsComboBox.addItemListener((l) -> {
@@ -94,12 +93,9 @@ public class CamelPreferencePage implements SearchableConfigurable {
         panel.add(new JLabel("Custom icon file path"));
         panel.add(customIconButton);
 
-
-        JPanel mainPanel = createPropertyIgnoreTable();
-
         JPanel result = new JPanel(new BorderLayout());
         result.add(panel, BorderLayout.NORTH);
-        result.add(mainPanel, -1);
+        result.add(createPropertyIgnoreTable(), -1);
 
         reset();
         return result;
@@ -119,10 +115,9 @@ public class CamelPreferencePage implements SearchableConfigurable {
                         copied.add(configuration.clone());
                     }
                 } catch (CloneNotSupportedException e) {
-                    //
+                    // ignore
                 }
             }
-
         };
 
         final JPanel ignorePropertyCamelpanel = ToolbarDecorator.createDecorator(ignorePropertyTable).createPanel();
