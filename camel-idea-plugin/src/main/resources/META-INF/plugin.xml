@@ -21,12 +21,14 @@
         <li>Real time validation for Camel simple language in Java, XML and Groovy (underline errors in red)</li>
         <li>Inspection (analyze code) to validate Camel endpoints and Simple language in Java, Groovy, Kotlin, Scala, and XML</li>
         <li>Preference page to customize property ignore list for property completion</li>
+        <li>Preference page to exclude property/yml files for property completion</li>
       </ul>
     ]]></description>
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.6 - Minor bug fixes.</li>
+        <li>0.3.6 - Add preference page to exclude property and yml files
+                    Minor bug fixes.</li>
         <li>0.3.5 - Add icons for retina displays.
                     Improved real time simple validation for Groovy.
                     Add preference page to customize property ignore list
