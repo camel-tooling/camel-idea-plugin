@@ -71,6 +71,7 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     private String chosenCamelIcon = "Default Icon";
     private String customIconFilePath;
     private List<String> ignorePropertyList = new ArrayList<>();
+    private List<String> excludePropertyFiles = new ArrayList<>();
 
     CamelPreferenceService() { }
 
@@ -162,6 +163,15 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
         this.ignorePropertyList = ignorePropertyList;
     }
 
+    public List<String> getExcludePropertyFiles() {
+        return excludePropertyFiles;
+    }
+
+    // called with reflection when loadState is called
+    public void setExcludePropertyFiles(List<String> excludePropertyFiles) {
+        this.excludePropertyFiles = excludePropertyFiles;
+    }
+
     public Icon getCamelIcon() {
         if (chosenCamelIcon.equals("Default Icon")) {
             return DEFAULT_CAMEL_ICON;
@@ -238,7 +248,8 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
             && Objects.equals(currentCustomIconPath, that.currentCustomIconPath)
             && Objects.equals(chosenCamelIcon, that.chosenCamelIcon)
             && Objects.equals(customIconFilePath, that.customIconFilePath)
-            && Objects.equals(ignorePropertyList, that.ignorePropertyList);
+            && Objects.equals(ignorePropertyList, that.ignorePropertyList)
+            && Objects.equals(excludePropertyFiles, that.excludePropertyFiles);
     }
 
     @Override
@@ -247,6 +258,8 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
             realTimeEndpointValidation, realTimeSimpleValidation,
             downloadCatalog, scanThirdPartyComponents,
             scanThirdPartyLegacyComponents, showCamelIconInGutter,
-            chosenCamelIcon, customIconFilePath, ignorePropertyList);
+            chosenCamelIcon, customIconFilePath, ignorePropertyList, excludePropertyFiles);
     }
+
+
 }

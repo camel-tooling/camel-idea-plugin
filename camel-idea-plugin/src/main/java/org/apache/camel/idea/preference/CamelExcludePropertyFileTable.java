@@ -18,7 +18,7 @@ package org.apache.camel.idea.preference;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.*;
+import java.util.EventObject;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.*;
@@ -26,21 +26,19 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.EditableModel;
 import org.jetbrains.annotations.NotNull;
 
-
 /**
- * Table view for displaying list of ignored properties.
+ * Table view for displaying list of excluded yml/properties files.
  */
-public abstract class CamelIgnorePropertyTable extends JBTable {
+public abstract class CamelExcludePropertyFileTable extends JBTable {
     private static final int NAME_COLUMN = 0;
-    private final CamelIgnorePropertyModel originalManager;
+    private final CamelExcludePropertyFileModel originalManager;
 
-    public CamelIgnorePropertyTable(@NotNull final CamelIgnorePropertyModel model) {
+    public CamelExcludePropertyFileTable(@NotNull final CamelExcludePropertyFileModel model) {
         super(new ModelAdapter(copy(model)));
         originalManager = model;
         setStriped(true);
@@ -54,8 +52,9 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
 
     /**
      * Makes clone of the current model the table editor is modifying
+     * @param model
      */
-    private static CamelIgnorePropertyModel copy(@NotNull final CamelIgnorePropertyModel model) {
+    private static CamelExcludePropertyFileModel copy(@NotNull final CamelExcludePropertyFileModel model) {
         try {
             return model.clone();
         } catch (CloneNotSupportedException e) {
@@ -65,7 +64,7 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
     }
 
     public boolean isModified() {
-        final List<String> current = getModel().getIgnoreProperties();
+        final List<String> current = getModel().getExcludePropertyFiles();
 
         if (originalManager.size() != current.size()) {
             return true;
@@ -82,20 +81,20 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
 
     /**
      *
-     * @return a list of modified properties
+     * @return a list of modified filenames
      */
-    public List<String> getIgnoredProperties() {
-        return getModel().getIgnoreProperties();
+    public List<String> getExcludePropertyFiles() {
+        return getModel().getExcludePropertyFiles();
     }
 
     /**
-     * reset the property ignore list
+     * reset the filename exclude list
      */
     public void reset() {
-        getModel().setIgnoreProperties(copy(originalManager));
+        getModel().setExcludPropertyFiles(copy(originalManager));
     }
 
-    protected abstract void apply(@NotNull java.util.List<CamelIgnorePropertyModel> configurations);
+    protected abstract void apply(@NotNull List<CamelExcludePropertyFileModel> excludePropertyFilesModel);
 
     @Override
     public ModelAdapter getModel() {
@@ -111,7 +110,7 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
         if (!(at instanceof String)) {
             return false;
         }
-        String pattern = Messages.showInputDialog("", "Edit property", null, (String) at, null);
+        String pattern = Messages.showInputDialog("", "Edit filename pattern", null, (String) at, null);
 
         if (pattern != null && !pattern.isEmpty()) {
             getModel().setValueAt(pattern, row, column);
@@ -121,25 +120,25 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
     }
 
     private static final class ModelAdapter extends AbstractTableModel implements EditableModel {
-        private List<String> myConfigurations;
-        private CamelIgnorePropertyModel configurations;
+        private List<String> excludedPropertyFiles;
+        private CamelExcludePropertyFileModel excludePropertyFilesModel;
 
-        private ModelAdapter(final CamelIgnorePropertyModel model) {
-            myConfigurations = model
-                .getPropertyNames()
+        private ModelAdapter(final CamelExcludePropertyFileModel model) {
+            excludedPropertyFiles = model
+                .getFilenames()
                 .stream()
                 .collect(Collectors.toList());
-            this.configurations = model;
+            this.excludePropertyFilesModel = model;
         }
 
         @Override
         public String getColumnName(int column) {
-            return "Property name";
+            return "Filename";
         }
 
         @Override
         public int getRowCount() {
-            return myConfigurations.size();
+            return excludedPropertyFiles.size();
         }
 
         @Override
@@ -147,14 +146,14 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
             return 1;
         }
 
-        public List<String> getIgnoreProperties() {
-            return myConfigurations;
+        public List<String> getExcludePropertyFiles() {
+            return excludedPropertyFiles;
         }
 
-        public void setIgnoreProperties(CamelIgnorePropertyModel model) {
-            configurations = model;
-            myConfigurations = configurations
-                .getPropertyNames()
+        public void setExcludPropertyFiles(CamelExcludePropertyFileModel model) {
+            excludePropertyFilesModel = model;
+            excludedPropertyFiles = excludePropertyFilesModel
+                .getFilenames()
                 .stream()
                 .collect(Collectors.toList());
             fireTableDataChanged();
@@ -162,50 +161,50 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            return 0 <= rowIndex && rowIndex < myConfigurations.size()
-                ? myConfigurations.get(rowIndex)
+            return 0 <= rowIndex && rowIndex < excludedPropertyFiles.size()
+                ? excludedPropertyFiles.get(rowIndex)
                 : null;
         }
 
         public void add(@NotNull final String property) {
-            myConfigurations.add(property);
-            configurations.add(property);
-            fireTableRowsInserted(myConfigurations.size() - 1, myConfigurations.size() - 1);
+            excludedPropertyFiles.add(property);
+            excludePropertyFilesModel.add(property);
+            fireTableRowsInserted(excludedPropertyFiles.size() - 1, excludedPropertyFiles.size() - 1);
         }
 
         @Override
         public void addRow() {
-            String pattern = Messages.showInputDialog("", "Enter pattern", null);
+            String pattern = Messages.showInputDialog("", "Enter filename pattern", null);
 
             if (pattern != null && !pattern.isEmpty()) {
-                configurations.add(pattern);
-                myConfigurations.add(pattern);
-                int i = myConfigurations.size() - 1;
+                excludePropertyFilesModel.add(pattern);
+                excludedPropertyFiles.add(pattern);
+                int i = excludedPropertyFiles.size() - 1;
                 fireTableRowsInserted(i, i);
             }
         }
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            configurations.remove(rowIndex);
-            myConfigurations.remove(rowIndex);
+            excludePropertyFilesModel.remove(rowIndex);
+            excludedPropertyFiles.remove(rowIndex);
 
-            configurations.add(rowIndex, (String) aValue);
-            myConfigurations.add(rowIndex, (String) aValue);
+            excludePropertyFilesModel.add(rowIndex, (String) aValue);
+            excludedPropertyFiles.add(rowIndex, (String) aValue);
             super.setValueAt(aValue, rowIndex, columnIndex);
         }
 
         @Override
         public void removeRow(int index) {
-            configurations.remove(index);
-            myConfigurations.remove(index);
+            excludePropertyFilesModel.remove(index);
+            excludedPropertyFiles.remove(index);
             fireTableRowsDeleted(index, index);
         }
 
         @Override
         public void exchangeRows(int oldIndex, int newIndex) {
-            configurations.add(newIndex, configurations.remove(oldIndex));
-            myConfigurations.add(newIndex, myConfigurations.remove(oldIndex));
+            excludePropertyFilesModel.add(newIndex, excludePropertyFilesModel.remove(oldIndex));
+            excludedPropertyFiles.add(newIndex, excludedPropertyFiles.remove(oldIndex));
             fireTableRowsUpdated(Math.min(oldIndex, newIndex), Math.max(oldIndex, newIndex));
         }
 
@@ -233,12 +232,12 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
             setText(text == null ? "" : text);
         }
 
-        Icon getIcon(String propertyName) {
+        Icon getIcon(String filename) {
             return null;
         }
 
-        String getText(String propertyName) {
-            return propertyName;
+        String getText(String filename) {
+            return filename;
         }
     }
 }
