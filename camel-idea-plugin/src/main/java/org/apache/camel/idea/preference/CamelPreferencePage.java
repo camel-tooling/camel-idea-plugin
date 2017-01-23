@@ -22,6 +22,7 @@ import java.util.Objects;
 import javax.swing.*;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.ui.ComboBox;
@@ -39,7 +40,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Preference UI for this plugin.
  */
-public class CamelPreferencePage implements SearchableConfigurable {
+public class CamelPreferencePage implements SearchableConfigurable, Configurable.NoScroll {
 
     private JBCheckBox realTimeEndpointValidationCatalogCheckBox;
     private JBCheckBox realTimeSimpleValidationCatalogCheckBox;
