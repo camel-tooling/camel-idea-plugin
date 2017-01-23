@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/davsclaus/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.3.5</version>
+  <version>0.3.6</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -26,19 +26,11 @@
 
   <change-notes><![CDATA[
       <ul>
+        <li>0.3.6 - Minor bug fixes.</li>
         <li>0.3.5 - Add icons for retina displays.
                     Improved real time simple validation for Groovy.
                     Add preference page to customize property ignore list
                     Minor bug fixes.</li>
-        <li>0.3.4 - Real time validation of complex string values that use string concat, fields or other code structures is current skipped and not red-flagged.
-                    Endpoints that support extra options like HTTP based are now highlighted in code editor and shown in quick documentation.
-                    Inspection (analyze code) combined into a single inspection instead of individual per language.
-                    Minor bug fixes.</li>
-        <li>0.3.3 - Real time validation of Simple language now validates predicates vs expression mode.
-                    Add Simple language to inspection (analyze code).
-                    Added XML and Groovy language to real time validation of Simple language in editor.
-                    Added alternative Camel icon to choose from preference.
-                    Add support for downloading camel-catalog from 3rd party repositories defined in pom.xml such as JBoss Fuse.</li>
       </ul>
     ]]>
   </change-notes>
