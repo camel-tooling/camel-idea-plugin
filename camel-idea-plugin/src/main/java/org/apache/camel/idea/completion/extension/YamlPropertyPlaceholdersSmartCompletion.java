@@ -26,8 +26,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.PlainPrefixMatcher;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.apache.camel.idea.service.CamelPreferenceService;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
@@ -58,7 +60,13 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
 
     @Override
     public boolean isValidExtension(String filename) {
-        return filename.endsWith(".yaml") || filename.endsWith(".yml");
+        final CamelPreferenceService preferenceService = ServiceManager.getService(CamelPreferenceService.class);
+        final boolean present = preferenceService.getExcludePropertyFiles()
+            .stream()
+            .filter(s -> s.contains(filename))
+            .findFirst()
+            .isPresent();
+        return (!present) && (filename.endsWith(".yaml") || filename.endsWith(".yml"));
     }
 
     @Override

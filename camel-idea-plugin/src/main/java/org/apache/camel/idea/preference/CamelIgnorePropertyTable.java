@@ -111,7 +111,7 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
         if (!(at instanceof String)) {
             return false;
         }
-        String pattern = Messages.showInputDialog("Enter pattern", "Ignore property", null, (String) at, null);
+        String pattern = Messages.showInputDialog("", "Edit property", null, (String) at, null);
 
         if (pattern != null && !pattern.isEmpty()) {
             getModel().setValueAt(pattern, row, column);

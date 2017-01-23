@@ -138,7 +138,7 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
         mainPanel.setPreferredSize(JBUI.size(300, 200));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
 
-        excludePropertyFileTable = new CamelExcludePropertyFileTable(new CamelExcludePropertyFileModel(getCamelPreferenceService().getExludePropertyFiles())) {
+        excludePropertyFileTable = new CamelExcludePropertyFileTable(new CamelExcludePropertyFileModel(getCamelPreferenceService().getExcludePropertyFiles())) {
             @Override
             protected void apply(@NotNull List<CamelExcludePropertyFileModel> configurations) {
                 final java.util.List<CamelExcludePropertyFileModel> copied = new ArrayList<>();
@@ -205,7 +205,7 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
         getCamelPreferenceService().setChosenCamelIcon(camelIconsComboBox.getSelectedItem().toString());
         getCamelPreferenceService().setCustomIconFilePath(customIconButton.getText());
         getCamelPreferenceService().setIgnorePropertyList(ignorePropertyTable.getIgnoredProperties());
-        getCamelPreferenceService().setExludePropertyFiles(excludePropertyFileTable.getExcludePropertyFiles());
+        getCamelPreferenceService().setExcludePropertyFiles(excludePropertyFileTable.getExcludePropertyFiles());
     }
 
     @Override

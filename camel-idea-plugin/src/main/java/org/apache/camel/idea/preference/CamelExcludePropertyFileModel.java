@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Table view model for the property file exclude list
+ * Table view model for the property files to exclude list
  */
 public class CamelExcludePropertyFileModel implements Cloneable {
     private List<String> filenames;

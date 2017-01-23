@@ -81,14 +81,14 @@ public abstract class CamelExcludePropertyFileTable extends JBTable {
 
     /**
      *
-     * @return a list of modified properties
+     * @return a list of modified filenames
      */
     public List<String> getExcludePropertyFiles() {
         return getModel().getExcludePropertyFiles();
     }
 
     /**
-     * reset the property ignore list
+     * reset the filename exclude list
      */
     public void reset() {
         getModel().setExcludPropertyFiles(copy(originalManager));
@@ -110,7 +110,7 @@ public abstract class CamelExcludePropertyFileTable extends JBTable {
         if (!(at instanceof String)) {
             return false;
         }
-        String pattern = Messages.showInputDialog("Enter pattern", "Ignore property", null, (String) at, null);
+        String pattern = Messages.showInputDialog("", "Edit filename pattern", null, (String) at, null);
 
         if (pattern != null && !pattern.isEmpty()) {
             getModel().setValueAt(pattern, row, column);
@@ -133,7 +133,7 @@ public abstract class CamelExcludePropertyFileTable extends JBTable {
 
         @Override
         public String getColumnName(int column) {
-            return "Property name";
+            return "Filename";
         }
 
         @Override
@@ -174,7 +174,7 @@ public abstract class CamelExcludePropertyFileTable extends JBTable {
 
         @Override
         public void addRow() {
-            String pattern = Messages.showInputDialog("", "Enter pattern", null);
+            String pattern = Messages.showInputDialog("", "Enter filename pattern", null);
 
             if (pattern != null && !pattern.isEmpty()) {
                 excludePropertyFilesModel.add(pattern);
@@ -232,12 +232,12 @@ public abstract class CamelExcludePropertyFileTable extends JBTable {
             setText(text == null ? "" : text);
         }
 
-        Icon getIcon(String propertyName) {
+        Icon getIcon(String filename) {
             return null;
         }
 
-        String getText(String propertyName) {
-            return propertyName;
+        String getText(String filename) {
+            return filename;
         }
     }
 }
