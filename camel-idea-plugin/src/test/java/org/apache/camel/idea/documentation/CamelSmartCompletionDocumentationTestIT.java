@@ -20,7 +20,6 @@ import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiReference;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
 /**
@@ -58,6 +57,22 @@ public class CamelSmartCompletionDocumentationTestIT extends CamelLightCodeInsig
         assertEquals(componentName, de.getComponentName());
         assertEquals("delete", de.getText());
         assertEquals("delete", de.getEndpointOption());
+    }
+
+    public void testXMLQuickDocCaretOnAmpersand() throws Exception {
+        myFixture.configureByFile("XmlCamelRouteQuickDocCaretOnAmpTestData.xml");
+        PsiElement element = getElementAtCaret();
+        assertNotNull(element);
+        CamelDocumentationProvider camelDocumentationProvider = new CamelDocumentationProvider();
+        assertEquals(element.getParent(), camelDocumentationProvider.getCustomDocumentationElement(myFixture.getEditor(), myFixture.getFile(), element));
+    }
+
+    public void testXMLQuickDocCaretAtTheEndOfTheRoute() throws Exception {
+        myFixture.configureByFile("XmlCamelRouteQuickDocCaretAtTheEndTestData.xml");
+        PsiElement element = getElementAtCaret();
+        assertNotNull(element);
+        CamelDocumentationProvider camelDocumentationProvider = new CamelDocumentationProvider();
+        assertEquals(element.getParent(), camelDocumentationProvider.getCustomDocumentationElement(myFixture.getEditor(), myFixture.getFile(), element));
     }
 
 }

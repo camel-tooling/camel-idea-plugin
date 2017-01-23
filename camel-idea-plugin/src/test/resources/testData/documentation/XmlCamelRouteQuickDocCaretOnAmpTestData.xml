@@ -1,0 +1,4 @@
+<route>
+    <from uri="file:inbox?delete=true&a<caret>mp;fileExist=Append"/>
+    <to uri="file:outbox?flatten=true"/>
+</route>
