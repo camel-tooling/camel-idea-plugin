@@ -1,0 +1,4 @@
+<route>
+    <from uri="file:inbox?delete=true&amp;fileExist=Append<caret>"/>
+    <to uri="file:outbox?flatten=true"/>
+</route>

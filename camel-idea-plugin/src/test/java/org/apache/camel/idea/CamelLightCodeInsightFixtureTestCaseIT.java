@@ -22,6 +22,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.psi.PsiElement;
 import com.intellij.testFramework.LightProjectDescriptor;
 import com.intellij.testFramework.PsiTestUtil;
 import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor;
@@ -90,6 +91,14 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
             .withoutTransitivity().asFile();
 
         return libs;
+    }
+
+    protected PsiElement getElementAtCaret() {
+        int offset = myFixture.getCaretOffset();
+        if (offset < 0) {
+            fail("No <caret> found");
+        }
+        return myFixture.getFile().findElementAt(offset);
     }
 
     public boolean isIgnoreCamelCoreLib() {
