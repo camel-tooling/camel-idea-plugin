@@ -63,7 +63,7 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
         final CamelPreferenceService preferenceService = ServiceManager.getService(CamelPreferenceService.class);
         final boolean present = preferenceService.getExcludePropertyFiles()
             .stream()
-            .filter(s -> s.contains(filename))
+            .filter(s -> !s.isEmpty() && filename.contains(s))
             .findFirst()
             .isPresent();
         return (!present) && (filename.endsWith(".yaml") || filename.endsWith(".yml"));

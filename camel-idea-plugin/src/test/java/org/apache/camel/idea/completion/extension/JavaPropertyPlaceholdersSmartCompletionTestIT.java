@@ -17,11 +17,13 @@
 package org.apache.camel.idea.completion.extension;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.openapi.components.ServiceManager;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 
 /**
@@ -43,5 +45,57 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertEquals(0, strings.size());
+    }
+
+    public void testWithExcludeFile() {
+        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("CompleteExclude"));
+        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertTrue(strings.containsAll(Arrays.asList("ftp.client}}", "ftp.server}}")));
+        assertEquals(2, strings.size());
+    }
+
+    public void testWithExcludeFileWithPath() {
+        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("src/CompleteExclude"));
+        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertTrue(strings.containsAll(Arrays.asList("ftp.client}}", "ftp.server}}")));
+        assertEquals(2, strings.size());
+    }
+
+
+    public void testWithExcludeNoMatchFileWithPath() {
+        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("my/test/CompleteExclude"));
+        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertTrue(strings.containsAll(Arrays.asList("ftp.client}}", "ftp.server}}")));
+        assertEquals(9, strings.size());
+    }
+
+    public void testWithExcludePath() {
+        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("src/"));
+        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals(0, strings.size());
+    }
+
+    public void testWithExcludeEmptyListFile() {
+        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList(""));
+        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals(9, strings.size());
+    }
+
+    public void testWithExcludeSpaceListFile() {
+        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList(" "));
+        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals(9, strings.size());
     }
 }

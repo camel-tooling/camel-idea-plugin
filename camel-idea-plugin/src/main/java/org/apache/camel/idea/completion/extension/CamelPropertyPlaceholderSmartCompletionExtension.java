@@ -58,7 +58,7 @@ public class CamelPropertyPlaceholderSmartCompletionExtension implements CamelCo
             if (sourceRoot.isValid() && sourceRoot.getCanonicalFile() != null) {
                 VfsUtil.processFilesRecursively(sourceRoot.getCanonicalFile(), virtualFile -> {
                     propertyCompletionProviders.stream()
-                        .filter(p -> p.isValidExtension(virtualFile.getName()) && !projectFileIndex.isExcluded(sourceRoot))
+                        .filter(p -> p.isValidExtension(virtualFile.getCanonicalPath()) && !projectFileIndex.isExcluded(sourceRoot))
                         .forEach(p -> p.buildResultSet(resultSet, virtualFile));
                     return true;
                 });
