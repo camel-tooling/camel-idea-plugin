@@ -17,6 +17,7 @@
 package org.apache.camel.idea.completion.extension;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Properties;
 
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -56,7 +57,7 @@ public class PropertiesPropertyPlaceholdersSmartCompletion implements CamelPrope
         final CamelPreferenceService preferenceService = ServiceManager.getService(CamelPreferenceService.class);
         final boolean present = preferenceService.getExcludePropertyFiles()
             .stream()
-            .filter(s -> s.contains(filename))
+            .filter(s -> !s.isEmpty() && filename.contains(s))
             .findFirst()
             .isPresent();
         return (!present) && (filename.endsWith(".properties"));
