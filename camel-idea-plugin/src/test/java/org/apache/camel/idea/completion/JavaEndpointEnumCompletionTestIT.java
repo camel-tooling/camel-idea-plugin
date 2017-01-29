@@ -16,11 +16,13 @@
  */
 package org.apache.camel.idea.completion;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.intellij.codeInsight.completion.CompletionType;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import org.hamcrest.Matchers;
+
+import static org.junit.Assert.assertThat;
 
 /**
  * Testing smart completion with Camel Java DSL
@@ -32,7 +34,61 @@ public class JavaEndpointEnumCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertEquals(5, strings.size());
-        assertTrue(strings.containsAll(Arrays.asList("jms:", "jms:queue", "jms:topic", "jms:temp:queue", "jms:temp:topic")));
+        assertThat(strings, Matchers.contains("jms:", "jms:queue", "jms:topic", "jms:temp:queue", "jms:temp:topic"));
+    }
+
+    private String getJavaCaretAfterColonWithPreDataEnumTestData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"jms:qu<caret>\")\n"
+            + "                .to(\"file:outbox?delete=true&fileExist=Append\");\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    public void testJavaCaretAfterColonWithPreDataEnum() {
+        myFixture.configureByText("CompleteJavaEndpointSyntaxEnumTestData.java", getJavaCaretAfterColonWithPreDataEnumTestData());
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals(3, strings.size());
+        assertThat(strings, Matchers.containsInAnyOrder("jms:qu", "jms:queue", "jms:temp:queue"));
+    }
+
+    private String getJavaCaretInMiddleOfWithEnumTestData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"jms:temp<caret>topic\")\n"
+            + "                .to(\"file:outbox?delete=true&fileExist=Append\");\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    public void testJavaCaretInMiddleOfWithDataEnum() {
+        myFixture.configureByText("CompleteJavaEndpointSyntaxEnumTestData.java", getJavaCaretInMiddleOfWithEnumTestData());
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals(3, strings.size());
+        assertThat(strings, Matchers.containsInAnyOrder("jms:temp", "jms:temp:queue", "jms:temp:topic"));
+    }
+
+    private String getJavaCaretAfterColonTestData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"jms:temp:<caret>\")\n"
+            + "                .to(\"file:outbox?delete=true&fileExist=Append\");\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    public void testJavaCaretAfterColonWithEnum() {
+        myFixture.configureByText("CompleteJavaEndpointSyntaxEnumTestData.java", getJavaCaretAfterColonTestData());
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals(1, strings.size());
+        assertThat(strings, Matchers.containsInAnyOrder("jms:temp:"));
     }
 
 }

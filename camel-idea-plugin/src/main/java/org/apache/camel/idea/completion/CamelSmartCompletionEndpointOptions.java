@@ -20,15 +20,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.psi.PsiElement;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.EndpointOptionModel;
 import org.apache.camel.idea.service.CamelPreferenceService;
+import org.apache.camel.idea.util.IdeaUtils;
 
 /**
  * Smart completion for editing a Camel endpoint uri, to show a list of possible endpoint options which can be added.
@@ -43,7 +46,7 @@ public final class CamelSmartCompletionEndpointOptions {
 
     public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(String val, ComponentModel component,
                                                                                    Map<String, String> existing, boolean xmlMode,
-                                                                                   boolean consumerOnly, boolean producerOnly) {
+                                                                                   boolean consumerOnly, boolean producerOnly, PsiElement element) {
         List<LookupElement> answer = new ArrayList<>();
 
         String separator = xmlMode ? "&amp;" : "&";
@@ -51,6 +54,8 @@ public final class CamelSmartCompletionEndpointOptions {
         List<EndpointOptionModel> options = component.getEndpointOptions();
         // sort the options A..Z which is easier to users to understand
         options.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+
+        val = removeUnknownOption(val, existing, element);
 
         for (EndpointOptionModel option : options) {
 
@@ -76,6 +81,7 @@ public final class CamelSmartCompletionEndpointOptions {
 
                     // the lookup should prepare for the new option
                     String lookup;
+                    val = val.replace("val", "");
                     if (!val.contains("?")) {
                         // none existing options so we need to start with a ? mark
                         lookup = val + "?" + key + tail;
@@ -121,8 +127,10 @@ public final class CamelSmartCompletionEndpointOptions {
         return answer;
     }
 
+
+
     public static List<LookupElement> addSmartCompletionSuggestionsContextPath(String val, ComponentModel component,
-                                                                               Map<String, String> existing, boolean xmlMode) {
+                                                                               Map<String, String> existing, boolean xmlMode, PsiElement psiElement) {
         List<LookupElement> answer = new ArrayList<>();
 
         // show the syntax as the only choice for now
@@ -133,7 +141,7 @@ public final class CamelSmartCompletionEndpointOptions {
 
         LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE);
         answer.add(element);
-
+        val = removeUnknownEnum(val, psiElement);
         List<LookupElement> old = addSmartCompletionContextPathEnumSuggestions(val, component, existing, xmlMode);
         if (!old.isEmpty()) {
             answer.addAll(old);
@@ -197,6 +205,41 @@ public final class CamelSmartCompletionEndpointOptions {
         }
 
         return answer;
+    }
+
+    /**
+     * Remove unknown option at the cursor location from the query string
+     * from("timer:trigger?repeatCount=10&del<caret>")
+     */
+    private static String removeUnknownOption(String val, Map<String, String> existing, PsiElement element) {
+
+        String[] strToRemove = IdeaUtils.getQueryParameterAtCursorPosition(element);
+        //to compare the string against known options we need to strip it from equal sign
+        String searchStr = strToRemove[0];
+        if (!searchStr.isEmpty() && !searchStr.endsWith("&") && existing != null) {
+            searchStr =  searchStr.substring(1);
+            //check if the option is known option
+            final String optionToRemove = existing.get(searchStr);
+            if (optionToRemove == null || optionToRemove.isEmpty()) {
+                val = val.replace(strToRemove[0], "");
+            }
+        }
+        return val;
+    }
+
+    /**
+     * Remove unknown option at the cursor location from the query string
+     * from("jms:qu<caret>")
+     */
+    private static String removeUnknownEnum(String val, PsiElement element) {
+
+        String[] strToRemove = IdeaUtils.getQueryParameterAtCursorPosition(element);
+        //to compare the string against known options we need to strip it from equal sign
+        strToRemove[0] = strToRemove[0].replace(":", "");
+        if (!strToRemove[0].isEmpty()) {
+            val = val.replace(strToRemove[0], "");
+        }
+        return val;
     }
 
     private static CamelPreferenceService getCamelPreferenceService() {

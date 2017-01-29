@@ -21,6 +21,9 @@ import java.util.List;
 
 import com.intellij.codeInsight.completion.CompletionType;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import org.hamcrest.Matchers;
+
+import static org.junit.Assert.assertThat;
 
 /**
  * Testing smart completion with Camel Java DSL
@@ -35,7 +38,7 @@ public class JavaEndpointSmartCompletionMultiValueTestIT extends CamelLightCodeI
         assertTrue(strings.size() > 60);
 
         // should include the scheduler. prefix again because its a multi value
-        assertTrue(strings.containsAll(Arrays.asList("file:inbox?scheduler=quartz2&scheduler.foo=123&scheduler.")));
+        assertThat(strings, Matchers.hasItems("file:inbox?scheduler=quartz2&scheduler.foo=123&scheduler."));
     }
 
 }

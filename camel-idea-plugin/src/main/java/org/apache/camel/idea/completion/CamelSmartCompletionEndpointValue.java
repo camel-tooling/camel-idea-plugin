@@ -19,6 +19,7 @@ package org.apache.camel.idea.completion;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
@@ -27,7 +28,9 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorModificationUtil;
+import com.intellij.psi.PsiElement;
 import org.apache.camel.idea.model.EndpointOptionModel;
+import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -41,14 +44,17 @@ public final class CamelSmartCompletionEndpointValue {
     }
 
     public static List<LookupElement> addSmartCompletionForSingleValue(Editor editor, String val, String suffix,
-                                                                       EndpointOptionModel option, boolean xmlMode) {
+                                                                       EndpointOptionModel option, boolean xmlMode, PsiElement element) {
         List<LookupElement> answer = new ArrayList<>();
 
         String javaType = option.getJavaType();
         String deprecated = option.getDeprecated();
         String enums = option.getEnums();
         String defaultValue = option.getDefaultValue();
-
+        String[] stringToRemove = IdeaUtils.getQueryParameterAtCursorPosition(element);
+        if (stringToRemove[1] != null && !stringToRemove[1].isEmpty()) {
+            val = val.replace(stringToRemove[1], "");
+        }
         if (!enums.isEmpty()) {
             addEnumSuggestions(editor, val, suffix, answer, deprecated, enums, defaultValue, xmlMode);
         } else if ("java.lang.Boolean".equals(javaType) || "boolean".equals(javaType)) {
@@ -175,8 +181,7 @@ public final class CamelSmartCompletionEndpointValue {
                     }
                     int len = cut.length();
                     if (len > 0) {
-                        int offset = editor.getCaretModel().getOffset();
-                        editor.getDocument().deleteString(offset, offset + len);
+                        EditorModificationUtil.deleteSelectedText(editor);
                     }
                 }
             }

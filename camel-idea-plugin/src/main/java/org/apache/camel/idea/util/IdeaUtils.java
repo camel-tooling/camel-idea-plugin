@@ -23,23 +23,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiConstructorCall;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
-import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.impl.source.tree.JavaElementType;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -640,6 +638,59 @@ public final class IdeaUtils {
             }
         }
         return text;
+    }
+
+    public static int getCaretPositionInsidePsiElement(PsiElement element) {
+        String positionText = element.getText();
+        String hackVal = positionText.toLowerCase();
+
+        int hackIndex = hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER.toLowerCase());
+        if (hackIndex == -1) {
+            hackIndex = hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED.toLowerCase());
+        }
+        return hackIndex;
+    }
+
+
+    /**
+     * Return the Query parameter at the cursor location for the query parameter.
+     *  <ul>
+     *    <li>timer:trigger?repeatCount=0&de&lt;cursor&gt; will return {"&de", null}</li>
+     *    <li>timer:trigger?repeatCount=0&de&lt;cursor&gt;lay=10 will return {"&de",null}</li>
+     *    <li>timer:trigger?repeatCount=0&delay=10&lt;cursor&gt; will return {"delay","10"}</li>
+     *    <li>timer:trigger?repeatCount=0&delay=&lt;cursor&gt; will return {"delay",""}</li>
+     *    <li>jms:qu&lt;cursor&gt; will return {":qu", ""}</li>
+     *  </ul>
+     * @return a list with the query parameter and the value if present. The query parameter is returned with separator char
+     */
+    public static String[] getQueryParameterAtCursorPosition(PsiElement element) {
+        String positionText = element.getText();
+        int hackIndex = getCaretPositionInsidePsiElement(element);
+        positionText = positionText.substring(0, hackIndex);
+        //we need to know the start position of the unknown options
+        int startIdx = Math.max(positionText.lastIndexOf('.'), positionText.lastIndexOf('='));
+        startIdx = Math.max(startIdx, positionText.lastIndexOf('&'));
+        startIdx = Math.max(startIdx, positionText.lastIndexOf('?'));
+        startIdx = Math.max(startIdx, positionText.lastIndexOf(':'));
+
+        startIdx = startIdx < 0 ? 0 : startIdx;
+
+        //Copy the option with any separator chars
+        String parameter;
+        String value = null;
+        if (positionText.charAt(startIdx) == '=') {
+            value = positionText.substring(startIdx + 1, hackIndex);
+            int valueStartIdx = positionText.lastIndexOf('&', startIdx);
+            valueStartIdx = Math.max(valueStartIdx, positionText.lastIndexOf('?'));
+            valueStartIdx = Math.max(valueStartIdx, positionText.lastIndexOf(':'));
+            valueStartIdx = valueStartIdx < 0 ? 0 : valueStartIdx;
+            parameter = positionText.substring(valueStartIdx, startIdx);
+        } else {
+            //Copy the option with any separator chars
+            parameter = positionText.substring(startIdx, hackIndex);
+        }
+
+        return new String[] {parameter, value};
     }
 
 }
