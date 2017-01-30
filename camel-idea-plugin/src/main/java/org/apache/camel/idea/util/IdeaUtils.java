@@ -640,9 +640,8 @@ public final class IdeaUtils {
         return text;
     }
 
-    public static int getCaretPositionInsidePsiElement(PsiElement element) {
-        String positionText = element.getText();
-        String hackVal = positionText.toLowerCase();
+    public static int getCaretPositionInsidePsiElement(String stringLiteral) {
+        String hackVal = stringLiteral.toLowerCase();
 
         int hackIndex = hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER.toLowerCase());
         if (hackIndex == -1) {
@@ -664,8 +663,10 @@ public final class IdeaUtils {
      * @return a list with the query parameter and the value if present. The query parameter is returned with separator char
      */
     public static String[] getQueryParameterAtCursorPosition(PsiElement element) {
-        String positionText = element.getText();
-        int hackIndex = getCaretPositionInsidePsiElement(element);
+        String positionText = IdeaUtils.extractTextFromElement(element);
+        positionText = positionText.replaceAll("&amp;", "&");
+
+        int hackIndex = getCaretPositionInsidePsiElement(positionText);
         positionText = positionText.substring(0, hackIndex);
         //we need to know the start position of the unknown options
         int startIdx = Math.max(positionText.lastIndexOf('.'), positionText.lastIndexOf('='));
@@ -678,7 +679,7 @@ public final class IdeaUtils {
         //Copy the option with any separator chars
         String parameter;
         String value = null;
-        if (positionText.charAt(startIdx) == '=') {
+        if (!positionText.isEmpty() && positionText.charAt(startIdx) == '=') {
             value = positionText.substring(startIdx + 1, hackIndex);
             int valueStartIdx = positionText.lastIndexOf('&', startIdx);
             valueStartIdx = Math.max(valueStartIdx, positionText.lastIndexOf('?'));

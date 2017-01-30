@@ -49,7 +49,9 @@ public final class CamelSmartCompletionEndpointOptions {
                                                                                    boolean consumerOnly, boolean producerOnly, PsiElement element) {
         List<LookupElement> answer = new ArrayList<>();
 
-        String separator = xmlMode ? "&amp;" : "&";
+        if (xmlMode) {
+            val = val.replace("&amp;", "&");
+        }
 
         List<EndpointOptionModel> options = component.getEndpointOptions();
         // sort the options A..Z which is easier to users to understand
@@ -86,12 +88,15 @@ public final class CamelSmartCompletionEndpointOptions {
                         // none existing options so we need to start with a ? mark
                         lookup = val + "?" + key + tail;
                     } else {
-                        if (!val.endsWith(separator) && !val.endsWith("?")) {
-                            lookup = val + separator + key + tail;
+                        if (!val.endsWith("&") && !val.endsWith("?")) {
+                            lookup = val + "&" + key + tail;
                         } else {
                             // there is already either an ending ? or &
                             lookup = val + key + tail;
                         }
+                    }
+                    if (xmlMode) {
+                        lookup = lookup.replace("&", "&amp;");
                     }
                     LookupElementBuilder builder = LookupElementBuilder.create(lookup);
                     // only show the option in the UI

@@ -62,8 +62,8 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
 
     @Override
     public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet, @NotNull String[] query) {
+        boolean endsWithAmpQuestionMark = false;
         // it is a known Camel component
-
         String componentName = StringUtils.asComponentName(query[0]);
 
         // it is a known Camel component
@@ -83,6 +83,7 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
 
         // strip up ending incomplete parameter
         if (camelQuery.endsWith("&") || camelQuery.endsWith("?")) {
+            endsWithAmpQuestionMark = true;
             camelQuery = camelQuery.substring(0, camelQuery.length() - 1);
         }
 
@@ -98,8 +99,7 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         final PsiElement element = parameters.getPosition();
 
         String[] queryParameter = IdeaUtils.getQueryParameterAtCursorPosition(element);
-        boolean editSingle = (queryParameter[1] != null)
-            && (!parameters.getOriginalPosition().getText().endsWith("&\"") || !parameters.getOriginalPosition().getText().endsWith("?\""));
+        boolean editSingle = (queryParameter[1] != null) && (!endsWithAmpQuestionMark);
         boolean editQueryParameters = val.contains("?");
 
         List<LookupElement> answer = null;
