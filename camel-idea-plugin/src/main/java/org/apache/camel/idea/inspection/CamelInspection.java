@@ -49,7 +49,7 @@ public class CamelInspection extends AbstractCamelInspection {
         }
 
         // we support java, xml, groovy, scala and kotlin
-        return isFromFileType(element, "java", "xml", "groovy", "kotlin", "scala");
+        return isFromFileType(element, "java", "xml", "groovy", "kt", "scala");
     }
 
 }

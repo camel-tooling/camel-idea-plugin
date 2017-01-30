@@ -16,9 +16,13 @@
  */
 package org.apache.camel.idea.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import org.apache.camel.idea.service.CamelService;
 
@@ -67,6 +71,21 @@ public class IdeaUtilsIsCamelRouteStartTestIT extends LightCodeInsightFixtureTes
         PsiElement element = myFixture.findElementByText("\"log:out\"", PsiLiteralExpression.class);
 
         assertFalse(CamelIdeaUtils.isCamelRouteStart(element));
+    }
+
+    public void testRouteStartFinder() {
+        // caret is at start of rout in the test java file
+        PsiFile psiFile = myFixture.configureByText("DummyTestData.java", CODE);
+        List<PsiElement> psiElements = new ArrayList<>();
+
+        PsiTreeUtil.processElements(psiFile, element -> {
+            if (CamelIdeaUtils.isCamelRouteStart(element)) {
+                psiElements.add(element);
+            }
+            return true;
+        });
+
+        assertTrue(psiElements.size() == 8);
     }
 
 }
