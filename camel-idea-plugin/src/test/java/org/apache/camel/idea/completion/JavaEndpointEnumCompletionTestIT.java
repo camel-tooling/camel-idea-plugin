@@ -77,7 +77,7 @@ public class JavaEndpointEnumCompletionTestIT extends CamelLightCodeInsightFixtu
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
             + "        public void configure() throws Exception {\n"
-            + "            from(\"jms:temp:<caret>\")\n"
+            + "            from(\"jms:temp-<caret>\")\n"
             + "                .to(\"file:outbox?delete=true&fileExist=Append\");\n"
             + "        }\n"
             + "    }";
@@ -88,7 +88,7 @@ public class JavaEndpointEnumCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertEquals(1, strings.size());
-        assertThat(strings, Matchers.containsInAnyOrder("jms:temp:"));
+        assertThat(strings, Matchers.containsInAnyOrder("jms:temp-"));
     }
 
 }
