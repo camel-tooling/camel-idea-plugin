@@ -67,12 +67,12 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
     }
 
     private String getXmlInTheMiddleUnresolvedOptionsTestData() {
-        return "<routes>\n" +
-            "  <route>\n" +
-            "    <from uri=\"timer:trigger?repeatCount=10&amp;ex<caret>\"/>\n" +
-            "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n" +
-            "  </route>\n" +
-            "</routes>";
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"timer:trigger?repeatCount=10&amp;ex<caret>\"/>\n"
+            + "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
     }
 
     public void testXmlInTheMiddleUnresolvedOptionsCompletion() {
@@ -105,12 +105,12 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
     }
 
     private String getXmlInTheMiddleOfResolvedOptionsData() {
-        return "<routes>\n" +
-            "  <route>\n" +
-            "    <from uri=\"timer:trigger?repeatCount=10&amp;fixed<caret>Rate=false\"/>\n" +
-            "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n" +
-            "  </route>\n" +
-            "</routes>";
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"timer:trigger?repeatCount=10&amp;fixed<caret>Rate=false\"/>\n"
+            + "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
     }
 
     public void testXmlInTheMiddleOfResolvedOptionsCompletion() {
@@ -151,12 +151,12 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
     }
 
     private String getXmlfterAmpOptionsTestData() {
-        return "<routes>\n" +
-            "  <route>\n" +
-            "    <from uri=\"timer:trigger?repeatCount=10&amp;<caret>\"/>\n" +
-            "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n" +
-            "  </route>\n" +
-            "</routes>";
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"timer:trigger?repeatCount=10&amp;<caret>\"/>\n"
+            + "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
     }
 
     public void testXmlAfterAmbeCompletion() {
@@ -195,12 +195,12 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
     }
 
     private String getXmlCaretAfterQuestionMarkWithPreDataOptionsTestData() {
-        return "<routes>\n" +
-            "  <route>\n" +
-            "    <from uri=\"timer:trigger?re<caret>\"/>\n" +
-            "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n" +
-            "  </route>\n" +
-            "</routes>";
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"timer:trigger?re<caret>\"/>\n"
+            + "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
     }
 
     public void testXmlAfterQuestionMarkWithPreDataOptionsCompletion() {
@@ -227,13 +227,14 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
     }
 
     private String getXmlEndOfLineTestData() {
-        return "<routes>\n" +
-            "  <route>\n" +
-            "    <from uri=\"timer:trigger?repeatCount=0&amp;exchangePattern=RobustInOnly&amp;<caret>\"/>\n" +
-            "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n" +
-            "  </route>\n" +
-            "</routes>";
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"timer:trigger?repeatCount=0&amp;exchangePattern=RobustInOnly&amp;<caret>\"/>\n"
+            + "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
     }
+
     public void testXmlEndOfLineOptionsCompletion() {
         myFixture.configureByText("XmlCaretInMiddleOptionsTestData.xml", getXmlEndOfLineTestData());
         myFixture.complete(CompletionType.BASIC, 1);
