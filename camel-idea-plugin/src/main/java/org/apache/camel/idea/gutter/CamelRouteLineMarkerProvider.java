@@ -49,7 +49,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         }
 
         // must be in valid file
-        boolean validFile = isFromFileType(element, "java", "xml", "groovy", "kotlin", "scala");
+        boolean validFile = isFromFileType(element, "java", "xml", "groovy", "kt", "scala");
         if (!validFile) {
             return;
         }

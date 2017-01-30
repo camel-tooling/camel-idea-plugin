@@ -33,6 +33,12 @@ import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.idea.util.CamelIdeaUtils.acceptForAnnotatorOrInspection;
 import static org.apache.camel.idea.util.CamelIdeaUtils.isCameSimpleExpressionUsedAsPredicate;
+import static org.apache.camel.idea.util.IdeaUtils.isFromGroovyMethod;
+import static org.apache.camel.idea.util.IdeaUtils.isGroovyLanguage;
+import static org.apache.camel.idea.util.IdeaUtils.isJavaLanguage;
+import static org.apache.camel.idea.util.IdeaUtils.isKotlinLanguage;
+import static org.apache.camel.idea.util.IdeaUtils.isScalaLanguage;
+import static org.apache.camel.idea.util.IdeaUtils.isXmlLanguage;
 
 /**
  * Validate simple expression and annotated the specific simple expression to highlight the error in the editor
@@ -99,8 +105,10 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
      */
     private TextRange getAdjustedTextRange(@NotNull PsiElement element, TextRange range, String text, SimpleValidationResult result) {
         if (element instanceof XmlAttributeValue) {
+            // we can use the xml range as-is
             range = ((XmlAttributeValue) element).getValueTextRange();
-        } else if (element instanceof PsiLiteralExpressionImpl) {
+        } else if (isJavaLanguage(element) || isFromGroovyMethod(element) || isScalaLanguage(element) || isKotlinLanguage(element)) {
+            // all the programming languages need to have the offset adjusted by 1
             range = TextRange.create(range.getStartOffset() + 1, range.getEndOffset());
         }
         //we need to calculate the correct start and end position to be sure we highlight the correct word
