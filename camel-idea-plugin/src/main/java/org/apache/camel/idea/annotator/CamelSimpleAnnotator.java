@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.idea.util.CamelIdeaUtils.acceptForAnnotatorOrInspection;
 import static org.apache.camel.idea.util.CamelIdeaUtils.isCameSimpleExpressionUsedAsPredicate;
+import static org.apache.camel.idea.util.IdeaUtils.isGroovyLanguage;
 
 /**
  * Validate simple expression and annotated the specific simple expression to highlight the error in the editor
@@ -101,6 +102,8 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
         if (element instanceof XmlAttributeValue) {
             range = ((XmlAttributeValue) element).getValueTextRange();
         } else if (element instanceof PsiLiteralExpressionImpl) {
+            range = TextRange.create(range.getStartOffset() + 1, range.getEndOffset());
+        } else if (isGroovyLanguage(element)) {
             range = TextRange.create(range.getStartOffset() + 1, range.getEndOffset());
         }
         //we need to calculate the correct start and end position to be sure we highlight the correct word

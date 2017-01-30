@@ -205,6 +205,13 @@ public final class IdeaUtils {
     }
 
     /**
+     * Is the element from Groovy language
+     */
+    public static boolean isGroovyLanguage(PsiElement element) {
+        return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("Groovy");
+    }
+
+    /**
      * Is the element from Scala language
      */
     public static boolean isScalaLanguage(PsiElement element) {
