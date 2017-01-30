@@ -219,6 +219,13 @@ public final class IdeaUtils {
     }
 
     /**
+     * Is the element from Kotlin language
+     */
+    public static boolean isKotlinLanguage(PsiElement element) {
+        return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("kotlin");
+    }
+
+    /**
      * Is the element from XML language
      */
     public static boolean isXmlLanguage(PsiElement element) {

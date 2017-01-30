@@ -30,7 +30,7 @@ public class CamelKotlinReferenceContributor extends CamelContributor {
     public CamelKotlinReferenceContributor() {
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
         extend(CompletionType.BASIC,
-                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("Kotlin"))),
+                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("kt"))),
                 new EndpointCompletion(getCamelCompletionExtensions())
         );
     }
