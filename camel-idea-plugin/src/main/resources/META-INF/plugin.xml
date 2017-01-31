@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/davsclaus/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.3.6</version>
+  <version>0.3.7</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -16,7 +16,7 @@
         <li>Quick documentation for Camel endpoints and external link to Camel component opening in web browser (ctrl + j and shift-F1)</li>
         <li>Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders</li>
         <li>Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)</li>
-        <li>Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)<li>
+        <li>Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)</li>
         <li>Real time validation for Camel endpoints in Java, Groovy, Kotlin, Scala, XML (underline errors in red)</li>
         <li>Real time validation for Camel simple language in Java, XML and Groovy (underline errors in red)</li>
         <li>Inspection (analyze code) to validate Camel endpoints and Simple language in Java, Groovy, Kotlin, Scala, and XML</li>
@@ -27,12 +27,10 @@
 
   <change-notes><![CDATA[
       <ul>
+        <li>0.3.7 - Work in progress.</li>
         <li>0.3.6 - Add preference page to exclude property and yml files.
                     Fixed plugin to work with Kotlin again.
-                    Minor bug fixes.</li>
-        <li>0.3.5 - Add icons for retina displays.
-                    Improved real time simple validation for Groovy.
-                    Add preference page to customize property ignore list
+                    Updated default Camel icon.
                     Minor bug fixes.</li>
       </ul>
     ]]>

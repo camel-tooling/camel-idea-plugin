@@ -27,8 +27,8 @@ import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.TextAccessor;
 import org.apache.camel.idea.util.StringUtils;
 
-import static org.apache.camel.idea.service.CamelPreferenceService.ALTERNATIVE_CAMEL_ICON;
-import static org.apache.camel.idea.service.CamelPreferenceService.DEFAULT_CAMEL_ICON;
+import static org.apache.camel.idea.service.CamelPreferenceService.CAMEL_BADGE_ICON;
+import static org.apache.camel.idea.service.CamelPreferenceService.CAMEL_ICON;
 
 /**
  * To render a cell with the possible Camel icons
@@ -45,10 +45,10 @@ public class CamelChosenIconCellRender extends ListCellRendererWrapper<String> {
 
     @Override
     public void customize(JList list, String value, int index, boolean selected, boolean hasFocus) {
-        if ("Default Icon".equals(value)) {
-            this.setIcon(DEFAULT_CAMEL_ICON);
-        } else if ("Alternative Icon".equals(value)) {
-            this.setIcon(ALTERNATIVE_CAMEL_ICON);
+        if ("Camel Icon".equals(value)) {
+            this.setIcon(CAMEL_ICON);
+        } else if ("Camel Badge Icon".equals(value)) {
+            this.setIcon(CAMEL_BADGE_ICON);
         } else {
             String custom = textAccessor.getText();
             if (StringUtils.isNotEmpty(custom)) {
