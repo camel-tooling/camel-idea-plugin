@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/davsclaus/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.3.6</version>
+  <version>0.3.7</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -27,12 +27,10 @@
 
   <change-notes><![CDATA[
       <ul>
+        <li>0.3.7 - Work in progress.</li>
         <li>0.3.6 - Add preference page to exclude property and yml files.
                     Fixed plugin to work with Kotlin again.
-                    Minor bug fixes.</li>
-        <li>0.3.5 - Add icons for retina displays.
-                    Improved real time simple validation for Groovy.
-                    Add preference page to customize property ignore list
+                    Updated default Camel icon.
                     Minor bug fixes.</li>
       </ul>
     ]]>
