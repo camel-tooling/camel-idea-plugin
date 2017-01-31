@@ -45,9 +45,9 @@ import org.jetbrains.annotations.Nullable;
 public class CamelPreferenceService implements PersistentStateComponent<CamelPreferenceService>, Disposable {
 
     @Transient
-    public static final Icon DEFAULT_CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
+    public static final Icon CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
     @Transient
-    public static final Icon ALTERNATIVE_CAMEL_ICON = IconLoader.getIcon("/icons/camel2.png");
+    public static final Icon CAMEL_BADGE_ICON = IconLoader.getIcon("/icons/camel-badge.png");
     @Transient
     private static final Logger LOG = Logger.getInstance(CamelPreferenceService.class);
     @Transient
@@ -68,7 +68,7 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     private boolean scanThirdPartyLegacyComponents = true;
     private boolean showCamelIconInGutter = true;
     @Transient
-    private String chosenCamelIcon = "Default Icon";
+    private String chosenCamelIcon = "Camel Icon";
     private String customIconFilePath;
     private List<String> ignorePropertyList = new ArrayList<>();
     private List<String> excludePropertyFiles = new ArrayList<>();
@@ -173,10 +173,10 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     }
 
     public Icon getCamelIcon() {
-        if (chosenCamelIcon.equals("Default Icon")) {
-            return DEFAULT_CAMEL_ICON;
-        } else if (chosenCamelIcon.equals("Alternative Icon")) {
-            return ALTERNATIVE_CAMEL_ICON;
+        if (chosenCamelIcon.equals("Camel Icon")) {
+            return CAMEL_ICON;
+        } else if (chosenCamelIcon.equals("Camel Badge Icon")) {
+            return CAMEL_BADGE_ICON;
         }
 
         if (StringUtils.isNotEmpty(customIconFilePath)) {
@@ -207,7 +207,7 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
             }
         }
 
-        return DEFAULT_CAMEL_ICON;
+        return CAMEL_ICON;
     }
 
     @Override
