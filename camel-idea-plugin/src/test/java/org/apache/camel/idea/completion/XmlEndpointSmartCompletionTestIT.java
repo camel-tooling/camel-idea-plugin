@@ -31,8 +31,8 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.configureByFiles("CompleteXmlEndpointConsumerTestData.xml");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertTrue(strings.containsAll(Arrays.asList("file:inbox?autoCreate=", "file:inbox?include=", "file:inbox?delay=", "file:inbox?delete=")));
-        assertFalse(strings.containsAll(Arrays.asList("file:inbox?fileExist=", "file:inbox?forceWrites=")));
+        assertTrue(strings.containsAll(Arrays.asList("file:inbox?autoCreate", "file:inbox?include", "file:inbox?delay", "file:inbox?delete")));
+        assertFalse(strings.containsAll(Arrays.asList("file:inbox?fileExist", "file:inbox?forceWrites")));
         assertTrue("There is many options", strings.size() > 60);
     }
 
@@ -40,8 +40,8 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.configureByFiles("CompleteXmlEndpointProducerTestData.xml");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertFalse(strings.containsAll(Arrays.asList("file:outbox?autoCreate=", "file:outbox?include=", "file:outbox?delay=", "file:outbox?delete=")));
-        assertTrue(strings.containsAll(Arrays.asList("file:outbox?fileExist=", "file:outbox?forceWrites=")));
+        assertFalse(strings.containsAll(Arrays.asList("file:outbox?autoCreate", "file:outbox?include", "file:outbox?delay", "file:outbox?delete")));
+        assertTrue(strings.containsAll(Arrays.asList("file:outbox?fileExist", "file:outbox?forceWrites")));
         assertTrue("There is less options", strings.size() < 30);
     }
 

@@ -25,20 +25,20 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.EndpointOptionModel;
 import org.apache.camel.idea.model.ModelHelper;
 import org.apache.camel.idea.service.CamelCatalogService;
+import org.apache.camel.idea.util.IdeaUtils;
 import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointValue.addSmartCompletionForSingleValue;
-import static org.apache.camel.idea.util.CamelIdeaUtils.isConsumerEndpoint;
-import static org.apache.camel.idea.util.CamelIdeaUtils.isProducerEndpoint;
 
 /**
  * Extension for supporting camel smart completion for camel options and values.
@@ -60,8 +60,8 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
 
     @Override
     public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet, @NotNull String[] query) {
+        boolean endsWithAmpQuestionMark = false;
         // it is a known Camel component
-
         String componentName = StringUtils.asComponentName(query[0]);
 
         // it is a known Camel component
@@ -81,6 +81,7 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
 
         // strip up ending incomplete parameter
         if (camelQuery.endsWith("&") || camelQuery.endsWith("?")) {
+            endsWithAmpQuestionMark = true;
             camelQuery = camelQuery.substring(0, camelQuery.length() - 1);
         }
 
@@ -93,43 +94,31 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
 
         // are we editing an existing parameter value
         // or are we having a list of suggested parameters to choose among
-        boolean editSingle = val.endsWith("=");
+        final PsiElement element = parameters.getPosition();
+
+        String[] queryParameter = IdeaUtils.getQueryParameterAtCursorPosition(element);
+        boolean editSingle = (queryParameter[1] != null) && (!endsWithAmpQuestionMark);
         boolean editQueryParameters = val.contains("?");
 
         List<LookupElement> answer = null;
         if (editSingle) {
-            // parameter name is before = and & or ?
-            String name;
-            if (xmlMode) {
-                int pos1 = val.lastIndexOf("&amp;");
-                int pos2 = val.lastIndexOf('?');
-                if (pos1 > pos2) {
-                    name = val.substring(pos1 + 5);
-                } else {
-                    name = val.substring(pos2 + 1);
-                }
-            } else {
-                int pos = Math.max(val.lastIndexOf('&'), val.lastIndexOf('?'));
-                name = val.substring(pos + 1);
-            }
-            name = name.substring(0, name.length() - 1); // remove =
-            EndpointOptionModel endpointOption = componentModel.getEndpointOption(name);
+            EndpointOptionModel endpointOption = componentModel.getEndpointOption(queryParameter[0].substring(1));
             if (endpointOption != null) {
-                answer = addSmartCompletionForSingleValue(parameters.getEditor(), val, suffix, endpointOption, xmlMode);
+                answer = addSmartCompletionForSingleValue(parameters.getEditor(), val, suffix, endpointOption, element);
+            } else if (editQueryParameters) {
+                answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing, xmlMode, element, parameters.getEditor(), suffix);
             }
         } else if (editQueryParameters) {
             // suggest a list of options for query parameters
-            boolean consumerOnly = isConsumerEndpoint(parameters.getPosition());
-            boolean producerOnly = isProducerEndpoint(parameters.getPosition());
-            answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing, xmlMode, consumerOnly, producerOnly);
+            answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing, xmlMode, element, parameters.getEditor(), suffix);
         } else {
             // suggest a list of options for context-path
-            answer = addSmartCompletionSuggestionsContextPath(val, componentModel, existing, xmlMode);
+            answer = addSmartCompletionSuggestionsContextPath(val, componentModel, existing, xmlMode, element);
         }
-
         // are there any results then add them
         if (answer != null && !answer.isEmpty()) {
             resultSet.withPrefixMatcher(val).addAllElements(answer);
+            resultSet.stopHere();
         }
     }
 
