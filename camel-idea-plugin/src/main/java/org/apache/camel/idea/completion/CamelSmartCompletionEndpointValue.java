@@ -164,13 +164,13 @@ public final class CamelSmartCompletionEndpointValue {
                     // we still want to keep the suffix because they are other options
                     String value = suffix;
                     int pos = value.indexOf("&");
-                    if (pos > - 1) {
+                    if (pos > -1) {
                         // strip out first part of suffix until next option
                         value = value.substring(pos);
                     }
                     EditorModificationUtil.insertStringAtCaret(editor, value);
                     // and move cursor back again
-                    int offset = - 1 * value.length();
+                    int offset = -1 * value.length();
                     EditorModificationUtil.moveCaretRelatively(editor, offset);
                 } else if (context.getCompletionChar() == Lookup.NORMAL_SELECT_CHAR) {
                     // we want to remove the old option (which is the first value in the suffix)
