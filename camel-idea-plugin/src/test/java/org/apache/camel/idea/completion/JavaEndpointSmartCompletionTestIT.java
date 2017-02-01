@@ -33,8 +33,8 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
         myFixture.configureByFiles("CompleteJavaEndpointConsumerTestData.java");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertThat(strings, Matchers.not(Matchers.contains("file:inbox?fileExist=", "file:inbox?forceWrites=")));
-        assertThat(strings, Matchers.hasItems("file:inbox?autoCreate=", "file:inbox?include=", "file:inbox?delay=", "file:inbox?delete="));
+        assertThat(strings, Matchers.not(Matchers.contains("file:inbox?fileExist", "file:inbox?forceWrites")));
+        assertThat(strings, Matchers.hasItems("file:inbox?autoCreate", "file:inbox?include", "file:inbox?delay", "file:inbox?delete"));
         assertTrue("There is many options", strings.size() > 60);
     }
 
@@ -42,8 +42,8 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
         myFixture.configureByFiles("CompleteJavaEndpointProducerTestData.java");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertThat(strings, Matchers.not(Matchers.contains("file:outbox?autoCreate=", "file:outbox?include=", "file:outbox?delay=", "file:outbox?delete=")));
-        assertThat(strings, Matchers.hasItems("file:outbox?fileExist=", "file:outbox?forceWrites="));
+        assertThat(strings, Matchers.not(Matchers.contains("file:outbox?autoCreate", "file:outbox?include", "file:outbox?delay", "file:outbox?delete")));
+        assertThat(strings, Matchers.hasItems("file:outbox?fileExist", "file:outbox?forceWrites"));
         assertTrue("There is less options", strings.size() < 30);
     }
 
@@ -61,8 +61,8 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, Matchers.not(Matchers.contains("timer:trigger?repeatCount=10")));
-        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&exceptionHandler=",
-            "timer:trigger?repeatCount=10&exchangePattern="));
+        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&exceptionHandler",
+            "timer:trigger?repeatCount=10&exchangePattern"));
         assertTrue("There is less options", strings.size() == 2);
     }
 
@@ -80,8 +80,8 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, Matchers.not(Matchers.contains("timer:trigger?repeatCount=10")));
-        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&amp;exceptionHandler=",
-            "timer:trigger?repeatCount=10&amp;exchangePattern="));
+        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&amp;exceptionHandler",
+            "timer:trigger?repeatCount=10&amp;exchangePattern"));
         assertTrue("There is less options", strings.size() == 2);
     }
 
@@ -100,7 +100,7 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, Matchers.not(Matchers.contains("timer:trigger?repeatCount=10")));
-        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&fixedRate="));
+        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&fixedRate"));
         assertTrue("There is less options", strings.size() == 1);
     }
 
@@ -118,7 +118,7 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, Matchers.not(Matchers.contains("timer:trigger?repeatCount=10")));
-        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&amp;fixedRate="));
+        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&amp;fixedRate"));
         assertTrue("There is less options", strings.size() == 1);
     }
 
@@ -136,17 +136,17 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, Matchers.not(Matchers.contains("timer:trigger?repeatCount=10")));
-        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&bridgeErrorHandler=",
-            "timer:trigger?repeatCount=10&daemon=",
-            "timer:trigger?repeatCount=10&delay=",
-            "timer:trigger?repeatCount=10&exceptionHandler=",
-            "timer:trigger?repeatCount=10&exchangePattern=",
-            "timer:trigger?repeatCount=10&fixedRate=",
-            "timer:trigger?repeatCount=10&pattern=",
-            "timer:trigger?repeatCount=10&period=",
-            "timer:trigger?repeatCount=10&synchronous=",
-            "timer:trigger?repeatCount=10&time=",
-            "timer:trigger?repeatCount=10&timer="));
+        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&bridgeErrorHandler",
+            "timer:trigger?repeatCount=10&daemon",
+            "timer:trigger?repeatCount=10&delay",
+            "timer:trigger?repeatCount=10&exceptionHandler",
+            "timer:trigger?repeatCount=10&exchangePattern",
+            "timer:trigger?repeatCount=10&fixedRate",
+            "timer:trigger?repeatCount=10&pattern",
+            "timer:trigger?repeatCount=10&period",
+            "timer:trigger?repeatCount=10&synchronous",
+            "timer:trigger?repeatCount=10&time",
+            "timer:trigger?repeatCount=10&timer"));
         assertTrue("There is less options", strings.size() < 13);
     }
 
@@ -164,17 +164,17 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, Matchers.not(Matchers.contains("timer:trigger?repeatCount=10")));
-        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&amp;bridgeErrorHandler=",
-            "timer:trigger?repeatCount=10&amp;daemon=",
-            "timer:trigger?repeatCount=10&amp;delay=",
-            "timer:trigger?repeatCount=10&amp;exceptionHandler=",
-            "timer:trigger?repeatCount=10&amp;exchangePattern=",
-            "timer:trigger?repeatCount=10&amp;fixedRate=",
-            "timer:trigger?repeatCount=10&amp;pattern=",
-            "timer:trigger?repeatCount=10&amp;period=",
-            "timer:trigger?repeatCount=10&amp;synchronous=",
-            "timer:trigger?repeatCount=10&amp;time=",
-            "timer:trigger?repeatCount=10&amp;timer="));
+        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&amp;bridgeErrorHandler",
+            "timer:trigger?repeatCount=10&amp;daemon",
+            "timer:trigger?repeatCount=10&amp;delay",
+            "timer:trigger?repeatCount=10&amp;exceptionHandler",
+            "timer:trigger?repeatCount=10&amp;exchangePattern",
+            "timer:trigger?repeatCount=10&amp;fixedRate",
+            "timer:trigger?repeatCount=10&amp;pattern",
+            "timer:trigger?repeatCount=10&amp;period",
+            "timer:trigger?repeatCount=10&amp;synchronous",
+            "timer:trigger?repeatCount=10&amp;time",
+            "timer:trigger?repeatCount=10&amp;timer"));
         assertTrue("There is less options", strings.size() < 13);
     }
 

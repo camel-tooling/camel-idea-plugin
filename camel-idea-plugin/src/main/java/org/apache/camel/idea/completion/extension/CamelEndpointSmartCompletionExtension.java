@@ -39,8 +39,6 @@ import org.jetbrains.annotations.NotNull;
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointValue.addSmartCompletionForSingleValue;
-import static org.apache.camel.idea.util.CamelIdeaUtils.isConsumerEndpoint;
-import static org.apache.camel.idea.util.CamelIdeaUtils.isProducerEndpoint;
 
 /**
  * Extension for supporting camel smart completion for camel options and values.
@@ -106,25 +104,21 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         if (editSingle) {
             EndpointOptionModel endpointOption = componentModel.getEndpointOption(queryParameter[0].substring(1));
             if (endpointOption != null) {
-                answer = addSmartCompletionForSingleValue(parameters.getEditor(), val, suffix, endpointOption, xmlMode, element);
+                answer = addSmartCompletionForSingleValue(parameters.getEditor(), val, suffix, endpointOption, element);
             } else if (editQueryParameters) {
-                boolean consumerOnly = isConsumerEndpoint(element);
-                boolean producerOnly = isProducerEndpoint(element);
-                answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing, xmlMode, consumerOnly, producerOnly, element);
+                answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing, xmlMode, element, parameters.getEditor(), suffix);
             }
         } else if (editQueryParameters) {
             // suggest a list of options for query parameters
-            boolean consumerOnly = isConsumerEndpoint(element);
-            boolean producerOnly = isProducerEndpoint(element);
-            answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing, xmlMode, consumerOnly, producerOnly, element);
+            answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing, xmlMode, element, parameters.getEditor(), suffix);
         } else {
             // suggest a list of options for context-path
             answer = addSmartCompletionSuggestionsContextPath(val, componentModel, existing, xmlMode, element);
         }
         // are there any results then add them
         if (answer != null && !answer.isEmpty()) {
-            resultSet.stopHere();
             resultSet.withPrefixMatcher(val).addAllElements(answer);
+            resultSet.stopHere();
         }
     }
 
