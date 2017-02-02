@@ -230,22 +230,25 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         // documentation from properties file will cause IDEA to call this method where we can tell IDEA we can provide
         // documentation for the element if we can detect its a Camel component
 
-        ASTNode node = contextElement.getNode();
-        if (node != null && node instanceof XmlToken) {
-            //there is an &amp; in the route that splits the route in separated PsiElements
-            if (node.getElementType() == XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN
+        if (contextElement != null) {
+            ASTNode node = contextElement.getNode();
+            if (node != null && node instanceof XmlToken) {
+                //there is an &amp; in the route that splits the route in separated PsiElements
+                if (node.getElementType() == XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN
                     //the caret is at the end of the route next to the " character
                     || node.getElementType() == XmlTokenType.XML_ATTRIBUTE_VALUE_END_DELIMITER
                     //the caret is placed on an &amp; element
                     || contextElement.getText().equals("&amp;")) {
-                if (hasDocumentationForCamelComponent(contextElement.getParent())) {
-                    return contextElement.getParent();
+                    if (hasDocumentationForCamelComponent(contextElement.getParent())) {
+                        return contextElement.getParent();
+                    }
                 }
             }
+            if (hasDocumentationForCamelComponent(contextElement)) {
+                return contextElement;
+            }
         }
-        if (hasDocumentationForCamelComponent(contextElement)) {
-            return contextElement;
-        }
+
         return null;
     }
 
