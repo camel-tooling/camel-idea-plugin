@@ -36,8 +36,9 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import org.apache.camel.idea.service.CamelCatalogService;
 
+import static org.apache.camel.idea.util.IdeaUtils.isElementFromAnnotation;
+import static org.apache.camel.idea.util.IdeaUtils.isElementFromConstructor;
 import static org.apache.camel.idea.util.IdeaUtils.isElementFromSetterProperty;
-import static org.apache.camel.idea.util.IdeaUtils.isFromConstructor;
 import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 
 /**
@@ -433,7 +434,10 @@ public final class CamelIdeaUtils {
         if (isElementFromSetterProperty(element, "brokerURL")) {
             return true;
         }
-        if (isFromConstructor(element, "ActiveMQConnectionFactory")) {
+        if (isElementFromConstructor(element, "ActiveMQConnectionFactory")) {
+            return true;
+        }
+        if (isElementFromAnnotation(element, "org.apache.camel.spi.UriEndpoint")) {
             return true;
         }
 

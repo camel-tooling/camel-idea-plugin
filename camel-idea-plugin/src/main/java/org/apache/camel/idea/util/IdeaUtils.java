@@ -30,6 +30,7 @@ import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiConstructorCall;
 import com.intellij.psi.PsiElement;
@@ -196,6 +197,19 @@ public final class IdeaUtils {
     }
 
     /**
+     * Is the element from a java annotation with the given name.
+     */
+    public static boolean isElementFromAnnotation(@NotNull PsiElement element, @NotNull String annotationName) {
+        // java method call
+        PsiAnnotation ann = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class, false);
+        if (ann != null) {
+            return annotationName.equals(ann.getQualifiedName());
+        }
+
+        return false;
+    }
+
+    /**
      * Is the element from Java language
      */
     public static boolean isJavaLanguage(PsiElement element) {
@@ -312,7 +326,7 @@ public final class IdeaUtils {
      * @param constructorName the name of the constructor (eg class)
      * @return <tt>true</tt> if its a constructor call from the given name, <tt>false</tt> otherwise
      */
-    public static boolean isFromConstructor(@NotNull PsiElement element, @NotNull String constructorName) {
+    public static boolean isElementFromConstructor(@NotNull PsiElement element, @NotNull String constructorName) {
         // java constructor
         PsiConstructorCall call = PsiTreeUtil.getParentOfType(element, PsiConstructorCall.class);
         if (call != null) {
