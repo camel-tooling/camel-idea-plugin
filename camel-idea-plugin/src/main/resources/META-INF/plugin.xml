@@ -27,7 +27,7 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.7 - Work in progress.</li>
+        <li>0.3.7 - Minor bug fixes.</li>
         <li>0.3.6 - Add preference page to exclude property and yml files.
                     Fixed plugin to work with Kotlin again.
                     Updated default Camel icon.
