@@ -8,10 +8,10 @@ cache:
     - $HOME/.m2
 
 before_install:
-    -  "curl -L -o ideaCI.tar.gz https://download.jetbrains.com/idea/ideaIC-2016.3.2.tar.gz"
+    -  "curl -L -o ideaCI.tar.gz https://download.jetbrains.com/idea/ideaIC-2016.3.3.tar.gz"
     -  "mkdir idea"
-    -  "tar -xvf ideaCI.tar.gz --directory idea/ --strip=1 idea-IC-163.10154.41/lib/ idea-IC-163.10154.41/plugins/properties"
-    -  "./install-intellij-libs.sh 2016.3.2 idea $HOME/.m2"
+    -  "tar -xvf ideaCI.tar.gz --directory idea/ --strip=1 idea-IC-163.11103.6/lib/ idea-IC-163.11103.6/plugins/properties"
+    -  "./install-intellij-libs.sh 2016.3.3 idea $HOME/.m2"
 after_failure:
       - cat ./camel-idea-plugin/camel-idea-plugin/target/failsafe-reports/*.txt
       - cat ./camel-idea-plugin/camel-idea-plugin/target/surefire-reports/*.txt
