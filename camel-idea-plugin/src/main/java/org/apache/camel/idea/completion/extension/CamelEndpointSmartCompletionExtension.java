@@ -104,7 +104,7 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         if (editSingle) {
             EndpointOptionModel endpointOption = componentModel.getEndpointOption(queryParameter[0].substring(1));
             if (endpointOption != null) {
-                answer = addSmartCompletionForSingleValue(parameters.getEditor(), val, suffix, endpointOption, element);
+                answer = addSmartCompletionForSingleValue(parameters.getEditor(), val, suffix, endpointOption, element, xmlMode);
             } else if (editQueryParameters) {
                 answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing, xmlMode, element, parameters.getEditor(), suffix);
             }
