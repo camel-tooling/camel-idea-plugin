@@ -26,8 +26,10 @@ import java.util.List;
 import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiAnnotation;
@@ -719,7 +721,19 @@ public final class IdeaUtils {
             parameter = positionText.substring(startIdx, hackIndex);
         }
 
-        return new String[] {parameter, value};
+        return new String[]{parameter, value};
+    }
+
+    public static boolean isCaretAtEndOfLine(PsiElement element) {
+        String value = IdeaUtils.extractTextFromElement(element);
+
+        if (value != null) {
+            value = value.toLowerCase();
+            return value.endsWith(CompletionUtil.DUMMY_IDENTIFIER.toLowerCase())
+                || value.endsWith(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED.toLowerCase());
+        }
+
+        return false;
     }
 
 }

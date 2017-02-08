@@ -78,7 +78,7 @@ public class JavaEndpointSmartCompletionValueTestIT extends CamelLightCodeInsigh
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
             + "        public void configure() throws Exception {\n"
-            + "            from(\"timer:trigger?repeatCount=10&exchangePattern=In<caret>\")\n"
+            + "            from(\"timer:trigger?exchangePattern=In<caret>&repeatCount=10\")\n"
             + "                .to(\"file:outbox?delete=true&fileExist=Append\");\n"
             + "        }\n"
             + "    }";
@@ -88,11 +88,13 @@ public class JavaEndpointSmartCompletionValueTestIT extends CamelLightCodeInsigh
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertFalse(strings.containsAll(Arrays.asList("timer:trigger?repeatCount=10")));
-        assertThat(strings, Matchers.containsInAnyOrder("timer:trigger?repeatCount=10&exchangePattern=InOut", "timer:trigger?repeatCount=10&exchangePattern=InOnly",
-            "timer:trigger?repeatCount=10&exchangePattern=InOptionalOut",
-            "timer:trigger?repeatCount=10&exchangePattern=OutIn",
-            "timer:trigger?repeatCount=10&exchangePattern=RobustInOnly",
-            "timer:trigger?repeatCount=10&exchangePattern=OutOptionalIn"));
+        assertThat(strings, Matchers.containsInAnyOrder(
+            "timer:trigger?exchangePattern=InOut",
+            "timer:trigger?exchangePattern=InOnly",
+            "timer:trigger?exchangePattern=InOptionalOut",
+            "timer:trigger?exchangePattern=OutIn",
+            "timer:trigger?exchangePattern=RobustInOnly",
+            "timer:trigger?exchangePattern=OutOptionalIn"));
         assertEquals(6, strings.size());
     }
 
