@@ -24,6 +24,7 @@ The plugin includes:
 - Inspection (analyze code) to validate Camel endpoints in Java, Groovy, Kotlin, Scala, XML
 - Camel icon in gutter can be customized by either the two provided icons or load a custom from file system
 - Supports loading camel-catalog from third party Maven repositories define in the project Maven pom.xml file 
+- Supports Maven and Gradle based projects
 
 When the plugin becomes more complete and stable then the intention is to donate the source code
 to Apache Software Foundation to be included out of the box at Apache Camel.
