@@ -178,7 +178,9 @@ public class CamelService implements Disposable {
                         continue;
                     }
                     int startIdx = 0;
-                    if (split[0].equalsIgnoreCase("maven") || split[0].equalsIgnoreCase("gradle")) {
+                    if (split[0].equalsIgnoreCase("maven")
+                        || split[0].equalsIgnoreCase("gradle")
+                        || split[0].equalsIgnoreCase("sbt")) {
                         startIdx = 1;
                     }
                     String groupId = split[startIdx++].trim();
@@ -270,7 +272,9 @@ public class CamelService implements Disposable {
                         continue;
                     }
                     int startIdx = 0;
-                    if (split[0].equalsIgnoreCase("maven") || split[0].equalsIgnoreCase("gradle")) {
+                    if (split[0].equalsIgnoreCase("maven")
+                        || split[0].equalsIgnoreCase("gradle")
+                        || split[0].equalsIgnoreCase("sbt")) {
                         startIdx = 1;
                     }
                     String groupId = split[startIdx++].trim();
