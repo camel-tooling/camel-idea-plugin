@@ -38,7 +38,8 @@ import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
-import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointValue.addSmartCompletionForSingleValue;
+import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointValue.addSmartCompletionForEndpointValue;
+import static org.apache.camel.idea.util.IdeaUtils.isCaretAtEndOfLine;
 
 /**
  * Extension for supporting camel smart completion for camel options and values.
@@ -96,24 +97,45 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         // or are we having a list of suggested parameters to choose among
         final PsiElement element = parameters.getPosition();
 
+        boolean caretAtEndOfLine = isCaretAtEndOfLine(element);
+        LOG.trace("Caret at end of line: " + caretAtEndOfLine);
+
         String[] queryParameter = IdeaUtils.getQueryParameterAtCursorPosition(element);
-        boolean editSingle = (queryParameter[1] != null) && (!endsWithAmpQuestionMark);
+        String optionValue = queryParameter[1];
         boolean editQueryParameters = val.contains("?");
 
+        // a bit complex to figure out whether to edit the endpoint value or not
+        boolean editOptionValue = false;
+        if (endsWithAmpQuestionMark) {
+            // should not edit value but suggest a new option instead
+            editOptionValue = false;
+        } else {
+            if ("".equals(optionValue)) {
+                // empty value so must edit
+                editOptionValue = true;
+            } else if (StringUtils.isNotEmpty(optionValue) && !caretAtEndOfLine) {
+                // has value and cursor not at end of line so must edit
+                editOptionValue = true;
+            }
+        }
+        LOG.trace("Add new option: " + !editOptionValue);
+        LOG.trace("Edit option value: " + editOptionValue);
+
         List<LookupElement> answer = null;
-        if (editSingle) {
+        if (editOptionValue) {
             EndpointOptionModel endpointOption = componentModel.getEndpointOption(queryParameter[0].substring(1));
             if (endpointOption != null) {
-                answer = addSmartCompletionForSingleValue(parameters.getEditor(), val, suffix, endpointOption, element, xmlMode);
-            } else if (editQueryParameters) {
-                answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing, xmlMode, element, parameters.getEditor(), suffix);
+                answer = addSmartCompletionForEndpointValue(parameters.getEditor(), val, suffix, endpointOption, element, xmlMode);
             }
-        } else if (editQueryParameters) {
-            // suggest a list of options for query parameters
-            answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing, xmlMode, element, parameters.getEditor(), suffix);
-        } else {
-            // suggest a list of options for context-path
-            answer = addSmartCompletionSuggestionsContextPath(val, componentModel, existing, xmlMode, element);
+        }
+        if (answer == null) {
+            if (editQueryParameters) {
+                // suggest a list of options for query parameters
+                answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing, xmlMode, element, parameters.getEditor(), suffix);
+            } else {
+                // suggest a list of options for context-path
+                answer = addSmartCompletionSuggestionsContextPath(val, componentModel, existing, xmlMode, element);
+            }
         }
         // are there any results then add them
         if (answer != null && !answer.isEmpty()) {

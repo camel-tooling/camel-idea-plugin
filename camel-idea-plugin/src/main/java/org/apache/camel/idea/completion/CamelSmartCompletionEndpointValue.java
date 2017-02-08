@@ -40,8 +40,8 @@ public final class CamelSmartCompletionEndpointValue {
     private CamelSmartCompletionEndpointValue() {
     }
 
-    public static List<LookupElement> addSmartCompletionForSingleValue(Editor editor, String val, String suffix,
-                                                                       EndpointOptionModel option, PsiElement element, boolean xmlMode) {
+    public static List<LookupElement> addSmartCompletionForEndpointValue(Editor editor, String val, String suffix,
+                                                                         EndpointOptionModel option, PsiElement element, boolean xmlMode) {
         List<LookupElement> answer = new ArrayList<>();
 
         String javaType = option.getJavaType();
@@ -181,20 +181,12 @@ public final class CamelSmartCompletionEndpointValue {
                 String cut = suffix;
                 if (pos > 0) {
                     cut = cut.substring(0, pos);
-                } else if (pos == -1) {
-                    // TODO: https://github.com/davsclaus/camel-idea-plugin/issues/260
-                    // EditorModificationUtil.insertStringAtCaret(editor, separator);
                 }
                 int len = cut.length();
                 if (len > 0 && pos != 0) {
                     int offset = editor.getCaretModel().getOffset();
                     editor.getDocument().deleteString(offset, offset + len);
                 }
-            } else if (context.getCompletionChar() == Lookup.AUTO_INSERT_SELECT_CHAR) {
-                // TODO: https://github.com/davsclaus/camel-idea-plugin/issues/260
-                //if (pos == -1) {
-                //    EditorModificationUtil.insertStringAtCaret(editor, separator);
-                //}
             }
         });
     }
