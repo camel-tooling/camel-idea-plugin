@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/davsclaus/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.3.7</version>
+  <version>0.3.8</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -29,13 +29,10 @@
 
   <change-notes><![CDATA[
       <ul>
+        <li>0.3.8 - Work in progress.</li>
         <li>0.3.7 - Added support for Gradle based projects.
                     Code completion improved to jump to position based on prefixed values.
                     Navigate to linked Camel routes by clicking the Camel gutter icon.
-                    Minor bug fixes.</li>
-        <li>0.3.6 - Add preference page to exclude property and yml files.
-                    Fixed plugin to work with Kotlin again.
-                    Updated default Camel icon.
                     Minor bug fixes.</li>
       </ul>
     ]]>
