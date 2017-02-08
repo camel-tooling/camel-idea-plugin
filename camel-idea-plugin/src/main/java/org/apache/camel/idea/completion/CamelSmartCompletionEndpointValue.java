@@ -182,7 +182,8 @@ public final class CamelSmartCompletionEndpointValue {
                 if (pos > 0) {
                     cut = cut.substring(0, pos);
                 } else if (pos == -1) {
-                    EditorModificationUtil.insertStringAtCaret(editor, separator);
+                    // TODO: https://github.com/davsclaus/camel-idea-plugin/issues/260
+                    // EditorModificationUtil.insertStringAtCaret(editor, separator);
                 }
                 int len = cut.length();
                 if (len > 0 && pos != 0) {
@@ -190,9 +191,10 @@ public final class CamelSmartCompletionEndpointValue {
                     editor.getDocument().deleteString(offset, offset + len);
                 }
             } else if (context.getCompletionChar() == Lookup.AUTO_INSERT_SELECT_CHAR) {
-                if (pos == -1) {
-                    EditorModificationUtil.insertStringAtCaret(editor, separator);
-                }
+                // TODO: https://github.com/davsclaus/camel-idea-plugin/issues/260
+                //if (pos == -1) {
+                //    EditorModificationUtil.insertStringAtCaret(editor, separator);
+                //}
             }
         });
     }
