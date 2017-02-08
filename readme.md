@@ -15,6 +15,7 @@ The plugin includes:
 - Real time validation for Camel endpoints in Java, Groovy, Kotlin, Scala, XML (underline errors in red)
 - Real time validation for Camel simple language in Java, Groovy, XML (underline errors in red)
 - Endpoint options filtered to only include applicable options when used as consumer vs producer only mode
+- Quick navigation to other Camel routes routing to this route by clicking the Camel icon in the gutter
 - Intention to add new Camel endpoint (`alt + enter` in empty string)
 - Quick documentation for Camel endpoints and external link to Camel component opening in web browser (`ctrl + j` and `shift-F1`)
 - Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders

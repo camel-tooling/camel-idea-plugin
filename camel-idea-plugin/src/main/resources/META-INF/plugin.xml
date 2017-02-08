@@ -12,6 +12,7 @@
         <li>Code completion for Camel endpoints in Java, Groovy, Kotlin, Scala, XML, properties or yaml files (ctrl + space)</li>
         <li>Code completion for Camel property placeholders (cursor after {{)</li>
         <li>Endpoint options filtered to only include applicable options when used as consumer vs producer only mode</li>
+        <li>Quick navigation to other Camel routes routing to this route by clicking the Camel icon in the gutter</li>
         <li>Intention to add new Camel endpoint (alt + enter in empty string)</li>
         <li>Quick documentation for Camel endpoints and external link to Camel component opening in web browser (ctrl + j and shift-F1)</li>
         <li>Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders</li>
@@ -27,7 +28,9 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.7 - Minor bug fixes.</li>
+        <li>0.3.7 - Minor bug fixes.
+                    Code completion improved to jump to position based on prefixed values.
+                    Navigate to linked Camel routes by clicking the Camel gutter icon.</li>
         <li>0.3.6 - Add preference page to exclude property and yml files.
                     Fixed plugin to work with Kotlin again.
                     Updated default Camel icon.
