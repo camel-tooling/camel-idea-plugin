@@ -23,14 +23,16 @@
         <li>Inspection (analyze code) to validate Camel endpoints and Simple language in Java, Groovy, Kotlin, Scala, and XML</li>
         <li>Preference page to customize property ignore list from property completion</li>
         <li>Preference page to exclude property/yml files from property completion</li>
+        <li>Supports Maven and Gradle based projects</li>
       </ul>
     ]]></description>
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.7 - Minor bug fixes.
+        <li>0.3.7 - Added support for Gradle based projects.
                     Code completion improved to jump to position based on prefixed values.
-                    Navigate to linked Camel routes by clicking the Camel gutter icon.</li>
+                    Navigate to linked Camel routes by clicking the Camel gutter icon.
+                    Minor bug fixes.</li>
         <li>0.3.6 - Add preference page to exclude property and yml files.
                     Fixed plugin to work with Kotlin again.
                     Updated default Camel icon.
