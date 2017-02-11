@@ -26,6 +26,7 @@ import com.intellij.codeInsight.lookup.Lookup;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
+import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorModificationUtil;
@@ -261,7 +262,12 @@ public final class CamelSmartCompletionEndpointOptions {
         return builder.withInsertHandler((context, item) -> {
             // enforce using replace select char as we want to replace any existing option
             if (context.getCompletionChar() == Lookup.NORMAL_SELECT_CHAR) {
-                final char text = context.getDocument().getCharsSequence().charAt(context.getSelectionEndOffset());
+                int endSelectOffBy = 0;
+                if (context.getFile() instanceof PropertiesFileImpl) {
+                    //if it's a property file the PsiElement does not start and end with an quot
+                    endSelectOffBy = 1;
+                }
+                final char text = context.getDocument().getCharsSequence().charAt(context.getSelectionEndOffset() - endSelectOffBy);
                 if (text != '=') {
                     EditorModificationUtil.insertStringAtCaret(editor, "=");
                 }

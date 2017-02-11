@@ -34,7 +34,7 @@ public class JavaEndpointEnumCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertEquals(5, strings.size());
-        assertThat(strings, Matchers.contains("jms:", "jms:queue", "jms:topic", "jms:temp:queue", "jms:temp:topic"));
+        assertThat(strings, Matchers.contains("jms:", "jms:queue", "jms:topic", "jms:temp-queue", "jms:temp-topic"));
     }
 
     private String getJavaCaretAfterColonWithPreDataEnumTestData() {
@@ -52,7 +52,7 @@ public class JavaEndpointEnumCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertEquals(3, strings.size());
-        assertThat(strings, Matchers.containsInAnyOrder("jms:qu", "jms:queue", "jms:temp:queue"));
+        assertThat(strings, Matchers.containsInAnyOrder("jms:qu", "jms:queue", "jms:temp-queue"));
     }
 
     private String getJavaCaretInMiddleOfWithEnumTestData() {
@@ -70,7 +70,7 @@ public class JavaEndpointEnumCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertEquals(3, strings.size());
-        assertThat(strings, Matchers.containsInAnyOrder("jms:temp", "jms:temp:queue", "jms:temp:topic"));
+        assertThat(strings, Matchers.containsInAnyOrder("jms:temp", "jms:temp-queue", "jms:temp-topic"));
     }
 
     private String getJavaCaretAfterColonTestData() {
@@ -87,8 +87,8 @@ public class JavaEndpointEnumCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.configureByText("CompleteJavaEndpointSyntaxEnumTestData.java", getJavaCaretAfterColonTestData());
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals(1, strings.size());
-        assertThat(strings, Matchers.containsInAnyOrder("jms:temp-"));
+        assertEquals(3, strings.size());
+        assertThat(strings, Matchers.containsInAnyOrder("jms:temp-", "jms:temp-queue", "jms:temp-topic"));
     }
 
 }
