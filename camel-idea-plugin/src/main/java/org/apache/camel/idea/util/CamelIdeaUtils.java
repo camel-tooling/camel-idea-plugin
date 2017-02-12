@@ -48,6 +48,8 @@ import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
  */
 public final class CamelIdeaUtils {
 
+    public static final String[] CAMEL_FILE_EXTENSIONS = {"java", "xml", "groovy", "kt", "scala"};
+
     private static final Logger LOG = Logger.getInstance(CamelIdeaUtils.class);
 
     private static final String[] ACCEPTED_NAMESPACES = new String[]{
