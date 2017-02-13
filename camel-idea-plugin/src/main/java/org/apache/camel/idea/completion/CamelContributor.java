@@ -18,7 +18,6 @@ package org.apache.camel.idea.completion;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.*;
 
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -27,7 +26,6 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.notification.NotificationGroup;
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.patterns.InitialPatternCondition;
 import com.intellij.patterns.PsiFilePattern;
 import com.intellij.psi.PsiElement;
@@ -89,38 +87,34 @@ public abstract class CamelContributor extends CompletionContributor {
     private static String[] parsePsiElement(@NotNull CompletionParameters parameters) {
         PsiElement element = parameters.getPosition();
 
-        String val = extractTextFromElement(element);
+        String val = extractTextFromElement(element, true, true);
         if (val == null || val.isEmpty()) {
             return new String[]{"", ""};
         }
+
+        String valueAtPosition = extractTextFromElement(element, true, false);
 
         String suffix = "";
 
         // okay IDEA folks its not nice, in groovy the dummy identifier is using lower case i in intellij
         // so we need to lower case it all
-        String hackVal = val.toLowerCase();
+        String hackVal = valueAtPosition.toLowerCase();
         int len = CompletionUtil.DUMMY_IDENTIFIER.length();
         int hackIndex = hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER.toLowerCase());
+        //let's scrup the data for any Intellij stuff
+        val = val.replace(CompletionUtil.DUMMY_IDENTIFIER, "");
         if (hackIndex == -1) {
+            val = val.replace(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED, "");
             hackIndex = hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED.toLowerCase());
             len = CompletionUtil.DUMMY_IDENTIFIER_TRIMMED.length();
         }
 
         if (hackIndex > -1) {
-            suffix = val.substring(hackIndex + len);
-            val = val.substring(0, hackIndex);
+            suffix = valueAtPosition.substring(hackIndex + len);
+            valueAtPosition = valueAtPosition.substring(0, hackIndex);
         }
 
-        if (val.startsWith("\"")) {
-            val = val.substring(1);
-        }
-        if (val.endsWith("\"")) {
-            val = val.substring(0, val.length() - 1);
-        }
-        if (suffix.endsWith("\"")) {
-            suffix = suffix.substring(0, suffix.length() - 1);
-        }
-        return new String[]{val, suffix};
+        return new String[]{val, suffix, valueAtPosition};
     }
 
     /**
@@ -142,7 +136,7 @@ public abstract class CamelContributor extends CompletionContributor {
         return new PsiFilePattern.Capture<>(new InitialPatternCondition<PsiFile>(PsiFile.class) {
             @Override
             public boolean accepts(@Nullable Object o, ProcessingContext context) {
-                if (o instanceof PsiFile) {
+                    if (o instanceof PsiFile) {
                     return isFromFileType((PsiElement) o, extensions);
                 }
                 return false;

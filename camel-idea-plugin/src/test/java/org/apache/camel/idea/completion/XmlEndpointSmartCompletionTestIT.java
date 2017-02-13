@@ -21,8 +21,11 @@ import java.util.List;
 
 import com.intellij.codeInsight.completion.CompletionType;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
-import org.hamcrest.Matchers;
 
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -43,8 +46,8 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.configureByFiles("CompleteXmlEndpointProducerTestData.xml");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertFalse(strings.containsAll(Arrays.asList("file:outbox?autoCreate", "file:outbox?include", "file:outbox?delay", "file:outbox?delete")));
-        assertTrue(strings.containsAll(Arrays.asList("file:outbox?fileExist", "file:outbox?forceWrites")));
+        assertThat(strings, not(contains(Arrays.asList("file:outbox?autoCreate", "file:outbox?include", "file:outbox?delay", "file:outbox?delete"))));
+        assertThat(strings, hasItems("file:outbox?fileExist", "file:outbox?forceWrites"));
         assertTrue("There is less options", strings.size() < 30);
     }
 
@@ -59,11 +62,11 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
 
     public void testXmlInsertAfterQuestionMarkTestData() {
         String insertAfterQuestionMarkTestData = getXmlInsertAfterQuestionMarkTestData();
-        myFixture.configureByText("JavaCaretInMiddleOptionsTestData.java", insertAfterQuestionMarkTestData);
+        myFixture.configureByText("JavaCaretInMiddleOptionsTestData.xml", insertAfterQuestionMarkTestData);
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertTrue("There is many options", strings.size() == 1);
-        assertThat(strings, Matchers.contains("timer:trigger?period"));
+        assertThat(strings, contains("timer:trigger?period"));
         myFixture.type('\n');
         insertAfterQuestionMarkTestData = insertAfterQuestionMarkTestData.replace("<caret>", "iod=");
         myFixture.checkResult(insertAfterQuestionMarkTestData);
@@ -114,18 +117,18 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.configureByText("XmlCaretInMiddleOptionsTestData.xml", getXmlfterAmpOptionsTestData());
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertThat(strings, Matchers.not(Matchers.contains("timer:trigger?repeatCount=10")));
-        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&amp;bridgeErrorHandler",
-            "timer:trigger?repeatCount=10&amp;daemon",
-            "timer:trigger?repeatCount=10&amp;delay",
-            "timer:trigger?repeatCount=10&amp;exceptionHandler",
-            "timer:trigger?repeatCount=10&amp;exchangePattern",
-            "timer:trigger?repeatCount=10&amp;fixedRate",
-            "timer:trigger?repeatCount=10&amp;pattern",
-            "timer:trigger?repeatCount=10&amp;period",
-            "timer:trigger?repeatCount=10&amp;synchronous",
-            "timer:trigger?repeatCount=10&amp;time",
-            "timer:trigger?repeatCount=10&amp;timer"));
+        assertThat(strings, not(contains("timer:trigger?repeatCount=10")));
+        assertThat(strings, contains("&amp;bridgeErrorHandler",
+            "&amp;daemon",
+            "&amp;delay",
+            "&amp;exceptionHandler",
+            "&amp;exchangePattern",
+            "&amp;fixedRate",
+            "&amp;pattern",
+            "&amp;period",
+            "&amp;synchronous",
+            "&amp;time",
+            "&amp;timer"));
         assertTrue("There is less options", strings.size() < 13);
     }
 
@@ -142,9 +145,7 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.configureByText("XmlCaretInMiddleOptionsTestData.xml", getXmlInTheMiddleOfResolvedOptionsData());
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertThat(strings, Matchers.not(Matchers.contains("timer:trigger?repeatCount=10")));
-        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&amp;fixedRate"));
-        assertTrue("There is less options", strings.size() == 1);
+        assertTrue("There is less options", strings.size() == 0);
     }
 
     private String getXmlInTheMiddleUnresolvedOptionsTestData() {
@@ -160,9 +161,8 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.configureByText("XmlCaretInMiddleOptionsTestData.xml", getXmlInTheMiddleUnresolvedOptionsTestData());
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertThat(strings, Matchers.not(Matchers.contains("timer:trigger?repeatCount=10")));
-        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&amp;exceptionHandler",
-            "timer:trigger?repeatCount=10&amp;exchangePattern"));
+        assertThat(strings, not(contains("timer:trigger?repeatCount=10")));
+        assertThat(strings, contains("&amp;exceptionHandler", "&amp;exchangePattern"));
         assertTrue("There is less options", strings.size() == 2);
         myFixture.type('\n');
         String result = getXmlInTheMiddleUnresolvedOptionsTestData().replace("<caret>", "ceptionHandler=");
@@ -186,5 +186,106 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.type('\n');
         String result = getXmlAfterValueWithOutAmpTestData().replace("<caret>", "&amp;bridgeErrorHandler=");
         myFixture.checkResult(result);
+    }
+
+    private String getXmlMultilineTestData() {
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"timer:trigger?repeatCount=10\n"
+            + "         &amp;fixedRate=false\n"
+            + "         &amp;daemon=false\n"
+            + "         &amp;period=10<caret>\"/>"
+            + "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
+    }
+    public void testXmlMultilineTestData() {
+        myFixture.configureByText("CamelRoute.xml", getXmlMultilineTestData());
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals("There is many options", 8, strings.size());
+        assertThat(strings, not(containsInAnyOrder(
+            "timer:trigger?repeatCount=10&",
+            "&fixedRate=false",
+            "&daemon=false",
+            "&period=10")));
+        myFixture.type('\n');
+        String xmlInsertAfterQuestionMarkTestData = getXmlMultilineTestData().replace("<caret>", "&amp;bridgeErrorHandler=");
+        myFixture.checkResult(xmlInsertAfterQuestionMarkTestData);
+    }
+
+    private String getXmlMultilineTest2Data() {
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"timer:trigger?repeatCount=10\n"
+            + "         &amp;fixedRate=false<caret>\n"
+            + "         &amp;daemon=false\n"
+            + "         &amp;period=10\"/>"
+            + "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
+    }
+    public void testXmlMultilineTest2Data() {
+        myFixture.configureByText("CamelRoute.xml", getXmlMultilineTest2Data());
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals("There is many options", 8, strings.size());
+        assertThat(strings, not(containsInAnyOrder(
+            "timer:trigger?repeatCount=10",
+            "&amp;fixedRate=false",
+            "&amp;daemon=false",
+            "&amp;period=10")));
+        myFixture.type('\n');
+        String xmlInsertAfterQuestionMarkTestData = getXmlMultilineTest2Data().replace("<caret>", "&amp;bridgeErrorHandler=");
+        myFixture.checkResult(xmlInsertAfterQuestionMarkTestData);
+    }
+
+    private String getXmlMultilineTest3Data() {
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"timer:trigger?repeatCount=10\n"
+            + "         &amp;fixedRate=false\n"
+            + "         &amp;daemon=false\n"
+            + "         &amp;period=10<caret>\"/>"
+            + "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
+    }
+    public void testXmlMultilineTest3Data() {
+        myFixture.configureByText("CamelRoute.xml", getXmlMultilineTest3Data());
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals("There is many options", 8, strings.size());
+        assertThat(strings, not(containsInAnyOrder(
+            "timer:trigger?repeatCount=10&amp;",
+            "&amp;fixedRate=false",
+            "&amp;daemon=false",
+            "&amp;period=10")));
+        myFixture.type('\n');
+        String xmlInsertAfterQuestionMarkTestData = getXmlMultilineTest3Data().replace("<caret>", "&amp;bridgeErrorHandler=");
+        myFixture.checkResult(xmlInsertAfterQuestionMarkTestData);
+    }
+
+    private String getXmlMultilineInFixSearchData() {
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"timer:trigger?repeatCount=10\n"
+            + "         &amp;ex<caret>fixedRate=false\n"
+            + "         &amp;daemon=false\n"
+            + "         &amp;period=10\"/>"
+            + "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
+
+    }
+    public void testJavaMultilineInFixSearchData() {
+        myFixture.configureByText("CamelRoute.xml", getXmlMultilineInFixSearchData());
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals("There is many options", 2, strings.size());
+        assertThat(strings, containsInAnyOrder("&amp;exceptionHandler", "&amp;exchangePattern"));
+        myFixture.type('\n');
+        String xmlInsertAfterQuestionMarkTestData = getXmlMultilineInFixSearchData().replace("<caret>", "ceptionHandler=");
+        myFixture.checkResult(xmlInsertAfterQuestionMarkTestData);
     }
 }

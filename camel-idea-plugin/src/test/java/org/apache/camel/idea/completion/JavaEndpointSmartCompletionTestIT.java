@@ -80,9 +80,7 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
         myFixture.configureByText("JavaCaretInMiddleOptionsTestData.java", getJavaInTheMiddleOfResolvedOptionsData());
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertThat(strings, Matchers.not(Matchers.contains("timer:trigger?repeatCount=10")));
-        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&fixedRate"));
-        assertTrue("There is less options", strings.size() == 1);
+        assertTrue("Expect 0 options", strings.size() == 0);
     }
 
     private String getJavaAfterAmpOptionsTestData() {
@@ -167,6 +165,111 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
         assertThat(strings, Matchers.contains("timer:trigger?period"));
         myFixture.type('\n');
         javaInsertAfterQuestionMarkTestData = javaInsertAfterQuestionMarkTestData.replace("<caret>", "iod=");
+        myFixture.checkResult(javaInsertAfterQuestionMarkTestData);
+    }
+
+    private String getJavaMultilineTestData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger?repeatCount=10&\" +\n"
+            + "                \"fixedRate=false\"+ \n"
+            + "                \"&daemon=false\" + \n"
+            + "                \"&period=10<caret>\");\n"
+            + "        }\n"
+            + "    }";
+    }
+    public void testJavaMultilineTestData() {
+        myFixture.configureByText("CamelRoute.java", getJavaMultilineTestData());
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals("There is many options", 8, strings.size());
+        assertThat(strings, Matchers.not(Matchers.containsInAnyOrder(
+            "timer:trigger?repeatCount=10&",
+            "&fixedRate=false",
+            "&daemon=false",
+            "&period=10")));
+        myFixture.type('\n');
+        String javaInsertAfterQuestionMarkTestData = getJavaMultilineTestData().replace("<caret>", "&bridgeErrorHandler=");
+        myFixture.checkResult(javaInsertAfterQuestionMarkTestData);
+    }
+
+    private String getJavaMultilineTest2Data() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger?repeatCount=10\"\n"
+            + "                + \"&fixedRate=false<caret>\"\n"
+            + "                + \"&daemon=false\" \n"
+            + "                + \"&period=10\");\n"
+            + "        }\n"
+            + "    }";
+    }
+    public void testJavaMultilineTest2Data() {
+        myFixture.configureByText("CamelRoute.java", getJavaMultilineTest2Data());
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals("There is many options", 8, strings.size());
+        assertThat(strings, Matchers.not(Matchers.containsInAnyOrder(
+            "timer:trigger?repeatCount=10&",
+            "&fixedRate=false",
+            "&daemon=false",
+            "&period=10")));
+        myFixture.type('\n');
+        String javaInsertAfterQuestionMarkTestData = getJavaMultilineTest2Data().replace("<caret>", "&bridgeErrorHandler=");
+        myFixture.checkResult(javaInsertAfterQuestionMarkTestData);
+    }
+
+    private String getJavaMultilineTest3Data() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger?repeatCount=10\"+\n"
+            + "                 \"&fixedRate=false\"+\n"
+            + "                 \"&daemon=false\" \n"
+            + "                + \"&period=10&<caret>\");\n"
+            + "        }\n"
+            + "    }";
+    }
+    public void testJavaMultilineTest3Data() {
+        myFixture.configureByText("CamelRoute.java", getJavaMultilineTest3Data());
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals("There is many options", 8, strings.size());
+        assertThat(strings, Matchers.not(Matchers.containsInAnyOrder(
+            "timer:trigger?repeatCount=10&",
+            "&fixedRate=false",
+            "&daemon=false",
+            "&period=10")));
+        myFixture.type('\n');
+        String javaInsertAfterQuestionMarkTestData = getJavaMultilineTest3Data().replace("<caret>", "bridgeErrorHandler=");
+        myFixture.checkResult(javaInsertAfterQuestionMarkTestData);
+    }
+
+    private String getJavaMultilineInFixSearchData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger?repeatCount=10\"+\n"
+            + "                 \"&ex<caret>fixedRate=false\"+\n"
+            + "                 \"&daemon=false\" \n"
+            + "                + \"&period=10\");\n"
+            + "        }\n"
+            + "    }";
+    }
+    public void testJavaMultilineInFixSearchData() {
+        myFixture.configureByText("CamelRoute.java", getJavaMultilineInFixSearchData());
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals("There is many options", 2, strings.size());
+        assertThat(strings, Matchers.containsInAnyOrder("&exceptionHandler", "&exchangePattern"));
+        assertThat(strings, Matchers.not(Matchers.containsInAnyOrder(
+            "timer:trigger?repeatCount=10&",
+            "&fixedRate=false",
+            "&daemon=false",
+            "&period=10")));
+        myFixture.type('\n');
+        String javaInsertAfterQuestionMarkTestData = getJavaMultilineInFixSearchData().replace("<caret>", "ceptionHandler=");
         myFixture.checkResult(javaInsertAfterQuestionMarkTestData);
     }
 

@@ -98,12 +98,7 @@ public class PropertyEndpointSmartCompletionTestIT extends CamelLightCodeInsight
         myFixture.configureByText("TestData.properties", getInTheMiddleOfResolvedOptionsData());
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertThat(strings, Matchers.not(Matchers.contains("timer:trigger?repeatCount=10")));
-        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&fixedRate"));
-        assertTrue("There is less options", strings.size() == 1);
-        myFixture.type('\n');
-        String result = getInTheMiddleOfResolvedOptionsData().replace("<caret>", "Rate=");
-        myFixture.checkResult(result);
+        assertTrue("Expect 0 options", strings.size() == 0);
     }
 
     private String getInTheMiddleUnresolvedOptionsTestData() {
