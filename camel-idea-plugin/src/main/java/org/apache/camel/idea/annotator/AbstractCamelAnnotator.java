@@ -48,7 +48,7 @@ abstract class AbstractCamelAnnotator implements Annotator {
         if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent() && isEnabled()) {
             boolean accept = accept(element);
             if (accept) {
-                String text = IdeaUtils.extractTextFromElement(element, false);
+                String text = IdeaUtils.extractTextFromElement(element, false, false);
                 if (!StringUtils.isEmpty(text)) {
                     validateText(element, holder, text);
                 }

@@ -71,38 +71,45 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
 
         String json = camelCatalog.componentJSonSchema(componentName);
         ComponentModel componentModel = ModelHelper.generateComponentModel(json, true);
+        final PsiElement element = parameters.getPosition();
 
         // grab all existing parameters
-        String val = query[0];
+        String concatQuery = query[0];
         String suffix = query[1];
-        String camelQuery = val;
-
+        String queryAtPosition =  query[2];
+        String prefixValue =  query[2];
         // camel catalog expects &amp; as & when it parses so replace all &amp; as &
-        camelQuery = camelQuery.replaceAll("&amp;", "&");
+        concatQuery = concatQuery.replaceAll("&amp;", "&");
+
+        boolean editQueryParameters = concatQuery.contains("?");
 
         // strip up ending incomplete parameter
-        if (camelQuery.endsWith("&") || camelQuery.endsWith("?")) {
+        if (queryAtPosition.endsWith("&") || queryAtPosition.endsWith("?")) {
             endsWithAmpQuestionMark = true;
-            camelQuery = camelQuery.substring(0, camelQuery.length() - 1);
+            queryAtPosition = queryAtPosition.substring(0, queryAtPosition.length() - 1);
+        }
+
+        // strip up ending incomplete parameter
+        if (concatQuery.endsWith("&") || concatQuery.endsWith("?")) {
+            concatQuery = concatQuery.substring(0, concatQuery.length() - 1);
         }
 
         Map<String, String> existing = null;
         try {
-            existing = camelCatalog.endpointProperties(camelQuery);
+            existing = camelCatalog.endpointProperties(concatQuery);
         } catch (Exception e) {
-            LOG.warn("Error parsing Camel endpoint properties with url: " + camelQuery, e);
+            LOG.warn("Error parsing Camel endpoint properties with url: " + queryAtPosition, e);
         }
 
         // are we editing an existing parameter value
         // or are we having a list of suggested parameters to choose among
-        final PsiElement element = parameters.getPosition();
 
         boolean caretAtEndOfLine = isCaretAtEndOfLine(element);
         LOG.trace("Caret at end of line: " + caretAtEndOfLine);
 
         String[] queryParameter = IdeaUtils.getQueryParameterAtCursorPosition(element);
         String optionValue = queryParameter[1];
-        boolean editQueryParameters = val.contains("?");
+
 
         // a bit complex to figure out whether to edit the endpoint value or not
         boolean editOptionValue = false;
@@ -125,21 +132,21 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         if (editOptionValue) {
             EndpointOptionModel endpointOption = componentModel.getEndpointOption(queryParameter[0].substring(1));
             if (endpointOption != null) {
-                answer = addSmartCompletionForEndpointValue(parameters.getEditor(), val, suffix, endpointOption, element, xmlMode);
+                answer = addSmartCompletionForEndpointValue(parameters.getEditor(), queryAtPosition, suffix, endpointOption, element, xmlMode);
             }
         }
         if (answer == null) {
             if (editQueryParameters) {
                 // suggest a list of options for query parameters
-                answer = addSmartCompletionSuggestionsQueryParameters(val, componentModel, existing, xmlMode, element, parameters.getEditor(), suffix);
+                answer = addSmartCompletionSuggestionsQueryParameters(query, componentModel, existing, xmlMode, element, parameters.getEditor());
             } else {
                 // suggest a list of options for context-path
-                answer = addSmartCompletionSuggestionsContextPath(val, componentModel, existing, xmlMode, element);
+                answer = addSmartCompletionSuggestionsContextPath(queryAtPosition, componentModel, existing, xmlMode, element);
             }
         }
         // are there any results then add them
         if (answer != null && !answer.isEmpty()) {
-            resultSet.withPrefixMatcher(val).addAllElements(answer);
+            resultSet.withPrefixMatcher(prefixValue).addAllElements(answer);
             resultSet.stopHere();
         }
     }

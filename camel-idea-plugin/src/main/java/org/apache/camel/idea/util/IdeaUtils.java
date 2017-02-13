@@ -26,10 +26,8 @@ import java.util.List;
 import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
-import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiAnnotation;
@@ -41,7 +39,9 @@ import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiPolyadicExpression;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
+import com.intellij.psi.impl.source.xml.XmlTokenImpl;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
@@ -61,8 +61,6 @@ import static com.intellij.xml.CommonXmlStrings.QUOT;
  */
 public final class IdeaUtils {
 
-    private static final String SINGLE_QUOT = "'";
-
     private static final List<String> ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME = Arrays.asList(
         "org.apache.camel.builder.RouteBuilder", "org.apache.camel.builder.BuilderSupport",
         "org.apache.camel.model.ProcessorDefinition", "org.apache.camel.model.language.ExpressionDefinition");
@@ -78,7 +76,7 @@ public final class IdeaUtils {
      */
     @Nullable
     public static String extractTextFromElement(PsiElement element) {
-        return extractTextFromElement(element, true);
+        return extractTextFromElement(element, true, false);
     }
 
     /**
@@ -86,10 +84,11 @@ public final class IdeaUtils {
      *
      * @param element the element
      * @param fallBackToGeneric if could find any of the supported languages fallback to generic if true
+     * @param concatString concatenated the string if it wrapped
      * @return the text or <tt>null</tt> if the element is not a text/literal kind.
      */
     @Nullable
-    public static String extractTextFromElement(PsiElement element, boolean fallBackToGeneric) {
+    public static String extractTextFromElement(PsiElement element, boolean fallBackToGeneric, boolean concatString) {
 
         if (element instanceof PsiLiteralExpression) {
             // need the entire line so find the literal expression that would hold the entire string (java)
@@ -107,9 +106,19 @@ public final class IdeaUtils {
             return ((XmlText) element).getValue();
         } else if (element instanceof XmlToken) {
             // it may be a token which is a part of an combined attribute
-            XmlAttributeValue xml = PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class);
-            if (xml != null) {
-                return xml.getValue();
+            if (concatString) {
+                XmlAttributeValue xml = PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class);
+                if (xml != null) {
+                    String value = getInnerText(xml.getValue());
+                    return value;
+                }
+            } else {
+                String returnText = element.getText();
+                final PsiElement prevSibling = element.getPrevSibling();
+                if (prevSibling != null && prevSibling.getText().equalsIgnoreCase("&amp;")) {
+                    returnText = prevSibling.getText() + returnText;
+                }
+                return getInnerText(returnText);
             }
         }
 
@@ -161,6 +170,12 @@ public final class IdeaUtils {
         if (fallBackToGeneric) {
             // fallback to generic
             String text = element.getText();
+            if (concatString) {
+                final PsiPolyadicExpression parentOfType = PsiTreeUtil.getParentOfType(element, PsiPolyadicExpression.class);
+                if (parentOfType != null) {
+                    text = parentOfType.getText();
+                }
+            }
             // the text may be quoted so unwrap that
             return getInnerText(text);
         }
@@ -653,21 +668,11 @@ public final class IdeaUtils {
         if (text == null) {
             return null;
         }
-        int textLength = text.length();
-        if (StringUtil.endsWithChar(text, '\"')) {
-            if (textLength == 1) {
-                return "";
-            }
-            text = text.substring(1, textLength - 1);
-        } else {
-            if (text.startsWith(QUOT) && text.endsWith(QUOT) && textLength > QUOT.length()) {
-                text = text.substring(QUOT.length(), textLength - QUOT.length());
-            }
-            if (text.startsWith(SINGLE_QUOT) && text.endsWith(SINGLE_QUOT) && textLength > SINGLE_QUOT.length()) {
-                text = text.substring(SINGLE_QUOT.length(), textLength - SINGLE_QUOT.length());
-            }
+        if (StringUtil.endsWithChar(text, '\"') && text.length() == 1) {
+            return "";
         }
-        return text;
+        // Remove any newline feed + whitespaces + single + double quot to concat a split string
+        return StringUtil.unquoteString(text.replace(QUOT, "\"")).replaceAll("(^\\n\\s+|\\n\\s+$|\\n\\s+)|(\"\\s*\\+\\s*\")|(\"\\s*\\+\\s*\\n\\s*\"*)", "");
     }
 
     public static int getCaretPositionInsidePsiElement(String stringLiteral) {
@@ -725,7 +730,7 @@ public final class IdeaUtils {
     }
 
     public static boolean isCaretAtEndOfLine(PsiElement element) {
-        String value = IdeaUtils.extractTextFromElement(element);
+        String value = IdeaUtils.extractTextFromElement(element).trim();
 
         if (value != null) {
             value = value.toLowerCase();

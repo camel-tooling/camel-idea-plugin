@@ -51,22 +51,25 @@ public final class CamelSmartCompletionEndpointOptions {
         // static class
     }
 
-    public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(String val, ComponentModel component,
-                                                                                   Map<String, String> existing, boolean xmlMode, PsiElement element, Editor editor, String suffix) {
+    public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(String[] query, ComponentModel component,
+                                                                                   Map<String, String> existing, boolean xmlMode, PsiElement element, Editor editor) {
         List<LookupElement> answer = new ArrayList<>();
 
         boolean consumerOnly = isConsumerEndpoint(element);
         boolean producerOnly = isProducerEndpoint(element);
 
+        String concatQuery = query[0];
+        String suffix = query[1];
+        String queryAtPosition = query[2];
+
         if (xmlMode) {
-            val = val.replace("&amp;", "&");
+            queryAtPosition = queryAtPosition.replace("&amp;", "&");
         }
 
         List<EndpointOptionModel> options = component.getEndpointOptions();
         // sort the options A..Z which is easier to users to understand
         options.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
-
-        val = removeUnknownOption(val, existing, element);
+        queryAtPosition = removeUnknownOption(queryAtPosition, existing, element);
 
         for (EndpointOptionModel option : options) {
 
@@ -91,16 +94,15 @@ public final class CamelSmartCompletionEndpointOptions {
 
                     // the lookup should prepare for the new option
                     String lookup;
-                    val = val.replace("val", "");
-                    if (!val.contains("?")) {
+                    if (!concatQuery.contains("?")) {
                         // none existing options so we need to start with a ? mark
-                        lookup = val + "?" + key;
+                        lookup = queryAtPosition + "?" + key;
                     } else {
-                        if (!val.endsWith("&") && !val.endsWith("?")) {
-                            lookup = val + "&" + key;
+                        if (!queryAtPosition.endsWith("&") && !queryAtPosition.endsWith("?")) {
+                            lookup = queryAtPosition + "&" + key;
                         } else {
                             // there is already either an ending ? or &
-                            lookup = val + key;
+                            lookup = queryAtPosition + key;
                         }
                     }
                     if (xmlMode) {
@@ -234,7 +236,7 @@ public final class CamelSmartCompletionEndpointOptions {
             //check if the option is known option
             final String optionToRemove = existing.get(searchStr);
             if (optionToRemove == null || optionToRemove.isEmpty()) {
-                val = val.replace(strToRemove[0], "");
+                val = val.replace(searchStr, "");
             }
         }
         return val;
