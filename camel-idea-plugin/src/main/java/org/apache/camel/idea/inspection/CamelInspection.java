@@ -18,6 +18,7 @@ package org.apache.camel.idea.inspection;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlToken;
+import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
@@ -49,7 +50,7 @@ public class CamelInspection extends AbstractCamelInspection {
         }
 
         // we support java, xml, groovy, scala and kotlin
-        return isFromFileType(element, "java", "xml", "groovy", "kt", "scala");
+        return isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
     }
 
 }

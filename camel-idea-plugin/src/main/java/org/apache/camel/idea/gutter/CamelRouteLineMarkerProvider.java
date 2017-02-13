@@ -27,15 +27,11 @@ import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl;
 import com.intellij.psi.impl.source.xml.XmlTagImpl;
-import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiSearchHelper;
 import com.intellij.psi.search.UsageSearchContext;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -45,6 +41,7 @@ import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
+import org.apache.camel.idea.util.CamelRouteSearchScope;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
@@ -70,7 +67,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         }
 
         // must be in valid file
-        boolean validFile = isFromFileType(element, "java", "xml", "groovy", "kt", "scala");
+        boolean validFile = isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
         if (!validFile) {
             return;
         }
@@ -146,7 +143,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                 }
             }
             return true;
-        }, getSearchScope(startElement.getProject()), componentName, UsageSearchContext.ANY, false);
+        }, new CamelRouteSearchScope(), componentName, UsageSearchContext.ANY, false);
 
         return psiElements;
     }
@@ -186,23 +183,6 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
             }
         }
         return null;
-    }
-
-    /**
-     * Defines the search scope for the Camel routes.
-     * It consist of all the files from all the modules including the files from JAR files.
-     *
-     * @param project the current {@link Project}
-     * @return the search scope
-     */
-    private GlobalSearchScope getSearchScope(Project project) {
-        Module[] modules = ModuleManager.getInstance(project).getModules();
-
-        GlobalSearchScope searchScope = GlobalSearchScope.EMPTY_SCOPE;
-        for (Module module : modules) {
-            searchScope = searchScope.uniteWith(module.getModuleWithDependenciesAndLibrariesScope(false));
-        }
-        return searchScope;
     }
 
 }
