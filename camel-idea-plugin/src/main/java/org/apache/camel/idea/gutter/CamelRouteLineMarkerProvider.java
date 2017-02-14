@@ -17,6 +17,7 @@
 package org.apache.camel.idea.gutter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.*;
@@ -51,6 +52,8 @@ import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
  */
 public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider {
 
+    private static final String[] JAVA_ROUTE_START = new String[]{"to", "toF", "toD"};
+    private static final String[] XML_ROUTE_START = new String[]{"to", "toD"};
 
     @Override
     protected void collectNavigationMarkers(@NotNull PsiElement element,
@@ -160,8 +163,10 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         if (route.equals(psiElement.getValue())) {
             //the method 'to' is a PsiIdentifier not a PsiMethodCallExpression because it's part of method invocation chain
             PsiMethodCallExpression methodCall = PsiTreeUtil.getParentOfType(psiElement, PsiMethodCallExpression.class);
-            if (methodCall != null && "to".equals(methodCall.getMethodExpression().getReferenceName())) {
-                return psiElement;
+            if (methodCall != null) {
+                if (Arrays.stream(JAVA_ROUTE_START).anyMatch(s -> s.equals(methodCall.getMethodExpression().getReferenceName()))) {
+                    return psiElement;
+                }
             }
         }
         return null;
@@ -176,7 +181,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
      */
     private PsiElement findXMLElement(String route, XmlToken psiElement) {
         if (psiElement.getTokenType() == XmlElementType.XML_ATTRIBUTE_VALUE_TOKEN) {
-            if ("to".equals(PsiTreeUtil.getParentOfType(psiElement, XmlTag.class).getLocalName())) {
+            if (Arrays.stream(XML_ROUTE_START).anyMatch(s -> s.equals(PsiTreeUtil.getParentOfType(psiElement, XmlTag.class).getLocalName()))) {
                 if (psiElement.getText().equals(route)) {
                     return psiElement;
                 }

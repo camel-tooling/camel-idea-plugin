@@ -75,4 +75,45 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
                 ((PsiMethodCallExpressionImpl) secondGutterTargets.get(0).getElement().getParent().getParent()).getMethodExpression().getQualifierExpression().getText());
     }
 
+    public void testCamelGutterForToDAndToF() {
+        myFixture.configureByFiles("JavaCamelRouteLineMarkerProviderAlternateToTestData.java");
+        List<GutterMark> gutters = myFixture.findAllGutters();
+        assertNotNull(gutters);
+
+        //remove first element since it is navigate to super implementation gutter icon
+        gutters.remove(0);
+
+        assertEquals("Should contain 2 Camel gutters", 2, gutters.size());
+
+        Icon defaultIcon = ServiceManager.getService(CamelPreferenceService.class).getCamelIcon();
+        gutters.forEach(gutterMark -> {
+            assertSame("Gutter should have the Camel icon", defaultIcon, gutterMark.getIcon());
+            assertEquals("Camel route", gutterMark.getTooltipText());
+        });
+
+        LineMarkerInfo.LineMarkerGutterIconRenderer firstGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(0);
+
+        assertTrue(firstGutter.getLineMarkerInfo().getElement() instanceof PsiLiteralExpression);
+        assertEquals("The navigation start element doesn't match", "file:test",
+                ((PsiLiteralExpression) firstGutter.getLineMarkerInfo().getElement()).getValue());
+
+
+        List<GotoRelatedItem> firstGutterTargets = getGutterNavigationDestinationElements(firstGutter);
+        assertEquals("Navigation should have one target", 1, firstGutterTargets.size());
+        assertEquals("The navigation target element doesn't match", "from(\"file:test\")",
+                ((PsiMethodCallExpressionImpl) firstGutterTargets.get(0).getElement().getParent().getParent()).getMethodExpression().getQualifierExpression().getText());
+
+
+        LineMarkerInfo.LineMarkerGutterIconRenderer secondGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(1);
+
+        assertTrue(secondGutter.getLineMarkerInfo().getElement() instanceof PsiLiteralExpression);
+        assertEquals("The navigation start element doesn't match", "file:test",
+                ((PsiLiteralExpression) secondGutter.getLineMarkerInfo().getElement()).getValue());
+
+        List<GotoRelatedItem> secondGutterTargets = getGutterNavigationDestinationElements(secondGutter);
+        assertEquals("Navigation should have one target", 1, secondGutterTargets.size());
+        assertEquals("The navigation target element doesn't match", "from(\"file:test\")",
+                ((PsiMethodCallExpressionImpl) secondGutterTargets.get(0).getElement().getParent().getParent()).getMethodExpression().getQualifierExpression().getText());
+    }
+
 }
