@@ -73,4 +73,28 @@ public class XmlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsight
                 PsiTreeUtil.getParentOfType(secondGutterTargets.get(0).getElement(), XmlTag.class).getLocalName());
     }
 
+    public void testCamelGutterForToD() {
+        myFixture.configureByFiles("XmlCamelRouteLineMarkerProviderToDTestData.xml");
+        List<GutterMark> gutters = myFixture.findAllGutters();
+        assertNotNull(gutters);
+
+        assertEquals("Should contain 1 Camel gutter", 1, gutters.size());
+
+        assertSame("Gutter should have the Camel icon", ServiceManager.getService(CamelPreferenceService.class).getCamelIcon(), gutters.get(0).getIcon());
+        assertEquals("Camel route", gutters.get(0).getTooltipText());
+
+        LineMarkerInfo.LineMarkerGutterIconRenderer gutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(0);
+
+        assertTrue(gutter.getLineMarkerInfo().getElement() instanceof XmlToken);
+        assertEquals("The navigation start element doesn't match", "file:inbox",
+                PsiTreeUtil.getParentOfType(gutter.getLineMarkerInfo().getElement(), XmlTag.class).getAttribute("uri").getValue());
+
+        List<GotoRelatedItem> gutterTargets = getGutterNavigationDestinationElements(gutter);
+        assertEquals("Navigation should have one target", 1, gutterTargets.size());
+        assertEquals("The navigation target route doesn't match", "file:inbox", gutterTargets.get(0).getElement().getText());
+        assertEquals("The navigation target tag name doesn't match", "toD",
+                PsiTreeUtil.getParentOfType(gutterTargets.get(0).getElement(), XmlTag.class).getLocalName());
+
+    }
+
 }
