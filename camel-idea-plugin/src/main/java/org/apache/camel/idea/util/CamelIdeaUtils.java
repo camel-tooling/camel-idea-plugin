@@ -16,30 +16,19 @@
  */
 package org.apache.camel.idea.util;
 
-import java.util.Arrays;
-
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiExpression;
-import com.intellij.psi.PsiExpressionList;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.PsiReferenceExpression;
+import com.intellij.psi.*;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import org.apache.camel.idea.service.CamelCatalogService;
 
-import static org.apache.camel.idea.util.IdeaUtils.isElementFromAnnotation;
-import static org.apache.camel.idea.util.IdeaUtils.isElementFromConstructor;
-import static org.apache.camel.idea.util.IdeaUtils.isElementFromSetterProperty;
-import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
+import java.util.Arrays;
+
+import static org.apache.camel.idea.util.IdeaUtils.*;
 
 /**
  * Utility methods to work with Camel related {@link com.intellij.psi.PsiElement} elements.
@@ -103,7 +92,13 @@ public final class CamelIdeaUtils {
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
-                return IdeaUtils.isFromScalaMethod(element, ROUTE_START);
+                try {
+                    // TODO needs cleaning and remove try...catch (plus does not work)
+                    PsiElement infixExpression = element.getParent().getParent();
+                    return infixExpression.getChildren()[1].getText().equals("==>");
+                } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored){
+
+                }
             }
         }
 
