@@ -16,32 +16,6 @@
  */
 package org.apache.camel.idea.service;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarInputStream;
-import java.util.stream.Collectors;
-import javax.swing.*;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.Disposable;
@@ -57,6 +31,20 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import javax.swing.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.*;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+import java.util.stream.Collectors;
 
 import static org.apache.camel.catalog.CatalogHelper.loadText;
 import static org.apache.camel.idea.completion.CamelContributor.CAMEL_NOTIFICATION_GROUP;
@@ -178,7 +166,7 @@ public class CamelService implements Disposable {
                         continue;
                     }
                     int startIdx = 0;
-                    if (split[0].equalsIgnoreCase("maven") || split[0].equalsIgnoreCase("gradle")) {
+                    if (split[0].equalsIgnoreCase("maven") || split[0].equalsIgnoreCase("gradle") || split[0].equalsIgnoreCase("sbt")) {
                         startIdx = 1;
                     }
                     String groupId = split[startIdx++].trim();
