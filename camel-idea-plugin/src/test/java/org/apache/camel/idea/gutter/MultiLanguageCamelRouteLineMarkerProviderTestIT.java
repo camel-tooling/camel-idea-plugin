@@ -22,11 +22,11 @@ import com.intellij.codeInsight.daemon.GutterMark;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.psi.PsiLiteralExpression;
-import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
-import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
+
+import static org.apache.camel.idea.gutter.GutterTestUtil.getGuttersWithJavaTarget;
+import static org.apache.camel.idea.gutter.GutterTestUtil.getGuttersWithXMLTarget;
 
 /**
  * Testing the Camel icon is shown in the gutter where a Camel route starts in XML DSL and the route navigation
@@ -56,10 +56,9 @@ public class MultiLanguageCamelRouteLineMarkerProviderTestIT extends CamelLightC
 
         List<GotoRelatedItem> firstJavaGutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(firstJavaGutter);
         assertEquals("Navigation should have two targets", 2, firstJavaGutterTargets.size());
-        assertEquals("The navigation target XML tag name doesn't match", "to",
-                PsiTreeUtil.getParentOfType(firstJavaGutterTargets.get(0).getElement(), XmlTag.class).getLocalName());
+        assertEquals("The navigation target XML tag name doesn't match", "to", getGuttersWithXMLTarget(firstJavaGutterTargets).get(0).getLocalName());
         assertEquals("The navigation Java target element doesn't match", "from(\"file:outbox\")",
-                ((PsiMethodCallExpressionImpl) firstJavaGutterTargets.get(1).getElement().getParent().getParent()).getMethodExpression().getQualifierExpression().getText());
+                getGuttersWithJavaTarget(firstJavaGutterTargets).get(0).getMethodExpression().getQualifierExpression().getText());
 
         //from XML to Java
         LineMarkerInfo.LineMarkerGutterIconRenderer firstXmlGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) xmlGutters.get(0);
@@ -70,10 +69,9 @@ public class MultiLanguageCamelRouteLineMarkerProviderTestIT extends CamelLightC
 
         List<GotoRelatedItem> firstXmlGutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(firstXmlGutter);
         assertEquals("Navigation should have two targets", 2, firstXmlGutterTargets.size());
-        assertEquals("The navigation target XML tag name doesn't match", "to",
-                PsiTreeUtil.getParentOfType(firstXmlGutterTargets.get(0).getElement(), XmlTag.class).getLocalName());
+        assertEquals("The navigation target XML tag name doesn't match", "to", getGuttersWithXMLTarget(firstXmlGutterTargets).get(0).getLocalName());
         assertEquals("The navigation Java target element doesn't match", "from(\"file:outbox\")",
-                ((PsiMethodCallExpressionImpl) firstXmlGutterTargets.get(1).getElement().getParent().getParent()).getMethodExpression().getQualifierExpression().getText());
+                getGuttersWithJavaTarget(firstXmlGutterTargets).get(0).getMethodExpression().getQualifierExpression().getText());
     }
 
 }

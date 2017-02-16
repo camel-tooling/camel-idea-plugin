@@ -29,6 +29,7 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.apache.camel.idea.service.CamelPreferenceService;
 
 import static org.apache.camel.idea.gutter.GutterTestUtil.getGutterNavigationDestinationElements;
+import static org.apache.camel.idea.gutter.GutterTestUtil.getGuttersWithXMLTarget;
 
 /**
  * Testing the Camel icon is shown in the gutter where a Camel route starts in XML DSL and the route navigation
@@ -58,7 +59,7 @@ public class XmlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsight
         assertEquals("Navigation should have one target", 1, firstGutterTargets.size());
         assertEquals("The navigation target route doesn't match", "file:inbox", firstGutterTargets.get(0).getElement().getText());
         assertEquals("The navigation target tag name doesn't match", "to",
-                PsiTreeUtil.getParentOfType(firstGutterTargets.get(0).getElement(), XmlTag.class).getLocalName());
+                getGuttersWithXMLTarget(firstGutterTargets).get(0).getLocalName());
 
         LineMarkerInfo.LineMarkerGutterIconRenderer secondGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(1);
 
@@ -70,7 +71,7 @@ public class XmlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsight
         assertEquals("Navigation should have one target", 1, secondGutterTargets.size());
         assertEquals("The navigation target route doesn't match", "file:outbox", secondGutterTargets.get(0).getElement().getText());
         assertEquals("The navigation target tag name doesn't match", "to",
-                PsiTreeUtil.getParentOfType(secondGutterTargets.get(0).getElement(), XmlTag.class).getLocalName());
+                getGuttersWithXMLTarget(secondGutterTargets).get(0).getLocalName());
     }
 
     public void testCamelGutterForToD() {
@@ -93,7 +94,7 @@ public class XmlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsight
         assertEquals("Navigation should have one target", 1, gutterTargets.size());
         assertEquals("The navigation target route doesn't match", "file:inbox", gutterTargets.get(0).getElement().getText());
         assertEquals("The navigation target tag name doesn't match", "toD",
-                PsiTreeUtil.getParentOfType(gutterTargets.get(0).getElement(), XmlTag.class).getLocalName());
+                getGuttersWithXMLTarget(gutterTargets).get(0).getLocalName());
 
     }
 
