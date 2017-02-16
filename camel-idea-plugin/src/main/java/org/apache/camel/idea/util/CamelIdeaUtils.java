@@ -27,11 +27,12 @@ import com.intellij.psi.xml.XmlTag;
 import org.apache.camel.idea.service.CamelCatalogService;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import static org.apache.camel.idea.util.IdeaUtils.*;
 
 /**
- * Utility methods to work with Camel related {@link com.intellij.psi.PsiElement} elements.
+ * Utility methods to work with Camel related {@link PsiElement} elements.
  * <p/>
  * This class is only for Camel related IDEA APIs. If you need only IDEA APIs then use {@link IdeaUtils} instead.
  */
@@ -92,16 +93,23 @@ public final class CamelIdeaUtils {
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
-                try {
-                    // TODO needs cleaning and remove try...catch (plus does not work)
-                    PsiElement infixExpression = element.getParent().getParent();
-                    return infixExpression.getChildren()[1].getText().equals("==>");
-                } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored){
-
-                }
+                boolean isRouteViaMethod = IdeaUtils.isFromScalaMethod(element, ROUTE_START);
+                return isRouteViaMethod  || isScalaArrowRouteDefinition(element);
             }
         }
 
+        return false;
+    }
+
+    /**
+     * Is this a camel route using using Scala DSL's '==>' method
+     */
+    private static boolean isScalaArrowRouteDefinition(PsiElement element) {
+        IElementType type = ((LeafPsiElement) element).getElementType();
+        if (type.toString().contains("string")) {
+            Optional<PsiElement> infixExpression = Optional.ofNullable(element.getParent()).flatMap(e -> Optional.ofNullable(e.getParent()));
+            return infixExpression.map(PsiElement::getChildren).filter(c -> c.length >= 2).map(c -> c[1].getText()).map(t -> t.equals("==>")).orElseGet(() -> false);
+        }
         return false;
     }
 
