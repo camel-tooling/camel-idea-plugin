@@ -18,6 +18,8 @@ package org.apache.camel.idea.gutter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
@@ -25,6 +27,10 @@ import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.daemon.impl.LineMarkersPass;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.navigation.GotoRelatedItem;
+import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlTag;
 
 
 /**
@@ -46,5 +52,33 @@ final class GutterTestUtil {
         List<RelatedItemLineMarkerInfo> result = new ArrayList<>();
         ((CamelRouteLineMarkerProvider) lineMarkerProvider1).collectNavigationMarkers(gutter.getLineMarkerInfo().getElement(), result);
         return (List<GotoRelatedItem>) result.get(0).createGotoRelatedItems();
+    }
+
+    /**
+     * For the given gutters return all the gutter navigation targets that are {@link XmlTag} elements.
+     *
+     * @param gutterList
+     * @return
+     */
+    static List<XmlTag> getGuttersWithXMLTarget(List<GotoRelatedItem> gutterList) {
+        return gutterList
+                .stream()
+                .map(gotoRelatedItem -> PsiTreeUtil.getParentOfType(gotoRelatedItem.getElement(), XmlTag.class))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * For the given gutters return all the gutter navigation targets that are {@link PsiMethodCallExpressionImpl} elements.
+     *
+     * @param gutterList
+     * @return
+     */
+    static List<PsiMethodCallExpressionImpl> getGuttersWithJavaTarget(List<GotoRelatedItem> gutterList) {
+        return gutterList
+                .stream()
+                .filter(gotoRelatedItem -> gotoRelatedItem.getElement() instanceof PsiLiteralExpression)
+                .map(gotoRelatedItem -> (PsiMethodCallExpressionImpl) gotoRelatedItem.getElement().getParent().getParent())
+                .collect(Collectors.toList());
     }
 }

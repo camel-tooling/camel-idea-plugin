@@ -23,11 +23,11 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiLiteralExpression;
-import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.apache.camel.idea.service.CamelPreferenceService;
 
 import static org.apache.camel.idea.gutter.GutterTestUtil.getGutterNavigationDestinationElements;
+import static org.apache.camel.idea.gutter.GutterTestUtil.getGuttersWithJavaTarget;
 
 /**
  * Testing the Camel icon is shown in the gutter where a Camel route starts in Java DSL and the route navigation
@@ -60,7 +60,7 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
         List<GotoRelatedItem> firstGutterTargets = getGutterNavigationDestinationElements(firstGutter);
         assertEquals("Navigation should have one target", 1, firstGutterTargets.size());
         assertEquals("The navigation target element doesn't match", "from(\"file:outbox\")",
-                ((PsiMethodCallExpressionImpl) firstGutterTargets.get(0).getElement().getParent().getParent()).getMethodExpression().getQualifierExpression().getText());
+                getGuttersWithJavaTarget(firstGutterTargets).get(0).getMethodExpression().getQualifierExpression().getText());
 
 
         LineMarkerInfo.LineMarkerGutterIconRenderer secondGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(1);
@@ -72,7 +72,7 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
         List<GotoRelatedItem> secondGutterTargets = getGutterNavigationDestinationElements(secondGutter);
         assertEquals("Navigation should have one target", 1, secondGutterTargets.size());
         assertEquals("The navigation target element doesn't match", "from(\"file:inbox\")",
-                ((PsiMethodCallExpressionImpl) secondGutterTargets.get(0).getElement().getParent().getParent()).getMethodExpression().getQualifierExpression().getText());
+                getGuttersWithJavaTarget(secondGutterTargets).get(0).getMethodExpression().getQualifierExpression().getText());
     }
 
     public void testCamelGutterForToDAndToF() {
@@ -101,7 +101,7 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
         List<GotoRelatedItem> firstGutterTargets = getGutterNavigationDestinationElements(firstGutter);
         assertEquals("Navigation should have one target", 1, firstGutterTargets.size());
         assertEquals("The navigation target element doesn't match", "from(\"file:test\")",
-                ((PsiMethodCallExpressionImpl) firstGutterTargets.get(0).getElement().getParent().getParent()).getMethodExpression().getQualifierExpression().getText());
+                getGuttersWithJavaTarget(firstGutterTargets).get(0).getMethodExpression().getQualifierExpression().getText());
 
 
         LineMarkerInfo.LineMarkerGutterIconRenderer secondGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(1);
@@ -113,7 +113,7 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
         List<GotoRelatedItem> secondGutterTargets = getGutterNavigationDestinationElements(secondGutter);
         assertEquals("Navigation should have one target", 1, secondGutterTargets.size());
         assertEquals("The navigation target element doesn't match", "from(\"file:test\")",
-                ((PsiMethodCallExpressionImpl) secondGutterTargets.get(0).getElement().getParent().getParent()).getMethodExpression().getQualifierExpression().getText());
+                getGuttersWithJavaTarget(secondGutterTargets).get(0).getMethodExpression().getQualifierExpression().getText());
     }
 
 }
