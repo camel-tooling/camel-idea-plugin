@@ -41,7 +41,6 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiPolyadicExpression;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
-import com.intellij.psi.impl.source.xml.XmlTokenImpl;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
@@ -76,7 +75,7 @@ public final class IdeaUtils {
      */
     @Nullable
     public static String extractTextFromElement(PsiElement element) {
-        return extractTextFromElement(element, true, false);
+        return extractTextFromElement(element, true, false, true);
     }
 
     /**
@@ -85,18 +84,28 @@ public final class IdeaUtils {
      * @param element the element
      * @param fallBackToGeneric if could find any of the supported languages fallback to generic if true
      * @param concatString concatenated the string if it wrapped
+     * @param stripWhitespace
      * @return the text or <tt>null</tt> if the element is not a text/literal kind.
      */
     @Nullable
-    public static String extractTextFromElement(PsiElement element, boolean fallBackToGeneric, boolean concatString) {
+    public static String extractTextFromElement(PsiElement element, boolean fallBackToGeneric, boolean concatString, boolean stripWhitespace) {
 
         if (element instanceof PsiLiteralExpression) {
             // need the entire line so find the literal expression that would hold the entire string (java)
             PsiLiteralExpression literal = (PsiLiteralExpression) element;
             Object o = literal.getValue();
             String text = o != null ? o.toString() : null;
+            if (concatString) {
+                final PsiPolyadicExpression parentOfType = PsiTreeUtil.getParentOfType(element, PsiPolyadicExpression.class);
+                if (parentOfType != null) {
+                    text = parentOfType.getText();
+                }
+            }
             // unwrap literal string which can happen in java too
-            return getInnerText(text);
+            if (stripWhitespace) {
+                return getInnerText(text);
+            }
+            return  StringUtil.unquoteString(text.replace(QUOT, "\""));
         }
 
         // maybe its xml then try that
@@ -177,7 +186,10 @@ public final class IdeaUtils {
                 }
             }
             // the text may be quoted so unwrap that
-            return getInnerText(text);
+            if (stripWhitespace) {
+                return getInnerText(text);
+            }
+            return  StringUtil.unquoteString(text.replace(QUOT, "\""));
         }
 
         return null;

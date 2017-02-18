@@ -113,6 +113,26 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         myFixture.checkHighlighting(false, false, true, true);
     }
 
+    public void testJavaMultilineTest1SearchDataValidation() {
+        myFixture.configureByText("myjavacode.java", getJavaMultilineTestValidationData());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
+    public void testJavaMultilineTest2SearchDataValidation() {
+        myFixture.configureByText("myjavacode.java", getJavaMultilineTest2ValidationData());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
+    public void testXmlMultilineTestSearchDataValidation() {
+        myFixture.configureByText("myxmlcode.xml", getXmlMultilineTest1ValidationData());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
+    public void testXmlMultilineTest2SearchDataValidation() {
+        myFixture.configureByText("myxmlcode.xml", getXmlMultilineTest2ValidationData());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
     public void testAnnotatorConsumerOnly() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaConsumerOnlyTestData());
         myFixture.checkHighlighting(false, false, true, true);
@@ -308,6 +328,55 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
             + "                .to(\"file:outbox\");\n"
             + "        }\n"
             + "    }";
+    }
+
+    private String getJavaMultilineTestValidationData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger?repeatCount=10\"+\n"
+            + "                 \"&fixedRate=false\"+\n"
+            + "                 \"&daemon=false&\" \n"
+            + "                + \"<error descr=\"Unknown option\">pexriod</error>=10\");\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getJavaMultilineTest2ValidationData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger?repeatCount=10\"+\n"
+            + "                 \"&fixedRate=<error descr=\"Invalid boolean value: falxse\">falxse</error>\"+\n"
+            + "                 \"&daemon=false&\" \n"
+            + "                + \"<error descr=\"Unknown option\">pexriod</error>=10\");\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getXmlMultilineTest1ValidationData() {
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"timer:trigger?repeatCount=10\n"
+            + "         &amp;ex<caret>fixedRate=false\n"
+            + "         &amp;daemon=false\n"
+            + "         &amp;<error descr=\"Unknown option\">pexriod</error>=10\"/>"
+            + "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
+
+    }
+    private String getXmlMultilineTest2ValidationData() {
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"timer:trigger?repeatCount=10\n"
+            + "         &amp;ex<caret>fixedRate=false\n"
+            + "         &amp;daemon=<error descr=\"Invalid boolean value: falxse\">falxse</error>\n"
+            + "         &amp;<error descr=\"Unknown option\">pexriod</error>=10\"/>"
+            + "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
+
     }
 
 }

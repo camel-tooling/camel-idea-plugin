@@ -35,7 +35,6 @@ import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
-import static org.apache.camel.idea.util.CamelIdeaUtils.acceptForAnnotatorOrInspection;
 import static org.apache.camel.idea.util.CamelIdeaUtils.skipEndpointValidation;
 import static org.apache.camel.idea.util.StringUtils.isEmpty;
 
@@ -68,13 +67,8 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 return;
             }
 
-            if (!acceptForAnnotatorOrInspection(element)) {
-                LOG.debug("Skipping complex element  " + element + " for validation with text: " + uri);
-                return;
-            }
-
             // camel catalog expects &amp; as & when it parses so replace all &amp; as &
-            String camelQuery = uri;
+            String camelQuery = IdeaUtils.getInnerText(uri);
             camelQuery = camelQuery.replaceAll("&amp;", "&");
 
             // strip up ending incomplete parameter
@@ -126,7 +120,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 int propertyIdx = fromElement.indexOf(propertyValue, startIdxQueryParameters);
                 int propertyLength = propertyValue.length();
 
-                propertyIdx = IdeaUtils.isJavaLanguage(element) || IdeaUtils.isXmlLanguage(element) || IdeaUtils.isScalaLanguage(element) ? propertyIdx + 1 : propertyIdx;
+                propertyIdx = IdeaUtils.isJavaLanguage(element) || IdeaUtils.isXmlLanguage(element) || IdeaUtils.isScalaLanguage(element) ? propertyIdx + 1  : propertyIdx;
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
                     element.getTextRange().getStartOffset() + propertyIdx + propertyLength);

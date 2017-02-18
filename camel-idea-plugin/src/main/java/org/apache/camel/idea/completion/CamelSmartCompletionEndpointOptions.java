@@ -232,7 +232,9 @@ public final class CamelSmartCompletionEndpointOptions {
         //to compare the string against known options we need to strip it from equal sign
         String searchStr = strToRemove[0];
         if (!searchStr.isEmpty() && !searchStr.endsWith("&") && existing != null) {
-            searchStr =  searchStr.substring(1);
+            if (searchStr.startsWith("&") || searchStr.startsWith("?")) {
+                searchStr = searchStr.substring(1);
+            }
             //check if the option is known option
             final String optionToRemove = existing.get(searchStr);
             if (optionToRemove == null || optionToRemove.isEmpty()) {
