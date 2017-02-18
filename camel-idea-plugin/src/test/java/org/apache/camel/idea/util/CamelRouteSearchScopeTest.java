@@ -18,9 +18,7 @@ package org.apache.camel.idea.util;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.PlatformTestCase;
-import org.junit.Ignore;
 
-@Ignore
 public class CamelRouteSearchScopeTest extends PlatformTestCase {
 
 
