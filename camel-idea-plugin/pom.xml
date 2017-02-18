@@ -37,6 +37,20 @@
      <idea.version>2016.3.3</idea.version>
     <idea.platform.prefix>-Didea.platform.prefix=Idea</idea.platform.prefix>
     <ij.plugin>true</ij.plugin>
+    <argLine>
+      -ea
+      -Xbootclasspath/p:../out/classes/production/boot
+      -Xbootclasspath/p:${java.home}/../lib/tools.jar
+      -XX:+HeapDumpOnOutOfMemoryError
+      -Xmx256m
+      -XX:MaxPermSize=320m
+      -Didea.system.path=${project.build.directory}/test-system
+      -Didea.home.path=${project.build.directory}
+      -Didea.config.path=${project.build.directory}/test-config
+      -Didea.test.group=ALL_EXCLUDE_DEFINED
+      -Didea.load.plugins.id=org.apache.camel
+      ${idea.platform.prefix}
+    </argLine>
   </properties>
 
    <profiles>
@@ -380,21 +394,8 @@
             <configuration>
               <useManifestOnlyJar>false</useManifestOnlyJar>
               <useSystemClassLoader>true</useSystemClassLoader>
-              <additionalClasspathElements>
-                <additionalClasspathElement>${java.home}/../lib/tools.jar</additionalClasspathElement>
-              </additionalClasspathElements>
               <argLine>
-                -ea
-                -Xbootclasspath/p:../out/classes/production/boot
-                -XX:+HeapDumpOnOutOfMemoryError
-                -Xmx256m
-                -XX:MaxPermSize=320m
-                -Didea.system.path=${project.build.directory}/test-system
-                -Didea.home.path=${project.build.directory}
-                -Didea.config.path=${project.build.directory}/test-config
-                -Didea.test.group=ALL_EXCLUDE_DEFINED
-                -Didea.load.plugins.id=org.apache.camel
-                ${idea.platform.prefix}
+                @{argLine}
               </argLine>
             </configuration>
           </execution>
