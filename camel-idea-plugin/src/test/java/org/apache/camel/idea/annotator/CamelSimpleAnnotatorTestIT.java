@@ -67,6 +67,11 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
         myFixture.checkHighlighting(false, false, false, true);
     }
 
+    public void testAnnotatorJavaMultilinePredicateValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaMultilinePredicate());
+        myFixture.checkHighlighting(false, false, false, true);
+    }
+
     public void testAnnotatorCamelPredicateValidation2() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaWithCamelPredicate2());
         myFixture.checkHighlighting(false, false, false, true);
@@ -173,6 +178,24 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
             + "                .transform(body().append(\"A\"))\n"
             + "                .end()\n"
             + "                .to(\"mock:result\");"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getJavaMultilinePredicate() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + " from(\"timer:trigger\")\n"
+            + "            .choice()\n"
+            + "                .when(xpath(\"/person/city = 'London'\"))\n"
+            + "                    .log(\"UK message\"+\n"
+            + "                            \"with info <error descr=\"Unknown function: boxdy\">${boxdy}</error>\" +\n"
+            + "                            \"file:${fxile:name}\")\n"
+            + "                    .to(\"file:target/messages/uk\")\n"
+            + "                .otherwise()\n"
+            + "                    .log(\"Other message\")\n"
+            + "                    .to(\"file:target/messages/others\");"
             + "        }\n"
             + "    }";
     }

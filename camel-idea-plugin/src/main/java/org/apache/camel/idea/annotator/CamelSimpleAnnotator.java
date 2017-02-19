@@ -21,7 +21,6 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl;
 import com.intellij.psi.xml.XmlAttributeValue;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.SimpleValidationResult;
@@ -31,14 +30,11 @@ import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
-import static org.apache.camel.idea.util.CamelIdeaUtils.acceptForAnnotatorOrInspection;
 import static org.apache.camel.idea.util.CamelIdeaUtils.isCameSimpleExpressionUsedAsPredicate;
 import static org.apache.camel.idea.util.IdeaUtils.isFromGroovyMethod;
-import static org.apache.camel.idea.util.IdeaUtils.isGroovyLanguage;
 import static org.apache.camel.idea.util.IdeaUtils.isJavaLanguage;
 import static org.apache.camel.idea.util.IdeaUtils.isKotlinLanguage;
 import static org.apache.camel.idea.util.IdeaUtils.isScalaLanguage;
-import static org.apache.camel.idea.util.IdeaUtils.isXmlLanguage;
 
 /**
  * Validate simple expression and annotated the specific simple expression to highlight the error in the editor
@@ -63,11 +59,6 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
         if (hasSimple && CamelIdeaUtils.isCamelSimpleExpression(element)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
             CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
-
-            if (!acceptForAnnotatorOrInspection(element)) {
-                LOG.debug("Skipping complex element  " + element + " for validation simple: " + text);
-                return;
-            }
 
             boolean predicate = false;
             try {

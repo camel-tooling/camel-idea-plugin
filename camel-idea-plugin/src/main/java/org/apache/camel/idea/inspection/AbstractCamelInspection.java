@@ -92,7 +92,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
                 @Override
                 public void visitElement(PsiElement element) {
                     if (accept(element)) {
-                        String text = IdeaUtils.extractTextFromElement(element, false, false);
+                        String text = IdeaUtils.extractTextFromElement(element, false, false, true);
                         if (!StringUtils.isEmpty(text)) {
                             validateText(element, holder, text, isOnTheFly);
                         }

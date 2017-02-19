@@ -18,12 +18,15 @@ package org.apache.camel.idea.annotator;
 
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.PsiPolyadicExpression;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.impl.source.tree.JavaDocElementType;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlElement;
 import com.intellij.psi.xml.XmlElementType;
 import org.apache.camel.idea.service.CamelService;
@@ -48,7 +51,7 @@ abstract class AbstractCamelAnnotator implements Annotator {
         if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent() && isEnabled()) {
             boolean accept = accept(element);
             if (accept) {
-                String text = IdeaUtils.extractTextFromElement(element, false, false);
+                String text = IdeaUtils.extractTextFromElement(element, true, false, false);
                 if (!StringUtils.isEmpty(text)) {
                     validateText(element, holder, text);
                 }
@@ -67,6 +70,15 @@ abstract class AbstractCamelAnnotator implements Annotator {
             return false;
         }
 
+        if (element instanceof PsiPolyadicExpression) {
+            return true;
+        } else {
+            final PsiPolyadicExpression parentOfType = PsiTreeUtil.getParentOfType(element, PsiPolyadicExpression.class);
+            if (((element instanceof PsiLiteralExpression) || (element instanceof PropertyValueImpl)) && (parentOfType == null)) {
+                return true;
+            }
+        }
+
         // skip whitespace noise
         IElementType type = element.getNode().getElementType();
         if (type == TokenType.WHITE_SPACE) {
@@ -78,7 +90,7 @@ abstract class AbstractCamelAnnotator implements Annotator {
             return false;
         }
 
-        boolean accept = true;
+        boolean accept = false;
 
         // we only want xml attributes or text value elements
         if (element instanceof XmlElement) {

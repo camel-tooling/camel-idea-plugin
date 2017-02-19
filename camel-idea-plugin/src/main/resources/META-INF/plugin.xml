@@ -29,7 +29,7 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.8 - Work in progress.</li>
+        <li>0.3.8 - Support for code completion and validation with multi-line endpoint URI</li>
         <li>0.3.7 - Added support for Gradle based projects.
                     Code completion improved to jump to position based on prefixed values.
                     Navigate to linked Camel routes by clicking the Camel gutter icon.

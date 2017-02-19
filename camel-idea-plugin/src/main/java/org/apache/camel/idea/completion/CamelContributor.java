@@ -87,12 +87,12 @@ public abstract class CamelContributor extends CompletionContributor {
     private static String[] parsePsiElement(@NotNull CompletionParameters parameters) {
         PsiElement element = parameters.getPosition();
 
-        String val = extractTextFromElement(element, true, true);
+        String val = extractTextFromElement(element, true, true, true);
         if (val == null || val.isEmpty()) {
             return new String[]{"", ""};
         }
 
-        String valueAtPosition = extractTextFromElement(element, true, false);
+        String valueAtPosition = extractTextFromElement(element, true, false, true);
 
         String suffix = "";
 
