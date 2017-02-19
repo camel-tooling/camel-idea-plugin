@@ -95,6 +95,9 @@ public final class IdeaUtils {
             PsiLiteralExpression literal = (PsiLiteralExpression) element;
             Object o = literal.getValue();
             String text = o != null ? o.toString() : null;
+            if (text == null) {
+                return "";
+            }
             if (concatString) {
                 final PsiPolyadicExpression parentOfType = PsiTreeUtil.getParentOfType(element, PsiPolyadicExpression.class);
                 if (parentOfType != null) {

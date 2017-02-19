@@ -123,6 +123,11 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         myFixture.checkHighlighting(false, false, true, true);
     }
 
+    public void testJavaMultilineDoubleQuoteEndingStringTestValidationData() {
+        myFixture.configureByText("myjavacode.java", getJavaMultilineDoubleQuoteEndingStringTestValidationData());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
     public void testXmlMultilineTestSearchDataValidation() {
         myFixture.configureByText("myxmlcode.xml", getXmlMultilineTest1ValidationData());
         myFixture.checkHighlighting(false, false, true, true);
@@ -354,6 +359,18 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
             + "    }";
     }
 
+    private String getJavaMultilineDoubleQuoteEndingStringTestValidationData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger?repeatCount=10\"+\n"
+            + "                 \"&fixedRate=<error descr=\"Invalid boolean value: falxse\">falxse</error>\"+\n"
+            + "                 \"&daemon=false&\" \n"
+            + "                + \"<error descr=\"Unknown option\">pexriod</error>=10\"\");\n"
+            + "        }\n"
+            + "    }";
+    }
+
     private String getXmlMultilineTest1ValidationData() {
         return "<routes>\n"
             + "  <route>\n"
@@ -378,5 +395,6 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
             + "</routes>";
 
     }
+
 
 }
