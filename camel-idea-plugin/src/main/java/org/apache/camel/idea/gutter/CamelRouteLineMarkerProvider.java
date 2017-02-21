@@ -42,7 +42,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlElementType;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlToken;
-import org.apache.camel.idea.annotator.CamelEndpointAnnotator;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
@@ -84,24 +83,10 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
 
         Icon icon = getCamelPreferenceService().getCamelIcon();
 
-        // TODO: check if java / xml / etc
-        // parent must be the from element
-        PsiElement parent = element.getParent();
+        // we only want to shown one Camel icon per route, and therefore the element must be the first
+        boolean first = isFirstElementInCamelRoute(element);
 
-        boolean from = false;
-        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-        if (call != null && IdeaUtils.isFromJavaMethodCall(parent, "from")) {
-            final Document document = FileDocumentManager.getInstance().getDocument(call.getContainingFile().getVirtualFile());
-            if (document != null) {
-                int lineNumber = document.getLineNumber(call.getTextOffset());
-                int lineNumber2 = document.getLineNumber(element.getTextOffset());
-                LOG.warn("Route start on line number: " + lineNumber);
-                LOG.warn("Element on line number: " + lineNumber2);
-                from = lineNumber == lineNumber2;
-            }
-        }
-
-        if (from && CamelIdeaUtils.isCamelRouteStart(element)) {
+        if (first && CamelIdeaUtils.isCamelRouteStart(element)) {
             NavigationGutterIconBuilder<PsiElement> builder =
                 NavigationGutterIconBuilder.create(icon)
                     .setTargets(findRouteDestinationForPsiElement(element))
@@ -111,6 +96,33 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                     .setCellRenderer(new GutterPsiElementListCellRenderer());
             result.add(builder.createLineMarkerInfo(element));
         }
+    }
+
+    private boolean isFirstElementInCamelRoute(PsiElement element) {
+        if (IdeaUtils.isFromJavaMethodCall(element, "from")) {
+            PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+            if (call != null) {
+                final Document document = FileDocumentManager.getInstance().getCachedDocument(element.getContainingFile().getVirtualFile());
+                if (document != null) {
+                    int lineNumber = document.getLineNumber(call.getTextOffset());
+                    int lineNumber2 = document.getLineNumber(element.getTextOffset());
+                    LOG.warn("Route start on line number: " + lineNumber);
+                    LOG.warn("Element on line number: " + lineNumber2);
+                    return lineNumber == lineNumber2;
+                }
+            }
+            // fallback to true
+            return true;
+        }
+
+        // xml
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            // xml is fine
+            return true;
+        }
+
+        return true;
     }
 
     private CamelPreferenceService getCamelPreferenceService() {
