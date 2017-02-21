@@ -258,6 +258,7 @@ public final class CamelSmartCompletionEndpointOptions {
         }
         return val;
     }
+
     /**
      * We need special logic to determine when it should insert "=" at the end of the options
      */

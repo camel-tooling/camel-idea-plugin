@@ -27,7 +27,10 @@ import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethodCallExpression;
@@ -39,10 +42,12 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlElementType;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlToken;
+import org.apache.camel.idea.annotator.CamelEndpointAnnotator;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.CamelRouteSearchScope;
+import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
@@ -51,6 +56,8 @@ import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
  * Provider that adds the Camel icon in the gutter when it detects a Camel route.
  */
 public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider {
+
+    private static final Logger LOG = Logger.getInstance(CamelRouteLineMarkerProvider.class);
 
     private static final String[] JAVA_ROUTE_START = new String[]{"to", "toF", "toD"};
     private static final String[] XML_ROUTE_START = new String[]{"to", "toD"};
@@ -77,14 +84,31 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
 
         Icon icon = getCamelPreferenceService().getCamelIcon();
 
-        if (CamelIdeaUtils.isCamelRouteStart(element)) {
+        // TODO: check if java / xml / etc
+        // parent must be the from element
+        PsiElement parent = element.getParent();
+
+        boolean from = false;
+        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        if (call != null && IdeaUtils.isFromJavaMethodCall(parent, "from")) {
+            final Document document = FileDocumentManager.getInstance().getDocument(call.getContainingFile().getVirtualFile());
+            if (document != null) {
+                int lineNumber = document.getLineNumber(call.getTextOffset());
+                int lineNumber2 = document.getLineNumber(element.getTextOffset());
+                LOG.warn("Route start on line number: " + lineNumber);
+                LOG.warn("Element on line number: " + lineNumber2);
+                from = lineNumber == lineNumber2;
+            }
+        }
+
+        if (from && CamelIdeaUtils.isCamelRouteStart(element)) {
             NavigationGutterIconBuilder<PsiElement> builder =
-                    NavigationGutterIconBuilder.create(icon)
-                            .setTargets(findRouteDestinationForPsiElement(element))
-                            .setTooltipText("Camel route")
-                            .setPopupTitle("Navigate to " + findRouteFromElement(element))
-                            .setAlignment(GutterIconRenderer.Alignment.RIGHT)
-                            .setCellRenderer(new GutterPsiElementListCellRenderer());
+                NavigationGutterIconBuilder.create(icon)
+                    .setTargets(findRouteDestinationForPsiElement(element))
+                    .setTooltipText("Camel route")
+                    .setPopupTitle("Navigate to " + findRouteFromElement(element))
+                    .setAlignment(GutterIconRenderer.Alignment.RIGHT)
+                    .setCellRenderer(new GutterPsiElementListCellRenderer());
             result.add(builder.createLineMarkerInfo(element));
         }
     }
@@ -95,7 +119,8 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
 
     /**
      * Returns the Camel route from a PsiElement
-     * @param element
+     *
+     * @param element  the element
      * @return the String route or null if there nothing can be found
      */
     private String findRouteFromElement(PsiElement element) {
