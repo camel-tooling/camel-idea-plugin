@@ -48,7 +48,7 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
     }
 
     public void testWithExcludeFile() {
-        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("CompleteExclude"));
+        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("**/CompleteExclude*"));
         myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
@@ -57,7 +57,7 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
     }
 
     public void testWithExcludeFileWithPath() {
-        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("src/CompleteExclude"));
+        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("**/src/CompleteExclude*"));
         myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
@@ -76,7 +76,7 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
     }
 
     public void testWithExcludePath() {
-        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("src/"));
+        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("**/src/*"));
         myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();

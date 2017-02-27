@@ -27,6 +27,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.camel.idea.service.CamelPreferenceService;
+import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -57,7 +58,7 @@ public class PropertiesPropertyPlaceholdersSmartCompletion implements CamelPrope
         final CamelPreferenceService preferenceService = ServiceManager.getService(CamelPreferenceService.class);
         final boolean present = preferenceService.getExcludePropertyFiles()
             .stream()
-            .filter(s -> !s.isEmpty() && filename.contains(s))
+            .filter(s -> !s.isEmpty() && FilenameUtils.wildcardMatch(filename, s))
             .findFirst()
             .isPresent();
         return (!present) && (filename.endsWith(".properties"));
