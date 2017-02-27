@@ -135,6 +135,24 @@
       <artifactId>snakeyaml</artifactId>
       <version>${snakeyaml.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.intellij.plugins</groupId>
+      <artifactId>spring-api</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij.plugins</groupId>
+      <artifactId>spring</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>java-i18n</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
 
     <!-- Swing MigLayout -->
     <dependency>

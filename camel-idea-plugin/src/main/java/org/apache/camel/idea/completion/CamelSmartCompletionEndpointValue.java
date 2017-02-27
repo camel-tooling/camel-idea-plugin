@@ -25,7 +25,15 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorModificationUtil;
+import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiType;
+import com.intellij.spring.CommonSpringModel;
+import com.intellij.spring.SpringPresentationProvider;
+import com.intellij.spring.model.SpringBeanPointer;
+import com.intellij.spring.model.SpringModelSearchParameters;
+import com.intellij.spring.model.utils.SpringModelSearchers;
+import com.intellij.spring.model.utils.SpringModelUtils;
 import org.apache.camel.idea.model.EndpointOptionModel;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
@@ -56,6 +64,8 @@ public final class CamelSmartCompletionEndpointValue {
             addEnumSuggestions(editor, val, suffix, answer, deprecated, enums, defaultValue, xmlMode);
         } else if ("java.lang.Boolean".equals(javaType) || "boolean".equals(javaType)) {
             addBooleanSuggestions(editor, val, suffix, answer, deprecated, defaultValue, xmlMode);
+        } else if (javaType != null && defaultValue.isEmpty()) {
+            addBeanSuggestion(val, answer, xmlMode, element, javaType);
         } else if (!defaultValue.isEmpty()) {
             // for any other kind of type and if there is a default value then add that as a suggestion
             // so its easy to see what the default value is
@@ -63,6 +73,26 @@ public final class CamelSmartCompletionEndpointValue {
         }
 
         return answer;
+    }
+
+    private static void addBeanSuggestion(String val, List<LookupElement> answer, boolean xmlMode, PsiElement element, String javaType) {
+        if (xmlMode) {
+            CommonSpringModel model = SpringModelUtils.getInstance().getSpringModel(element);
+
+            PsiType psiType = JavaPsiFacade.getInstance(element.getProject()).getElementFactory().createTypeFromText(javaType, null);
+            List<SpringBeanPointer> foundBeans = SpringModelSearchers.findBeans(model, SpringModelSearchParameters.byType(psiType).withInheritors());
+
+            foundBeans.stream()
+                    .filter(springBeanPointer -> springBeanPointer.getName() != null)
+                    .forEach(springBeanPointer -> {
+                        LookupElementBuilder builder = LookupElementBuilder
+                                .create(val + "#" + springBeanPointer.getName())
+                                .withTypeText(springBeanPointer.getBeanClass().getQualifiedName())
+                                .withIcon(SpringPresentationProvider.getSpringIcon(springBeanPointer))
+                                .withPresentableText(springBeanPointer.getName());
+                        answer.add(builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE));
+                    });
+        }
     }
 
     private static void addEnumSuggestions(Editor editor, String val, String suffix, List<LookupElement> answer,
