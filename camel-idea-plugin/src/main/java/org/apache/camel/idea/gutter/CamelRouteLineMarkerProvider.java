@@ -106,8 +106,8 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                 if (document != null) {
                     int lineNumber = document.getLineNumber(call.getTextOffset());
                     int lineNumber2 = document.getLineNumber(element.getTextOffset());
-                    LOG.warn("Route start on line number: " + lineNumber);
-                    LOG.warn("Element on line number: " + lineNumber2);
+                    LOG.debug("Route start on line number: " + lineNumber);
+                    LOG.debug("Element on line number: " + lineNumber2);
                     return lineNumber == lineNumber2;
                 }
             }
