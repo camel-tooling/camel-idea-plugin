@@ -31,7 +31,7 @@ to Apache Software Foundation to be included out of the box at Apache Camel.
  
 However currently the code is located at github to allow faster and wider collaboration in the community.
 
-![Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/01-endpoint-options.png)
+![Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/24-option-smart-completion.gif)
 
 ### IDEA Compatability
 
