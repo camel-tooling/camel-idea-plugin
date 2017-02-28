@@ -174,7 +174,7 @@ public abstract class CamelExcludePropertyFileTable extends JBTable {
 
         @Override
         public void addRow() {
-            String pattern = Messages.showInputDialog("", "Enter filename pattern", null);
+            String pattern = Messages.showInputDialog("", "Enter filename pattern (**/file.properties)", null);
 
             if (pattern != null && !pattern.isEmpty()) {
                 excludePropertyFilesModel.add(pattern);

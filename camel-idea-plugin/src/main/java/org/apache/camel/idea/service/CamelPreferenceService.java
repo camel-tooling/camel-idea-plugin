@@ -57,6 +57,10 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
         // ignore camel-spring-boot auto configuration prefixes
         "camel.springboot.", "camel.component.", "camel.dataformat.", "camel.language."};
 
+    @Transient
+    private static String[] defaultExcludeFilePattern = {
+        "**/log4j.properties", "**/log4j2.properties", "**/logging.properties"};
+
     private volatile Icon currentCustomIcon;
     private volatile String currentCustomIconPath;
 
@@ -147,10 +151,6 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
         this.customIconFilePath = customIconFilePath;
     }
 
-    public List<String> getIgnorePropertyTemplateList() {
-        return new ArrayList<>(Arrays.asList(defaultIgnoreProperties));
-    }
-
     public List<String> getIgnorePropertyList() {
         if (ignorePropertyList.isEmpty()) {
             ignorePropertyList = new ArrayList<>(Arrays.asList(defaultIgnoreProperties));
@@ -164,6 +164,9 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     }
 
     public List<String> getExcludePropertyFiles() {
+        if (excludePropertyFiles.isEmpty()) {
+            excludePropertyFiles = new ArrayList<>(Arrays.asList(defaultExcludeFilePattern));
+        }
         return excludePropertyFiles;
     }
 

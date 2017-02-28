@@ -92,7 +92,11 @@
       <version>${camel.version}</version>
       <scope>compile</scope>
     </dependency>
-
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.5</version>
+    </dependency>
     <!-- IntelliJ Dependencies -->
     <dependency>
       <groupId>com.intellij</groupId>
