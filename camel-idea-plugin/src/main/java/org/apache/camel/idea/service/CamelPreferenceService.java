@@ -59,7 +59,7 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
 
     @Transient
     private static String[] defaultExcludeFilePattern = {
-        "**/**/log4j.properties", "**/**/logging.properties"};
+        "**/log4j.properties", "**/log4j2.properties", "**/logging.properties"};
 
     private volatile Icon currentCustomIcon;
     private volatile String currentCustomIconPath;
