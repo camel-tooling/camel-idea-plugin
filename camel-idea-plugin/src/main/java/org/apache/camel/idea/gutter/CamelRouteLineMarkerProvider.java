@@ -31,6 +31,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethodCallExpression;
@@ -87,9 +88,19 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         boolean first = isFirstElementInCamelRoute(element);
 
         if (first && CamelIdeaUtils.isCamelRouteStart(element)) {
+
+            // evaluate the targets lazy
+            NotNullLazyValue<Collection<? extends PsiElement>> targets = new NotNullLazyValue<Collection<? extends PsiElement>>() {
+                @NotNull
+                @Override
+                protected Collection<PsiElement> compute() {
+                    return findRouteDestinationForPsiElement(element);
+                }
+            };
+
             NavigationGutterIconBuilder<PsiElement> builder =
                 NavigationGutterIconBuilder.create(icon)
-                    .setTargets(findRouteDestinationForPsiElement(element))
+                    .setTargets(targets)
                     .setTooltipText("Camel route")
                     .setPopupTitle("Navigate to " + findRouteFromElement(element))
                     .setAlignment(GutterIconRenderer.Alignment.RIGHT)
@@ -159,12 +170,15 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
      * @return a list of {@link PsiElement} with all the route ends.
      */
     private List<PsiElement> findRouteDestinationForPsiElement(PsiElement startElement) {
+        LOG.debug("Finding Camel routes which is calling me: " + startElement);
+
         List<PsiElement> psiElements = new ArrayList<>();
         String route = findRouteFromElement(startElement);
 
         if (route == null || route.isEmpty()) {
             return psiElements;
         }
+
         PsiSearchHelper helper = PsiSearchHelper.SERVICE.getInstance(startElement.getProject());
         //get the component name and search only using that
         String componentName = route.split(":")[0];
