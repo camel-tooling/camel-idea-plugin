@@ -377,16 +377,16 @@ public final class IdeaUtils {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    public static boolean isFromJavaMethodCall(PsiElement element, String... methods) {
+    public static boolean isFromJavaMethodCall(PsiElement element, boolean fromRouteBuilder, String... methods) {
         // java method call
         PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
         if (call != null) {
-            return doIsFromJavaMethod(call, methods);
+            return doIsFromJavaMethod(call, fromRouteBuilder, methods);
         }
         return false;
     }
 
-    private static boolean doIsFromJavaMethod(PsiMethodCallExpression call, String... methods) {
+    private static boolean doIsFromJavaMethod(PsiMethodCallExpression call, boolean fromRouteBuilder, String... methods) {
         PsiMethod method = call.resolveMethod();
         if (method != null) {
             PsiClass containingClass = method.getContainingClass();
@@ -394,7 +394,11 @@ public final class IdeaUtils {
                 String name = method.getName();
                 // TODO: this code should likely be moved to something that requires it from being a Camel RouteBuilder
                 if (Arrays.stream(methods).anyMatch(name::equals)) {
-                    return ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME.stream().anyMatch((t) -> isClassOrParentOf(containingClass, t));
+                    if (fromRouteBuilder) {
+                        return ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME.stream().anyMatch((t) -> isClassOrParentOf(containingClass, t));
+                    } else {
+                        return true;
+                    }
                 }
             }
         } else {

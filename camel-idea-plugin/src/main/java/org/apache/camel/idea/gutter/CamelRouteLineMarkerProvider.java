@@ -110,15 +110,14 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
     }
 
     private boolean isFirstElementInCamelRoute(PsiElement element) {
-        if (IdeaUtils.isFromJavaMethodCall(element, "from")) {
+        if (IdeaUtils.isFromJavaMethodCall(element, true, "from")) {
             PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
             if (call != null) {
                 final Document document = FileDocumentManager.getInstance().getCachedDocument(element.getContainingFile().getVirtualFile());
                 if (document != null) {
                     int lineNumber = document.getLineNumber(call.getTextOffset());
                     int lineNumber2 = document.getLineNumber(element.getTextOffset());
-                    LOG.debug("Route start on line number: " + lineNumber);
-                    LOG.debug("Element on line number: " + lineNumber2);
+                    LOG.debug("Route start on line number: " + lineNumber + " and element on line: " + lineNumber2);
                     return lineNumber == lineNumber2;
                 }
             }

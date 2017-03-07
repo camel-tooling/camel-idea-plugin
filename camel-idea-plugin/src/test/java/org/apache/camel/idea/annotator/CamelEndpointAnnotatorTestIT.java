@@ -37,6 +37,17 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         return "src/test/resources/testData/annotator/";
     }
 
+    public void testAnnotatorStringFormatValid() {
+        myFixture.configureByText("AnnotatorTestData.java", getStringFormatValidEndpoint());
+        myFixture.checkHighlighting(false, false, true, true);
+
+        List<HighlightInfo> list = myFixture.doHighlighting();
+
+        // there should not be any invalid boolean warnings as String.format should work
+        boolean found = list.stream().anyMatch((i) -> i.getDescription() != null && i.getDescription().startsWith("Invalid boolean value"));
+        assertFalse("Should not find any warning", found);
+    }
+
     public void testAnnotatorInvalidBooleanPropertyValidation() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaInvalidBooleanPropertyTestData());
         myFixture.checkHighlighting(false, false, true, true);
@@ -173,6 +184,14 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         // there should not be any invalid boolean warnings as fromF should work
         boolean found = list.stream().anyMatch((i) -> i.getDescription() != null && i.getDescription().startsWith("Invalid boolean value"));
         assertFalse("Should not find any warning", found);
+    }
+
+    private String getStringFormatValidEndpoint() {
+        return "public class MyDummy {\n"
+            + "    public String myUrl() {\n"
+            + "        return String.format(\"seda:foo?blockWhenFull=%s\", true);\n"
+            + "    }\n"
+            + "}\n";
     }
 
     private String getJavaInvalidBooleanPropertyTestData() {

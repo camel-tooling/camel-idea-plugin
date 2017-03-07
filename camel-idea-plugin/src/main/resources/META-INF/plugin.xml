@@ -29,7 +29,8 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.9 - Support wildcards in exclude property file list</li>
+        <li>0.3.9 - Support wildcards in exclude property file list.
+                    Minor bug fixes.</li>
         <li>0.3.8 - Support for code completion and validation with multi-line endpoint URI
                     Only show one Camel icon per route if the route endpoint uri was multi-lined.
                     Minor bug fixes.</li>
