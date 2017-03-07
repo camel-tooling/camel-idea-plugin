@@ -62,7 +62,7 @@ public final class CamelIdeaUtils {
     private static final String[] ROUTE_START = new String[]{"from", "fromF"};
     private static final String[] CONSUMER_ENDPOINT = new String[]{"from", "fromF", "interceptFrom", "pollEnrich"};
     private static final String[] PRODUCER_ENDPOINT = new String[]{"to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel"};
-    private static final String[] STRING_FORMAT_ENDPOINT = new String[]{"fromF", "toF"};
+    private static final String[] STRING_FORMAT_ENDPOINT = new String[]{"fromF", "toF", "format"};
     private static final String[] SIMPLE_PREDICATE = new String[]{"completion", "completionPredicate", "when", "onWhen", "handled", "continued", "retryWhile", "filter", "validate", "loopDoWhile"};
 
     private CamelIdeaUtils() {
@@ -73,7 +73,7 @@ public final class CamelIdeaUtils {
      */
     public static boolean isCamelRouteStart(PsiElement element) {
         // java method call
-        if (IdeaUtils.isFromJavaMethodCall(element, ROUTE_START)) {
+        if (IdeaUtils.isFromJavaMethodCall(element, true, ROUTE_START)) {
             return true;
         }
         // xml
@@ -130,7 +130,7 @@ public final class CamelIdeaUtils {
      */
     public static boolean isCamelSimpleExpression(PsiElement element) {
         // java method call
-        if (IdeaUtils.isFromJavaMethodCall(element, "simple", "log")) {
+        if (IdeaUtils.isFromJavaMethodCall(element, true, "simple", "log")) {
             return true;
         }
         // xml
@@ -275,7 +275,7 @@ public final class CamelIdeaUtils {
      */
     public static boolean isConsumerEndpoint(PsiElement element) {
         // java method call
-        if (IdeaUtils.isFromJavaMethodCall(element, CONSUMER_ENDPOINT)) {
+        if (IdeaUtils.isFromJavaMethodCall(element, true, CONSUMER_ENDPOINT)) {
             return true;
         }
         // annotation
@@ -320,7 +320,7 @@ public final class CamelIdeaUtils {
      */
     public static boolean isProducerEndpoint(PsiElement element) {
         // java method call
-        if (IdeaUtils.isFromJavaMethodCall(element, PRODUCER_ENDPOINT)) {
+        if (IdeaUtils.isFromJavaMethodCall(element, true, PRODUCER_ENDPOINT)) {
             return true;
         }
         // annotation
@@ -360,12 +360,12 @@ public final class CamelIdeaUtils {
     }
 
     /**
-     * Is the given element from a method call named <tt>fromF</tt> or <tt>toF</tt> which supports the
+     * Is the given element from a method call named <tt>fromF</tt> or <tt>toF</tt>, or <tt>String.format</tt> which supports the
      * {@link String#format(String, Object...)} syntax and therefore we need special handling.
      */
     public static boolean isFromStringFormatEndpoint(PsiElement element) {
         // java method call
-        if (IdeaUtils.isFromJavaMethodCall(element, STRING_FORMAT_ENDPOINT)) {
+        if (IdeaUtils.isFromJavaMethodCall(element, false, STRING_FORMAT_ENDPOINT)) {
             return true;
         }
         // groovy
