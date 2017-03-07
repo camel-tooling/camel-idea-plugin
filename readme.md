@@ -33,14 +33,6 @@ However currently the code is located at github to allow faster and wider collab
 
 ![Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/24-option-smart-completion.gif)
 
-### IDEA Compatability
-
-The Camel IDEA plugin currently requires IDEA 2016.2 or newer. If you are using a older version of IDEA and still want to try the plugin, follow the guide [here](#runningwithpreviousversion)
-
-The current plugin uses `since-build 162`
-
-IDEA provides more information about their SDK versions here: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
-
 
 ### How to install
 
@@ -66,6 +58,16 @@ support for editing the options in the URI context-path section as well.
 ### Preference
 
 The plugin comes with a preference where you can configure global settings for the plugin such as turning on or off the real time validation in the editor, or whether to show the Camel icon in the gutter, etc.
+
+
+### IDEA Compatability
+
+The Camel IDEA plugin currently requires IDEA 2016.2 or newer. If you are using a older version of IDEA and still want to try the plugin, follow the guide [here](#runningwithpreviousversion)
+
+The current plugin uses `since-build 162`
+
+IDEA provides more information about their SDK versions here: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
+
 
 ### <a name="buildingfromsource"></a> Building from source
 
