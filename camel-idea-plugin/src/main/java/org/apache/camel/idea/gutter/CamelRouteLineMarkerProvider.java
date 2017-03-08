@@ -28,13 +28,13 @@ import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiPolyadicExpression;
 import com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl;
 import com.intellij.psi.impl.source.xml.XmlTagImpl;
 import com.intellij.psi.search.PsiSearchHelper;
@@ -47,8 +47,8 @@ import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.CamelRouteSearchScope;
-import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 
@@ -82,12 +82,19 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
             return;
         }
 
+        //skip the PsiLiteralExpression that are not the first operand of PsiPolyadicExpression to avoid having multiple gutter icons
+        // on the same PsiPolyadicExpression
+        if (element instanceof PsiLiteralExpression) {
+            if (isPartOfPolyadicExpression((PsiLiteralExpression) element)) {
+                if (!element.isEquivalentTo(getFirstExpressionFromPolyadicExpression((PsiLiteralExpression) element))) {
+                    return;
+                }
+            }
+        }
+
         Icon icon = getCamelPreferenceService().getCamelIcon();
 
-        // we only want to shown one Camel icon per route, and therefore the element must be the first
-        boolean first = isFirstElementInCamelRoute(element);
-
-        if (first && CamelIdeaUtils.isCamelRouteStart(element)) {
+        if (CamelIdeaUtils.isCamelRouteStart(element)) {
 
             // evaluate the targets lazy
             NotNullLazyValue<Collection<? extends PsiElement>> targets = new NotNullLazyValue<Collection<? extends PsiElement>>() {
@@ -107,32 +114,6 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                     .setCellRenderer(new GutterPsiElementListCellRenderer());
             result.add(builder.createLineMarkerInfo(element));
         }
-    }
-
-    private boolean isFirstElementInCamelRoute(PsiElement element) {
-        if (IdeaUtils.isFromJavaMethodCall(element, true, "from")) {
-            PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-            if (call != null) {
-                final Document document = FileDocumentManager.getInstance().getCachedDocument(element.getContainingFile().getVirtualFile());
-                if (document != null) {
-                    int lineNumber = document.getLineNumber(call.getTextOffset());
-                    int lineNumber2 = document.getLineNumber(element.getTextOffset());
-                    LOG.debug("Route start on line number: " + lineNumber + " and element on line: " + lineNumber2);
-                    return lineNumber == lineNumber2;
-                }
-            }
-            // fallback to true
-            return true;
-        }
-
-        // xml
-        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        if (xml != null) {
-            // xml is fine
-            return true;
-        }
-
-        return true;
     }
 
     private CamelPreferenceService getCamelPreferenceService() {
@@ -235,6 +216,33 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                 if (psiElement.getText().equals(route)) {
                     return psiElement;
                 }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Determines if the given {@link PsiLiteralExpression} is part of a {@link PsiPolyadicExpression}
+     *
+     * @param psiLiteralExpression the {@link PsiLiteralExpression} to be checked
+     * @return true if it's part of {@link PsiPolyadicExpression}, false otherwise
+     */
+    private static boolean isPartOfPolyadicExpression(PsiLiteralExpression psiLiteralExpression) {
+        return PsiTreeUtil.getParentOfType(psiLiteralExpression, PsiPolyadicExpression.class) != null;
+    }
+
+    /**
+     * Returns the first operand from a {@link PsiPolyadicExpression}
+     *
+     * @param psiLiteralExpression the {@link PsiLiteralExpression} that is part of a {@link PsiPolyadicExpression}
+     * @return the first {@link PsiExpression} if the given {@link PsiLiteralExpression} is part of a {@link PsiPolyadicExpression}, null otherwise
+     */
+    @Nullable
+    private static PsiExpression getFirstExpressionFromPolyadicExpression(PsiLiteralExpression psiLiteralExpression) {
+        if (isPartOfPolyadicExpression(psiLiteralExpression)) {
+            PsiPolyadicExpression psiPolyadicExpression = PsiTreeUtil.getParentOfType(psiLiteralExpression, PsiPolyadicExpression.class);
+            if (psiPolyadicExpression != null) {
+                return psiPolyadicExpression.getOperands()[0];
             }
         }
         return null;
