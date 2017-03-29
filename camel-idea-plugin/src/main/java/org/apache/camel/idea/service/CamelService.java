@@ -183,10 +183,12 @@ public class CamelService implements Disposable {
                         || split[0].equalsIgnoreCase("sbt")) {
                         startIdx = 1;
                     }
+                    boolean hasVersion = split.length > (startIdx + 2);
+
                     String groupId = split[startIdx++].trim();
                     String artifactId = split[startIdx++].trim();
                     String version = null;
-                    if (split.length > 2) {
+                    if (hasVersion) {
                         version = split[startIdx].trim();
                     }
 
