@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/davsclaus/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.3.10</version>
+  <version>0.3.11</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -29,9 +29,8 @@
 
   <change-notes><![CDATA[
       <ul>
+        <li>0.3.11 - Minor bug fixes.</li>
         <li>0.3.10 - Minor bug fixes.</li>
-        <li>0.3.9 - Support wildcards in exclude property file list.
-                    Minor bug fixes.</li>
       </ul>
     ]]>
   </change-notes>
