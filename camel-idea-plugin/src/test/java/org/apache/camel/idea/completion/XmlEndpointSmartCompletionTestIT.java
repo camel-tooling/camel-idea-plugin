@@ -288,4 +288,14 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
         String xmlInsertAfterQuestionMarkTestData = getXmlMultilineInFixSearchData().replace("<caret>", "ceptionHandler=");
         myFixture.checkResult(xmlInsertAfterQuestionMarkTestData);
     }
+
+    public void testXMLSpringBeanCompletion() {
+        createSpringFileSet("SpringBeansCamelRoute.xml");
+        myFixture.configureByFile("SpringBeansCamelRoute.xml");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals("There is many options", 2, strings.size());
+        assertThat(strings, containsInAnyOrder("file:input?processStrategy=#fileNoOpProcessStrategy", "file:input?processStrategy=#fileRenameProcessStrategy"));
+    }
+
 }

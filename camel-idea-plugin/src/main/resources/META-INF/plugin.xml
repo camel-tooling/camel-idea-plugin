@@ -44,6 +44,8 @@
 
   <!-- depend on the properties plugin -->
   <depends>com.intellij.properties</depends>
+  <depends>com.intellij.spring</depends>
+  <depends>com.intellij.java-i18n</depends>
 
   <project-components>
     <!-- Camel project component -->
@@ -65,7 +67,7 @@
     <completion.contributor language="Groovy" implementationClass="org.apache.camel.idea.completion.CamelGroovyReferenceContributor"/>
     <completion.contributor language="kotlin" implementationClass="org.apache.camel.idea.completion.CamelKotlinReferenceContributor"/>
     <completion.contributor language="Scala" implementationClass="org.apache.camel.idea.completion.CamelScalaReferenceContributor"/>
-    <completion.contributor language="any" implementationClass="org.apache.camel.idea.completion.CamelPropertiesOrYamlFileReferenceContributor"/>
+    <completion.contributor language="any" implementationClass="org.apache.camel.idea.completion.CamelPropertiesOrYamlFileReferenceContributor" order="FIRST"/>
 
     <!-- puts the Camel icon in the gutter for each line that starts a Camel route -->
     <codeInsight.lineMarkerProvider language="JAVA" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
