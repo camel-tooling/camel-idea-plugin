@@ -39,6 +39,7 @@ import static org.apache.camel.idea.util.IdeaUtils.isElementFromAnnotation;
 import static org.apache.camel.idea.util.IdeaUtils.isElementFromConstructor;
 import static org.apache.camel.idea.util.IdeaUtils.isElementFromSetterProperty;
 import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
+import static org.apache.camel.idea.util.IdeaUtils.isFromJavaMethodCall;
 
 
 /**
@@ -452,7 +453,13 @@ public final class CamelIdeaUtils {
         if (isElementFromConstructor(element, "ActiveMQConnectionFactory")) {
             return true;
         }
+        if (isElementFromConstructor(element, "ActiveMQXAConnectionFactory")) {
+            return true;
+        }
         if (isElementFromAnnotation(element, "org.apache.camel.spi.UriEndpoint")) {
+            return true;
+        }
+        if (isFromJavaMethodCall(element, false, "activeMQComponent")) {
             return true;
         }
 
