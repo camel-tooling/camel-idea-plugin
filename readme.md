@@ -1,8 +1,8 @@
 Apache Camel IDEA Plugin
 ========================
 
-[![GitHub tag](https://img.shields.io/github/tag/davsclaus/camel-idea-plugin.svg?style=plastic)]()
-[![Build Status](https://travis-ci.org/davsclaus/camel-idea-plugin.svg?branch=master)](https://travis-ci.org/davsclaus/camel-idea-plugin)
+[![GitHub tag](https://img.shields.io/github/tag/camel-idea-plugin/camel-idea-plugin.svg?style=plastic)]()
+[![Build Status](https://travis-ci.org/camel-idea-plugin/camel-idea-plugin.svg?branch=master)](https://travis-ci.org/camel-idea-plugin/camel-idea-plugin)
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)]()
 
 
@@ -31,7 +31,7 @@ to Apache Software Foundation to be included out of the box at Apache Camel.
  
 However currently the code is located at github to allow faster and wider collaboration in the community.
 
-![Screenshot](https://github.com/davsclaus/camel-idea-plugin/blob/master/img/24-option-smart-completion.gif)
+![Screenshot](https://github.com/camel-idea-plugin/camel-idea-plugin/blob/master/img/24-option-smart-completion.gif)
 
 
 ### How to install
@@ -97,16 +97,16 @@ Second you need to install the IntelliJ libraries into your local maven reposito
 is the version of the IDEA you have installed locally, second is the locations of the IDEA.
 If you have installed IDEA in a different location than shown in the sample below, then make sure to use the correct path.
 
-Currently we use IDEA 2016.3.3 as the version and therefore you should download and use that version.
+Currently we use IDEA 2017.1 as the version and therefore you should download and use that version.
 An alternative is to change the version in `camel-idea-plugin/pom.xml` file to use a different version but its not recommended.
 
 Linux or Mac users:
 
- > - Execute the script file `./install-intellij-libs.sh 2016.3.3 /Applications/IntelliJ\ IDEA\ CE.app/Contents /Users/joe/.m2` 
+ > - Execute the script file `./install-intellij-libs.sh 2017.1 /Applications/IntelliJ\ IDEA\ CE.app/Contents /Users/joe/.m2` 
   
 Windows:
 
- > - Execute the script file `./install-intellij-libs.sh 2016.3.2.bat "C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2016.3.2"`
+ > - Execute the script file `./install-intellij-libs.bat 2017.1 "C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2017.1"`
 
 Next step you need to update the pom.xml file with the right Intellij version number
 
@@ -208,5 +208,5 @@ Also we love feedback and you are welcome to log tickets about issues, ideas, et
 ### Screenshots
 
 We will post various screen shots of the plugin in the
-[img directory](https://github.com/davsclaus/camel-idea-plugin/tree/master/img)
+[img directory](https://github.com/camel-idea-plugin/camel-idea-plugin/tree/master/img)
 which you can browse.

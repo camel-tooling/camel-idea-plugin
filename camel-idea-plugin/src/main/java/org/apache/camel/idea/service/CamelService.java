@@ -71,7 +71,7 @@ public class CamelService implements Disposable {
 
     private static final Logger LOG = Logger.getInstance(CamelService.class);
 
-    private static final String MISSING_JSON_SCHEMA_LINK = "https://github.com/davsclaus/camel-idea-plugin/tree/master/custom-components/beverage-component";
+    private static final String MISSING_JSON_SCHEMA_LINK = "https://github.com/camel-idea-plugin/camel-idea-plugin/tree/master/custom-components/beverage-component";
 
     private static final int MIN_MAJOR_VERSION = 2;
     private static final int MIN_MINOR_VERSION = 16;

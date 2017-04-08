@@ -2,7 +2,7 @@
 # This script will download the intellij CE version and unpack to the specified destination
 #
 # Usage:
-#   ./download-unpack-intellij.sh 2016.3.3 ~/Download/IDEA idea-IC-163.11103.6 /User/JOE/.m2
+#   ./download-unpack-intellij.sh 2017.1 ~/Download/IDEA idea-IC-171.3780.107 /User/JOE/.m2
 #   version         : version of the file to download
 #   destination     : Download and unpack destination directory
 #   source-version  : Directory version to unpack from TAR ball

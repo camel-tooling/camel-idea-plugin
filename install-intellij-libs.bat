@@ -3,7 +3,7 @@
 :: This way we can use them during the build.
 
 :: Usage:
-::   install-intellij-libs.bat 2016.3.2 "C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2016.3.2"
+::   install-intellij-libs.bat 2017.1 "C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2017.1"
 
 set IDEA_VERSION=%1
 set INTELLIJ_HOME=%2
@@ -14,7 +14,7 @@ set INTELLIJ_HOME=%INTELLIJ_HOME:"=%
 if "%INTELLIJ_HOME%"=="" (
   echo Please provide the version and path to the IntelliJ home directory.
   echo For example:
-  echo install-intellij-libs.bat 2016.3.2 "C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2016.3.2"
+  echo install-intellij-libs.bat 2017.1 "C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2017.1"
   exit /b
 )
 

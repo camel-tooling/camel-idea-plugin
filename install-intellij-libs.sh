@@ -3,7 +3,7 @@
 # This way we can use them during the build
 #
 # Usage:
-#   ./install-intellij-libs.sh 2016.3.2 /Users/JOE/Applications/IntelliJ IDEA CE.app/Contents /User/JOE/.m2
+#   ./install-intellij-libs.sh 2017.1 /Users/JOE/Applications/IntelliJ IDEA CE.app/Contents /User/JOE/.m2
 
 IDEA_VERSION=$1
 INTELLIJ_HOME=$2
@@ -11,7 +11,7 @@ M2_REPO_HOME=$3/repository/
 
 if [ -z "$INTELLIJ_HOME" ]
 then
-  echo "Please provide the version and path to the IntelliJ home directory. For example: ./install-intellij-libs.sh 2016.3.2 /Users/JOE/Applications/IntelliJ IDEA CE.app/Contents/ /User/JOE/.m2"
+  echo "Please provide the version and path to the IntelliJ home directory. For example: ./install-intellij-libs.sh 2017.1 /Users/JOE/Applications/IntelliJ IDEA CE.app/Contents/ /User/JOE/.m2"
   exit 1
 fi
 
