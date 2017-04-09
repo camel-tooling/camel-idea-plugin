@@ -22,6 +22,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.ModuleAdapter;
+import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
@@ -92,7 +93,7 @@ public class CamelProjectComponent implements ProjectComponent {
             }
         });
 
-        project.getMessageBus().connect(project).subscribe(ProjectTopics.MODULES, new ModuleAdapter() {
+        project.getMessageBus().connect(project).subscribe(ProjectTopics.MODULES, new ModuleListener() {
             @Override
             public void moduleAdded(@NotNull Project project, @NotNull Module module) {
                 if (!runModuleOnStartUp) {
