@@ -39,7 +39,6 @@ import org.jetbrains.annotations.NotNull;
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
 import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointValue.addSmartCompletionForEndpointValue;
-import static org.apache.camel.idea.util.IdeaUtils.isCaretAtEndOfLine;
 
 /**
  * Extension for supporting camel smart completion for camel options and values.
@@ -50,6 +49,7 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
 
     private final boolean xmlMode;
 
+
     /**
      * Camel endpoint smart completion which works in Java or XML mode
      *
@@ -57,6 +57,10 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
      */
     public CamelEndpointSmartCompletionExtension(boolean xmlMode) {
         this.xmlMode = xmlMode;
+    }
+
+    public IdeaUtils getIdeaUtils() {
+        return ServiceManager.getService(IdeaUtils.class);
     }
 
     @Override
@@ -104,10 +108,10 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         // are we editing an existing parameter value
         // or are we having a list of suggested parameters to choose among
 
-        boolean caretAtEndOfLine = isCaretAtEndOfLine(element);
+        boolean caretAtEndOfLine = getIdeaUtils().isCaretAtEndOfLine(element);
         LOG.trace("Caret at end of line: " + caretAtEndOfLine);
 
-        String[] queryParameter = IdeaUtils.getQueryParameterAtCursorPosition(element);
+        String[] queryParameter = getIdeaUtils().getQueryParameterAtCursorPosition(element);
         String optionValue = queryParameter[1];
 
 

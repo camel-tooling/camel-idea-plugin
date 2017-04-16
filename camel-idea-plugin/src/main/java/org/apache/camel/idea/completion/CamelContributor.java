@@ -33,11 +33,10 @@ import com.intellij.psi.PsiFile;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.idea.completion.extension.CamelCompletionExtension;
 import org.apache.camel.idea.service.CamelService;
+import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static org.apache.camel.idea.util.IdeaUtils.extractTextFromElement;
-import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 
 /**
  * Hook into the IDEA language completion system, to setup Camel smart completion.
@@ -87,12 +86,12 @@ public abstract class CamelContributor extends CompletionContributor {
     private static String[] parsePsiElement(@NotNull CompletionParameters parameters) {
         PsiElement element = parameters.getPosition();
 
-        String val = extractTextFromElement(element, true, true, true);
+        String val = getIdeaUtils().extractTextFromElement(element, true, true, true);
         if (val == null || val.isEmpty()) {
             return new String[]{"", ""};
         }
 
-        String valueAtPosition = extractTextFromElement(element, true, false, true);
+        String valueAtPosition = getIdeaUtils().extractTextFromElement(element, true, false, true);
 
         String suffix = "";
 
@@ -137,12 +136,15 @@ public abstract class CamelContributor extends CompletionContributor {
             @Override
             public boolean accepts(@Nullable Object o, ProcessingContext context) {
                     if (o instanceof PsiFile) {
-                    return isFromFileType((PsiElement) o, extensions);
+                    return getIdeaUtils().isFromFileType((PsiElement) o, extensions);
                 }
                 return false;
             }
         });
     }
 
+    private static IdeaUtils getIdeaUtils() {
+        return ServiceManager.getService(IdeaUtils.class);
+    }
 
 }

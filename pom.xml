@@ -67,6 +67,17 @@
         <enabled>false</enabled>
       </releases>
     </repository>
+    <repository>
+      <id>jetbrains.plugins</id>
+      <url>https://plugins.jetbrains.com/maven/</url>
+      <name>Jetbrains Plugin Repo</name>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
   </repositories>
 
   <pluginRepositories>

@@ -16,12 +16,12 @@
  */
 package org.apache.camel.idea.inspection;
 
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.idea.util.CamelIdeaUtils;
+import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
-
-import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 
 /**
  * Camel inspection to validate Camel endpoints and languages such as simple.
@@ -33,6 +33,10 @@ public class CamelInspection extends AbstractCamelInspection {
 
     public CamelInspection(boolean forceEnabled) {
         super(forceEnabled);
+    }
+
+    public IdeaUtils getIdeaUtils() {
+        return ServiceManager.getService(IdeaUtils.class);
     }
 
     @NotNull
@@ -50,7 +54,7 @@ public class CamelInspection extends AbstractCamelInspection {
         }
 
         // we support java, xml, groovy, scala and kotlin
-        return isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
+        return getIdeaUtils().isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
     }
 
 }

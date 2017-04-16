@@ -35,12 +35,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import org.apache.camel.idea.service.CamelCatalogService;
 
-import static org.apache.camel.idea.util.IdeaUtils.isElementFromAnnotation;
-import static org.apache.camel.idea.util.IdeaUtils.isElementFromConstructor;
-import static org.apache.camel.idea.util.IdeaUtils.isElementFromSetterProperty;
-import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
-import static org.apache.camel.idea.util.IdeaUtils.isFromJavaMethodCall;
-
 
 /**
  * Utility methods to work with Camel related {@link com.intellij.psi.PsiElement} elements.
@@ -74,7 +68,7 @@ public final class CamelIdeaUtils {
      */
     public static boolean isCamelRouteStart(PsiElement element) {
         // java method call
-        if (IdeaUtils.isFromJavaMethodCall(element, true, ROUTE_START)) {
+        if (getIdeaUtils().isFromJavaMethodCall(element, true, ROUTE_START)) {
             return true;
         }
         // xml
@@ -92,21 +86,21 @@ public final class CamelIdeaUtils {
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
-                return IdeaUtils.isFromGroovyMethod(element, ROUTE_START);
+                return getIdeaUtils().isFromGroovyMethod(element, ROUTE_START);
             }
         }
         // kotlin
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("kotlin")) {
-                return IdeaUtils.isFromKotlinMethod(element, ROUTE_START);
+                return getIdeaUtils().isFromKotlinMethod(element, ROUTE_START);
             }
         }
         // scala
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
-                boolean isRouteViaMethod = IdeaUtils.isFromScalaMethod(element, ROUTE_START);
+                boolean isRouteViaMethod = getIdeaUtils().isFromScalaMethod(element, ROUTE_START);
                 return isRouteViaMethod  || isScalaArrowRouteDefinition(element);
             }
         }
@@ -131,7 +125,7 @@ public final class CamelIdeaUtils {
      */
     public static boolean isCamelSimpleExpression(PsiElement element) {
         // java method call
-        if (IdeaUtils.isFromJavaMethodCall(element, true, "simple", "log")) {
+        if (getIdeaUtils().isFromJavaMethodCall(element, true, "simple", "log")) {
             return true;
         }
         // xml
@@ -149,21 +143,21 @@ public final class CamelIdeaUtils {
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
-                return IdeaUtils.isFromGroovyMethod(element, "simple", "log");
+                return getIdeaUtils().isFromGroovyMethod(element, "simple", "log");
             }
         }
         // kotlin
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("kotlin")) {
-                return IdeaUtils.isFromKotlinMethod(element, "simple");
+                return getIdeaUtils().isFromKotlinMethod(element, "simple");
             }
         }
         // scala
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
-                return IdeaUtils.isFromScalaMethod(element, "simple");
+                return getIdeaUtils().isFromScalaMethod(element, "simple");
             }
         }
 
@@ -222,48 +216,48 @@ public final class CamelIdeaUtils {
             }
 
             // special for loop which can be both expression or predicate
-            if (IdeaUtils.hasParentXmlTag(xml, "loop")) {
+            if (getIdeaUtils().hasParentXmlTag(xml, "loop")) {
                 XmlTag parent = PsiTreeUtil.getParentOfType(xml, XmlTag.class);
                 if (parent != null) {
                     String doWhile = parent.getAttributeValue("doWhile");
                     return "true".equalsIgnoreCase(doWhile);
                 }
             }
-            return Arrays.stream(SIMPLE_PREDICATE).anyMatch((n) -> IdeaUtils.hasParentXmlTag(xml, n));
+            return Arrays.stream(SIMPLE_PREDICATE).anyMatch((n) -> getIdeaUtils().hasParentXmlTag(xml, n));
         }
 
         // groovy
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
-                if (IdeaUtils.isFromGroovyMethod(element, "log")) {
+                if (getIdeaUtils().isFromGroovyMethod(element, "log")) {
                     // if its coming from the log EIP then its not a predicate
                     return false;
                 }
-                return IdeaUtils.isPrevSiblingFromGroovyMethod(element, SIMPLE_PREDICATE);
+                return getIdeaUtils().isPrevSiblingFromGroovyMethod(element, SIMPLE_PREDICATE);
             }
         }
         // kotlin
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("kotlin")) {
-                if (IdeaUtils.isFromKotlinMethod(element, "log")) {
+                if (getIdeaUtils().isFromKotlinMethod(element, "log")) {
                     // if its coming from the log EIP then its not a predicate
                     return false;
                 }
                 // TODO: need to do like in groovy prev sibling
-                return IdeaUtils.isFromKotlinMethod(element, SIMPLE_PREDICATE);
+                return getIdeaUtils().isFromKotlinMethod(element, SIMPLE_PREDICATE);
             }
         }
         // scala
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
-                if (IdeaUtils.isFromScalaMethod(element, "log")) {
+                if (getIdeaUtils().isFromScalaMethod(element, "log")) {
                     // if its coming from the log EIP then its not a predicate
                     return false;
                 }
-                return IdeaUtils.isPrevSiblingFromScalaMethod(element, SIMPLE_PREDICATE);
+                return getIdeaUtils().isPrevSiblingFromScalaMethod(element, SIMPLE_PREDICATE);
             }
         }
 
@@ -276,7 +270,7 @@ public final class CamelIdeaUtils {
      */
     public static boolean isConsumerEndpoint(PsiElement element) {
         // java method call
-        if (IdeaUtils.isFromJavaMethodCall(element, true, CONSUMER_ENDPOINT)) {
+        if (getIdeaUtils().isFromJavaMethodCall(element, true, CONSUMER_ENDPOINT)) {
             return true;
         }
         // annotation
@@ -287,28 +281,28 @@ public final class CamelIdeaUtils {
         // xml
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (xml != null) {
-            return IdeaUtils.hasParentXmlTag(xml, "pollEnrich")
-                || IdeaUtils.isFromXmlTag(xml, "from", "interceptFrom");
+            return getIdeaUtils().hasParentXmlTag(xml, "pollEnrich")
+                || getIdeaUtils().isFromXmlTag(xml, "from", "interceptFrom");
         }
         // groovy
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
-                return IdeaUtils.isFromGroovyMethod(element, CONSUMER_ENDPOINT);
+                return getIdeaUtils().isFromGroovyMethod(element, CONSUMER_ENDPOINT);
             }
         }
         // kotlin
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("kotlin")) {
-                return IdeaUtils.isFromKotlinMethod(element, CONSUMER_ENDPOINT);
+                return getIdeaUtils().isFromKotlinMethod(element, CONSUMER_ENDPOINT);
             }
         }
         // scala
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
-                return IdeaUtils.isFromScalaMethod(element, CONSUMER_ENDPOINT);
+                return getIdeaUtils().isFromScalaMethod(element, CONSUMER_ENDPOINT);
             }
         }
 
@@ -321,7 +315,7 @@ public final class CamelIdeaUtils {
      */
     public static boolean isProducerEndpoint(PsiElement element) {
         // java method call
-        if (IdeaUtils.isFromJavaMethodCall(element, true, PRODUCER_ENDPOINT)) {
+        if (getIdeaUtils().isFromJavaMethodCall(element, true, PRODUCER_ENDPOINT)) {
             return true;
         }
         // annotation
@@ -332,28 +326,28 @@ public final class CamelIdeaUtils {
         // xml
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (xml != null) {
-            return IdeaUtils.hasParentXmlTag(xml, "enrich")
-                || IdeaUtils.isFromXmlTag(xml, "to", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
+            return getIdeaUtils().hasParentXmlTag(xml, "enrich")
+                || getIdeaUtils().isFromXmlTag(xml, "to", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
         }
         // groovy
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
-                return IdeaUtils.isFromGroovyMethod(element, PRODUCER_ENDPOINT);
+                return getIdeaUtils().isFromGroovyMethod(element, PRODUCER_ENDPOINT);
             }
         }
         // kotlin
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("kotlin")) {
-                return IdeaUtils.isFromKotlinMethod(element, PRODUCER_ENDPOINT);
+                return getIdeaUtils().isFromKotlinMethod(element, PRODUCER_ENDPOINT);
             }
         }
         // scala
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
-                return IdeaUtils.isFromScalaMethod(element, PRODUCER_ENDPOINT);
+                return getIdeaUtils().isFromScalaMethod(element, PRODUCER_ENDPOINT);
             }
         }
 
@@ -366,28 +360,28 @@ public final class CamelIdeaUtils {
      */
     public static boolean isFromStringFormatEndpoint(PsiElement element) {
         // java method call
-        if (IdeaUtils.isFromJavaMethodCall(element, false, STRING_FORMAT_ENDPOINT)) {
+        if (getIdeaUtils().isFromJavaMethodCall(element, false, STRING_FORMAT_ENDPOINT)) {
             return true;
         }
         // groovy
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Groovy")) {
-                return IdeaUtils.isFromGroovyMethod(element, STRING_FORMAT_ENDPOINT);
+                return getIdeaUtils().isFromGroovyMethod(element, STRING_FORMAT_ENDPOINT);
             }
         }
         // kotlin
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("kotlin")) {
-                return IdeaUtils.isFromKotlinMethod(element, STRING_FORMAT_ENDPOINT);
+                return getIdeaUtils().isFromKotlinMethod(element, STRING_FORMAT_ENDPOINT);
             }
         }
         // scala
         if (element instanceof LeafPsiElement) {
             IElementType type = ((LeafPsiElement) element).getElementType();
             if (type.getLanguage().isKindOf("Scala")) {
-                return IdeaUtils.isFromScalaMethod(element, STRING_FORMAT_ENDPOINT);
+                return getIdeaUtils().isFromScalaMethod(element, STRING_FORMAT_ENDPOINT);
             }
         }
 
@@ -447,19 +441,19 @@ public final class CamelIdeaUtils {
      * Certain elements should be skipped for endpoint validation such as ActiveMQ brokerURL property and others.
      */
     public static boolean skipEndpointValidation(PsiElement element) {
-        if (isElementFromSetterProperty(element, "brokerURL")) {
+        if (getIdeaUtils().isElementFromSetterProperty(element, "brokerURL")) {
             return true;
         }
-        if (isElementFromConstructor(element, "ActiveMQConnectionFactory")) {
+        if (getIdeaUtils().isElementFromConstructor(element, "ActiveMQConnectionFactory")) {
             return true;
         }
-        if (isElementFromConstructor(element, "ActiveMQXAConnectionFactory")) {
+        if (getIdeaUtils().isElementFromConstructor(element, "ActiveMQXAConnectionFactory")) {
             return true;
         }
-        if (isElementFromAnnotation(element, "org.apache.camel.spi.UriEndpoint")) {
+        if (getIdeaUtils().isElementFromAnnotation(element, "org.apache.camel.spi.UriEndpoint")) {
             return true;
         }
-        if (isFromJavaMethodCall(element, false, "activeMQComponent")) {
+        if (getIdeaUtils().isFromJavaMethodCall(element, false, "activeMQComponent")) {
             return true;
         }
 
@@ -486,7 +480,7 @@ public final class CamelIdeaUtils {
      */
     public static boolean acceptForAnnotatorOrInspection(PsiElement element) {
         // skip XML limit on siblings
-        boolean xml = isFromFileType(element, "xml");
+        boolean xml = getIdeaUtils().isFromFileType(element, "xml");
         if (!xml) {
             // for programming languages you can have complex structures with concat which we dont support yet
             int siblings = countSiblings(element);
@@ -512,6 +506,10 @@ public final class CamelIdeaUtils {
             sibling = sibling.getNextSibling();
         }
         return count;
+    }
+
+    private static IdeaUtils getIdeaUtils() {
+        return ServiceManager.getService(IdeaUtils.class);
     }
 
 }

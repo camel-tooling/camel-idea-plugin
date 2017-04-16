@@ -396,6 +396,13 @@
       <version>1.3</version>
       <scope>test</scope>
     </dependency>
+    <!-- intellij 3. party plugins -->
+    <dependency>
+      <groupId>com.jetbrains.plugins</groupId>
+      <artifactId>org.intellij.scala</artifactId>
+      <version>2017.1.15</version>
+      <type>zip</type>
+    </dependency>
   </dependencies>
 
   <build>

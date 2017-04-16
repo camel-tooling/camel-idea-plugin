@@ -47,10 +47,10 @@ import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.CamelRouteSearchScope;
+import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 
 /**
  * Provider that adds the Camel icon in the gutter when it detects a Camel route.
@@ -61,6 +61,10 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
 
     private static final String[] JAVA_ROUTE_START = new String[]{"to", "toF", "toD"};
     private static final String[] XML_ROUTE_START = new String[]{"to", "toD"};
+
+    public IdeaUtils getIdeaUtils() {
+        return ServiceManager.getService(IdeaUtils.class);
+    }
 
     @Override
     protected void collectNavigationMarkers(@NotNull PsiElement element,
@@ -77,7 +81,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         }
 
         // must be in valid file
-        boolean validFile = isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
+        boolean validFile = getIdeaUtils().isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
         if (!validFile) {
             return;
         }

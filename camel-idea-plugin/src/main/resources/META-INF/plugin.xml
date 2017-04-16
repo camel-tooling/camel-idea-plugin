@@ -45,6 +45,17 @@
   <!-- depend on the properties plugin -->
   <depends>com.intellij.properties</depends>
 
+  <extensions defaultExtensionNs="org.apache.camel">
+    <IdeaUtilsSupport order="10" implementation="org.apache.camel.idea.service.extension.JavaIdeaUtils" />
+    <IdeaUtilsSupport order="20" implementation="org.apache.camel.idea.service.extension.XmlIdeaUtils" />
+    <IdeaUtilsSupport order="30" implementation="org.apache.camel.idea.service.extension.PropertyIdeaUtils" />
+    <IdeaUtilsSupport order="40" implementation="org.apache.camel.idea.service.extension.YamlIdeaUtils" />
+  </extensions>
+
+  <extensionPoints>
+    <extensionPoint name="IdeaUtilsSupport" interface="org.apache.camel.idea.extension.IdeaUtilsExtension" />
+  </extensionPoints>
+
   <project-components>
     <!-- Camel project component -->
     <component>
@@ -57,6 +68,7 @@
     <!-- services which can be requested from IDEA api -->
     <projectService serviceImplementation="org.apache.camel.idea.service.CamelCatalogService"/>
     <projectService serviceImplementation="org.apache.camel.idea.service.CamelService"/>
+    <applicationService serviceImplementation="org.apache.camel.idea.util.IdeaUtils"/>
     <applicationService serviceImplementation="org.apache.camel.idea.service.CamelPreferenceService"/>
 
     <!-- allow code completion of Camel endpoints-->
