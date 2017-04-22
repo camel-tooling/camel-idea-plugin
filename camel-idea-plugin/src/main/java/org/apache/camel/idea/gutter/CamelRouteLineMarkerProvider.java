@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import javax.swing.*;
 
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
@@ -32,9 +33,12 @@ import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiPolyadicExpression;
+import com.intellij.psi.PsiReference;
+import com.intellij.psi.PsiVariable;
 import com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl;
 import com.intellij.psi.impl.source.xml.XmlTagImpl;
 import com.intellij.psi.search.PsiSearchHelper;
@@ -66,7 +70,8 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
     protected void collectNavigationMarkers(@NotNull PsiElement element,
                                             Collection<? super RelatedItemLineMarkerInfo> result) {
         //TODO: remove this when IdeaUtils.isFromJavaMethodCall will be fixed
-        if (element.getLanguage().equals(JavaLanguage.INSTANCE) && !(element instanceof PsiLiteralExpression)) {
+        if (element.getLanguage().equals(JavaLanguage.INSTANCE)
+            && !(element instanceof PsiLiteralExpression || element instanceof PsiIdentifier)) {
             return;
         }
         boolean showIcon = getCamelPreferenceService().isShowCamelIconInGutter();
@@ -91,6 +96,10 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                 }
             }
         }
+        // consider only references to variables
+        if (element instanceof PsiIdentifier && !resolveVariableReference(element).isPresent()) {
+            return;
+        }
 
         Icon icon = getCamelPreferenceService().getCamelIcon();
 
@@ -101,7 +110,10 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                 @NotNull
                 @Override
                 protected Collection<PsiElement> compute() {
-                    return findRouteDestinationForPsiElement(element);
+                    List<PsiElement> routeDestinationForPsiElement = findRouteDestinationForPsiElement(element);
+                    // Add variable as navigation target
+                    resolveVariableReference(element).ifPresent(routeDestinationForPsiElement::add);
+                    return routeDestinationForPsiElement;
                 }
             };
 
@@ -120,10 +132,21 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         return ServiceManager.getService(CamelPreferenceService.class);
     }
 
+    private Optional<PsiVariable> resolveVariableReference(PsiElement element) {
+        if (element instanceof PsiIdentifier) {
+            return Optional.ofNullable(element.getParent())
+                .map(PsiElement::getReference)
+                .map(PsiReference::resolve)
+                .filter(PsiVariable.class::isInstance)
+                .map(PsiVariable.class::cast);
+        }
+        return Optional.empty();
+    }
+
     /**
      * Returns the Camel route from a PsiElement
      *
-     * @param element  the element
+     * @param element the element
      * @return the String route or null if there nothing can be found
      */
     private String findRouteFromElement(PsiElement element) {
@@ -134,6 +157,14 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
 
         if (element instanceof PsiLiteralExpressionImpl) {
             return ((PsiLiteralExpressionImpl) element).getValue() == null ? null : ((PsiLiteralExpressionImpl) element).getValue().toString();
+        }
+
+        Optional<PsiVariable> variable = resolveVariableReference(element);
+        if (variable.isPresent()) {
+            // Try to resolve variable and recursive search route
+            return variable.map(PsiVariable::getInitializer)
+                .map(this::findRouteFromElement)
+                .orElse(null);
         }
 
         return null;
@@ -176,6 +207,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                     psiElements.add(javaElement);
                 }
             }
+            resolveVariableReference(psiElement).ifPresent(psiElement::add);
             return true;
         }, new CamelRouteSearchScope(), componentName, UsageSearchContext.ANY, false);
 

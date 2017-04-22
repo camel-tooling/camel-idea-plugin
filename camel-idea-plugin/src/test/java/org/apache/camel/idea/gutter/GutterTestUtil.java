@@ -27,7 +27,9 @@ import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.daemon.impl.LineMarkersPass;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.navigation.GotoRelatedItem;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.PsiVariable;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
@@ -80,5 +82,13 @@ final class GutterTestUtil {
                 .filter(gotoRelatedItem -> gotoRelatedItem.getElement() instanceof PsiLiteralExpression)
                 .map(gotoRelatedItem -> (PsiMethodCallExpressionImpl) gotoRelatedItem.getElement().getParent().getParent())
                 .collect(Collectors.toList());
+    }
+    static List<PsiVariable> getGuttersWithJavaVariableTarget(List<GotoRelatedItem> gutterList) {
+        return gutterList
+            .stream()
+            .filter(gotoRelatedItem -> gotoRelatedItem.getElement() instanceof PsiVariable)
+            .map(GotoRelatedItem::getElement)
+            .map(PsiVariable.class::cast)
+            .collect(Collectors.toList());
     }
 }
