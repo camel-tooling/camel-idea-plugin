@@ -35,6 +35,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiPolyadicExpression;
 import com.intellij.psi.PsiReference;
@@ -71,7 +72,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                                             Collection<? super RelatedItemLineMarkerInfo> result) {
         //TODO: remove this when IdeaUtils.isFromJavaMethodCall will be fixed
         if (element.getLanguage().equals(JavaLanguage.INSTANCE)
-            && !(element instanceof PsiLiteralExpression || element instanceof PsiIdentifier)) {
+            && !(element instanceof PsiLiteralExpression || isCamelRouteStartIdentifierExpression(element))) {
             return;
         }
         boolean showIcon = getCamelPreferenceService().isShowCamelIconInGutter();
@@ -96,14 +97,10 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                 }
             }
         }
-        // consider only references to variables
-        if (element instanceof PsiIdentifier && !resolveVariableReference(element).isPresent()) {
-            return;
-        }
 
         Icon icon = getCamelPreferenceService().getCamelIcon();
 
-        if (CamelIdeaUtils.isCamelRouteStart(element)) {
+        if (CamelIdeaUtils.isCamelRouteStartExpression(element)) {
 
             // evaluate the targets lazy
             NotNullLazyValue<Collection<? extends PsiElement>> targets = new NotNullLazyValue<Collection<? extends PsiElement>>() {
@@ -111,8 +108,10 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                 @Override
                 protected Collection<PsiElement> compute() {
                     List<PsiElement> routeDestinationForPsiElement = findRouteDestinationForPsiElement(element);
-                    // Add variable as navigation target
-                    resolveVariableReference(element).ifPresent(routeDestinationForPsiElement::add);
+                    // Add identifier references as navigation target
+                    resolvedIdentifier(element)
+                        .map(PsiElement::getNavigationElement)
+                        .ifPresent(routeDestinationForPsiElement::add);
                     return routeDestinationForPsiElement;
                 }
             };
@@ -128,19 +127,50 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         }
     }
 
+    /**
+     * Returns true it the give element is an identifier inside a route start expression.
+     *
+     * @param element the element to evaluate
+     * @return true it the give element is an identifier inside a route start expression
+     */
+    private boolean isCamelRouteStartIdentifierExpression(@NotNull PsiElement element) {
+        return resolvedIdentifier(element)
+            .filter(resolved -> isRouteStartIdentifier((PsiIdentifier) element, resolved))
+            .isPresent();
+    }
+
     private CamelPreferenceService getCamelPreferenceService() {
         return ServiceManager.getService(CamelPreferenceService.class);
     }
 
-    private Optional<PsiVariable> resolveVariableReference(PsiElement element) {
+    /**
+     * Return the resolved reference to a {@link PsiVariable} or {@link PsiMethod}
+     * for the given element if it is a {@link PsiIdentifier}.
+     *
+     * @param element the element to resolve
+     * @return an {@link Optional} representing the resolved reference or empty
+     *         if reference could not be resolved.
+     */
+    private Optional<PsiElement> resolvedIdentifier(PsiElement element) {
         if (element instanceof PsiIdentifier) {
             return Optional.ofNullable(element.getParent())
                 .map(PsiElement::getReference)
                 .map(PsiReference::resolve)
-                .filter(PsiVariable.class::isInstance)
-                .map(PsiVariable.class::cast);
+                .filter(resolved -> PsiVariable.class.isInstance(resolved) || PsiMethod.class.isInstance(resolved));
         }
         return Optional.empty();
+    }
+
+    private boolean isRouteStartIdentifier(PsiIdentifier identifier, PsiElement resolvedIdentifier) {
+        // Eval methods from parent PsiMethodCallExpression to exclude start route method (from)
+        PsiElement element = identifier;
+        if (resolvedIdentifier instanceof PsiMethod) {
+            element = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        }
+        if (element == null) {
+            return false;
+        }
+        return CamelIdeaUtils.isCamelRouteStartExpression(element);
     }
 
     /**
@@ -159,7 +189,10 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
             return ((PsiLiteralExpressionImpl) element).getValue() == null ? null : ((PsiLiteralExpressionImpl) element).getValue().toString();
         }
 
-        Optional<PsiVariable> variable = resolveVariableReference(element);
+        // Only variables can be resolved?
+        Optional<PsiVariable> variable = resolvedIdentifier(element)
+            .filter(PsiVariable.class::isInstance)
+            .map(PsiVariable.class::cast);
         if (variable.isPresent()) {
             // Try to resolve variable and recursive search route
             return variable.map(PsiVariable::getInitializer)
@@ -207,7 +240,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                     psiElements.add(javaElement);
                 }
             }
-            resolveVariableReference(psiElement).ifPresent(psiElement::add);
+            resolvedIdentifier(psiElement).ifPresent(psiElements::add);
             return true;
         }, new CamelRouteSearchScope(), componentName, UsageSearchContext.ANY, false);
 

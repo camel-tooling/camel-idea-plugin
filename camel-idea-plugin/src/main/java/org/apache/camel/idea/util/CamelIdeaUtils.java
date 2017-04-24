@@ -115,6 +115,20 @@ public final class CamelIdeaUtils {
     }
 
     /**
+     * For java methods tries to find if element is inside a camel route start expression,
+     * otherwise delegates to {@link CamelIdeaUtils#isCamelRouteStart(PsiElement)}.
+     * 
+     * @param element
+     * @return
+     */
+    public static boolean isCamelRouteStartExpression(PsiElement element) {
+        // TODO: do parent search also for non java languages (not xml)?
+        if (PsiTreeUtil.findFirstParent(element, true, CamelIdeaUtils::isCamelRouteStart) != null) {
+            return true;
+        }
+        return isCamelRouteStart(element);
+    }
+    /**
      * Is this a camel route using using Scala DSL's '==>' method
      */
     private static boolean isScalaArrowRouteDefinition(PsiElement element) {
