@@ -38,7 +38,7 @@
     <maven.checkstyle.version>6.17</maven.checkstyle.version>
 
     <!-- dependency versions, keep the list A..Z -->
-    <camel.version>2.19.0-SNAPSHOT</camel.version>
+    <camel.version>2.19.0</camel.version>
     <commons.lang.version>3.5</commons.lang.version>
     <junit.version>4.12</junit.version>
     <miglayout.version>5.0</miglayout.version>
@@ -53,34 +53,6 @@
     <url>camel-idea-plugin/camel-idea-plugin.git</url>
     <tag>0.3.11-SNAPSHOT</tag>
   </scm>
-
-  <!-- TODO: until we use a released version of camel-catalog -->
-  <repositories>
-    <repository>
-      <id>apache.snapshots</id>
-      <url>http://repository.apache.org/snapshots/</url>
-      <name>Apache Snapshot Repo</name>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>apache.snapshots</id>
-      <url>http://repository.apache.org/snapshots/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
 
   <modules>
     <module>custom-components</module>
