@@ -22,7 +22,7 @@ import com.intellij.openapi.Disposable;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
 import org.apache.camel.catalog.DefaultVersionManager;
-import org.apache.camel.catalog.maven.MavenVersionManager;
+import org.apache.camel.idea.util.CamelMavenVersionManager;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -56,7 +56,7 @@ public class CamelCatalogService implements Disposable {
         // we should load a new version of the catalog, and therefor must discard the old version
         dispose();
         // use maven to be able to load the version dynamic
-        MavenVersionManager maven = new MavenVersionManager();
+        CamelMavenVersionManager maven = new CamelMavenVersionManager();
 
         // add support for the maven repos
         repos.forEach(maven::addMavenRepository);

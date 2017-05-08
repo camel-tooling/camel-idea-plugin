@@ -19,13 +19,9 @@ package org.beverage;
 import java.util.Map;
 
 import org.apache.camel.Endpoint;
-import org.apache.camel.impl.UriEndpointComponent;
+import org.apache.camel.impl.DefaultComponent;
 
-public class BeverageComponent extends UriEndpointComponent {
-
-    public BeverageComponent() {
-        super(BeverageEndpoint.class);
-    }
+public class BeverageComponent extends DefaultComponent {
 
     @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {

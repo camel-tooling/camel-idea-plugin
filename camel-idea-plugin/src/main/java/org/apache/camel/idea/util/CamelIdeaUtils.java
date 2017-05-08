@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.camel.idea.util;
+
 import java.util.Arrays;
 import java.util.Optional;
 import com.intellij.openapi.components.ServiceManager;
@@ -40,7 +41,6 @@ import static org.apache.camel.idea.util.IdeaUtils.isElementFromConstructor;
 import static org.apache.camel.idea.util.IdeaUtils.isElementFromSetterProperty;
 import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 import static org.apache.camel.idea.util.IdeaUtils.isFromJavaMethodCall;
-
 
 /**
  * Utility methods to work with Camel related {@link com.intellij.psi.PsiElement} elements.

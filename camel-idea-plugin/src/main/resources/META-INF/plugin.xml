@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.3.11</version>
+  <version>0.4.0</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -28,10 +28,12 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      v0.4.0
       <ul>
-        <li>0.3.11 - Updated to Camel 2.19.0.
-                     Minor bug fixes.</li>
-        <li>0.3.10 - Minor bug fixes.</li>
+        <li>Updated to IDEA 2017.1</li>
+        <li>Updated to Camel 2.19.0</li>
+        <li>Camel icon is now also shown for route with uris defined as an object instance or field</li>
+        <li>Minor bug fixes</li>
       </ul>
     ]]>
   </change-notes>
