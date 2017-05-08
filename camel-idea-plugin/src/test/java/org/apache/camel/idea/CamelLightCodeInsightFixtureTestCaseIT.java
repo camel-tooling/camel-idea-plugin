@@ -33,7 +33,7 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
  */
 public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeInsightFixtureTestCase {
 
-    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.19.0-SNAPSHOT";
+    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.19.0";
     private static File[] mavenArtifacts;
     private boolean ignoreCamelCoreLib;
 
@@ -63,7 +63,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
     /**
      * Get a list of artifact declared as dependencies in the pom.xml file.
      * <p>
-     *   The method take a String arrays off "G:A:P:C:?" "org.apache.camel:camel-core:2.19.0-SNAPSHOT"
+     *   The method take a String arrays off "G:A:P:C:?" "org.apache.camel:camel-core:2.19.0"
      * </p>
      * @param mavneAritfiact - Array of maven artifact to resolve
      * @return Array of artifact files

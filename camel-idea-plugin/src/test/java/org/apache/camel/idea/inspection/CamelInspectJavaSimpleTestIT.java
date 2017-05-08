@@ -34,7 +34,7 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 public class CamelInspectJavaSimpleTestIT extends InspectionTestCase {
 
-    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.19.0-SNAPSHOT";
+    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.19.0";
 
     @Override
     protected void setUp() throws Exception {
