@@ -28,12 +28,12 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      v0.4.0
       <ul>
-        <li>0.4.0 - Updated to IDEA 2017.1
-                    Updated to Camel 2.19.0
-                    Camel icon is now also shown for route with uris defined as an object instance or field
-                    Minor bug fixes.</li>
-        <li>0.3.10 - Minor bug fixes.</li>
+        <li>Updated to IDEA 2017.1</li>
+        <li>Updated to Camel 2.19.0</li>
+        <li>Camel icon is now also shown for route with uris defined as an object instance or field</li>
+        <li>Minor bug fixes</li>
       </ul>
     ]]>
   </change-notes>
