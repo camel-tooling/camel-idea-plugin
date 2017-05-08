@@ -23,7 +23,6 @@ import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.project.ModuleAdapter;
 import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootEvent;
@@ -46,7 +45,7 @@ import org.jetbrains.annotations.NotNull;
  *
  *     After it has scan all modules it set the flag runModuleOnStartUp = true
  *     to prevent it triggered both {@link ModuleRootListener#rootsChanged(ModuleRootEvent)}
- *     and {@link ModuleAdapter#moduleAdded(Project, Module)} on new module added
+ *     and {@link ModuleListener#moduleAdded(Project, Module)} on new module added
  * </p>
  */
 public class CamelProjectComponent implements ProjectComponent {
