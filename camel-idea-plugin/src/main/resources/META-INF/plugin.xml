@@ -29,7 +29,8 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>0.3.11 - Minor bug fixes.</li>
+        <li>0.3.11 - Updated to Camel 2.19.0.
+                     Minor bug fixes.</li>
         <li>0.3.10 - Minor bug fixes.</li>
       </ul>
     ]]>
