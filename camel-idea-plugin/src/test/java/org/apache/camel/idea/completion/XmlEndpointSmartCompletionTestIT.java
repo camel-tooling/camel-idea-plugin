@@ -31,6 +31,7 @@ import static org.junit.Assert.assertThat;
 /**
  * Testing smart completion with Camel XML DSL
  */
+@SuppressWarnings("unchecked")
 public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     public void testConsumerCompletion() {

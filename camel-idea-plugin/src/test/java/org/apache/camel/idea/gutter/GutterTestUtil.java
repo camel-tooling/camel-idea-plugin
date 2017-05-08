@@ -35,10 +35,10 @@ import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 
-
 /**
  * Utility class to test the gutter navigation.
  */
+@SuppressWarnings("unchecked")
 final class GutterTestUtil {
 
     private GutterTestUtil() {
