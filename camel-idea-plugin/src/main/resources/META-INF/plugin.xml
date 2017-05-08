@@ -30,6 +30,7 @@
   <change-notes><![CDATA[
       <ul>
         <li>0.3.11 - Updated to Camel 2.19.0.
+                     Compiled using IDEA 2017.1
                      Minor bug fixes.</li>
         <li>0.3.10 - Minor bug fixes.</li>
       </ul>

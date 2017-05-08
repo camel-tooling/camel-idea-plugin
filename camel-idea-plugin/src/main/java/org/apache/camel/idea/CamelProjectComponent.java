@@ -16,6 +16,8 @@
  */
 package org.apache.camel.idea;
 
+import java.util.List;
+
 import com.intellij.ProjectTopics;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.components.ServiceManager;
@@ -26,6 +28,7 @@ import com.intellij.openapi.project.ModuleListener;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
+import com.intellij.util.Function;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelService;
 import org.jetbrains.annotations.NotNull;
@@ -115,6 +118,22 @@ public class CamelProjectComponent implements ProjectComponent {
                         getCamelIdeaService(project).scanForCamelDependencies(project, module);
                     }
                 }
+            }
+
+            @Override
+            public void beforeModuleRemoved(@NotNull Project project, @NotNull Module module) {
+                // noop
+            }
+
+            @Override
+            public void moduleRemoved(@NotNull Project project, @NotNull Module module) {
+                // TODO: we should likely remove camel dependenices which are tied to the module removed
+                // noop
+            }
+
+            @Override
+            public void modulesRenamed(@NotNull Project project, @NotNull List<Module> list, @NotNull Function<Module, String> function) {
+                // noop
             }
         });
     }
