@@ -202,6 +202,8 @@ public class CamelService implements Disposable {
                         // okay its a camel project
                         setCamelPresent(true);
 
+                        boolean attemptNotify;
+
                         String currentVersion = getCamelCatalogService(project).get().getLoadedVersion();
                         if (currentVersion == null) {
                             // okay no special version was loaded so its the catalog version we are using
@@ -209,10 +211,7 @@ public class CamelService implements Disposable {
                         }
                         if (version != null && !version.equalsIgnoreCase(currentVersion) && acceptedVersion(version)) {
                             // there is a different version to be loaded, so expire old notification
-                            if (camelVersionNotification != null) {
-                                camelVersionNotification.expire();
-                                camelVersionNotification = null;
-                            }
+                            attemptNotify = false;
 
                             // whether download is allowed or not
                             boolean download = getCamelPreferenceService().isDownloadCatalog();
@@ -229,7 +228,16 @@ public class CamelService implements Disposable {
                                     camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin cannot download camel-catalog with version " + version
                                         + ". Will fallback and use version " + getCamelCatalogService(project).get().getCatalogVersion(), NotificationType.WARNING);
                                     camelVersionNotification.notify(project);
+                                } else {
+                                    // new version loaded so notify
+                                    attemptNotify = true;
                                 }
+                            }
+
+                            // if we should notify then expire old
+                            if (attemptNotify && camelVersionNotification != null) {
+                                camelVersionNotification.expire();
+                                camelVersionNotification = null;
                             }
                         }
 
