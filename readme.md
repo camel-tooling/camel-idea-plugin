@@ -6,7 +6,7 @@ Apache Camel IDEA Plugin
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)]()
 
 
-Plugin for Intellij IDEA to provide a set of small Apache Camel related capabilities to the code editor.
+Plugin for Intellij IDEA to provide a set of Apache Camel related capabilities to the code editor.
 
 The plugin includes:
 
