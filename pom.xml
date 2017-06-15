@@ -38,7 +38,7 @@
     <maven.checkstyle.version>6.17</maven.checkstyle.version>
 
     <!-- dependency versions, keep the list A..Z -->
-    <camel.version>2.19.0</camel.version>
+    <camel.version>2.19.1</camel.version>
     <commons.lang.version>3.5</commons.lang.version>
     <junit.version>4.12</junit.version>
     <miglayout.version>5.0</miglayout.version>
