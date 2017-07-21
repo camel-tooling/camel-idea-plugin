@@ -139,9 +139,6 @@ public class CamelProjectComponent implements ProjectComponent {
 
     @Override
     public void disposeComponent() {
-        getCamelIdeaService(project).setCamelPresent(false);
-        getCamelIdeaService(project).clearLibraries();
-        getCamelCatalogService(project).clearLoadedVersion();
         runModuleOnStartUp = false;
     }
 
