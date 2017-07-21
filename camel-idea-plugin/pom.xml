@@ -34,7 +34,7 @@
   </description>
 
   <properties>
-    <idea.version>2017.1</idea.version>
+    <idea.version>2017.2</idea.version>
     <idea.platform.prefix>-Didea.platform.prefix=Idea</idea.platform.prefix>
     <ij.plugin>true</ij.plugin>
     <argLine>
@@ -252,7 +252,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>netty-all-4.1.6.Final.Patched</artifactId>
+      <artifactId>netty-all-4.1.10.Final</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -282,7 +282,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>guava-19.0</artifactId>
+      <artifactId>guava-21.0</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -336,7 +336,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>proxy-vole_20131209</artifactId>
+      <artifactId>proxy-vole-1.0.3</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>

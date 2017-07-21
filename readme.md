@@ -97,16 +97,16 @@ Second you need to install the IntelliJ libraries into your local maven reposito
 is the version of the IDEA you have installed locally, second is the locations of the IDEA.
 If you have installed IDEA in a different location than shown in the sample below, then make sure to use the correct path.
 
-Currently we use IDEA 2017.1 as the version and therefore you should download and use that version.
+Currently we use IDEA 2017.2 as the version and therefore you should download and use that version.
 An alternative is to change the version in `camel-idea-plugin/pom.xml` file to use a different version but its not recommended.
 
 Linux or Mac users:
 
- > - Execute the script file `./install-intellij-libs.sh 2017.1 /Applications/IntelliJ\ IDEA\ CE.app/Contents /Users/joe/.m2` 
+ > - Execute the script file `./install-intellij-libs.sh 2017.2 /Applications/IntelliJ\ IDEA\ CE.app/Contents /Users/joe/.m2` 
   
 Windows:
 
- > - Execute the script file `./install-intellij-libs.bat 2017.1 "C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2017.1"`
+ > - Execute the script file `./install-intellij-libs.bat 2017.2 "C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2017.2"`
 
 Next step you need to update the pom.xml file with the right Intellij version number
 
