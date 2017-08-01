@@ -31,6 +31,8 @@
       v0.4.3
       <ul>
         <li>Upgraded to Intellij CI 2017.2</li>
+        <li>Upgraded to Apache Camel 2.19.2</li>
+        <li>Fixed when closing project(s) could cause a NPE bug in this plugin</li>
       </ul>
       v0.4.2
       <ul>
