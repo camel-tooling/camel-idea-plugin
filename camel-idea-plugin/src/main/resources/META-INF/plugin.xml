@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.4.3</version>
+  <version>0.4.4</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -28,26 +28,15 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      v0.4.4
+      <ul>
+        <li>TODO: </li>
+      </ul>
       v0.4.3
       <ul>
         <li>Upgraded to Intellij CI 2017.2</li>
         <li>Upgraded to Apache Camel 2.19.2</li>
         <li>Fixed when closing project(s) could cause a NPE bug in this plugin</li>
-      </ul>
-      v0.4.2
-      <ul>
-        <li>Upgraded to Apache Camel 2.19.1</li>
-      </ul>
-      v0.4.1
-      <ul>
-        <li>Log only once which Camel version IDEA plugin is using while loading a big project</li>
-      </ul>
-      v0.4.0
-      <ul>
-        <li>Updated to IDEA 2017.1</li>
-        <li>Updated to Apache Camel 2.19.0</li>
-        <li>Camel icon is now also shown for route with uris defined as an object instance or field</li>
-        <li>Minor bug fixes</li>
       </ul>
     ]]>
   </change-notes>
