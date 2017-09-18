@@ -30,7 +30,7 @@
   <change-notes><![CDATA[
       v0.4.4
       <ul>
-        <li>TODO: </li>
+        <li>Upgraded to Apache Camel 2.19.3</li>
       </ul>
       v0.4.3
       <ul>
