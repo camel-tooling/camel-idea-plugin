@@ -25,6 +25,7 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
 /**
  * Plugin to hook into the IDEA Kotlin language, to setup Camel smart completion for editing Kotlin source code.
  */
+@Deprecated
 public class CamelKotlinReferenceContributor extends CamelContributor {
 
     public CamelKotlinReferenceContributor() {

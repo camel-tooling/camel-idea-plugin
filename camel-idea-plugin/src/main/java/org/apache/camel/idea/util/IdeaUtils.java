@@ -251,6 +251,7 @@ public final class IdeaUtils {
     /**
      * Is the element from Groovy language
      */
+    @Deprecated
     public static boolean isGroovyLanguage(PsiElement element) {
         return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("Groovy");
     }
@@ -258,6 +259,7 @@ public final class IdeaUtils {
     /**
      * Is the element from Scala language
      */
+    @Deprecated
     public static boolean isScalaLanguage(PsiElement element) {
         return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("Scala");
     }
@@ -265,6 +267,7 @@ public final class IdeaUtils {
     /**
      * Is the element from Kotlin language
      */
+    @Deprecated
     public static boolean isKotlinLanguage(PsiElement element) {
         return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("kotlin");
     }
@@ -459,6 +462,7 @@ public final class IdeaUtils {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
+    @Deprecated
     public static boolean isFromGroovyMethod(PsiElement element, String... methods) {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // must be a groovy string kind
@@ -486,6 +490,7 @@ public final class IdeaUtils {
         return false;
     }
 
+    @Deprecated
     public static boolean isPrevSiblingFromGroovyMethod(PsiElement element, String... methods) {
         boolean found = false;
 
@@ -592,6 +597,7 @@ public final class IdeaUtils {
         return false;
     }
 
+    @Deprecated
     public static boolean isPrevSiblingFromScalaMethod(PsiElement element, String... methods) {
         boolean found = false;
 

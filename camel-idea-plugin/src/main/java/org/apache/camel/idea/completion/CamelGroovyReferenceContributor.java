@@ -25,6 +25,7 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
 /**
  * Plugin to hook into the IDEA Groovy language, to setup Camel smart completion for editing Groovy source code.
  */
+@Deprecated
 public class CamelGroovyReferenceContributor extends CamelContributor {
 
     public CamelGroovyReferenceContributor() {
