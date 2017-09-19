@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.4.4</version>
+  <version>0.4.5</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -29,17 +29,15 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      v0.4.5
+      <ul>
+        <li>Work in progress</li>
+      </ul>
       v0.4.4
       <ul>
         <li>Important: We are dropping support for Groovy, Scala and Kotlin
         which are now deprecated in 0.4.x and intended to be removed from 0.5.0 release.
         <li>Upgraded to Apache Camel 2.19.3</li>
-      </ul>
-      v0.4.3
-      <ul>
-        <li>Upgraded to Intellij CI 2017.2</li>
-        <li>Upgraded to Apache Camel 2.19.2</li>
-        <li>Fixed when closing project(s) could cause a NPE bug in this plugin</li>
       </ul>
     ]]>
   </change-notes>
