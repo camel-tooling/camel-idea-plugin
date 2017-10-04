@@ -190,8 +190,8 @@ public class CamelService implements Disposable {
                     String version = null;
                     if (hasVersion) {
                         version = split[startIdx].trim();
-                        // ensure version is in upper-case
-                        version = version.toUpperCase();
+                        // adjust snapshot which must be in uppercase
+                        version = version.replace("snapshot", "SNAPSHOT");
                     }
 
                     if ("org.slf4j".equals(groupId) && "slf4j-api".equals(artifactId)) {
