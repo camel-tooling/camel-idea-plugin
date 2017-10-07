@@ -21,13 +21,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
 import org.junit.Test;
 
-public class StringUtilsTest extends TestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+public class StringUtilsTest {
 
     @Test
-    public void testHasQuestionMark() {
+    public void hasQuestionMark() {
         assertTrue(StringUtils.hasQuestionMark("seda:foo?size=123"));
         assertFalse(StringUtils.hasQuestionMark("seda:foo"));
         assertFalse(StringUtils.hasQuestionMark(""));
@@ -35,24 +39,26 @@ public class StringUtilsTest extends TestCase {
     }
 
     @Test
-    public void testAsComponentName() {
+    public void asComponentName() {
         assertEquals("seda", StringUtils.asComponentName("seda:foo?size=123"));
         assertEquals("seda", StringUtils.asComponentName("seda:foo"));
         assertEquals(null, StringUtils.asComponentName("seda"));
+        assertNull(StringUtils.asComponentName(null));
     }
 
     @Test
-    public void testAsLanguageName() {
+    public void asLanguageName() {
         assertEquals("simple", StringUtils.asLanguageName("simple"));
         assertEquals("header", StringUtils.asLanguageName("header"));
         assertEquals("tokenize", StringUtils.asLanguageName("tokenize"));
         assertEquals("tokenize", StringUtils.asLanguageName("tokenizeXml"));
         assertEquals("javaScript", StringUtils.asLanguageName("js"));
         assertEquals("javaScript", StringUtils.asLanguageName("javascript"));
+        assertNull(StringUtils.asLanguageName(null));
     }
 
     @Test
-    public void testGetSafeValue() {
+    public void getSafeValue() {
         Map<String, String> row = new HashMap<>();
         row.put("foo", "123");
 
@@ -72,13 +78,13 @@ public class StringUtilsTest extends TestCase {
     }
 
     @Test
-    public void testWrapSeparator() {
+    public void wrapSeparator() {
         String url = "seda:foo?size=1234";
 
         assertEquals(url, StringUtils.wrapSeparator(url, "&", "\n", 80));
 
         String longUrl = "jms:queue:cheese?acknowledgementModeName=SESSION_TRANSACTED&asyncConsumer=true&cacheLevelName=CACHE_CONSUMER"
-                + "&deliveryMode=2&errorHandlerLoggingLevel=DEBUG&explicitQosEnabled=true&jmsMessageType=Bytes";
+            + "&deliveryMode=2&errorHandlerLoggingLevel=DEBUG&explicitQosEnabled=true&jmsMessageType=Bytes";
 
         String wrapped = StringUtils.wrapSeparator(longUrl, "&", "\n", 120);
 
@@ -92,7 +98,9 @@ public class StringUtilsTest extends TestCase {
     }
 
     @Test
-    public void testWrapWords() {
+    public void wrapWords() {
+        assertNull(StringUtils.wrapWords(null, "\n", 80, true));
+
         String words = "Plugin for Intellij IDEA to provide a set of small Camel related capabilities to IDEA editor."
             + " When the plugin becomes more complete and stable then the intention is to donate the source code"
             + " to Apache Software Foundation to be included out of the box at Apache Camel.";
@@ -113,4 +121,45 @@ public class StringUtilsTest extends TestCase {
         assertTrue(parts[3].startsWith("the box at Apache Camel."));
     }
 
+    @Test
+    public void wrapLongWords() {
+        String longWord = "lalalalalalalalalala";
+        String expectedWrappedWord = "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n";
+        StringUtils.wrapWords(longWord, null, 0, true);
+    }
+
+    @Test
+    public void dontWrapLongWords() {
+        String longWord = "lalalalalalalalalala";
+        String expectedWrappedWord = "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n";
+        StringUtils.wrapWords(longWord, null, 0, false);
+    }
+
+    @Test
+    public void wrapLongWordsContainingSpaces() {
+        String longWord = " lalalalalala lalalala";
+        String expectedWrappedWord = "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n";
+        StringUtils.wrapWords(longWord, null, 0, false);
+    }
+
+    @Test
+    public void wrapNothin() {
+        assertNull(StringUtils.wrapWords(null, "\n", 80, true));
+    }
+
+    @Test
+    public void removeLastNewLineBreak() {
+        assertEquals("l\n" + "a\n" + "l\n" + "a\n" + "\n", StringUtils.wrapSeparator("lala\n", "", "\n", 0));
+    }
+
+    @Test
+    public void isEmpty() {
+        assertTrue(StringUtils.isEmpty(null));
+        assertTrue(StringUtils.isEmpty(""));
+    }
+
+    @Test
+    public void isNotEmpty() {
+        assertTrue(StringUtils.isNotEmpty("test"));
+    }
 }
