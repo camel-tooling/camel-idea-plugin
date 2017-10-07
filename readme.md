@@ -103,7 +103,7 @@ An alternative is to change the version in `camel-idea-plugin/pom.xml` file to u
 
 Linux or Mac users:
 
- > - Execute the script file `./install-intellij-libs.sh 2017.2.5 /Applications/IntelliJ\ IDEA\ CE.app/Contents /Users/joe/.m2` 
+ > - Execute the script file `./install-intellij-libs.sh 2017.2.5 /Applications/IntelliJ\ IDEA\ CE.app/Contents $HOME/.m2` 
   
 Windows:
 
