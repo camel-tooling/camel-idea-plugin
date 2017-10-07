@@ -21,10 +21,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
 import org.junit.Test;
 
-public class StringUtilsTest extends TestCase {
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
+
+public class StringUtilsTest {
 
     @Test
     public void testHasQuestionMark() {
