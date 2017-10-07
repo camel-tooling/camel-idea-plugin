@@ -34,6 +34,7 @@ import org.apache.camel.catalog.SimpleValidationResult;
 import org.apache.camel.idea.annotator.CamelAnnotatorEndpointMessage;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelService;
+import org.apache.camel.idea.service.QueryUtils;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.apache.camel.idea.util.StringUtils;
@@ -117,7 +118,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
         boolean hasSimple = text.contains("${") || text.contains("$simple{");
         if (hasSimple && CamelIdeaUtils.isCamelSimpleExpression(element)) {
             validateSimple(element, holder, text, isOnTheFly);
-        } else if (CamelIdeaUtils.isQueryContainingCamelComponent(element.getProject(), text)) {
+        } else if (QueryUtils.isQueryContainingCamelComponent(element.getProject(), text)) {
             validateEndpoint(element, holder, text, isOnTheFly);
         }
     }

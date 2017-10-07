@@ -444,20 +444,6 @@ public final class CamelIdeaUtils {
     }
 
     /**
-     * Validate if the query contain a known camel component
-     */
-    public static boolean isQueryContainingCamelComponent(Project project, String query) {
-        // is this a possible Camel endpoint uri which we know
-        if (query != null && !query.isEmpty()) {
-            String componentName = StringUtils.asComponentName(query);
-            if (componentName != null && ServiceManager.getService(project, CamelCatalogService.class).get().findComponentNames().contains(componentName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Certain elements should be skipped for endpoint validation such as ActiveMQ brokerURL property and others.
      */
     public static boolean skipEndpointValidation(PsiElement element) {
