@@ -122,6 +122,37 @@ public class StringUtilsTest {
     }
 
     @Test
+    public void wrapLongWords() {
+        String longWord = "lalalalalalalalalala";
+        String expectedWrappedWord = "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n";
+        StringUtils.wrapWords(longWord,null,0,true);
+    }
+
+    @Test
+    public void dontWrapLongWords() {
+        String longWord = "lalalalalalalalalala";
+        String expectedWrappedWord = "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n";
+        StringUtils.wrapWords(longWord,null,0,false);
+    }
+
+    @Test
+    public void wrapLongWordsContainingSpaces() {
+        String longWord = " lalalalalala lalalala";
+        String expectedWrappedWord = "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n";
+        StringUtils.wrapWords(longWord,null,0,false);
+    }
+
+    @Test
+    public void wrapNothin() {
+        assertNull(StringUtils.wrapWords(null, "\n", 80, true));
+    }
+
+    @Test
+    public void removeLastNewLineBreak() {
+        assertEquals("l\n" +"a\n" + "l\n" + "a\n" + "\n", StringUtils.wrapSeparator("lala\n", "", "\n", 0));
+    }
+
+    @Test
     public void isEmpty() {
         assertTrue(StringUtils.isEmpty(null));
         assertTrue(StringUtils.isEmpty(""));
