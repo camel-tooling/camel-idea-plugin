@@ -116,4 +116,14 @@ public class StringUtilsTest {
         assertTrue(parts[3].startsWith("the box at Apache Camel."));
     }
 
+    @Test
+    public void isEmpty() {
+        assertTrue(StringUtils.isEmpty(null));
+        assertTrue(StringUtils.isEmpty(""));
+    }
+
+    @Test
+    public void isNotEmpty() {
+        assertTrue(StringUtils.isNotEmpty("test"));
+    }
 }
