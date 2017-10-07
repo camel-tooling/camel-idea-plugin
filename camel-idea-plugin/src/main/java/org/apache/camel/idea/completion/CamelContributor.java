@@ -24,7 +24,6 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtil;
-import com.intellij.notification.NotificationGroup;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.patterns.InitialPatternCondition;
 import com.intellij.patterns.PsiFilePattern;
@@ -44,8 +43,6 @@ import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
  * Extend this class to define what it should re-act on when using smart completion
  */
 public abstract class CamelContributor extends CompletionContributor {
-
-    public static final NotificationGroup CAMEL_NOTIFICATION_GROUP = NotificationGroup.balloonGroup("Apache Camel");
 
     private final List<CamelCompletionExtension> camelCompletionExtensions = new ArrayList<>();
 

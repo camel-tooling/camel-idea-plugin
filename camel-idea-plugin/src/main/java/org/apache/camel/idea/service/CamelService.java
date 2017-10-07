@@ -42,7 +42,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+
 import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
@@ -59,7 +61,6 @@ import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.catalog.CatalogHelper.loadText;
-import static org.apache.camel.idea.completion.CamelContributor.CAMEL_NOTIFICATION_GROUP;
 import static org.apache.camel.idea.util.IdeaUtils.newURLClassLoaderForLibrary;
 import static org.apache.camel.idea.util.XmlUtils.getChildNodeByTagName;
 import static org.apache.camel.idea.util.XmlUtils.loadDocument;
@@ -68,6 +69,8 @@ import static org.apache.camel.idea.util.XmlUtils.loadDocument;
  * Service access for Camel libraries
  */
 public class CamelService implements Disposable {
+
+    public static final NotificationGroup CAMEL_NOTIFICATION_GROUP = NotificationGroup.balloonGroup("Apache Camel");
 
     private static final Logger LOG = Logger.getInstance(CamelService.class);
 
