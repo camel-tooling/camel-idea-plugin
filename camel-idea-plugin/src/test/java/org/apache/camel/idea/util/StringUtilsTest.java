@@ -84,7 +84,7 @@ public class StringUtilsTest {
         assertEquals(url, StringUtils.wrapSeparator(url, "&", "\n", 80));
 
         String longUrl = "jms:queue:cheese?acknowledgementModeName=SESSION_TRANSACTED&asyncConsumer=true&cacheLevelName=CACHE_CONSUMER"
-                + "&deliveryMode=2&errorHandlerLoggingLevel=DEBUG&explicitQosEnabled=true&jmsMessageType=Bytes";
+            + "&deliveryMode=2&errorHandlerLoggingLevel=DEBUG&explicitQosEnabled=true&jmsMessageType=Bytes";
 
         String wrapped = StringUtils.wrapSeparator(longUrl, "&", "\n", 120);
 
@@ -124,22 +124,22 @@ public class StringUtilsTest {
     @Test
     public void wrapLongWords() {
         String longWord = "lalalalalalalalalala";
-        String expectedWrappedWord = "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n";
-        StringUtils.wrapWords(longWord,null,0,true);
+        String expectedWrappedWord = "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n";
+        StringUtils.wrapWords(longWord, null, 0, true);
     }
 
     @Test
     public void dontWrapLongWords() {
         String longWord = "lalalalalalalalalala";
-        String expectedWrappedWord = "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n";
-        StringUtils.wrapWords(longWord,null,0,false);
+        String expectedWrappedWord = "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n";
+        StringUtils.wrapWords(longWord, null, 0, false);
     }
 
     @Test
     public void wrapLongWordsContainingSpaces() {
         String longWord = " lalalalalala lalalala";
-        String expectedWrappedWord = "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n" + "l\n"+ "a\n" + "l\n" + "a\n";
-        StringUtils.wrapWords(longWord,null,0,false);
+        String expectedWrappedWord = "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n" + "l\n" + "a\n";
+        StringUtils.wrapWords(longWord, null, 0, false);
     }
 
     @Test
@@ -149,7 +149,7 @@ public class StringUtilsTest {
 
     @Test
     public void removeLastNewLineBreak() {
-        assertEquals("l\n" +"a\n" + "l\n" + "a\n" + "\n", StringUtils.wrapSeparator("lala\n", "", "\n", 0));
+        assertEquals("l\n" + "a\n" + "l\n" + "a\n" + "\n", StringUtils.wrapSeparator("lala\n", "", "\n", 0));
     }
 
     @Test
