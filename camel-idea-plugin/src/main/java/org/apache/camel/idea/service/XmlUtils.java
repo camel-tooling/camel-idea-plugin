@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.util;
+package org.apache.camel.idea.service;
 
 import java.io.InputStream;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -29,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * XML and DOM utilities.
  */
-public final class XmlUtils {
+final class XmlUtils {
 
     private XmlUtils() {
     }
@@ -41,7 +41,7 @@ public final class XmlUtils {
      * @param validating whether to validate or not
      * @return the DOM
      */
-    public static @NotNull Document loadDocument(@NotNull InputStream is, boolean validating) throws Exception {
+    static @NotNull Document loadDocument(@NotNull InputStream is, boolean validating) throws Exception {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setValidating(validating);
         return dbf.newDocumentBuilder().parse(is);
@@ -54,7 +54,7 @@ public final class XmlUtils {
      * @param name the name of the child node to find and return
      * @return the child node, or <tt>null</tt> if none found
      */
-    public static Node getChildNodeByTagName(Node node, String name) {
+    static Node getChildNodeByTagName(Node node, String name) {
         NodeList children = node.getChildNodes();
         if (children != null && children.getLength() > 0) {
             for (int i = 0; i < children.getLength(); i++) {

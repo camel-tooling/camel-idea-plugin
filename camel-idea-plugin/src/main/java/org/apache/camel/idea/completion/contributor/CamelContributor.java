@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.completion;
+package org.apache.camel.idea.completion.contributor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +56,7 @@ public abstract class CamelContributor extends CompletionContributor {
 
         private final List<CamelCompletionExtension> camelCompletionExtensions;
 
-        public EndpointCompletion(List<CamelCompletionExtension> camelCompletionExtensions) {
+        EndpointCompletion(List<CamelCompletionExtension> camelCompletionExtensions) {
             this.camelCompletionExtensions = camelCompletionExtensions;
         }
 
@@ -118,11 +118,11 @@ public abstract class CamelContributor extends CompletionContributor {
      * Add additional completion extension to process when the
      * {@link CompletionProvider#addCompletions(CompletionParameters, ProcessingContext, CompletionResultSet)} is called
      */
-    public void addCompletionExtension(CamelCompletionExtension provider) {
+    void addCompletionExtension(CamelCompletionExtension provider) {
         camelCompletionExtensions.add(provider);
     }
 
-    public List<CamelCompletionExtension> getCamelCompletionExtensions() {
+    List<CamelCompletionExtension> getCamelCompletionExtensions() {
         return camelCompletionExtensions;
     }
 
