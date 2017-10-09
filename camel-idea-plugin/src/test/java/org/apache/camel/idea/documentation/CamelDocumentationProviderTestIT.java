@@ -38,7 +38,7 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
  */
 public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
-    private String getJavaTestData() {
+    private String getJavaTestWithCursorBeforeCamelComponent() {
         return "public static class MyRouteBuilder extends RouteBuilder {\n"
                 + "        @Override\n"
                 + "        public void configure() throws Exception {\n"
@@ -46,7 +46,6 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
                 + "                .to(\"file:outbox\");\n"
                 + "        }\n"
                 + "    }";
-
     }
 
     private String getJavaTestDataWithCursorAfterQuestionMark() {
@@ -75,7 +74,7 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
     }
 
     public void testJavaClassQuickNavigateInfo() throws Exception {
-        myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestData());
+        myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestWithCursorBeforeCamelComponent());
 
         PsiClass psiClass = getTestClass();
         PsiReference referenceElement = myFixture.getReferenceAtCaretPosition();
@@ -108,6 +107,15 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
         assertNotNull(documentation);
         assertTrue(documentation.startsWith("<b>File Component</b><br/>The file component is used for reading or writing files.<br/>"));
         System.out.println(documentation);
+    }
+
+    public void testHandleExternal() {
+        myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestDataWithCursorAfterQuestionMark());
+
+        PsiElement element = myFixture.findElementByText("\"file:inbox?\"", PsiLiteralExpression.class);
+
+        assertFalse(new CamelDocumentationProvider().handleExternal(null, null));
+        assertTrue(new CamelDocumentationProvider().handleExternal(element, null));
     }
 
     public void testHandleExternalLink() {
