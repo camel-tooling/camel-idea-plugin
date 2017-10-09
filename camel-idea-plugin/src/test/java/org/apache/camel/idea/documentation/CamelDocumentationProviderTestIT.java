@@ -16,7 +16,11 @@
  */
 package org.apache.camel.idea.documentation;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.util.io.FileUtil;
@@ -45,7 +49,7 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
 
     }
 
-    private String getJavaTestData1() {
+    private String getJavaTestDataWithCursorAfterQuestionMark() {
         return "public static class MyRouteBuilder extends RouteBuilder {\n"
                 + "        @Override\n"
                 + "        public void configure() throws Exception {\n"
@@ -53,7 +57,16 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
                 + "                .to(\"file:outbox\");\n"
                 + "        }\n"
                 + "    }";
+    }
 
+    private String getJavaTestDataWithCursorBeforeColon() {
+        return "public static class MyRouteBuilder extends RouteBuilder {\n"
+                + "        @Override\n"
+                + "        public void configure() throws Exception {\n"
+                + "            from(\"file<caret>:inbox?\")\n"
+                + "                .to(\"file:outbox\");\n"
+                + "        }\n"
+                + "    }";
     }
 
     @Override
@@ -79,7 +92,7 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
     }
 
     public void testGenerateDoc() throws Exception {
-        myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestData1());
+        myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestDataWithCursorAfterQuestionMark());
 
         PsiElement element = myFixture.findElementByText("\"file:inbox?\"", PsiLiteralExpression.class);
         String componentName = "file";
@@ -95,6 +108,22 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
         assertNotNull(documentation);
         assertTrue(documentation.startsWith("<b>File Component</b><br/>The file component is used for reading or writing files.<br/>"));
         System.out.println(documentation);
+    }
+
+    public void testHandleExternalLink() {
+        myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestDataWithCursorBeforeColon());
+
+        PsiElement element = myFixture.findElementByText("\"file:inbox?\"", PsiLiteralExpression.class);
+
+        CamelDocumentationProvider provider = new CamelDocumentationProvider();
+        boolean externalLink = provider.handleExternalLink(null, "http://bennet-schulz.com", element);
+        assertFalse(externalLink);
+    }
+
+    public void testCanFetchDocumentationLink() {
+        CamelDocumentationProvider provider = new CamelDocumentationProvider();
+        boolean documentationLink = provider.canFetchDocumentationLink("http://bennet-schulz.com");
+        assertFalse(documentationLink);
     }
 
     private PsiClass getTestClass() throws Exception {
