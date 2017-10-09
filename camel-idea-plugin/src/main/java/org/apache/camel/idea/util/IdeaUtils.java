@@ -202,7 +202,7 @@ public final class IdeaUtils {
      * Is the element from a java setter method (eg setBrokerURL) or from a XML configured <tt>bean</tt> style
      * configuration using <tt>property</tt> element.
      */
-    public static boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
+    static boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
         // java method call
         PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
         if (call != null) {
@@ -231,7 +231,7 @@ public final class IdeaUtils {
     /**
      * Is the element from a java annotation with the given name.
      */
-    public static boolean isElementFromAnnotation(@NotNull PsiElement element, @NotNull String annotationName) {
+    static boolean isElementFromAnnotation(@NotNull PsiElement element, @NotNull String annotationName) {
         // java method call
         PsiAnnotation ann = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class, false);
         if (ann != null) {
@@ -343,7 +343,7 @@ public final class IdeaUtils {
      * @param fqnClassName the class name to match
      * @return <tt>true</tt> if the class is a type or subtype of the class name
      */
-    public static boolean isClassOrParentOf(@Nullable PsiClass target, @NotNull String fqnClassName) {
+    private static boolean isClassOrParentOf(@Nullable PsiClass target, @NotNull String fqnClassName) {
         if (target == null) {
             return false;
         }
@@ -361,7 +361,7 @@ public final class IdeaUtils {
      * @param constructorName the name of the constructor (eg class)
      * @return <tt>true</tt> if its a constructor call from the given name, <tt>false</tt> otherwise
      */
-    public static boolean isElementFromConstructor(@NotNull PsiElement element, @NotNull String constructorName) {
+    static boolean isElementFromConstructor(@NotNull PsiElement element, @NotNull String constructorName) {
         // java constructor
         PsiConstructorCall call = PsiTreeUtil.getParentOfType(element, PsiConstructorCall.class);
         if (call != null) {
@@ -380,7 +380,7 @@ public final class IdeaUtils {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    public static boolean isFromJavaMethodCall(PsiElement element, boolean fromRouteBuilder, String... methods) {
+    static boolean isFromJavaMethodCall(PsiElement element, boolean fromRouteBuilder, String... methods) {
         // java method call
         PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
         if (call != null) {
@@ -426,7 +426,7 @@ public final class IdeaUtils {
      * @param methods  xml tag names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    public static boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
+    static boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
         String name = xml.getLocalName();
         return Arrays.stream(methods).anyMatch(name::equals);
     }
@@ -438,7 +438,7 @@ public final class IdeaUtils {
      * @param parentTag a special parent tag name to match first
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    public static boolean hasParentXmlTag(@NotNull XmlTag xml, @NotNull String parentTag) {
+    static boolean hasParentXmlTag(@NotNull XmlTag xml, @NotNull String parentTag) {
         XmlTag parent = xml.getParentTag();
         return parent != null && parent.getLocalName().equals(parentTag);
     }
@@ -572,7 +572,7 @@ public final class IdeaUtils {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    public static boolean isFromScalaMethod(PsiElement element, String... methods) {
+    static boolean isFromScalaMethod(PsiElement element, String... methods) {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // (yes we need to go up till 5 levels up to find the method call expression
         String kind = element.toString();
@@ -660,7 +660,7 @@ public final class IdeaUtils {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    public static boolean isFromKotlinMethod(PsiElement element, String... methods) {
+    static boolean isFromKotlinMethod(PsiElement element, String... methods) {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // (yes we need to go up till 6 levels up to find the method call expression
         String kind = element.toString();
@@ -700,7 +700,7 @@ public final class IdeaUtils {
         return StringUtil.unquoteString(text.replace(QUOT, "\"")).replaceAll("(^\\n\\s+|\\n\\s+$|\\n\\s+)|(\"\\s*\\+\\s*\")|(\"\\s*\\+\\s*\\n\\s*\"*)", "");
     }
 
-    public static int getCaretPositionInsidePsiElement(String stringLiteral) {
+    private static int getCaretPositionInsidePsiElement(String stringLiteral) {
         String hackVal = stringLiteral.toLowerCase();
 
         int hackIndex = hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER.toLowerCase());

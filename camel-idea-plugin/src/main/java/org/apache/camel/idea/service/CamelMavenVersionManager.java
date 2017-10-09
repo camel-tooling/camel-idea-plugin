@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.util;
+package org.apache.camel.idea.service;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +33,7 @@ import org.apache.camel.catalog.VersionManager;
  * A copy of {@link org.apache.camel.catalog.maven.MavenVersionManager.MavenVersionManager} until a bug is fixed in Camel 2.19.1 onwards
  * so we can use it directly.
  */
-public class CamelMavenVersionManager implements VersionManager {
+class CamelMavenVersionManager implements VersionManager {
 
     private final ClassLoader classLoader = new GroovyClassLoader();
     private String version;
@@ -41,23 +41,12 @@ public class CamelMavenVersionManager implements VersionManager {
     private String cacheDirectory;
 
     /**
-     * Configures the directory for the download cache.
-     * <p/>
-     * The default folder is <tt>USER_HOME/.groovy/grape</tt>
-     *
-     * @param directory the directory.
-     */
-    public void setCacheDirectory(String directory) {
-        this.cacheDirectory = directory;
-    }
-
-    /**
      * To add a 3rd party Maven repository.
      *
      * @param name the repository name
      * @param url  the repository url
      */
-    public void addMavenRepository(String name, String url) {
+    void addMavenRepository(String name, String url) {
         Map<String, Object> repo = new HashMap<>();
         repo.put("name", name);
         repo.put("root", url);
