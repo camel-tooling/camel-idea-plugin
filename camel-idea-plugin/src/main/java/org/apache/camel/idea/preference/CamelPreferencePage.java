@@ -43,6 +43,10 @@ import org.jetbrains.annotations.Nullable;
  */
 public class CamelPreferencePage implements SearchableConfigurable, Configurable.NoScroll {
 
+    public JBCheckBox getRealTimeEndpointValidationCatalogCheckBox() {
+        return realTimeEndpointValidationCatalogCheckBox;
+    }
+
     private JBCheckBox realTimeEndpointValidationCatalogCheckBox;
     private JBCheckBox realTimeSimpleValidationCatalogCheckBox;
     private JBCheckBox highlightCustomOptionsCheckBox;

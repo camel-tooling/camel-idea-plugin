@@ -25,17 +25,12 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+import com.intellij.ui.components.JBCheckBox;
+import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtureTestCaseIT {
 
-public class CamelChosenIconCellRendererTest {
-
-    @Test
-    public void pluginXmlShouldContainPreferencesPage() {
+    public void testPluginXmlShouldContainPreferencesPage() {
         File pluginXml = new File("src/main/resources/META-INF/plugin.xml");
         assertNotNull(pluginXml);
 
@@ -54,21 +49,26 @@ public class CamelChosenIconCellRendererTest {
         }
     }
 
-    @Test
-    public void displayNameShouldBeApacheCamel() {
+    public void testDisplayNameShouldBeApacheCamel() {
         CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
         assertEquals("Apache Camel", camelPreferencePage.getDisplayName());
     }
 
-    @Test
-    public void helpTopicShouldBeNull() {
+    public void testHelpTopicShouldBeNull() {
         CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
         assertNull(camelPreferencePage.getHelpTopic());
     }
 
-    @Test
-    public void preferencePageIdShouldBeCamelConfigurable() {
+    public void testPreferencePageIdShouldBeCamelConfigurable() {
         CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
         assertEquals("preference.CamelConfigurable", camelPreferencePage.getId());
+    }
+
+    public void testShouldContainRealTimeEndpointValidationCatalogCheckBox() {
+        CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
+        camelPreferencePage.createComponent();
+        JBCheckBox checkBox = camelPreferencePage.getRealTimeEndpointValidationCatalogCheckBox();
+        assertEquals("Real time validation of Camel endpoints in editor", checkBox.getText());
+        assertTrue(checkBox.isSelected());
     }
 }
