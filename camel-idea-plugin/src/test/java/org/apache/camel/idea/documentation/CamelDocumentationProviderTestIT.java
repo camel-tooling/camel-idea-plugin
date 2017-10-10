@@ -108,15 +108,6 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
         assertTrue(documentation.startsWith("<b>File Component</b><br/>The file component is used for reading or writing files.<br/>"));
     }
 
-    public void testHandleExternal() {
-        myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestDataWithCursorAfterQuestionMark());
-
-        PsiElement element = myFixture.findElementByText("\"file:inbox?\"", PsiLiteralExpression.class);
-
-        assertFalse(new CamelDocumentationProvider().handleExternal(null, null));
-        assertTrue(new CamelDocumentationProvider().handleExternal(element, null));
-    }
-
     public void testHandleExternalLink() {
         myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestDataWithCursorBeforeColon());
 
