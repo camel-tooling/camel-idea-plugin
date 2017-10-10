@@ -77,7 +77,7 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     private List<String> ignorePropertyList = new ArrayList<>();
     private List<String> excludePropertyFiles = new ArrayList<>();
 
-    CamelPreferenceService() { }
+    private CamelPreferenceService() { }
 
     public boolean isRealTimeEndpointValidation() {
         return realTimeEndpointValidation;

@@ -224,7 +224,7 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
         excludePropertyFileTable.reset();
     }
 
-    private CamelPreferenceService getCamelPreferenceService() {
+    CamelPreferenceService getCamelPreferenceService() {
         return ServiceManager.getService(CamelPreferenceService.class);
     }
 
@@ -256,5 +256,9 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
 
     JBCheckBox getScanThirdPartyLegacyComponentsCatalogCheckBox() {
         return scanThirdPartyLegacyComponentsCatalogCheckBox;
+    }
+
+    JBCheckBox getCamelIconInGutterCheckBox() {
+        return camelIconInGutterCheckBox;
     }
 }

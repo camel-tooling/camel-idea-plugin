@@ -104,4 +104,11 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         assertEquals("Scan classpath for third party Camel components using legacy component packaging", checkBox.getText());
         assertTrue(checkBox.isSelected());
     }
+
+    public void testShouldContainCamelIconInGutterCheckBox() {
+        camelPreferencePage.createComponent();
+        JBCheckBox checkBox = camelPreferencePage.getCamelIconInGutterCheckBox();
+        assertEquals("Show Camel icon in gutter", checkBox.getText());
+        assertTrue(checkBox.isSelected());
+    }
 }
