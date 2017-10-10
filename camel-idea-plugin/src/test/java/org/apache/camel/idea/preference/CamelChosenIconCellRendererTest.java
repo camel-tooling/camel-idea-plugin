@@ -90,4 +90,11 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         assertEquals("Allow downloading camel-catalog over the internet", checkBox.getText());
         assertTrue(checkBox.isSelected());
     }
+
+    public void testShouldContainScanThirdPartyComponentsCatalogCheckBox() {
+        camelPreferencePage.createComponent();
+        JBCheckBox checkBox = camelPreferencePage.getScanThirdPartyComponentsCatalogCheckBox();
+        assertEquals("Scan classpath for third party Camel components using modern component packaging", checkBox.getText());
+        assertTrue(checkBox.isSelected());
+    }
 }
