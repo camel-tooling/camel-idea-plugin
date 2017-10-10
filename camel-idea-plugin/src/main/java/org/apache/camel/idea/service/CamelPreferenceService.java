@@ -42,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
 @State(
     name = "CamelPreferences",
     storages = {@Storage("apachecamelplugin.xml")})
-public class CamelPreferenceService implements PersistentStateComponent<CamelPreferenceService>, Disposable {
+public final class CamelPreferenceService implements PersistentStateComponent<CamelPreferenceService>, Disposable {
 
     @Transient
     public static final Icon CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
