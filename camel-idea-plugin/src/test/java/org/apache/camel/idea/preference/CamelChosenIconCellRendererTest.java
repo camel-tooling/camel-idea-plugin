@@ -139,6 +139,7 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         assertEquals(false, button.isEnabled());
         comboBox.setSelectedIndex(2);
         assertEquals(2, comboBox.getSelectedIndex());
+        assertNotNull(comboBox.getSelectedItem());
         assertEquals("Custom Icon", comboBox.getSelectedItem().toString());
         assertEquals(true, button.isEnabled());
     }
