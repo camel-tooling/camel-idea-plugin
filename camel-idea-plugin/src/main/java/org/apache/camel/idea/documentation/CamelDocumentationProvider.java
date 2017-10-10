@@ -289,10 +289,10 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             ComponentModel component = ModelHelper.generateComponentModel(json, false);
 
             // to build external links which points to github
-            String a = component.getArtifactId();
+            String artifactId = component.getArtifactId();
 
             String url;
-            if ("camel-core".equals(a)) {
+            if ("camel-core".equals(artifactId)) {
                 url = GITHUB_EXTERNAL_DOC_URL + "/camel-core/src/main/docs/" + name + "-component.adoc";
             } else {
                 url = GITHUB_EXTERNAL_DOC_URL + "/components/" + component.getArtifactId() + "/src/main/docs/" + name + "-component.adoc";
