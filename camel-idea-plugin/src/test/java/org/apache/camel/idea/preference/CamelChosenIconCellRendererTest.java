@@ -30,6 +30,8 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
 public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtureTestCaseIT {
 
+    private CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
+
     public void testPluginXmlShouldContainPreferencesPage() {
         File pluginXml = new File("src/main/resources/META-INF/plugin.xml");
         assertNotNull(pluginXml);
@@ -50,25 +52,29 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testDisplayNameShouldBeApacheCamel() {
-        CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
         assertEquals("Apache Camel", camelPreferencePage.getDisplayName());
     }
 
     public void testHelpTopicShouldBeNull() {
-        CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
         assertNull(camelPreferencePage.getHelpTopic());
     }
 
     public void testPreferencePageIdShouldBeCamelConfigurable() {
-        CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
         assertEquals("preference.CamelConfigurable", camelPreferencePage.getId());
     }
 
     public void testShouldContainRealTimeEndpointValidationCatalogCheckBox() {
-        CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
         camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getRealTimeEndpointValidationCatalogCheckBox();
         assertEquals("Real time validation of Camel endpoints in editor", checkBox.getText());
+        assertTrue(checkBox.isSelected());
+    }
+
+    public void testShouldContainRealTimeSimpleValidationCatalogCheckBox() {
+        CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
+        camelPreferencePage.createComponent();
+        JBCheckBox checkBox = camelPreferencePage.getRealTimeSimpleValidationCatalogCheckBox();
+        assertEquals("Real time validation of Camel simple language in editor", checkBox.getText());
         assertTrue(checkBox.isSelected());
     }
 }

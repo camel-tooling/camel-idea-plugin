@@ -237,4 +237,8 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
     JBCheckBox getRealTimeEndpointValidationCatalogCheckBox() {
         return realTimeEndpointValidationCatalogCheckBox;
     }
+
+    JBCheckBox getRealTimeSimpleValidationCatalogCheckBox() {
+        return realTimeSimpleValidationCatalogCheckBox;
+    }
 }
