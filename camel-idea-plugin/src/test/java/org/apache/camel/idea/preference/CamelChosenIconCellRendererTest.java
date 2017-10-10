@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -166,5 +167,25 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         assertNotNull(comboBox.getSelectedItem());
         assertEquals("Camel Badge Icon", comboBox.getSelectedItem().toString());
         assertEquals(false, button.isEnabled());
+    }
+
+    public void testShouldContainIgnorePropertyTable() {
+        camelPreferencePage.createComponent();
+        CamelIgnorePropertyTable table = camelPreferencePage.getIgnorePropertyTable();
+        List<String> ignoredProperties = table.getIgnoredProperties();
+
+        String[] strings =  {
+            "java.",
+            "Logger.",
+            "logger",
+            "appender.",
+            "rootLogger.",
+            "camel.springboot.",
+            "camel.component.",
+            "camel.dataformat.",
+            "camel.language."
+        };
+        List<String> expectedIgnoredProperties = Arrays.asList(strings);
+        assertEquals(expectedIgnoredProperties, ignoredProperties);
     }
 }

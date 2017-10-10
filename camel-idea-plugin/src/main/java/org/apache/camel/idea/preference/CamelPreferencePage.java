@@ -269,4 +269,8 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
     TextFieldWithBrowseButton getCustomIconButton() {
         return customIconButton;
     }
+
+    CamelIgnorePropertyTable getIgnorePropertyTable() {
+        return ignorePropertyTable;
+    }
 }
