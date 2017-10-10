@@ -120,5 +120,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         assertEquals(3, comboBox.getItemCount());
         assertEquals("Camel Icon", comboBox.getItemAt(0));
         assertEquals("Camel Badge Icon", comboBox.getItemAt(1));
+        assertEquals("Custom Icon", comboBox.getItemAt(2));
     }
 }
