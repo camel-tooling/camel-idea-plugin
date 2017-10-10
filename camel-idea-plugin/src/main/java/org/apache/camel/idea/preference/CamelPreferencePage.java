@@ -253,4 +253,8 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
     JBCheckBox getScanThirdPartyComponentsCatalogCheckBox() {
         return scanThirdPartyComponentsCatalogCheckBox;
     }
+
+    JBCheckBox getScanThirdPartyLegacyComponentsCatalogCheckBox() {
+        return scanThirdPartyLegacyComponentsCatalogCheckBox;
+    }
 }
