@@ -61,16 +61,16 @@ import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
 import static org.apache.camel.catalog.CatalogHelper.loadText;
+import static org.apache.camel.idea.service.XmlUtils.getChildNodeByTagName;
+import static org.apache.camel.idea.service.XmlUtils.loadDocument;
 import static org.apache.camel.idea.util.IdeaUtils.newURLClassLoaderForLibrary;
-import static org.apache.camel.idea.util.XmlUtils.getChildNodeByTagName;
-import static org.apache.camel.idea.util.XmlUtils.loadDocument;
 
 /**
  * Service access for Camel libraries
  */
 public class CamelService implements Disposable {
 
-    public static final NotificationGroup CAMEL_NOTIFICATION_GROUP = NotificationGroup.balloonGroup("Apache Camel");
+    private static final NotificationGroup CAMEL_NOTIFICATION_GROUP = NotificationGroup.balloonGroup("Apache Camel");
 
     private static final Logger LOG = Logger.getInstance(CamelService.class);
 
