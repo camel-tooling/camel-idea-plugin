@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class CamelChosenIconCellRendererTest {
@@ -51,5 +52,23 @@ public class CamelChosenIconCellRendererTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void displayNameShouldBeApacheCamel() {
+        CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
+        assertEquals("Apache Camel", camelPreferencePage.getDisplayName());
+    }
+
+    @Test
+    public void helpTopicShouldBeNull() {
+        CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
+        assertNull(camelPreferencePage.getHelpTopic());
+    }
+
+    @Test
+    public void preferencePageIdShouldBeCamelConfigurable() {
+        CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
+        assertEquals("preference.CamelConfigurable", camelPreferencePage.getId());
     }
 }
