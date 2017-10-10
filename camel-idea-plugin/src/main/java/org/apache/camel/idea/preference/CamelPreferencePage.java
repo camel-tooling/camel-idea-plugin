@@ -261,4 +261,8 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
     JBCheckBox getCamelIconInGutterCheckBox() {
         return camelIconInGutterCheckBox;
     }
+
+    JComboBox<String> getCamelIconsComboBox() {
+        return camelIconsComboBox;
+    }
 }

@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 import com.intellij.ui.components.JBCheckBox;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
+import javax.swing.*;
+
 public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtureTestCaseIT {
 
     private CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
@@ -110,5 +112,13 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         JBCheckBox checkBox = camelPreferencePage.getCamelIconInGutterCheckBox();
         assertEquals("Show Camel icon in gutter", checkBox.getText());
         assertTrue(checkBox.isSelected());
+    }
+
+    public void testShouldContainCamelIconsComboBox() {
+        camelPreferencePage.createComponent();
+        JComboBox<String> comboBox = camelPreferencePage.getCamelIconsComboBox();
+        assertEquals(3, comboBox.getItemCount());
+        assertEquals("Camel Icon", comboBox.getItemAt(0));
+        assertEquals("Camel Badge Icon", comboBox.getItemAt(1));
     }
 }
