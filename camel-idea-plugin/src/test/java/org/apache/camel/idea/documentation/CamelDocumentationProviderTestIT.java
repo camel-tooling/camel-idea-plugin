@@ -106,7 +106,6 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
         String documentation = new CamelDocumentationProvider().generateDoc(element, null);
         assertNotNull(documentation);
         assertTrue(documentation.startsWith("<b>File Component</b><br/>The file component is used for reading or writing files.<br/>"));
-        System.out.println(documentation);
     }
 
     public void testHandleExternal() {
