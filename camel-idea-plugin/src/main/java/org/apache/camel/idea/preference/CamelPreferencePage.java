@@ -245,4 +245,8 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
     JBCheckBox getHighlightCustomOptionsCheckBox() {
         return highlightCustomOptionsCheckBox;
     }
+
+    JBCheckBox getDownloadCatalogCheckBox() {
+        return downloadCatalogCheckBox;
+    }
 }
