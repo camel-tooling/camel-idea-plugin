@@ -16,7 +16,6 @@
  */
 package org.apache.camel.idea.preference;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -25,10 +24,12 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.swing.JComboBox;
+
+import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.components.JBCheckBox;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
-import javax.swing.*;
 
 public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtureTestCaseIT {
 
@@ -121,5 +122,24 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         assertEquals("Camel Icon", comboBox.getItemAt(0));
         assertEquals("Camel Badge Icon", comboBox.getItemAt(1));
         assertEquals("Custom Icon", comboBox.getItemAt(2));
+        assertEquals(0, comboBox.getSelectedIndex());
+    }
+
+    public void testCustomIconButtonShouldNotBeEnabledByDefault() {
+        camelPreferencePage.createComponent();
+        TextFieldWithBrowseButton button = camelPreferencePage.getCustomIconButton();
+        assertEquals(false, button.isEnabled());
+    }
+
+    public void testCustomIconButtonShouldBeEnabledWhenSelectingCustomCamelIcon() {
+        camelPreferencePage.createComponent();
+        TextFieldWithBrowseButton button = camelPreferencePage.getCustomIconButton();
+        JComboBox<String> comboBox = camelPreferencePage.getCamelIconsComboBox();
+        assertEquals("Camel Icon", comboBox.getItemAt(0));
+        assertEquals(false, button.isEnabled());
+        comboBox.setSelectedIndex(2);
+        assertEquals(2, comboBox.getSelectedIndex());
+        assertEquals("Custom Icon", comboBox.getSelectedItem().toString());
+        assertEquals(true, button.isEnabled());
     }
 }

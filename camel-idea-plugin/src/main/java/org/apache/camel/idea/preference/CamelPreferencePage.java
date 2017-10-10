@@ -265,4 +265,8 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
     JComboBox<String> getCamelIconsComboBox() {
         return camelIconsComboBox;
     }
+
+    TextFieldWithBrowseButton getCustomIconButton() {
+        return customIconButton;
+    }
 }
