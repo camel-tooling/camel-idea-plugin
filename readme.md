@@ -56,9 +56,11 @@ Currently its only endpoint options in the URI query section which can be edited
 support for editing the options in the URI context-path section as well.
 
 
-### Preference
+### Plugin Preferences
 
 The plugin comes with a preference where you can configure global settings for the plugin such as turning on or off the real time validation in the editor, or whether to show the Camel icon in the gutter, etc.
+If you want to change the default preferences open the `Preferences...` menu, select `Languages & Frameworks` and `Apache Camel`. Here is a screenshot of it:
+![Screenshot](https://github.com/camel-idea-plugin/camel-idea-plugin/blob/master/img/26-plugin-preferences.png)
 
 
 ### IDEA Compatability
