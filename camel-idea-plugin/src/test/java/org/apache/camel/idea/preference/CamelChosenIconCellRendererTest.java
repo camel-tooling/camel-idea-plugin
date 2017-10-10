@@ -71,7 +71,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldContainRealTimeSimpleValidationCatalogCheckBox() {
-        CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
         camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getRealTimeSimpleValidationCatalogCheckBox();
         assertEquals("Real time validation of Camel simple language in editor", checkBox.getText());
