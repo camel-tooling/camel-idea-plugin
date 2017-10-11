@@ -195,4 +195,12 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         camelPreferencePage.reset();
         assertTrue(checkBox.isSelected());
     }
+
+    public void testShouldRestRealTimeSimpleValidationCatalogCheckBox() {
+        camelPreferencePage.createComponent();
+        JBCheckBox checkBox = camelPreferencePage.getRealTimeSimpleValidationCatalogCheckBox();
+        checkBox.setSelected(false);
+        camelPreferencePage.reset();
+        assertTrue(checkBox.isSelected());
+    }
 }
