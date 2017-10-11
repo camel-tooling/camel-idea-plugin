@@ -268,4 +268,16 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         assertNotNull(comboBox.getSelectedItem());
         assertEquals("Camel Icon", comboBox.getSelectedItem().toString());
     }
+
+    public void testShouldResetIgnorePropertyTable() {
+        camelPreferencePage.createComponent();
+        CamelIgnorePropertyTable table = camelPreferencePage.getIgnorePropertyTable();
+        List<String> ignoredProperties = table.getIgnoredProperties();
+        assertEquals(9, table.getModel().getRowCount());
+        table.getModel().removeRow(0);
+        assertEquals(8, table.getModel().getRowCount());
+        camelPreferencePage.reset();
+        table.reset();
+        assertEquals(9, table.getModel().getRowCount());
+    }
 }

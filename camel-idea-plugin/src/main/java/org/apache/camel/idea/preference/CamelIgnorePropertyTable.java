@@ -120,7 +120,7 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
         return false;
     }
 
-    private static final class ModelAdapter extends AbstractTableModel implements EditableModel {
+    static final class ModelAdapter extends AbstractTableModel implements EditableModel {
         private List<String> myConfigurations;
         private CamelIgnorePropertyModel configurations;
 
