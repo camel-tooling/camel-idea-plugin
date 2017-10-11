@@ -256,4 +256,16 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         assertNotNull(comboBox.getSelectedItem());
         assertEquals("Camel Icon", comboBox.getSelectedItem().toString());
     }
+
+    public void testResetCustomIconButton() {
+        camelPreferencePage.createComponent();
+        TextFieldWithBrowseButton button = camelPreferencePage.getCustomIconButton();
+        JComboBox<String> comboBox = camelPreferencePage.getCamelIconsComboBox();
+
+        comboBox.setSelectedIndex(1);
+        assertEquals(false, button.isEnabled());
+        camelPreferencePage.reset();
+        assertNotNull(comboBox.getSelectedItem());
+        assertEquals("Camel Icon", comboBox.getSelectedItem().toString());
+    }
 }
