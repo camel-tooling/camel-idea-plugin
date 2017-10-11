@@ -286,12 +286,10 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     public void testShouldResetIgnorePropertyTable() {
         camelPreferencePage.createComponent();
         CamelIgnorePropertyTable table = camelPreferencePage.getIgnorePropertyTable();
-        List<String> ignoredProperties = table.getIgnoredProperties();
         assertEquals(9, table.getModel().getRowCount());
         table.getModel().removeRow(0);
         assertEquals(8, table.getModel().getRowCount());
         camelPreferencePage.reset();
-        table.reset();
         assertEquals(9, table.getModel().getRowCount());
     }
 
