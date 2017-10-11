@@ -31,7 +31,6 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.components.JBCheckBox;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
-
 public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtureTestCaseIT {
 
     private CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
@@ -187,5 +186,13 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         };
         List<String> expectedIgnoredProperties = Arrays.asList(strings);
         assertEquals(expectedIgnoredProperties, ignoredProperties);
+    }
+
+    public void testShouldResetRealTimeEndpointValidationCatalogCheckBox() {
+        camelPreferencePage.createComponent();
+        JBCheckBox checkBox = camelPreferencePage.getRealTimeEndpointValidationCatalogCheckBox();
+        checkBox.setSelected(false);
+        camelPreferencePage.reset();
+        assertTrue(checkBox.isSelected());
     }
 }
