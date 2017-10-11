@@ -314,4 +314,15 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         assertEquals(false, checkBox.isSelected());
         assertEquals(false, camelPreferencePage.getCamelPreferenceService().isRealTimeEndpointValidation());
     }
+
+    public void testShouldChangeStateOfRealTimeSimpleValidationCatalogCheckBox() throws ConfigurationException {
+        camelPreferencePage.createComponent();
+        JBCheckBox checkBox = camelPreferencePage.getRealTimeSimpleValidationCatalogCheckBox();
+        assertEquals(true, checkBox.isSelected());
+        assertEquals(true, camelPreferencePage.getCamelPreferenceService().isRealTimeSimpleValidation());
+        checkBox.setSelected(false);
+        camelPreferencePage.apply();
+        assertEquals(false, checkBox.isSelected());
+        assertEquals(false, camelPreferencePage.getCamelPreferenceService().isRealTimeSimpleValidation());
+    }
 }
