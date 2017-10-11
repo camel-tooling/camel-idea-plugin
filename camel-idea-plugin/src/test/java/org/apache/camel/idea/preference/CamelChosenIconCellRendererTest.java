@@ -304,7 +304,7 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         assertEquals(3, table.getModel().getRowCount());
     }
 
-    public void testShouldStateOfChangeRealTimeEndpointValidationCatalogCheckBox() throws ConfigurationException {
+    public void testShouldChangeStateOfRealTimeEndpointValidationCatalogCheckBox() throws ConfigurationException {
         camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getRealTimeEndpointValidationCatalogCheckBox();
         assertEquals(true, checkBox.isSelected());
