@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import javax.swing.JComboBox;
 
+import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.components.JBCheckBox;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
@@ -301,5 +302,16 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         assertEquals(2, table.getModel().getRowCount());
         camelPreferencePage.reset();
         assertEquals(3, table.getModel().getRowCount());
+    }
+
+    public void testShouldStateOfChangeRealTimeEndpointValidationCatalogCheckBox() throws ConfigurationException {
+        camelPreferencePage.createComponent();
+        JBCheckBox checkBox = camelPreferencePage.getRealTimeEndpointValidationCatalogCheckBox();
+        assertEquals(true, checkBox.isSelected());
+        assertEquals(true, camelPreferencePage.getCamelPreferenceService().isRealTimeEndpointValidation());
+        checkBox.setSelected(false);
+        camelPreferencePage.apply();
+        assertEquals(false, checkBox.isSelected());
+        assertEquals(false, camelPreferencePage.getCamelPreferenceService().isRealTimeEndpointValidation());
     }
 }
