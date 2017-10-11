@@ -219,4 +219,12 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         camelPreferencePage.reset();
         assertTrue(checkBox.isSelected());
     }
+
+    public void testShouldResetScanThirdPartyComponentsCatalogCheckBox() {
+        camelPreferencePage.createComponent();
+        JBCheckBox checkBox = camelPreferencePage.getScanThirdPartyComponentsCatalogCheckBox();
+        checkBox.setSelected(false);
+        camelPreferencePage.reset();
+        assertTrue(checkBox.isSelected());
+    }
 }
