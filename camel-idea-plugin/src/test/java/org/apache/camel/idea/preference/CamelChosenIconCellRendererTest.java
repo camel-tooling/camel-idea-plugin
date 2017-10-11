@@ -192,6 +192,20 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         assertEquals(expectedIgnoredProperties, ignoredProperties);
     }
 
+    public void testShouldContainExcludePropertyTable() {
+        camelPreferencePage.createComponent();
+        CamelExcludePropertyFileTable table = camelPreferencePage.getExcludePropertyFileTable();
+        List<String> excludePropertyFiles = table.getExcludePropertyFiles();
+
+        String[] strings =  {
+                "**/log4j.properties",
+                "**/log4j2.properties",
+                "**/logging.properties",
+        };
+        List<String> expectedExcludedProperties = Arrays.asList(strings);
+        assertEquals(expectedExcludedProperties, excludePropertyFiles);
+    }
+
     public void testShouldResetRealTimeEndpointValidationCatalogCheckBox() {
         camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getRealTimeEndpointValidationCatalogCheckBox();
@@ -279,5 +293,15 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         camelPreferencePage.reset();
         table.reset();
         assertEquals(9, table.getModel().getRowCount());
+    }
+
+    public void testShouldResetExcludePropertyTable() {
+        camelPreferencePage.createComponent();
+        CamelExcludePropertyFileTable table = camelPreferencePage.getExcludePropertyFileTable();
+        assertEquals(3, table.getModel().getRowCount());
+        table.getModel().removeRow(0);
+        assertEquals(2, table.getModel().getRowCount());
+        camelPreferencePage.reset();
+        assertEquals(3, table.getModel().getRowCount());
     }
 }

@@ -273,4 +273,8 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
     CamelIgnorePropertyTable getIgnorePropertyTable() {
         return ignorePropertyTable;
     }
+
+    CamelExcludePropertyFileTable getExcludePropertyFileTable() {
+        return excludePropertyFileTable;
+    }
 }
