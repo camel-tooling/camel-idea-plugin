@@ -118,6 +118,8 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     public void testShouldContainCamelIconsComboBox() {
         camelPreferencePage.createComponent();
         JComboBox<String> comboBox = camelPreferencePage.getCamelIconsComboBox();
+        assertNotNull(comboBox.getSelectedItem());
+        assertEquals("Camel Icon", comboBox.getSelectedItem());
         assertEquals(3, comboBox.getItemCount());
         assertEquals("Camel Icon", comboBox.getItemAt(0));
         assertEquals("Camel Badge Icon", comboBox.getItemAt(1));
@@ -135,7 +137,8 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         camelPreferencePage.createComponent();
         TextFieldWithBrowseButton button = camelPreferencePage.getCustomIconButton();
         JComboBox<String> comboBox = camelPreferencePage.getCamelIconsComboBox();
-        assertEquals("Camel Icon", comboBox.getItemAt(0));
+        assertNotNull(comboBox.getSelectedItem());
+        assertEquals("Camel Icon", comboBox.getSelectedItem());
         assertEquals(false, button.isEnabled());
         comboBox.setSelectedIndex(2);
         assertEquals(2, comboBox.getSelectedIndex());
@@ -149,7 +152,8 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         TextFieldWithBrowseButton button = camelPreferencePage.getCustomIconButton();
         JComboBox<String> comboBox = camelPreferencePage.getCamelIconsComboBox();
 
-        assertEquals("Camel Icon", comboBox.getItemAt(0));
+        assertNotNull(comboBox.getSelectedItem());
+        assertEquals("Camel Icon", comboBox.getSelectedItem().toString());
         assertEquals(false, button.isEnabled());
 
         comboBox.setSelectedIndex(1);
