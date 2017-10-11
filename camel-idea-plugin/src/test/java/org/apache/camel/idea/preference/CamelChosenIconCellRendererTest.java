@@ -198,9 +198,9 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         List<String> excludePropertyFiles = table.getExcludePropertyFiles();
 
         String[] strings =  {
-                "**/log4j.properties",
-                "**/log4j2.properties",
-                "**/logging.properties",
+            "**/log4j.properties",
+            "**/log4j2.properties",
+            "**/logging.properties",
         };
         List<String> expectedExcludedProperties = Arrays.asList(strings);
         assertEquals(expectedExcludedProperties, excludePropertyFiles);
