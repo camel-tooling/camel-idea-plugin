@@ -18,11 +18,15 @@ package org.apache.camel.idea;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.testFramework.PsiTestUtil;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import org.apache.camel.idea.service.CamelCatalogService;
+import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
@@ -53,6 +57,8 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelCatalogService.class));
         disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelService.class));
         ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(true);
+
+        initCamelPreferencesService();
     }
 
     @Override
@@ -91,5 +97,40 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
 
     public void setIgnoreCamelCoreLib(boolean ignoreCamelCoreLib) {
         this.ignoreCamelCoreLib = ignoreCamelCoreLib;
+    }
+
+    private void initCamelPreferencesService() {
+        String[] strings =  {
+            "**/log4j.properties",
+            "**/log4j2.properties",
+            "**/logging.properties",
+        };
+        List<String> expectedExcludedProperties = Arrays.asList(strings);
+        CamelPreferenceService service = ServiceManager.getService(CamelPreferenceService.class);
+        service.setExcludePropertyFiles(expectedExcludedProperties);
+        service.setRealTimeEndpointValidation(true);
+        service.setScanThirdPartyLegacyComponents(true);
+        service.setCustomIconFilePath(null);
+        service.setDownloadCatalog(true);
+        service.setHighlightCustomOptions(true);
+
+        String[] strings1 =  {
+            "java.",
+            "Logger.",
+            "logger",
+            "appender.",
+            "rootLogger.",
+            "camel.springboot.",
+            "camel.component.",
+            "camel.dataformat.",
+            "camel.language."
+        };
+        List<String> expectedIgnoredProperties = Arrays.asList(strings1);
+
+        service.setIgnorePropertyList(expectedIgnoredProperties);
+        service.setShowCamelIconInGutter(true);
+        service.setScanThirdPartyComponents(true);
+        service.setRealTimeSimpleValidation(true);
+        service.setChosenCamelIcon("Camel Icon");
     }
 }
