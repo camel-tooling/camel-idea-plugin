@@ -55,8 +55,8 @@ public class CamelIgnorePropertyModel implements Cloneable {
 
     @Override
     protected CamelIgnorePropertyModel clone() throws CloneNotSupportedException {
-        CamelIgnorePropertyModel camelIgnorePropertyModel = new CamelIgnorePropertyModel(new ArrayList<>(getPropertyNames()));
-        return camelIgnorePropertyModel;
+        super.clone();
+        return new CamelIgnorePropertyModel(new ArrayList<>(getPropertyNames()));
     }
 
 
