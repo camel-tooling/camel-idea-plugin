@@ -55,8 +55,8 @@ public class CamelExcludePropertyFileModel implements Cloneable {
 
     @Override
     protected CamelExcludePropertyFileModel clone() throws CloneNotSupportedException {
-        CamelExcludePropertyFileModel excludePropertyFileModel = new CamelExcludePropertyFileModel(new ArrayList<>(getFilenames()));
-        return excludePropertyFileModel;
+        super.clone();
+        return new CamelExcludePropertyFileModel(new ArrayList<>(getFilenames()));
     }
 
 

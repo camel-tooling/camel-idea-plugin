@@ -65,15 +65,14 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
      * <p>
      *   The method take a String arrays off "G:A:P:C:?" "org.apache.camel:camel-core:2.19.0"
      * </p>
-     * @param mavneAritfiact - Array of maven artifact to resolve
+     * @param mavenAritfiact - Array of maven artifact to resolve
      * @return Array of artifact files
      * @throws IOException
      */
-    protected static File[] getMavenArtifacts(String... mavneAritfiact) throws IOException {
+    private static File[] getMavenArtifacts(String... mavenAritfiact) throws IOException {
         File[] libs = Maven.resolver().loadPomFromFile("pom.xml")
-            .resolve(mavneAritfiact)
+            .resolve(mavenAritfiact)
             .withoutTransitivity().asFile();
-
         return libs;
     }
 
@@ -85,11 +84,11 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         return myFixture.getFile().findElementAt(offset);
     }
 
-    public boolean isIgnoreCamelCoreLib() {
+    private boolean isIgnoreCamelCoreLib() {
         return this.ignoreCamelCoreLib;
     }
 
-    public void setIgnoreCamelCoreLib(boolean ignoreCamelCoreLib) {
+    protected void setIgnoreCamelCoreLib(boolean ignoreCamelCoreLib) {
         this.ignoreCamelCoreLib = ignoreCamelCoreLib;
     }
 }
