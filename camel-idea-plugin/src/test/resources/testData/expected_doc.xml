@@ -1,0 +1,1 @@
+<strong>delete</strong><br/><br/><strong>Group: </strong>consumer<br/><strong>Type: </strong><tt>boolean</tt><br/><strong>Required: </strong>false<br/><strong>Default value: </strong>false<br/><br/><div>If true the file will be deleted after it is processed successfully.</div>

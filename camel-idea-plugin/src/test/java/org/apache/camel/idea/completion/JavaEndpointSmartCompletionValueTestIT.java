@@ -16,9 +16,8 @@
  */
 package org.apache.camel.idea.completion;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-
 import com.intellij.codeInsight.completion.CompletionType;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.hamcrest.Matchers;
@@ -69,7 +68,7 @@ public class JavaEndpointSmartCompletionValueTestIT extends CamelLightCodeInsigh
         myFixture.configureByText("JavaCaretInMiddleOptionsTestData.java", getJavaInTheMiddleUnresolvedValueTestData());
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertFalse(strings.containsAll(Arrays.asList("timer:trigger?repeatCount=10")));
+        assertFalse(strings.containsAll(Collections.singletonList("timer:trigger?repeatCount=10")));
         assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&fixedRate=false", "timer:trigger?repeatCount=10&fixedRate=true"));
         assertEquals(2, strings.size());
     }
@@ -87,7 +86,7 @@ public class JavaEndpointSmartCompletionValueTestIT extends CamelLightCodeInsigh
         myFixture.configureByText("JavaCaretInMiddleOptionsTestData.java", getJavaUnresolvedValueWithPreTestData());
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertFalse(strings.containsAll(Arrays.asList("timer:trigger?repeatCount=10")));
+        assertFalse(strings.containsAll(Collections.singletonList("timer:trigger?repeatCount=10")));
         assertThat(strings, Matchers.containsInAnyOrder(
             "timer:trigger?exchangePattern=InOut",
             "timer:trigger?exchangePattern=InOnly",
