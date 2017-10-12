@@ -95,13 +95,11 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     public void testShouldContainHighlightCustomOptionsCheckBox() {
         JBCheckBox checkBox = camelPreferencePage.getHighlightCustomOptionsCheckBox();
         assertEquals("Highlight custom endpoint options as warnings in editor", checkBox.getText());
-        assertTrue(checkBox.isSelected());
     }
 
     public void testShouldContainDownloadCatalogCheckBox() {
         JBCheckBox checkBox = camelPreferencePage.getDownloadCatalogCheckBox();
         assertEquals("Allow downloading camel-catalog over the internet", checkBox.getText());
-        assertTrue(checkBox.isSelected());
     }
 
     public void testShouldContainScanThirdPartyComponentsCatalogCheckBox() {
@@ -216,16 +214,18 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
 
     public void testShouldRestRealTimeSimpleValidationCatalogCheckBox() {
         JBCheckBox checkBox = camelPreferencePage.getRealTimeSimpleValidationCatalogCheckBox();
-        checkBox.setSelected(false);
+        boolean status = checkBox.isSelected();
+        checkBox.setSelected(!status);
         camelPreferencePage.reset();
-        assertTrue(checkBox.isSelected());
+        assertEquals(status, checkBox.isSelected());
     }
 
     public void testShouldResetHighlightCustomOptionsCheckBox() {
         JBCheckBox checkBox = camelPreferencePage.getHighlightCustomOptionsCheckBox();
-        checkBox.setSelected(false);
+        boolean status = checkBox.isSelected();
+        checkBox.setSelected(!status);
         camelPreferencePage.reset();
-        assertTrue(checkBox.isSelected());
+        assertEquals(status, checkBox.isSelected());
     }
 
     public void testShouldDownloadCatalogCheckBox() {
