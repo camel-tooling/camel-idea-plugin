@@ -33,6 +33,7 @@
       <ul>
         <li>Fixed bug with loading 3rd party camel-catalog versions, such as 2.17.0.redhat-630187</li>
         <li>Upgraded to IntelliJ 2017.2.5</li>
+        <li>Upgraded to Apache Camel 2.20.0</li>
       </ul>
       v0.4.4
       <ul>
