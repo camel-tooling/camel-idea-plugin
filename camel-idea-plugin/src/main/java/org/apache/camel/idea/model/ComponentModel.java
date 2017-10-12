@@ -36,8 +36,8 @@ public class ComponentModel {
     private String groupId;
     private String artifactId;
     private String version;
-    private final List<ComponentOptionModel> componentOptions = new ArrayList<ComponentOptionModel>();
-    private final List<EndpointOptionModel> endpointOptions = new ArrayList<EndpointOptionModel>();
+    private final List<ComponentOptionModel> componentOptions = new ArrayList<>();
+    private final List<EndpointOptionModel> endpointOptions = new ArrayList<>();
 
     public String getKind() {
         return kind;
