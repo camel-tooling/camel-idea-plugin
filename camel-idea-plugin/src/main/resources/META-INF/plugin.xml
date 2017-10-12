@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.4.5</version>
+  <version>0.4.6</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -29,6 +29,10 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      v0.4.6
+      <ul>
+        <li>Work in progress</li>
+      </ul>
       v0.4.5
       <ul>
         <li>Fixed bug with loading 3rd party camel-catalog versions, such as 2.17.0.redhat-630187</li>
