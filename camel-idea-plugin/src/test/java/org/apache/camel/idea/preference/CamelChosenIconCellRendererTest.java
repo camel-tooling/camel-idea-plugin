@@ -95,11 +95,13 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     public void testShouldContainHighlightCustomOptionsCheckBox() {
         JBCheckBox checkBox = camelPreferencePage.getHighlightCustomOptionsCheckBox();
         assertEquals("Highlight custom endpoint options as warnings in editor", checkBox.getText());
+        assertTrue(checkBox.isSelected());
     }
 
     public void testShouldContainDownloadCatalogCheckBox() {
         JBCheckBox checkBox = camelPreferencePage.getDownloadCatalogCheckBox();
         assertEquals("Allow downloading camel-catalog over the internet", checkBox.getText());
+        assertTrue(checkBox.isSelected());
     }
 
     public void testShouldContainScanThirdPartyComponentsCatalogCheckBox() {
