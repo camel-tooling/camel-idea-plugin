@@ -35,7 +35,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.plugin.version>3.6.0</maven.compiler.plugin.version>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
-    <maven.checkstyle.version>6.17</maven.checkstyle.version>
+    <maven.checkstyle.version>8.3</maven.checkstyle.version>
 
     <!-- dependency versions, keep the list A..Z -->
     <camel.version>2.19.3</camel.version>

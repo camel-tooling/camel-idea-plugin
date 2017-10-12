@@ -18,7 +18,6 @@ package org.apache.camel.idea.util;
 
 import java.io.File;
 import java.util.stream.Stream;
-
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;

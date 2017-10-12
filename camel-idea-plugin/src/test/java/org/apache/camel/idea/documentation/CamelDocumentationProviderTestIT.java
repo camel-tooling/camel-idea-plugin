@@ -18,7 +18,6 @@ package org.apache.camel.idea.documentation;
 
 import java.io.File;
 import java.io.IOException;
-
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;

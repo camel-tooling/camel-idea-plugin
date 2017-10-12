@@ -19,7 +19,6 @@ package org.apache.camel.idea.completion.endpoint;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.Lookup;
@@ -36,7 +35,6 @@ import org.apache.camel.idea.model.EndpointOptionModel;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
-
 import static org.apache.camel.idea.util.CamelIdeaUtils.isConsumerEndpoint;
 import static org.apache.camel.idea.util.CamelIdeaUtils.isProducerEndpoint;
 

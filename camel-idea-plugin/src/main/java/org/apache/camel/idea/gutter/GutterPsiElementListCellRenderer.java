@@ -17,7 +17,6 @@
 package org.apache.camel.idea.gutter;
 
 import javax.swing.*;
-
 import com.intellij.ide.util.PsiElementListCellRenderer;
 import com.intellij.openapi.util.Iconable;
 import com.intellij.psi.PsiElement;

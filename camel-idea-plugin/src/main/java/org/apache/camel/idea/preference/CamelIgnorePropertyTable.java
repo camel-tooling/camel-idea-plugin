@@ -26,7 +26,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.EditableModel;

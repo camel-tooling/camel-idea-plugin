@@ -73,7 +73,7 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
         customIconButton.addBrowseFolderListener("Choose Custom Camel Icon", "The icon should be a 16x16 png file", null, FileChooserDescriptorFactory.createSingleFileDescriptor("png"));
 
         camelIconsComboBox.setRenderer(new CamelChosenIconCellRender(customIconButton));
-        camelIconsComboBox.addItemListener((l) -> {
+        camelIconsComboBox.addItemListener(l -> {
             // only enable custom if selected in the drop down
             customIconButton.setEnabled("Custom Icon".equals(l.getItem()));
         });

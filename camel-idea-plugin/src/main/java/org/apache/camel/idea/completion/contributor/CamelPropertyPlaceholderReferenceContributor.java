@@ -18,7 +18,6 @@ package org.apache.camel.idea.completion.contributor;
 
 import com.intellij.codeInsight.completion.CompletionType;
 import org.apache.camel.idea.completion.extension.CamelPropertyPlaceholderSmartCompletionExtension;
-
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
