@@ -286,11 +286,11 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
 
     public void testShouldResetExcludePropertyTable() {
         CamelExcludePropertyFileTable table = camelPreferencePage.getExcludePropertyFileTable();
-        assertEquals(3, table.getModel().getRowCount());
+        int initialRowCount = table.getModel().getRowCount();
         table.getModel().removeRow(0);
-        assertEquals(2, table.getModel().getRowCount());
+        assertEquals(initialRowCount - 1, table.getModel().getRowCount());
         camelPreferencePage.reset();
-        assertEquals(3, table.getModel().getRowCount());
+        assertEquals(initialRowCount, table.getModel().getRowCount());
     }
 
     public void testShouldChangeStateOfRealTimeEndpointValidationCatalogCheckBox() throws ConfigurationException {
