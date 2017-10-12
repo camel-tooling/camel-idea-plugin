@@ -34,7 +34,20 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
 public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtureTestCaseIT {
 
-    private CamelPreferencePage camelPreferencePage = new CamelPreferencePage();
+    private CamelPreferencePage camelPreferencePage;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        camelPreferencePage = new CamelPreferencePage();
+        camelPreferencePage.createComponent();
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        super.tearDown();
+        camelPreferencePage = null;
+    }
 
     public void testPluginXmlShouldContainPreferencesPage() {
         File pluginXml = new File("src/main/resources/META-INF/plugin.xml");
@@ -68,56 +81,48 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldContainRealTimeEndpointValidationCatalogCheckBox() {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getRealTimeEndpointValidationCatalogCheckBox();
         assertEquals("Real time validation of Camel endpoints in editor", checkBox.getText());
         assertTrue(checkBox.isSelected());
     }
 
     public void testShouldContainRealTimeSimpleValidationCatalogCheckBox() {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getRealTimeSimpleValidationCatalogCheckBox();
         assertEquals("Real time validation of Camel simple language in editor", checkBox.getText());
         assertTrue(checkBox.isSelected());
     }
 
     public void testShouldContainHighlightCustomOptionsCheckBox() {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getHighlightCustomOptionsCheckBox();
         assertEquals("Highlight custom endpoint options as warnings in editor", checkBox.getText());
         assertTrue(checkBox.isSelected());
     }
 
     public void testShouldContainDownloadCatalogCheckBox() {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getDownloadCatalogCheckBox();
         assertEquals("Allow downloading camel-catalog over the internet", checkBox.getText());
         assertTrue(checkBox.isSelected());
     }
 
     public void testShouldContainScanThirdPartyComponentsCatalogCheckBox() {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getScanThirdPartyComponentsCatalogCheckBox();
         assertEquals("Scan classpath for third party Camel components using modern component packaging", checkBox.getText());
         assertTrue(checkBox.isSelected());
     }
 
     public void testShouldContainScanThirdPartyLegacyComponentsCatalogCheckBox() {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getScanThirdPartyLegacyComponentsCatalogCheckBox();
         assertEquals("Scan classpath for third party Camel components using legacy component packaging", checkBox.getText());
         assertTrue(checkBox.isSelected());
     }
 
     public void testShouldContainCamelIconInGutterCheckBox() {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getCamelIconInGutterCheckBox();
         assertEquals("Show Camel icon in gutter", checkBox.getText());
         assertTrue(checkBox.isSelected());
     }
 
     public void testShouldContainCamelIconsComboBox() {
-        camelPreferencePage.createComponent();
         JComboBox<String> comboBox = camelPreferencePage.getCamelIconsComboBox();
         assertNotNull(comboBox.getSelectedItem());
         assertEquals("Camel Icon", comboBox.getSelectedItem());
@@ -129,13 +134,11 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testCustomIconButtonShouldNotBeEnabledByDefault() {
-        camelPreferencePage.createComponent();
         TextFieldWithBrowseButton button = camelPreferencePage.getCustomIconButton();
         assertEquals(false, button.isEnabled());
     }
 
     public void testCustomIconButtonShouldBeEnabledWhenSelectingCustomCamelIcon() {
-        camelPreferencePage.createComponent();
         TextFieldWithBrowseButton button = camelPreferencePage.getCustomIconButton();
         JComboBox<String> comboBox = camelPreferencePage.getCamelIconsComboBox();
         assertNotNull(comboBox.getSelectedItem());
@@ -149,7 +152,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testCustomIconButtonShouldBeEnabledWhenSelectedItemIsCustomIconOnly() {
-        camelPreferencePage.createComponent();
         TextFieldWithBrowseButton button = camelPreferencePage.getCustomIconButton();
         JComboBox<String> comboBox = camelPreferencePage.getCamelIconsComboBox();
 
@@ -174,7 +176,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldContainIgnorePropertyTable() {
-        camelPreferencePage.createComponent();
         CamelIgnorePropertyTable table = camelPreferencePage.getIgnorePropertyTable();
         List<String> ignoredProperties = table.getIgnoredProperties();
 
@@ -194,7 +195,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldContainExcludePropertyTable() {
-        camelPreferencePage.createComponent();
         CamelExcludePropertyFileTable table = camelPreferencePage.getExcludePropertyFileTable();
         List<String> excludePropertyFiles = table.getExcludePropertyFiles();
 
@@ -208,7 +208,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldResetRealTimeEndpointValidationCatalogCheckBox() {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getRealTimeEndpointValidationCatalogCheckBox();
         checkBox.setSelected(false);
         camelPreferencePage.reset();
@@ -216,7 +215,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldRestRealTimeSimpleValidationCatalogCheckBox() {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getRealTimeSimpleValidationCatalogCheckBox();
         checkBox.setSelected(false);
         camelPreferencePage.reset();
@@ -224,7 +222,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldResetHighlightCustomOptionsCheckBox() {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getHighlightCustomOptionsCheckBox();
         checkBox.setSelected(false);
         camelPreferencePage.reset();
@@ -232,7 +229,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldDownloadCatalogCheckBox() {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getDownloadCatalogCheckBox();
         checkBox.setSelected(false);
         camelPreferencePage.reset();
@@ -240,7 +236,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldResetScanThirdPartyComponentsCatalogCheckBox() {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getScanThirdPartyComponentsCatalogCheckBox();
         checkBox.setSelected(false);
         camelPreferencePage.reset();
@@ -248,7 +243,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldResetScanThirdPartyLegacyComponentsCatalogCheckBox() {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getScanThirdPartyLegacyComponentsCatalogCheckBox();
         checkBox.setSelected(false);
         camelPreferencePage.reset();
@@ -256,7 +250,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldResetCamelIconInGutterCheckBox() {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getCamelIconInGutterCheckBox();
         checkBox.setSelected(false);
         camelPreferencePage.reset();
@@ -264,7 +257,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldResetCamelIconsComboBox() {
-        camelPreferencePage.createComponent();
         JComboBox<String> comboBox = camelPreferencePage.getCamelIconsComboBox();
         comboBox.setSelectedIndex(1);
         camelPreferencePage.reset();
@@ -273,7 +265,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testResetCustomIconButton() {
-        camelPreferencePage.createComponent();
         TextFieldWithBrowseButton button = camelPreferencePage.getCustomIconButton();
         JComboBox<String> comboBox = camelPreferencePage.getCamelIconsComboBox();
 
@@ -285,7 +276,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldResetIgnorePropertyTable() {
-        camelPreferencePage.createComponent();
         CamelIgnorePropertyTable table = camelPreferencePage.getIgnorePropertyTable();
         assertEquals(9, table.getModel().getRowCount());
         table.getModel().removeRow(0);
@@ -295,7 +285,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldResetExcludePropertyTable() {
-        camelPreferencePage.createComponent();
         CamelExcludePropertyFileTable table = camelPreferencePage.getExcludePropertyFileTable();
         assertEquals(3, table.getModel().getRowCount());
         table.getModel().removeRow(0);
@@ -305,7 +294,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldChangeStateOfRealTimeEndpointValidationCatalogCheckBox() throws ConfigurationException {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getRealTimeEndpointValidationCatalogCheckBox();
         assertEquals(true, checkBox.isSelected());
         assertEquals(true, camelPreferencePage.getCamelPreferenceService().isRealTimeEndpointValidation());
@@ -316,7 +304,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldChangeStateOfRealTimeSimpleValidationCatalogCheckBox() throws ConfigurationException {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getRealTimeSimpleValidationCatalogCheckBox();
         assertEquals(true, checkBox.isSelected());
         assertEquals(true, camelPreferencePage.getCamelPreferenceService().isRealTimeSimpleValidation());
@@ -327,7 +314,6 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     }
 
     public void testShouldChangeStateOfHighlightCustomOptionsCheckBox() throws ConfigurationException {
-        camelPreferencePage.createComponent();
         JBCheckBox checkBox = camelPreferencePage.getHighlightCustomOptionsCheckBox();
         assertEquals(true, checkBox.isSelected());
         assertEquals(true, camelPreferencePage.getCamelPreferenceService().isHighlightCustomOptions());
