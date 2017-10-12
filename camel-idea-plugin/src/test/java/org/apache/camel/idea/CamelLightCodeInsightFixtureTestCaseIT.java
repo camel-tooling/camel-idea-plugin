@@ -37,7 +37,8 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
  */
 public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeInsightFixtureTestCase {
 
-    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.19.0";
+    private static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.19.0";
+
     private static File[] mavenArtifacts;
     private boolean ignoreCamelCoreLib;
 
@@ -51,7 +52,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        if (!isIgnoreCamelCoreLib()) {
+        if (!ignoreCamelCoreLib) {
             PsiTestUtil.addLibrary(myModule, "Maven: " + CAMEL_CORE_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
         }
         disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelCatalogService.class));
@@ -75,7 +76,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
      * @return Array of artifact files
      * @throws IOException
      */
-    protected static File[] getMavenArtifacts(String... mavneAritfiact) throws IOException {
+    private static File[] getMavenArtifacts(String... mavneAritfiact) throws IOException {
         File[] libs = Maven.resolver().loadPomFromFile("pom.xml")
             .resolve(mavneAritfiact)
             .withoutTransitivity().asFile();
@@ -91,11 +92,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         return myFixture.getFile().findElementAt(offset);
     }
 
-    public boolean isIgnoreCamelCoreLib() {
-        return this.ignoreCamelCoreLib;
-    }
-
-    public void setIgnoreCamelCoreLib(boolean ignoreCamelCoreLib) {
+    protected void setIgnoreCamelCoreLib(boolean ignoreCamelCoreLib) {
         this.ignoreCamelCoreLib = ignoreCamelCoreLib;
     }
 
