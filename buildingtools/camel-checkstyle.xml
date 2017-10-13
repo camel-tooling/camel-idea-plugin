@@ -18,8 +18,8 @@
   under the License.
 -->
 <!DOCTYPE module PUBLIC
-    "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
-    "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+        "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
+        "http://checkstyle.sourceforge.net/dtds/configuration_1_3.dtd">
 
 <!--
 Checks to make sure the code meets the ActiveMQ coding guidelines which
@@ -70,6 +70,8 @@ lengths, if/try depths, etc...
 
     <module name="TreeWalker">
 
+        <module name="SuppressionCommentFilter"/>
+
         <!-- Checks for Javadoc comments.                     -->
         <!-- See http://checkstyle.sf.net/config_javadoc.html -->
         <!--
@@ -106,9 +108,8 @@ lengths, if/try depths, etc...
          -->
         <module name="IllegalImport"/> <!-- defaults to sun.* packages -->
         <module name="RedundantImport"/>
-        <!-- When you javadoc {@link } an import is added that checkstyle thinks is unused import.
+
         <module name="UnusedImports"/>
-        -->
         <module name="ImportOrder">
             <property name="groups" value="java,javax,org.w3c,org.xml,junit"/>
             <property name="ordered" value="true"/>
@@ -237,6 +238,7 @@ lengths, if/try depths, etc...
         -->
         <module name="ReturnCount">
             <property name="max" value="25"/>
+            <property name="maxForVoid" value="25"/>
         </module>
 
         <!-- Um.. we tend to use these alot.. perhaps enable this check later.
@@ -340,5 +342,4 @@ lengths, if/try depths, etc...
         </module>
         <!--<module name="RequiredRegexp">-->
     </module>
-	<module name="SuppressionCommentFilter"/>
 </module>

@@ -18,7 +18,6 @@ package org.apache.camel.idea.completion.contributor;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
@@ -34,7 +33,6 @@ import org.apache.camel.idea.completion.extension.CamelCompletionExtension;
 import org.apache.camel.idea.service.CamelService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import static org.apache.camel.idea.util.IdeaUtils.extractTextFromElement;
 import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 

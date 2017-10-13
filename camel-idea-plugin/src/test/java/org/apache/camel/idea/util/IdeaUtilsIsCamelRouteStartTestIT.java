@@ -18,15 +18,12 @@ package org.apache.camel.idea.util;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiVariable;
-import com.intellij.psi.impl.JavaConstantExpressionEvaluator;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import org.apache.camel.idea.service.CamelService;

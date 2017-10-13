@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.*;
-
 import com.intellij.codeInsight.intention.LowPriorityAction;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.application.Result;
@@ -49,7 +48,6 @@ import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
-
 import static org.apache.camel.idea.util.IdeaUtils.extractTextFromElement;
 import static org.apache.camel.idea.util.IdeaUtils.getInnerText;
 

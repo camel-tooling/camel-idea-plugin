@@ -20,7 +20,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.NotNull;
-
 import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 
 /**

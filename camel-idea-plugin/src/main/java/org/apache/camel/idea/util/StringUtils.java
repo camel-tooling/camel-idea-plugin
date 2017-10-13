@@ -18,7 +18,6 @@ package org.apache.camel.idea.util;
 
 import java.util.List;
 import java.util.Map;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

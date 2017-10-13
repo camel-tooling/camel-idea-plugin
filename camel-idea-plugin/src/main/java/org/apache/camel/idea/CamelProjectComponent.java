@@ -17,7 +17,6 @@
 package org.apache.camel.idea;
 
 import java.util.List;
-
 import com.intellij.ProjectTopics;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.components.ServiceManager;

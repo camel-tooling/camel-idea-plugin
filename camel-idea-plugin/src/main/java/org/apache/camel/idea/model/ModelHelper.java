@@ -18,9 +18,7 @@ package org.apache.camel.idea.model;
 
 import java.util.List;
 import java.util.Map;
-
 import org.apache.camel.catalog.JSonSchemaHelper;
-
 import static org.apache.camel.idea.util.StringUtils.getSafeValue;
 
 public final class ModelHelper {

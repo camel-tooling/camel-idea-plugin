@@ -18,7 +18,6 @@ package org.apache.camel.idea.completion.endpoint;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.Lookup;
 import com.intellij.codeInsight.lookup.LookupElement;

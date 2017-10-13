@@ -18,14 +18,11 @@ package org.apache.camel.idea.service;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
