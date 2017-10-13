@@ -18,7 +18,6 @@ package org.apache.camel.idea.gutter;
 
 import java.util.List;
 import javax.swing.*;
-
 import com.intellij.codeInsight.daemon.GutterMark;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
@@ -27,7 +26,6 @@ import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiLiteralExpression;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.apache.camel.idea.service.CamelPreferenceService;
-
 import static org.apache.camel.idea.gutter.GutterTestUtil.getGutterNavigationDestinationElements;
 import static org.apache.camel.idea.gutter.GutterTestUtil.getGuttersWithJavaTarget;
 import static org.apache.camel.idea.gutter.GutterTestUtil.getGuttersWithMethodTarget;

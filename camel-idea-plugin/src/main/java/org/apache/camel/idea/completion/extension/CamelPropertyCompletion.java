@@ -19,7 +19,6 @@ package org.apache.camel.idea.completion.extension;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.camel.idea.service.CamelPreferenceService;
-
 import static com.intellij.openapi.components.ServiceManager.getService;
 
 /**

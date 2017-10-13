@@ -19,7 +19,6 @@ package org.apache.camel.idea.annotator;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
-
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -35,7 +34,6 @@ import org.apache.camel.idea.service.QueryUtils;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
-
 import static org.apache.camel.idea.util.CamelIdeaUtils.skipEndpointValidation;
 import static org.apache.camel.idea.util.StringUtils.isEmpty;
 

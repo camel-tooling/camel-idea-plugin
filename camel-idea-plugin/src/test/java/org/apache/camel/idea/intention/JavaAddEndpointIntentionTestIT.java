@@ -18,7 +18,6 @@ package org.apache.camel.idea.intention;
 
 import java.util.List;
 import java.util.Optional;
-
 import com.intellij.codeInsight.intention.IntentionAction;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
@@ -33,7 +32,7 @@ public class JavaAddEndpointIntentionTestIT extends CamelLightCodeInsightFixture
         assertNotNull(intentions);
 
         // should be Camel in there
-        Optional<IntentionAction> oa = intentions.stream().filter((a) -> a.getText().equals("Add camel endpoint")).findFirst();
+        Optional<IntentionAction> oa = intentions.stream().filter(a -> a.getText().equals("Add camel endpoint")).findFirst();
         assertTrue(oa.isPresent());
 
         // we cannot further test as the intention uses a popup to show a selection list for the user

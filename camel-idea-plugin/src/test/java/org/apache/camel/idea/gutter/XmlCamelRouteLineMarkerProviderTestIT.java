@@ -27,7 +27,6 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.apache.camel.idea.service.CamelPreferenceService;
-
 import static org.apache.camel.idea.gutter.GutterTestUtil.getGutterNavigationDestinationElements;
 import static org.apache.camel.idea.gutter.GutterTestUtil.getGuttersWithXMLTarget;
 

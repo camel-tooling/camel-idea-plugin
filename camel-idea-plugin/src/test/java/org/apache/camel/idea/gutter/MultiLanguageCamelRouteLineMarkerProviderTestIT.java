@@ -17,14 +17,12 @@
 package org.apache.camel.idea.gutter;
 
 import java.util.List;
-
 import com.intellij.codeInsight.daemon.GutterMark;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
-
 import static org.apache.camel.idea.gutter.GutterTestUtil.getGuttersWithJavaTarget;
 import static org.apache.camel.idea.gutter.GutterTestUtil.getGuttersWithXMLTarget;
 

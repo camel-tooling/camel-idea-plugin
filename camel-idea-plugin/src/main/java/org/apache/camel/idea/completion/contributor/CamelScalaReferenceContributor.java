@@ -19,7 +19,6 @@ package org.apache.camel.idea.completion.contributor;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.psi.PsiFile;
 import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionExtension;
-
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**

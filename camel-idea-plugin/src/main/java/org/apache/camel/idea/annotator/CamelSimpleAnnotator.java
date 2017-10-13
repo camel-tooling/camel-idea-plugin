@@ -29,7 +29,6 @@ import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.NotNull;
-
 import static org.apache.camel.idea.util.CamelIdeaUtils.isCameSimpleExpressionUsedAsPredicate;
 import static org.apache.camel.idea.util.IdeaUtils.isFromGroovyMethod;
 import static org.apache.camel.idea.util.IdeaUtils.isJavaLanguage;

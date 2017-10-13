@@ -19,7 +19,6 @@ package org.apache.camel.idea.inspection;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
-
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
 import com.intellij.openapi.components.ServiceManager;
@@ -40,7 +39,6 @@ import org.apache.camel.idea.util.IdeaUtils;
 import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import static org.apache.camel.idea.util.CamelIdeaUtils.acceptForAnnotatorOrInspection;
 import static org.apache.camel.idea.util.CamelIdeaUtils.isCameSimpleExpressionUsedAsPredicate;
 import static org.apache.camel.idea.util.CamelIdeaUtils.skipEndpointValidation;
