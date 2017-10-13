@@ -16,19 +16,32 @@
  */
 package org.apache.camel.idea.completion.extension;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.openapi.components.ServiceManager;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Testing smart completion with YML property classes
  */
 public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        super.initCamelPreferencesService();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        super.initCamelPreferencesService();
+    }
 
     public void testCompletion() {
         myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties");
@@ -63,7 +76,6 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
         assertTrue(strings.containsAll(Arrays.asList("ftp.client}}", "ftp.server}}")));
         assertEquals(2, strings.size());
     }
-
 
     public void testWithExcludeNoMatchFileWithPath() {
         ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("my/test/CompleteExclude"));

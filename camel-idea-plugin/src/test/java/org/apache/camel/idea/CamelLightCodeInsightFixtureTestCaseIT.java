@@ -16,11 +16,6 @@
  */
 package org.apache.camel.idea;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.testFramework.PsiTestUtil;
@@ -29,6 +24,11 @@ import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -58,8 +58,6 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelCatalogService.class));
         disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelService.class));
         ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(true);
-
-        initCamelPreferencesService();
     }
 
     @Override
@@ -96,7 +94,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         this.ignoreCamelCoreLib = ignoreCamelCoreLib;
     }
 
-    private void initCamelPreferencesService() {
+    protected void initCamelPreferencesService() {
         String[] strings =  {
             "**/log4j.properties",
             "**/log4j2.properties",
@@ -107,7 +105,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         service.setExcludePropertyFiles(expectedExcludedProperties);
         service.setRealTimeEndpointValidation(true);
         service.setScanThirdPartyLegacyComponents(true);
-        service.setCustomIconFilePath(null);
+        service.setCustomIconFilePath("");
         service.setDownloadCatalog(true);
         service.setHighlightCustomOptions(true);
 
