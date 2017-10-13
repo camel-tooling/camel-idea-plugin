@@ -22,7 +22,6 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
@@ -50,7 +49,6 @@ import com.intellij.psi.xml.XmlText;
 import com.intellij.psi.xml.XmlToken;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import static com.intellij.xml.CommonXmlStrings.QUOT;
 
 /**
@@ -398,7 +396,7 @@ public final class IdeaUtils {
                 // TODO: this code should likely be moved to something that requires it from being a Camel RouteBuilder
                 if (Arrays.stream(methods).anyMatch(name::equals)) {
                     if (fromRouteBuilder) {
-                        return ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME.stream().anyMatch((t) -> isClassOrParentOf(containingClass, t));
+                        return ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME.stream().anyMatch(t -> isClassOrParentOf(containingClass, t));
                     } else {
                         return true;
                     }

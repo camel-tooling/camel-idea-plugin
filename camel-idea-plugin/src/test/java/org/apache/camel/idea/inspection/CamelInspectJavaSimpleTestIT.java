@@ -18,7 +18,6 @@ package org.apache.camel.idea.inspection;
 
 import java.io.File;
 import java.io.IOException;
-
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;

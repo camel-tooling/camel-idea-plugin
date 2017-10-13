@@ -17,8 +17,6 @@
 package org.apache.camel.idea.annotator;
 
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
-import org.junit.Ignore;
-
 
 /**
  * Test Camel simple validation and the expected value is highlighted

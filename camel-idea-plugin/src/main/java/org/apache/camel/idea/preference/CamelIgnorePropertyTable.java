@@ -17,6 +17,7 @@
 package org.apache.camel.idea.preference;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
@@ -26,7 +27,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.EditableModel;
@@ -104,7 +104,10 @@ public abstract class CamelIgnorePropertyTable extends JBTable {
 
     @Override
     public boolean editCellAt(int row, int column, EventObject e) {
-        if (e == null || (e instanceof MouseEvent && ((MouseEvent) e).getClickCount() == 1)) {
+        if (e == null
+                || (e instanceof MouseEvent && ((MouseEvent) e).getClickCount() == 1)
+                || (e instanceof KeyEvent && ((KeyEvent) e).getKeyCode() == KeyEvent.VK_DOWN)
+                || (e instanceof KeyEvent && ((KeyEvent) e).getKeyCode() == KeyEvent.VK_UP)) {
             return false;
         }
         final Object at = getModel().getValueAt(row, column);

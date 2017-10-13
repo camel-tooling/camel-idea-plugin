@@ -18,9 +18,7 @@ package org.apache.camel.idea.util;
 
 import java.util.Arrays;
 import java.util.Optional;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
@@ -34,8 +32,6 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
-import org.apache.camel.idea.service.CamelCatalogService;
-
 import static org.apache.camel.idea.util.IdeaUtils.isElementFromAnnotation;
 import static org.apache.camel.idea.util.IdeaUtils.isElementFromConstructor;
 import static org.apache.camel.idea.util.IdeaUtils.isElementFromSetterProperty;
@@ -243,7 +239,7 @@ public final class CamelIdeaUtils {
                     return "true".equalsIgnoreCase(doWhile);
                 }
             }
-            return Arrays.stream(SIMPLE_PREDICATE).anyMatch((n) -> IdeaUtils.hasParentXmlTag(xml, n));
+            return Arrays.stream(SIMPLE_PREDICATE).anyMatch(n -> IdeaUtils.hasParentXmlTag(xml, n));
         }
 
         // groovy

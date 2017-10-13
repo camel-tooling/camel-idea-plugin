@@ -17,7 +17,6 @@
 package org.apache.camel.idea.service;
 
 import java.util.Map;
-
 import com.intellij.openapi.Disposable;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;

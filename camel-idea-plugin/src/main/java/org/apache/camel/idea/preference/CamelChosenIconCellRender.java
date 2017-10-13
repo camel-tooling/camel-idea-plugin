@@ -20,13 +20,11 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.*;
-
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.ListCellRendererWrapper;
 import com.intellij.ui.TextAccessor;
 import org.apache.camel.idea.util.StringUtils;
-
 import static org.apache.camel.idea.service.CamelPreferenceService.CAMEL_BADGE_ICON;
 import static org.apache.camel.idea.service.CamelPreferenceService.CAMEL_ICON;
 
