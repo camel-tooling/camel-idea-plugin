@@ -193,9 +193,9 @@ public class CamelService implements Disposable {
                         version = version.replace("snapshot", "SNAPSHOT");
                     }
 
-                    if ("org.slf4j".equals(groupId) && "slf4j-api".equals(artifactId)) {
+                    if (isSlf4jMavenDependency(groupId, artifactId)) {
                         slf4japiLibrary = library;
-                    } else if ("org.apache.camel".equals(groupId) && "camel-core".equals(artifactId)) {
+                    } else if (isCamelMavenDependency(groupId, artifactId)) {
                         camelCoreLibrary = library;
 
                         // okay its a camel project
@@ -206,38 +206,16 @@ public class CamelService implements Disposable {
                             // okay no special version was loaded so its the catalog version we are using
                             currentVersion = getCamelCatalogService(project).get().getCatalogVersion();
                         }
-                        if (version != null && !version.equalsIgnoreCase(currentVersion) && acceptedVersion(version)) {
-                            // there is a different version to be loaded
+                        if (isThereDifferentVersionToBeLoaded(version, currentVersion)) {
+                            boolean notifyNewCamelCatalogVersionLoaded = false;
 
-                            // flag to indicate if we should notify a new version was loaded or not
-                            boolean notifyLoaded = false;
-
-                            // whether download is allowed or not
-                            boolean download = getCamelPreferenceService().isDownloadCatalog();
-
-                            if (download) {
-                                // attempt to load new version of camel-catalog to match the version from the project
-                                // use catalog service to load version (which takes care of switching catalog as well)
-
-                                // find out the third party maven repositories
-                                Map<String, String> repos = scanThirdPartyMavenRepositories(module);
-
-                                boolean loaded = getCamelCatalogService(project).loadVersion(version, repos);
-                                if (!loaded) {
-                                    // always notify if download was not possible
-                                    camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin cannot download camel-catalog with version " + version
-                                        + ". Will fallback and use version " + getCamelCatalogService(project).get().getCatalogVersion(), NotificationType.WARNING);
-                                    camelVersionNotification.notify(project);
-                                } else {
-                                    // new version loaded so notify
-                                    notifyLoaded = true;
-                                }
+                            boolean downloadAllowed = getCamelPreferenceService().isDownloadCatalog();
+                            if (downloadAllowed) {
+                                notifyNewCamelCatalogVersionLoaded = downloadNewCamelCatalogVersion(project, module, version, notifyNewCamelCatalogVersionLoaded);
                             }
 
-                            // if we should notify a new version was loaded then expire old
-                            if (notifyLoaded && camelVersionNotification != null) {
-                                camelVersionNotification.expire();
-                                camelVersionNotification = null;
+                            if (notifyNewCamelCatalogVersionLoaded(notifyNewCamelCatalogVersionLoaded)) {
+                                expireOldCamelCatalogVersion();
                             }
                         }
 
@@ -248,15 +226,60 @@ public class CamelService implements Disposable {
                                 // okay no special version was loaded so its the catalog version we are using
                                 currentVersion = getCamelCatalogService(project).get().getCatalogVersion();
                             }
-
-                            camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin is using camel-catalog version "
-                                + currentVersion, NotificationType.INFORMATION);
-                            camelVersionNotification.notify(project);
+                            showCamelCatalogVersionAtPluginStart(project, currentVersion);
                         }
                     }
                 }
             }
         }
+    }
+
+    private void showCamelCatalogVersionAtPluginStart(@NotNull Project project, String currentVersion) {
+        camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin is using camel-catalog version "
+            + currentVersion, NotificationType.INFORMATION);
+        camelVersionNotification.notify(project);
+    }
+
+    private boolean isSlf4jMavenDependency(String groupId, String artifactId) {
+        return "org.slf4j".equals(groupId) && "slf4j-api".equals(artifactId);
+    }
+
+    private boolean isCamelMavenDependency(String groupId, String artifactId) {
+        return "org.apache.camel".equals(groupId) && "camel-core".equals(artifactId);
+    }
+
+    private void expireOldCamelCatalogVersion() {
+        camelVersionNotification.expire();
+        camelVersionNotification = null;
+    }
+
+    private boolean notifyNewCamelCatalogVersionLoaded(boolean notifyLoaded) {
+        return notifyLoaded && camelVersionNotification != null;
+    }
+
+    /**
+     * attempt to load new version of camel-catalog to match the version from the project
+     * use catalog service to load version (which takes care of switching catalog as well)
+     */
+    private boolean downloadNewCamelCatalogVersion(@NotNull Project project, @NotNull Module module, String version, boolean notifyLoaded) {
+        // find out the third party maven repositories
+        Map<String, String> repos = scanThirdPartyMavenRepositories(module);
+
+        boolean loaded = getCamelCatalogService(project).loadVersion(version, repos);
+        if (!loaded) {
+            // always notify if download was not possible
+            camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin cannot download camel-catalog with version " + version
+                + ". Will fallback and use version " + getCamelCatalogService(project).get().getCatalogVersion(), NotificationType.WARNING);
+            camelVersionNotification.notify(project);
+        } else {
+            // new version loaded so notify
+            notifyLoaded = true;
+        }
+        return notifyLoaded;
+    }
+
+    private boolean isThereDifferentVersionToBeLoaded(String version, String currentVersion) {
+        return version != null && !version.equalsIgnoreCase(currentVersion) && acceptedVersion(version);
     }
 
     /**
