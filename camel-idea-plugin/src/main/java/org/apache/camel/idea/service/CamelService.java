@@ -35,7 +35,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.stream.Collectors;
-import javax.swing.*;
+import javax.swing.Icon;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -163,72 +163,74 @@ public class CamelService implements Disposable {
      */
     public void scanForCamelProject(@NotNull Project project, @NotNull Module module) {
         for (OrderEntry entry : ModuleRootManager.getInstance(module).getOrderEntries()) {
-            if (entry instanceof LibraryOrderEntry) {
-                LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
+            if (!(entry instanceof LibraryOrderEntry)) {
+                continue;
+            }
+            LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
 
-                String name = libraryOrderEntry.getPresentableName().toLowerCase();
-                if (libraryOrderEntry.getScope().isForProductionCompile() || libraryOrderEntry.getScope().isForProductionRuntime()) {
-                    final Library library = libraryOrderEntry.getLibrary();
-                    if (library == null) {
-                        continue;
+            String name = libraryOrderEntry.getPresentableName().toLowerCase();
+            if (!libraryOrderEntry.getScope().isForProductionCompile() && !libraryOrderEntry.getScope().isForProductionRuntime()) {
+                continue;
+            }
+            final Library library = libraryOrderEntry.getLibrary();
+            if (library == null) {
+                continue;
+            }
+            String[] split = name.split(":");
+            if (split.length < 3) {
+                continue;
+            }
+            int startIdx = 0;
+            if (split[0].equalsIgnoreCase("maven")
+                    || split[0].equalsIgnoreCase("gradle")
+                    || split[0].equalsIgnoreCase("sbt")) {
+                startIdx = 1;
+            }
+            boolean hasVersion = split.length > (startIdx + 2);
+
+            String groupId = split[startIdx++].trim();
+            String artifactId = split[startIdx++].trim();
+            String version = null;
+            if (hasVersion) {
+                version = split[startIdx].trim();
+                // adjust snapshot which must be in uppercase
+                version = version.replace("snapshot", "SNAPSHOT");
+            }
+
+            if (isSlf4jMavenDependency(groupId, artifactId)) {
+                slf4japiLibrary = library;
+            } else if (isCamelMavenDependency(groupId, artifactId)) {
+                camelCoreLibrary = library;
+
+                // okay its a camel project
+                setCamelPresent(true);
+
+                String currentVersion = getCamelCatalogService(project).get().getLoadedVersion();
+                if (currentVersion == null) {
+                    // okay no special version was loaded so its the catalog version we are using
+                    currentVersion = getCamelCatalogService(project).get().getCatalogVersion();
+                }
+                if (isThereDifferentVersionToBeLoaded(version, currentVersion)) {
+                    boolean notifyNewCamelCatalogVersionLoaded = false;
+
+                    boolean downloadAllowed = getCamelPreferenceService().isDownloadCatalog();
+                    if (downloadAllowed) {
+                        notifyNewCamelCatalogVersionLoaded = downloadNewCamelCatalogVersion(project, module, version, notifyNewCamelCatalogVersionLoaded);
                     }
-                    String[] split = name.split(":");
-                    if (split.length < 3) {
-                        continue;
+
+                    if (notifyNewCamelCatalogVersionLoaded(notifyNewCamelCatalogVersionLoaded)) {
+                        expireOldCamelCatalogVersion();
                     }
-                    int startIdx = 0;
-                    if (split[0].equalsIgnoreCase("maven")
-                        || split[0].equalsIgnoreCase("gradle")
-                        || split[0].equalsIgnoreCase("sbt")) {
-                        startIdx = 1;
+                }
+
+                // only notify this once on startup (or if a new version was successfully loaded)
+                if (camelVersionNotification == null) {
+                    currentVersion = getCamelCatalogService(project).get().getLoadedVersion();
+                    if (currentVersion == null) {
+                        // okay no special version was loaded so its the catalog version we are using
+                        currentVersion = getCamelCatalogService(project).get().getCatalogVersion();
                     }
-                    boolean hasVersion = split.length > (startIdx + 2);
-
-                    String groupId = split[startIdx++].trim();
-                    String artifactId = split[startIdx++].trim();
-                    String version = null;
-                    if (hasVersion) {
-                        version = split[startIdx].trim();
-                        // adjust snapshot which must be in uppercase
-                        version = version.replace("snapshot", "SNAPSHOT");
-                    }
-
-                    if (isSlf4jMavenDependency(groupId, artifactId)) {
-                        slf4japiLibrary = library;
-                    } else if (isCamelMavenDependency(groupId, artifactId)) {
-                        camelCoreLibrary = library;
-
-                        // okay its a camel project
-                        setCamelPresent(true);
-
-                        String currentVersion = getCamelCatalogService(project).get().getLoadedVersion();
-                        if (currentVersion == null) {
-                            // okay no special version was loaded so its the catalog version we are using
-                            currentVersion = getCamelCatalogService(project).get().getCatalogVersion();
-                        }
-                        if (isThereDifferentVersionToBeLoaded(version, currentVersion)) {
-                            boolean notifyNewCamelCatalogVersionLoaded = false;
-
-                            boolean downloadAllowed = getCamelPreferenceService().isDownloadCatalog();
-                            if (downloadAllowed) {
-                                notifyNewCamelCatalogVersionLoaded = downloadNewCamelCatalogVersion(project, module, version, notifyNewCamelCatalogVersionLoaded);
-                            }
-
-                            if (notifyNewCamelCatalogVersionLoaded(notifyNewCamelCatalogVersionLoaded)) {
-                                expireOldCamelCatalogVersion();
-                            }
-                        }
-
-                        // only notify this once on startup (or if a new version was successfully loaded)
-                        if (camelVersionNotification == null) {
-                            currentVersion = getCamelCatalogService(project).get().getLoadedVersion();
-                            if (currentVersion == null) {
-                                // okay no special version was loaded so its the catalog version we are using
-                                currentVersion = getCamelCatalogService(project).get().getCatalogVersion();
-                            }
-                            showCamelCatalogVersionAtPluginStart(project, currentVersion);
-                        }
-                    }
+                    showCamelCatalogVersionAtPluginStart(project, currentVersion);
                 }
             }
         }
@@ -236,7 +238,7 @@ public class CamelService implements Disposable {
 
     private void showCamelCatalogVersionAtPluginStart(@NotNull Project project, String currentVersion) {
         camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin is using camel-catalog version "
-            + currentVersion, NotificationType.INFORMATION);
+                + currentVersion, NotificationType.INFORMATION);
         camelVersionNotification.notify(project);
     }
 
@@ -269,7 +271,7 @@ public class CamelService implements Disposable {
         if (!loaded) {
             // always notify if download was not possible
             camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin cannot download camel-catalog with version " + version
-                + ". Will fallback and use version " + getCamelCatalogService(project).get().getCatalogVersion(), NotificationType.WARNING);
+                    + ". Will fallback and use version " + getCamelCatalogService(project).get().getCatalogVersion(), NotificationType.WARNING);
             camelVersionNotification.notify(project);
         } else {
             // new version loaded so notify
@@ -308,8 +310,8 @@ public class CamelService implements Disposable {
                     }
                     int startIdx = 0;
                     if (split[0].equalsIgnoreCase("maven")
-                        || split[0].equalsIgnoreCase("gradle")
-                        || split[0].equalsIgnoreCase("sbt")) {
+                            || split[0].equalsIgnoreCase("gradle")
+                            || split[0].equalsIgnoreCase("sbt")) {
                         startIdx = 1;
                     }
                     String groupId = split[startIdx++].trim();
@@ -332,8 +334,8 @@ public class CamelService implements Disposable {
         if (!missingJSonSchemas.isEmpty()) {
             String components = missingJSonSchemas.stream().collect(Collectors.joining(","));
             String message = "The following Camel components with artifactId [" + components
-                + "] does not include component JSon schema metadata which is required for the Camel IDEA plugin to support these components."
-                + "\nSee more details at: " + MISSING_JSON_SCHEMA_LINK;
+                    + "] does not include component JSon schema metadata which is required for the Camel IDEA plugin to support these components."
+                    + "\nSee more details at: " + MISSING_JSON_SCHEMA_LINK;
 
             Icon icon = getCamelPreferenceService().getCamelIcon();
             camelMissingJSonSchemaNotification = CAMEL_NOTIFICATION_GROUP.createNotification(message, NotificationType.WARNING).setImportant(true).setIcon(icon);
@@ -344,7 +346,7 @@ public class CamelService implements Disposable {
     /**
      * Scans for third party maven repositories in the root pom.xml file of the module.
      *
-     * @param module  the module
+     * @param module the module
      * @return a map with repo id and url for each found repository. The map may be empty if no third party repository is defined in the pom.xml file
      */
     private @NotNull Map<String, String> scanThirdPartyMavenRepositories(@NotNull Module module) {
