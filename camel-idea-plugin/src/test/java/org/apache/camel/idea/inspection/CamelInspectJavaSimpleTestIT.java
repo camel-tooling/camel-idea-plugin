@@ -16,6 +16,8 @@
  */
 package org.apache.camel.idea.inspection;
 
+import java.io.File;
+import java.io.IOException;
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
@@ -28,9 +30,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.InspectionTestCase;
 import com.intellij.util.ui.UIUtil;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-
-import java.io.File;
-import java.io.IOException;
 
 public class CamelInspectJavaSimpleTestIT extends InspectionTestCase {
 

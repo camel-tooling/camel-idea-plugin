@@ -16,15 +16,14 @@
  */
 package org.apache.camel.idea.completion.extension;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.openapi.components.ServiceManager;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Testing smart completion with YML property classes
