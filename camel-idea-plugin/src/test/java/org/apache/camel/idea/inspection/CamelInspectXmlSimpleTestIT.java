@@ -16,8 +16,6 @@
  */
 package org.apache.camel.idea.inspection;
 
-import java.io.File;
-import java.io.IOException;
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
@@ -30,6 +28,9 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.InspectionTestCase;
 import com.intellij.util.ui.UIUtil;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+
+import java.io.File;
+import java.io.IOException;
 
 public class CamelInspectXmlSimpleTestIT extends InspectionTestCase {
 
@@ -51,8 +52,8 @@ public class CamelInspectXmlSimpleTestIT extends InspectionTestCase {
         UIUtil.dispatchAllInvocationEvents();
     }
 
-    private File[] getMavenArtifacts(String... mavneAritfiact) throws IOException {
-        File[] libs = Maven.resolver().loadPomFromFile("pom.xml").resolve(mavneAritfiact).withoutTransitivity().asFile();
+    private File[] getMavenArtifacts(String... mavenAritfiact) throws IOException {
+        File[] libs = Maven.resolver().loadPomFromFile("pom.xml").resolve(mavenAritfiact).withoutTransitivity().asFile();
         return libs;
     }
 

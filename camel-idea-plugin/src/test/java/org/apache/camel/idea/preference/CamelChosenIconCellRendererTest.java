@@ -179,32 +179,15 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
     public void testShouldContainIgnorePropertyTable() {
         CamelIgnorePropertyTable table = camelPreferencePage.getIgnorePropertyTable();
         List<String> ignoredProperties = table.getIgnoredProperties();
-
-        String[] strings =  {
-            "java.",
-            "Logger.",
-            "logger",
-            "appender.",
-            "rootLogger.",
-            "camel.springboot.",
-            "camel.component.",
-            "camel.dataformat.",
-            "camel.language."
-        };
-        List<String> expectedIgnoredProperties = Arrays.asList(strings);
+        List<String> expectedIgnoredProperties = Arrays.asList("java.", "Logger.", "logger", "appender.", "rootLogger.",
+                "camel.springboot.", "camel.component.", "camel.dataformat.", "camel.language.");
         assertEquals(expectedIgnoredProperties, ignoredProperties);
     }
 
     public void testShouldContainExcludePropertyTable() {
         CamelExcludePropertyFileTable table = camelPreferencePage.getExcludePropertyFileTable();
         List<String> excludePropertyFiles = table.getExcludePropertyFiles();
-
-        String[] strings =  {
-            "**/log4j.properties",
-            "**/log4j2.properties",
-            "**/logging.properties",
-        };
-        List<String> expectedExcludedProperties = Arrays.asList(strings);
+        List<String> expectedExcludedProperties = Arrays.asList("**/log4j.properties", "**/log4j2.properties", "**/logging.properties");
         assertEquals(expectedExcludedProperties, excludePropertyFiles);
     }
 
