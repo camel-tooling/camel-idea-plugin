@@ -123,7 +123,7 @@ public abstract class CamelExcludePropertyFileTable extends JBTable {
         return false;
     }
 
-    private static final class ModelAdapter extends AbstractTableModel implements EditableModel {
+    static final class ModelAdapter extends AbstractTableModel implements EditableModel {
         private List<String> excludedPropertyFiles;
         private CamelExcludePropertyFileModel excludePropertyFilesModel;
 

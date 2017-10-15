@@ -224,7 +224,7 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
         excludePropertyFileTable.reset();
     }
 
-    private CamelPreferenceService getCamelPreferenceService() {
+    CamelPreferenceService getCamelPreferenceService() {
         return ServiceManager.getService(CamelPreferenceService.class);
     }
 
@@ -232,5 +232,49 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
     @Override
     public String getId() {
         return "preference.CamelConfigurable";
+    }
+
+    JBCheckBox getRealTimeEndpointValidationCatalogCheckBox() {
+        return realTimeEndpointValidationCatalogCheckBox;
+    }
+
+    JBCheckBox getRealTimeSimpleValidationCatalogCheckBox() {
+        return realTimeSimpleValidationCatalogCheckBox;
+    }
+
+    JBCheckBox getHighlightCustomOptionsCheckBox() {
+        return highlightCustomOptionsCheckBox;
+    }
+
+    JBCheckBox getDownloadCatalogCheckBox() {
+        return downloadCatalogCheckBox;
+    }
+
+    JBCheckBox getScanThirdPartyComponentsCatalogCheckBox() {
+        return scanThirdPartyComponentsCatalogCheckBox;
+    }
+
+    JBCheckBox getScanThirdPartyLegacyComponentsCatalogCheckBox() {
+        return scanThirdPartyLegacyComponentsCatalogCheckBox;
+    }
+
+    JBCheckBox getCamelIconInGutterCheckBox() {
+        return camelIconInGutterCheckBox;
+    }
+
+    JComboBox<String> getCamelIconsComboBox() {
+        return camelIconsComboBox;
+    }
+
+    TextFieldWithBrowseButton getCustomIconButton() {
+        return customIconButton;
+    }
+
+    CamelIgnorePropertyTable getIgnorePropertyTable() {
+        return ignorePropertyTable;
+    }
+
+    CamelExcludePropertyFileTable getExcludePropertyFileTable() {
+        return excludePropertyFileTable;
     }
 }

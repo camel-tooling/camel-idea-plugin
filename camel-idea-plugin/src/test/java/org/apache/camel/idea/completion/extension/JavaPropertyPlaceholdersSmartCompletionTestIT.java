@@ -30,6 +30,18 @@ import org.apache.camel.idea.service.CamelService;
  */
 public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        super.initCamelPreferencesService();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        super.initCamelPreferencesService();
+    }
+
     public void testCompletion() {
         myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
@@ -63,7 +75,6 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
         assertTrue(strings.containsAll(Arrays.asList("ftp.client}}", "ftp.server}}")));
         assertEquals(2, strings.size());
     }
-
 
     public void testWithExcludeNoMatchFileWithPath() {
         ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("my/test/CompleteExclude"));
