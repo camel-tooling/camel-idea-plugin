@@ -17,6 +17,7 @@
 package org.apache.camel.idea.service;
 
 import java.io.InputStream;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -41,8 +42,12 @@ final class XmlUtils {
      */
     static @NotNull Document loadDocument(@NotNull InputStream is, boolean validating) throws Exception {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder documentBuilder = dbf.newDocumentBuilder();
+        if (validating) {
+            documentBuilder.setErrorHandler(new XmlErrorHandler());
+        }
         dbf.setValidating(validating);
-        return dbf.newDocumentBuilder().parse(is);
+        return documentBuilder.parse(is);
     }
 
     /**
