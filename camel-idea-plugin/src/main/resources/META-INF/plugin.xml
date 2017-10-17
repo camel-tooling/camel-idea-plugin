@@ -130,8 +130,8 @@
     <localInspection groupName="Apache Camel" implementationClass="org.apache.camel.idea.inspection.CamelInspection"/>
 
     <!-- preference -->
-    <applicationConfigurable id="camel" displayName="Apache Camel" groupId="language"
-                             instance="org.apache.camel.idea.preference.CamelPreferencePage"/>
+    <applicationConfigurable id="camel" groupId="language" displayName="Apache Camel1" instance="org.apache.camel.idea.preference.CamelPreferencePage"/>
+    <applicationConfigurable id="camel1" groupId="language" displayName="Apache Camel2" instance="org.apache.camel.idea.preference.CamelIgnoreAndExcludePage"/>
 
   </extensions>
 

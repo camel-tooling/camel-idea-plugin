@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.*;
@@ -175,20 +174,20 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         assertEquals(false, button.isEnabled());
     }
 
-    public void testShouldContainIgnorePropertyTable() {
-        CamelIgnorePropertyTable table = camelPreferencePage.getIgnorePropertyTable();
-        List<String> ignoredProperties = table.getIgnoredProperties();
-        List<String> expectedIgnoredProperties = Arrays.asList("java.", "Logger.", "logger", "appender.", "rootLogger.",
-                "camel.springboot.", "camel.component.", "camel.dataformat.", "camel.language.");
-        assertEquals(expectedIgnoredProperties, ignoredProperties);
-    }
-
-    public void testShouldContainExcludePropertyTable() {
-        CamelExcludePropertyFileTable table = camelPreferencePage.getExcludePropertyFileTable();
-        List<String> excludePropertyFiles = table.getExcludePropertyFiles();
-        List<String> expectedExcludedProperties = Arrays.asList("**/log4j.properties", "**/log4j2.properties", "**/logging.properties");
-        assertEquals(expectedExcludedProperties, excludePropertyFiles);
-    }
+//    public void testShouldContainIgnorePropertyTable() {
+//        CamelIgnorePropertyTable table = camelPreferencePage.getIgnorePropertyTable();
+//        List<String> ignoredProperties = table.getIgnoredProperties();
+//        List<String> expectedIgnoredProperties = Arrays.asList("java.", "Logger.", "logger", "appender.", "rootLogger.",
+//                "camel.springboot.", "camel.component.", "camel.dataformat.", "camel.language.");
+//        assertEquals(expectedIgnoredProperties, ignoredProperties);
+//    }
+//
+//    public void testShouldContainExcludePropertyTable() {
+//        CamelExcludePropertyFileTable table = camelPreferencePage.getExcludePropertyFileTable();
+//        List<String> excludePropertyFiles = table.getExcludePropertyFiles();
+//        List<String> expectedExcludedProperties = Arrays.asList("**/log4j.properties", "**/log4j2.properties", "**/logging.properties");
+//        assertEquals(expectedExcludedProperties, excludePropertyFiles);
+//    }
 
     public void testShouldResetRealTimeEndpointValidationCatalogCheckBox() {
         JBCheckBox checkBox = camelPreferencePage.getRealTimeEndpointValidationCatalogCheckBox();
@@ -260,23 +259,23 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         assertEquals("Camel Icon", comboBox.getSelectedItem().toString());
     }
 
-    public void testShouldResetIgnorePropertyTable() {
-        CamelIgnorePropertyTable table = camelPreferencePage.getIgnorePropertyTable();
-        assertEquals(9, table.getModel().getRowCount());
-        table.getModel().removeRow(0);
-        assertEquals(8, table.getModel().getRowCount());
-        camelPreferencePage.reset();
-        assertEquals(9, table.getModel().getRowCount());
-    }
-
-    public void testShouldResetExcludePropertyTable() {
-        CamelExcludePropertyFileTable table = camelPreferencePage.getExcludePropertyFileTable();
-        int initialRowCount = table.getModel().getRowCount();
-        table.getModel().removeRow(0);
-        assertEquals(initialRowCount - 1, table.getModel().getRowCount());
-        camelPreferencePage.reset();
-        assertEquals(initialRowCount, table.getModel().getRowCount());
-    }
+//    public void testShouldResetIgnorePropertyTable() {
+//        CamelIgnorePropertyTable table = camelPreferencePage.getIgnorePropertyTable();
+//        assertEquals(9, table.getModel().getRowCount());
+//        table.getModel().removeRow(0);
+//        assertEquals(8, table.getModel().getRowCount());
+//        camelPreferencePage.reset();
+//        assertEquals(9, table.getModel().getRowCount());
+//    }
+//
+//    public void testShouldResetExcludePropertyTable() {
+//        CamelExcludePropertyFileTable table = camelPreferencePage.getExcludePropertyFileTable();
+//        int initialRowCount = table.getModel().getRowCount();
+//        table.getModel().removeRow(0);
+//        assertEquals(initialRowCount - 1, table.getModel().getRowCount());
+//        camelPreferencePage.reset();
+//        assertEquals(initialRowCount, table.getModel().getRowCount());
+//    }
 
     public void testShouldChangeStateOfRealTimeEndpointValidationCatalogCheckBox() throws ConfigurationException {
         JBCheckBox checkBox = camelPreferencePage.getRealTimeEndpointValidationCatalogCheckBox();

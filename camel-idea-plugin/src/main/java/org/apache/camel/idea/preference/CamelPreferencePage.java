@@ -17,8 +17,7 @@
 package org.apache.camel.idea.preference;
 
 import java.awt.*;
-import java.util.*;
-import java.util.List;
+import java.util.Objects;
 import javax.swing.*;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -27,11 +26,7 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.ui.IdeBorderFactory;
-import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBCheckBox;
-import com.intellij.ui.components.panels.VerticalLayout;
-import com.intellij.util.ui.JBUI;
 import net.miginfocom.swing.MigLayout;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.jetbrains.annotations.Nls;
@@ -52,8 +47,8 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
     private JBCheckBox camelIconInGutterCheckBox;
     private JComboBox<String> camelIconsComboBox;
     private TextFieldWithBrowseButton customIconButton;
-    private CamelIgnorePropertyTable ignorePropertyTable;
-    private CamelExcludePropertyFileTable excludePropertyFileTable;
+//    private CamelIgnorePropertyTable ignorePropertyTable;
+//    private CamelExcludePropertyFileTable excludePropertyFileTable;
 
     public CamelPreferencePage() {
     }
@@ -98,67 +93,67 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
 
         JPanel result = new JPanel(new BorderLayout());
         result.add(panel, BorderLayout.NORTH);
-        JPanel propertyTablePanel = new JPanel(new VerticalLayout(1));
-        propertyTablePanel.add(createPropertyIgnoreTable(), -1);
-        propertyTablePanel.add(createExcludePropertyFilesTable(), -1);
-        result.add(propertyTablePanel, -1);
+//        JPanel propertyTablePanel = new JPanel(new VerticalLayout(1));
+//        propertyTablePanel.add(createPropertyIgnoreTable(), -1);
+//        propertyTablePanel.add(createExcludePropertyFilesTable(), -1);
+//        result.add(propertyTablePanel, -1);
         reset();
         return result;
     }
 
-    private JPanel createPropertyIgnoreTable() {
-        final JPanel mainPanel = new JPanel(new GridLayout(1, 1));
-        mainPanel.setPreferredSize(JBUI.size(300, 200));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
-
-        ignorePropertyTable = new CamelIgnorePropertyTable(new CamelIgnorePropertyModel(getCamelPreferenceService().getIgnorePropertyList())) {
-            @Override
-            protected void apply(@NotNull java.util.List<CamelIgnorePropertyModel> configurations) {
-                final java.util.List<CamelIgnorePropertyModel> copied = new ArrayList<>();
-                try {
-                    for (final CamelIgnorePropertyModel configuration : configurations) {
-                        copied.add(configuration.clone());
-                    }
-                } catch (CloneNotSupportedException e) {
-                    // ignore
-                }
-            }
-        };
-
-        final JPanel ignorePropertyCamelpanel = ToolbarDecorator.createDecorator(ignorePropertyTable).createPanel();
-        final JPanel localPanel = new JPanel(new BorderLayout());
-        localPanel.setBorder(IdeBorderFactory.createTitledBorder("Property ignore list", false));
-        localPanel.add(ignorePropertyCamelpanel, BorderLayout.CENTER);
-        mainPanel.add(localPanel);
-        return mainPanel;
-    }
-
-    private JPanel createExcludePropertyFilesTable() {
-        final JPanel mainPanel = new JPanel(new GridLayout(1, 1));
-        mainPanel.setPreferredSize(JBUI.size(300, 200));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
-
-        excludePropertyFileTable = new CamelExcludePropertyFileTable(new CamelExcludePropertyFileModel(getCamelPreferenceService().getExcludePropertyFiles())) {
-            @Override
-            protected void apply(@NotNull List<CamelExcludePropertyFileModel> configurations) {
-                final java.util.List<CamelExcludePropertyFileModel> copied = new ArrayList<>();
-                try {
-                    for (final CamelExcludePropertyFileModel configuration : configurations) {
-                        copied.add(configuration.clone());
-                    }
-                } catch (CloneNotSupportedException e) {
-                    // ignore
-                }
-            }
-        };
-
-        final JPanel excludePropertyFilesPanel = ToolbarDecorator.createDecorator(excludePropertyFileTable).createPanel();
-        final JPanel localPanel = new JPanel(new BorderLayout());
-        localPanel.setBorder(IdeBorderFactory.createTitledBorder("Exclude property file list", false));
-        localPanel.add(excludePropertyFilesPanel, BorderLayout.CENTER);
-        mainPanel.add(localPanel);
-        return mainPanel;
-    }
+//    private JPanel createPropertyIgnoreTable() {
+//        final JPanel mainPanel = new JPanel(new GridLayout(1, 1));
+//        mainPanel.setPreferredSize(JBUI.size(300, 200));
+//        mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
+//
+//        ignorePropertyTable = new CamelIgnorePropertyTable(new CamelIgnorePropertyModel(getCamelPreferenceService().getIgnorePropertyList())) {
+//            @Override
+//            protected void apply(@NotNull java.util.List<CamelIgnorePropertyModel> configurations) {
+//                final java.util.List<CamelIgnorePropertyModel> copied = new ArrayList<>();
+//                try {
+//                    for (final CamelIgnorePropertyModel configuration : configurations) {
+//                        copied.add(configuration.clone());
+//                    }
+//                } catch (CloneNotSupportedException e) {
+//                    // ignore
+//                }
+//            }
+//        };
+//
+//        final JPanel ignorePropertyCamelpanel = ToolbarDecorator.createDecorator(ignorePropertyTable).createPanel();
+//        final JPanel localPanel = new JPanel(new BorderLayout());
+//        localPanel.setBorder(IdeBorderFactory.createTitledBorder("Property ignore list", false));
+//        localPanel.add(ignorePropertyCamelpanel, BorderLayout.CENTER);
+//        mainPanel.add(localPanel);
+//        return mainPanel;
+//    }
+//
+//    private JPanel createExcludePropertyFilesTable() {
+//        final JPanel mainPanel = new JPanel(new GridLayout(1, 1));
+//        mainPanel.setPreferredSize(JBUI.size(300, 200));
+//        mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
+//
+//        excludePropertyFileTable = new CamelExcludePropertyFileTable(new CamelExcludePropertyFileModel(getCamelPreferenceService().getExcludePropertyFiles())) {
+//            @Override
+//            protected void apply(@NotNull List<CamelExcludePropertyFileModel> configurations) {
+//                final java.util.List<CamelExcludePropertyFileModel> copied = new ArrayList<>();
+//                try {
+//                    for (final CamelExcludePropertyFileModel configuration : configurations) {
+//                        copied.add(configuration.clone());
+//                    }
+//                } catch (CloneNotSupportedException e) {
+//                    // ignore
+//                }
+//            }
+//        };
+//
+//        final JPanel excludePropertyFilesPanel = ToolbarDecorator.createDecorator(excludePropertyFileTable).createPanel();
+//        final JPanel localPanel = new JPanel(new BorderLayout());
+//        localPanel.setBorder(IdeBorderFactory.createTitledBorder("Exclude property file list", false));
+//        localPanel.add(excludePropertyFilesPanel, BorderLayout.CENTER);
+//        mainPanel.add(localPanel);
+//        return mainPanel;
+//    }
 
     @Nls
     @Override
@@ -187,10 +182,11 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
         boolean b2 = !Objects.equals(getCamelPreferenceService().getChosenCamelIcon(), camelIconsComboBox.getSelectedItem())
             || !Objects.equals(getCamelPreferenceService().getCustomIconFilePath(), customIconButton.getText());
 
-        boolean isIgnorePropertiesModified = ignorePropertyTable.isModified();
-        boolean isExcludedPropertyFilesModified = excludePropertyFileTable.isModified();
+//        boolean isIgnorePropertiesModified = ignorePropertyTable.isModified();
+//        boolean isExcludedPropertyFilesModified = excludePropertyFileTable.isModified();
 
-        return b1 || b2 || isIgnorePropertiesModified || isExcludedPropertyFilesModified;
+        //return b1 || b2 || isIgnorePropertiesModified || isExcludedPropertyFilesModified;
+        return b1 || b2;
     }
 
     @Override
@@ -204,8 +200,8 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
         getCamelPreferenceService().setShowCamelIconInGutter(camelIconInGutterCheckBox.isSelected());
         getCamelPreferenceService().setChosenCamelIcon(camelIconsComboBox.getSelectedItem().toString());
         getCamelPreferenceService().setCustomIconFilePath(customIconButton.getText());
-        getCamelPreferenceService().setIgnorePropertyList(ignorePropertyTable.getIgnoredProperties());
-        getCamelPreferenceService().setExcludePropertyFiles(excludePropertyFileTable.getExcludePropertyFiles());
+//        getCamelPreferenceService().setIgnorePropertyList(ignorePropertyTable.getIgnoredProperties());
+//        getCamelPreferenceService().setExcludePropertyFiles(excludePropertyFileTable.getExcludePropertyFiles());
     }
 
     @Override
@@ -220,8 +216,8 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
         camelIconsComboBox.setSelectedItem(getCamelPreferenceService().getChosenCamelIcon());
         customIconButton.setText(getCamelPreferenceService().getCustomIconFilePath());
         customIconButton.setEnabled("Custom Icon".equals(camelIconsComboBox.getSelectedItem()));
-        ignorePropertyTable.reset();
-        excludePropertyFileTable.reset();
+//        ignorePropertyTable.reset();
+//        excludePropertyFileTable.reset();
     }
 
     CamelPreferenceService getCamelPreferenceService() {
@@ -270,11 +266,11 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
         return customIconButton;
     }
 
-    CamelIgnorePropertyTable getIgnorePropertyTable() {
-        return ignorePropertyTable;
-    }
-
-    CamelExcludePropertyFileTable getExcludePropertyFileTable() {
-        return excludePropertyFileTable;
-    }
+//    CamelIgnorePropertyTable getIgnorePropertyTable() {
+//        return ignorePropertyTable;
+//    }
+//
+//    CamelExcludePropertyFileTable getExcludePropertyFileTable() {
+//        return excludePropertyFileTable;
+//    }
 }
