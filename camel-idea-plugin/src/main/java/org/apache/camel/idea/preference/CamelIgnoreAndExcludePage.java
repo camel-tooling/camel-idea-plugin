@@ -123,7 +123,8 @@ public class CamelIgnoreAndExcludePage extends BaseConfigurable implements Searc
 
     @Override
     public void reset() {
-        setModified(true);
+        excludePropertyFilePanel.setData(getCamelPreferenceService().getExcludePropertyFiles());
+        setModified(false);
     }
 
     private static class IgnoredUrlsModel extends AddEditRemovePanel.TableModel<String> {

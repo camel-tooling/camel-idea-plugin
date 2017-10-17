@@ -21,7 +21,6 @@ import javax.swing.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.util.ui.JBUI;
-import com.intellij.xml.XmlBundle;
 import org.jetbrains.annotations.Nullable;
 
 public class CamelEditDialog extends DialogWrapper {
