@@ -20,57 +20,52 @@ import java.awt.*;
 import javax.swing.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.util.ui.JBUI;
 import com.intellij.xml.XmlBundle;
+import org.jetbrains.annotations.Nullable;
 
 public class CamelEditDialog extends DialogWrapper {
 
-    private JTextField myTfUrl;
-
-    private final String myTitle;
-    private final String myName;
-    private String textFieldText;
+    private JTextField textfield;
 
     CamelEditDialog(Project project) {
         super(project, true);
-        myTitle = XmlBundle.message("dialog.title.external.resource");
-        myName = XmlBundle.message("label.edit.external.resource.uri");
         init();
     }
 
+    @Nullable
     @Override
     protected JComponent createCenterPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
+        Insets insets = JBUI.insets(0, 5, 5, 5);
+        GridBagConstraints gbc = new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, insets, 0, 0);
+        panel.add(textfield, gbc);
 
-        panel.add(
-                new JLabel(myName),
-                new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 5, 3, 5), 0, 0)
-        );
-        panel.add(
-                myTfUrl,
-                new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 5, 5), 0, 0)
-        );
+        textfield.setPreferredSize(new Dimension(350, textfield.getPreferredSize().height));
 
-        myTfUrl.setPreferredSize(new Dimension(350, myTfUrl.getPreferredSize().height));
         return panel;
     }
 
     @Override
     public JComponent getPreferredFocusedComponent() {
-        return myTfUrl;
+        return textfield;
     }
 
     @Override
     protected void init() {
-        setTitle(myTitle);
-        myTfUrl = new JTextField();
+        setTitle("Enter filename pattern (**/file.properties)");
+        textfield = new JTextField();
         super.init();
     }
 
     String getTextFieldText() {
-        return textFieldText;
+        return textfield.getText();
     }
 
-    void init(String s) {
-        myTfUrl.setText(s);
+    /**
+     * Initializes editor with the passed data.
+     */
+    void init(String origin) {
+        textfield.setText(origin);
     }
 }
