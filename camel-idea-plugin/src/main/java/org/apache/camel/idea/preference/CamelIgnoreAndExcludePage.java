@@ -69,7 +69,6 @@ public class CamelIgnoreAndExcludePage extends BaseConfigurable implements Searc
     @Nullable
     private String addIgnoreLocation() {
         CamelEditDialog dialog = new CamelEditDialog(null);
-        excludePropertyFilePanel.getData().add(dialog.getTextFieldText());
         if (!dialog.showAndGet()) {
             return null;
         }
@@ -81,12 +80,44 @@ public class CamelIgnoreAndExcludePage extends BaseConfigurable implements Searc
     private String editIgnoreLocation(Object o) {
         CamelEditDialog dialog = new CamelEditDialog(null);
         dialog.init(o.toString());
-        dialog.init();
         if (!dialog.showAndGet()) {
             return null;
         }
         setModified(true);
         return dialog.getTextFieldText();
+    }
+
+    private static class IgnoredUrlsModel extends AddEditRemovePanel.TableModel<String> {
+
+        @Override
+        public int getColumnCount() {
+            return 1;
+        }
+
+        @Override
+        public Object getField(String o, int columnIndex) {
+            return o;
+        }
+
+        @Override
+        public Class getColumnClass(int columnIndex) {
+            return String.class;
+        }
+
+        @Override
+        public boolean isEditable(int column) {
+            return false;
+        }
+
+        @Override
+        public void setValue(Object aValue, String data, int columnIndex) {
+
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return "Filename";
+        }
     }
 
     @NotNull
@@ -125,39 +156,6 @@ public class CamelIgnoreAndExcludePage extends BaseConfigurable implements Searc
     public void reset() {
         excludePropertyFilePanel.setData(getCamelPreferenceService().getExcludePropertyFiles());
         setModified(false);
-    }
-
-    private static class IgnoredUrlsModel extends AddEditRemovePanel.TableModel<String> {
-
-        @Override
-        public int getColumnCount() {
-            return 1;
-        }
-
-        @Override
-        public Object getField(String o, int columnIndex) {
-            return o;
-        }
-
-        @Override
-        public Class getColumnClass(int columnIndex) {
-            return String.class;
-        }
-
-        @Override
-        public boolean isEditable(int column) {
-            return false;
-        }
-
-        @Override
-        public void setValue(Object aValue, String data, int columnIndex) {
-
-        }
-
-        @Override
-        public String getColumnName(int column) {
-            return "Filename";
-        }
     }
 
     CamelPreferenceService getCamelPreferenceService() {
