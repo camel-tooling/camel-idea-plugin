@@ -24,7 +24,6 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.ui.AddEditRemovePanel;
-import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.panels.VerticalLayout;
 import com.intellij.util.ui.JBUI;
 import org.apache.camel.idea.service.CamelPreferenceService;
@@ -35,13 +34,14 @@ import org.jetbrains.annotations.Nullable;
 public class CamelIgnoreAndExcludePage extends BaseConfigurable implements SearchableConfigurable, Configurable.NoScroll {
 
     private AddEditRemovePanel<String> excludePropertyFilePanel;
+    private AddEditRemovePanel<String> ignorePropertyFilePanel;
 
     public CamelIgnoreAndExcludePage() {
     }
 
     private JPanel createExcludePropertiesFilesTable2() {
         final JPanel mainPanel = new JPanel(new GridLayout(1, 1));
-        mainPanel.setPreferredSize(JBUI.size(300, 200));
+        mainPanel.setPreferredSize(JBUI.size(300, 300));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
         excludePropertyFilePanel = new AddEditRemovePanel<String>(new IgnoredUrlsModel(), getCamelPreferenceService().getExcludePropertyFiles(), "Exclude property file list") {
             @Override
@@ -62,6 +62,33 @@ public class CamelIgnoreAndExcludePage extends BaseConfigurable implements Searc
         };
         mainPanel.add(excludePropertyFilePanel);
         excludePropertyFilePanel.setData(getCamelPreferenceService().getExcludePropertyFiles());
+
+        return mainPanel;
+    }
+
+    private JPanel createExcludePropertiesFilesTable3() {
+        final JPanel mainPanel = new JPanel(new GridLayout(1, 1));
+        mainPanel.setPreferredSize(JBUI.size(300, 300));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
+        ignorePropertyFilePanel = new AddEditRemovePanel<String>(new IgnoredUrlsModel(), getCamelPreferenceService().getExcludePropertyFiles(), "Property ignore list") {
+            @Override
+            protected String addItem() {
+                return addIgnoreLocation();
+            }
+
+            @Override
+            protected boolean removeItem(String o) {
+                setModified(true);
+                return true;
+            }
+
+            @Override
+            protected String editItem(String o) {
+                return editIgnoreLocation(o);
+            }
+        };
+        mainPanel.add(ignorePropertyFilePanel);
+        ignorePropertyFilePanel.setData(getCamelPreferenceService().getIgnorePropertyList());
 
         return mainPanel;
     }
@@ -136,8 +163,8 @@ public class CamelIgnoreAndExcludePage extends BaseConfigurable implements Searc
     @Override
     public JComponent createComponent() {
         JPanel result = new JPanel(new BorderLayout());
-        result.add(new JBCheckBox("Real time validation of Camel endpoints in editor"));
         JPanel propertyTablePanel = new JPanel(new VerticalLayout(1));
+        propertyTablePanel.add(createExcludePropertiesFilesTable3(), -1);
         propertyTablePanel.add(createExcludePropertiesFilesTable2(), -1);
         result.add(propertyTablePanel, -1);
 
@@ -149,6 +176,8 @@ public class CamelIgnoreAndExcludePage extends BaseConfigurable implements Searc
     @Override
     public void apply() throws ConfigurationException {
         getCamelPreferenceService().setExcludePropertyFiles(excludePropertyFilePanel.getData());
+        getCamelPreferenceService().setIgnorePropertyList(ignorePropertyFilePanel.getData());
+
         setModified(false);
     }
 
