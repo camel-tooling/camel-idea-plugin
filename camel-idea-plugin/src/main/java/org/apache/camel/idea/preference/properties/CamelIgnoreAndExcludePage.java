@@ -57,9 +57,9 @@ public class CamelIgnoreAndExcludePage extends BaseConfigurable implements Searc
     public JComponent createComponent() {
         JPanel result = new JPanel(new BorderLayout());
         JPanel propertyTablePanel = new JPanel(new VerticalLayout(1));
-        propertyTablePanel.add(createIgnorePropertiesFilesTable(), -1);
-        propertyTablePanel.add(createExcludePropertiesFilesTable(), -1);
-        result.add(propertyTablePanel, -1);
+        propertyTablePanel.add(createIgnorePropertiesFilesTable());
+        propertyTablePanel.add(createExcludePropertiesFilesTable());
+        result.add(propertyTablePanel);
 
         reset();
 
