@@ -66,28 +66,34 @@ public class CamelIgnoreAndExcludePage extends BaseConfigurable implements Searc
         return result;
     }
 
-    @Override
-    public boolean isModified() {
-        return !Objects.equals(getCamelPreferenceService().getExcludePropertyFiles(), excludePropertyFilePanel.getData())
-                || !Objects.equals(getCamelPreferenceService().getIgnorePropertyList(), ignorePropertyFilePanel.getData());
-    }
+//    @Override
+//    public boolean isModified() {
+//        return !Objects.equals(getCamelPreferenceService().getExcludePropertyFiles(), excludePropertyFilePanel.getData())
+//                || !Objects.equals(getCamelPreferenceService().getIgnorePropertyList(), ignorePropertyFilePanel.getData());
+//    }
 
     @Override
     public void apply() throws ConfigurationException {
         getCamelPreferenceService().setExcludePropertyFiles(excludePropertyFilePanel.getData());
         getCamelPreferenceService().setIgnorePropertyList(ignorePropertyFilePanel.getData());
 
-        //setModified(false);
+        setModified(false);
     }
 
     @Override
     public void reset() {
         excludePropertyFilePanel.setData(getCamelPreferenceService().getExcludePropertyFiles());
+        ignorePropertyFilePanel.setData(getCamelPreferenceService().getIgnorePropertyList());
 
         //setModified(false);
+        //setModified(!myNewPairs.isEmpty());
+
+//        boolean b = !Objects.equals(getCamelPreferenceService().getExcludePropertyFiles(), excludePropertyFilePanel.getData())
+//                || !Objects.equals(getCamelPreferenceService().getIgnorePropertyList(), ignorePropertyFilePanel.getData());
+//        setModified(!b);
     }
 
-    CamelPreferenceService getCamelPreferenceService() {
+    private CamelPreferenceService getCamelPreferenceService() {
         return ServiceManager.getService(CamelPreferenceService.class);
     }
 
