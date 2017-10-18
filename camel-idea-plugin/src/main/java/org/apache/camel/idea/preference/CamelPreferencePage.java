@@ -54,12 +54,6 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
         return "Apache Camel";
     }
 
-    @Nullable
-    @Override
-    public String getHelpTopic() {
-        return null;
-    }
-
     @NotNull
     @Override
     public String getId() {
