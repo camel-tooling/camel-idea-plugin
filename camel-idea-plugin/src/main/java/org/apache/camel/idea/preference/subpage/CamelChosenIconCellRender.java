@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.preference;
+package org.apache.camel.idea.preference.subpage;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -31,13 +31,13 @@ import static org.apache.camel.idea.service.CamelPreferenceService.CAMEL_ICON;
 /**
  * To render a cell with the possible Camel icons
  */
-public class CamelChosenIconCellRender extends ListCellRendererWrapper<String> {
+class CamelChosenIconCellRender extends ListCellRendererWrapper<String> {
 
     private static final Logger LOG = Logger.getInstance(CamelChosenIconCellRender.class);
 
     private final TextAccessor textAccessor;
 
-    public CamelChosenIconCellRender(TextAccessor textAccessor) {
+    CamelChosenIconCellRender(TextAccessor textAccessor) {
         this.textAccessor = textAccessor;
     }
 
