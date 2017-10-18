@@ -63,7 +63,7 @@ If you want to change the default preferences open the `Preferences...` menu, se
 ![Screenshot](https://github.com/camel-idea-plugin/camel-idea-plugin/blob/master/img/26-plugin-preferences.png)
 
 
-### IDEA Compatability
+### IDEA Compatibility
 
 The Camel IDEA plugin currently requires IDEA 2016.2 or newer. If you are using a older version of IDEA and still want to try the plugin, follow the guide [here](#runningwithpreviousversion)
 
@@ -89,10 +89,10 @@ However with some trial and run you can find out bit by bit.
 
 Importing the project into IntelliJ as plug-in project requires a few steps before it possible.
 
-First you need to install the "Intellij plugin development with Maven" in your IDEA
+First you need to install the "IntelliJ plugin development with Maven" in your IDEA
 
  > - Open Preferences -> Plugins
- > - Browse for plug-ins and search "Intellij plugin development with Maven"
+ > - Browse for plug-ins and search "IntelliJ plugin development with Maven"
  > - Install the plug-in by right click and press "Download and Install"
  > - Restart the IDE
  
@@ -111,7 +111,7 @@ Windows:
 
  > - Execute the script file `./install-intellij-libs.bat 2017.2.5 "C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2017.2"`
 
-Next step you need to update the pom.xml file with the right Intellij version number
+Next step you need to update the pom.xml file with the right IntelliJ version number
 
  > - Open the pom.xml file
  > - Modify the property idea.version with the version number you have installed.
@@ -119,7 +119,7 @@ Next step you need to update the pom.xml file with the right Intellij version nu
 
 Last step you need to import the project as maven project.
 
-> Important : if you are using the Ultimate version you need to enable the maven profile "uiltimate" when importing the
+> Important : if you are using the Ultimate version you need to enable the maven profile "ultimate" when importing the
 project. Otherwise running the test will not work from IDEA
 
 > - Open your IDEA
@@ -201,7 +201,7 @@ Jetbrains provides a FAQ for the IDEA SDK which is massive and takes time to lea
 ### TODOs
 
 The issue tracker has a list of tickets with items to implement. This can be a good place
-to look for _stuff_ you can help with. We have labelled the beginner tickets with `beginner` and `help wanted`.
+to look for _stuff_ you can help with. We have labeled the beginner tickets with `beginner` and `help wanted`.
 
 Also we love feedback and you are welcome to log tickets about issues, ideas, etc.
 
