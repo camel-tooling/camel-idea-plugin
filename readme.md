@@ -76,7 +76,7 @@ IDEA provides more information about their SDK versions here: http://www.jetbrai
 
 You can build the plugin from source code, which requires to setup IDEA for plugin development.
 
-You can follow the guide from Jetbrains here: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/setting_up_environment.html
+You can follow the guide from Jetbrains here: https://www.jetbrains.com/help/idea/plugin-development-guidelines.html 
 
 To be able to browse the IDEA SDK source code you can clone the IDEA community source code, as described
 in the guide above. I did this so I can peak inside their source code, because you need this to find out
