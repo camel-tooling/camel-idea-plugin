@@ -49,7 +49,7 @@ public class CamelIgnoreAndExcludePage extends BaseConfigurable implements Searc
     @Nls
     @Override
     public String getDisplayName() {
-        return "Apache Camel2";
+        return "Ignore and exclude properties";
     }
 
     @Nullable
