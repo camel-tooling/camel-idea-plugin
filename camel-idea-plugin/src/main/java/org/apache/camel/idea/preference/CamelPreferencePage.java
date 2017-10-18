@@ -16,10 +16,12 @@
  */
 package org.apache.camel.idea.preference;
 
+import java.awt.*;
 import javax.swing.*;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
+import com.intellij.ui.components.JBLabel;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +37,10 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
     @Nullable
     @Override
     public JComponent createComponent() {
-        return null;
+        JPanel result = new JPanel(new BorderLayout());
+        result.add(new JBLabel("Configure Apache Camel stuff."), BorderLayout.PAGE_START);
+        
+        return result;
     }
 
     @Override
