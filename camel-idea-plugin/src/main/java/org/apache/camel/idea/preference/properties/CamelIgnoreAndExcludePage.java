@@ -17,6 +17,7 @@
 package org.apache.camel.idea.preference.properties;
 
 import java.awt.*;
+import java.util.Objects;
 import javax.swing.*;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.options.BaseConfigurable;
@@ -39,7 +40,58 @@ public class CamelIgnoreAndExcludePage extends BaseConfigurable implements Searc
     public CamelIgnoreAndExcludePage() {
     }
 
-    private JPanel createExcludePropertiesFilesTable2() {
+    @NotNull
+    @Override
+    public String getId() {
+        return "preference.CamelConfigurable";
+    }
+
+    @Nls
+    @Override
+    public String getDisplayName() {
+        return "Apache Camel2";
+    }
+
+    @Nullable
+    @Override
+    public JComponent createComponent() {
+        JPanel result = new JPanel(new BorderLayout());
+        JPanel propertyTablePanel = new JPanel(new VerticalLayout(1));
+        propertyTablePanel.add(createIgnorePropertiesFilesTable(), -1);
+        propertyTablePanel.add(createExcludePropertiesFilesTable(), -1);
+        result.add(propertyTablePanel, -1);
+
+        reset();
+
+        return result;
+    }
+
+    @Override
+    public boolean isModified() {
+        return !Objects.equals(getCamelPreferenceService().getExcludePropertyFiles(), excludePropertyFilePanel.getData())
+                || !Objects.equals(getCamelPreferenceService().getIgnorePropertyList(), ignorePropertyFilePanel.getData());
+    }
+
+    @Override
+    public void apply() throws ConfigurationException {
+        getCamelPreferenceService().setExcludePropertyFiles(excludePropertyFilePanel.getData());
+        getCamelPreferenceService().setIgnorePropertyList(ignorePropertyFilePanel.getData());
+
+        //setModified(false);
+    }
+
+    @Override
+    public void reset() {
+        excludePropertyFilePanel.setData(getCamelPreferenceService().getExcludePropertyFiles());
+
+        //setModified(false);
+    }
+
+    CamelPreferenceService getCamelPreferenceService() {
+        return ServiceManager.getService(CamelPreferenceService.class);
+    }
+
+    private JPanel createExcludePropertiesFilesTable() {
         final JPanel mainPanel = new JPanel(new GridLayout(1, 1));
         mainPanel.setPreferredSize(JBUI.size(300, 300));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
@@ -66,7 +118,7 @@ public class CamelIgnoreAndExcludePage extends BaseConfigurable implements Searc
         return mainPanel;
     }
 
-    private JPanel createExcludePropertiesFilesTable3() {
+    private JPanel createIgnorePropertiesFilesTable() {
         final JPanel mainPanel = new JPanel(new GridLayout(1, 1));
         mainPanel.setPreferredSize(JBUI.size(300, 300));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
@@ -145,49 +197,5 @@ public class CamelIgnoreAndExcludePage extends BaseConfigurable implements Searc
         public String getColumnName(int column) {
             return "Filename";
         }
-    }
-
-    @NotNull
-    @Override
-    public String getId() {
-        return "preference.CamelConfigurable";
-    }
-
-    @Nls
-    @Override
-    public String getDisplayName() {
-        return "Apache Camel2";
-    }
-
-    @Nullable
-    @Override
-    public JComponent createComponent() {
-        JPanel result = new JPanel(new BorderLayout());
-        JPanel propertyTablePanel = new JPanel(new VerticalLayout(1));
-        propertyTablePanel.add(createExcludePropertiesFilesTable3(), -1);
-        propertyTablePanel.add(createExcludePropertiesFilesTable2(), -1);
-        result.add(propertyTablePanel, -1);
-
-        reset();
-
-        return result;
-    }
-
-    @Override
-    public void apply() throws ConfigurationException {
-        getCamelPreferenceService().setExcludePropertyFiles(excludePropertyFilePanel.getData());
-        getCamelPreferenceService().setIgnorePropertyList(ignorePropertyFilePanel.getData());
-
-        setModified(false);
-    }
-
-    @Override
-    public void reset() {
-        excludePropertyFilePanel.setData(getCamelPreferenceService().getExcludePropertyFiles());
-        setModified(false);
-    }
-
-    CamelPreferenceService getCamelPreferenceService() {
-        return ServiceManager.getService(CamelPreferenceService.class);
     }
 }
