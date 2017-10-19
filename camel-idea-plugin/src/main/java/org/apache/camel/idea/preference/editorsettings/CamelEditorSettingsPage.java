@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.preference.subpage;
+package org.apache.camel.idea.preference.editorsettings;
 
 import java.awt.*;
 import java.util.Objects;
@@ -34,7 +34,7 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class CamelPreferenceSubPage extends BaseConfigurable implements SearchableConfigurable, Configurable.NoScroll {
+public class CamelEditorSettingsPage extends BaseConfigurable implements SearchableConfigurable, Configurable.NoScroll {
 
     private JBCheckBox realTimeEndpointValidationCatalogCheckBox;
     private JBCheckBox realTimeSimpleValidationCatalogCheckBox;
@@ -152,5 +152,41 @@ public class CamelPreferenceSubPage extends BaseConfigurable implements Searchab
 
     CamelPreferenceService getCamelPreferenceService() {
         return ServiceManager.getService(CamelPreferenceService.class);
+    }
+
+    JBCheckBox getRealTimeEndpointValidationCatalogCheckBox() {
+        return realTimeEndpointValidationCatalogCheckBox;
+    }
+
+    JBCheckBox getRealTimeSimpleValidationCatalogCheckBox() {
+        return realTimeSimpleValidationCatalogCheckBox;
+    }
+
+    JBCheckBox getHighlightCustomOptionsCheckBox() {
+        return highlightCustomOptionsCheckBox;
+    }
+
+    JBCheckBox getDownloadCatalogCheckBox() {
+        return downloadCatalogCheckBox;
+    }
+
+    JBCheckBox getScanThirdPartyComponentsCatalogCheckBox() {
+        return scanThirdPartyComponentsCatalogCheckBox;
+    }
+
+    JBCheckBox getScanThirdPartyLegacyComponentsCatalogCheckBox() {
+        return scanThirdPartyLegacyComponentsCatalogCheckBox;
+    }
+
+    JBCheckBox getCamelIconInGutterCheckBox() {
+        return camelIconInGutterCheckBox;
+    }
+
+    JComboBox<String> getCamelIconsComboBox() {
+        return camelIconsComboBox;
+    }
+
+    TextFieldWithBrowseButton getCustomIconButton() {
+        return customIconButton;
     }
 }

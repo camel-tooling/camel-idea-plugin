@@ -32,6 +32,8 @@
       v0.4.6
       <ul>
         <li>Work in progress</li>
+        <li>Fixed bug with apply button in plugin preferences</li>
+        <li>Rewrite of plugin preferences page</li>
       </ul>
       v0.4.5
       <ul>
@@ -130,9 +132,9 @@
     <localInspection groupName="Apache Camel" implementationClass="org.apache.camel.idea.inspection.CamelInspection"/>
 
     <!-- preference -->
-    <applicationConfigurable id="camel" groupId="language" displayName="Apache Camel" instance="org.apache.camel.idea.preference.CamelPreferencePage" />
-    <applicationConfigurable parentId="camel" id="camel.sub1" groupId="language" displayName="Apache Camel1" instance="org.apache.camel.idea.preference.subpage.CamelPreferenceSubPage"/>
-    <applicationConfigurable parentId="camel" id="camel.sub2" groupId="language" displayName="Ignore and exclude properties" instance="org.apache.camel.idea.preference.properties.CamelIgnoreAndExcludePage"/>
+    <applicationConfigurable id="camel" groupId="language" displayName="Apache Camel" instance="org.apache.camel.idea.preference.CamelPreferenceEntryPage" />
+    <applicationConfigurable parentId="camel" id="camel.editor" groupId="language" displayName="Editor Settings" instance="org.apache.camel.idea.preference.editorsettings.CamelEditorSettingsPage"/>
+    <applicationConfigurable parentId="camel" id="camel.properties" groupId="language" displayName="Ignore &amp; Exclude Properties" instance="org.apache.camel.idea.preference.properties.CamelIgnoreAndExcludePage"/>
 
   </extensions>
 

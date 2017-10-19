@@ -29,16 +29,16 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Preference UI for this plugin.
  */
-public class CamelPreferencePage implements SearchableConfigurable, Configurable.NoScroll {
+public class CamelPreferenceEntryPage implements SearchableConfigurable, Configurable.NoScroll {
 
-    CamelPreferencePage() {
+    CamelPreferenceEntryPage() {
     }
 
     @Nullable
     @Override
     public JComponent createComponent() {
         JPanel result = new JPanel(new BorderLayout());
-        result.add(new JBLabel("Configure Apache Camel stuff."), BorderLayout.PAGE_START);
+        result.add(new JBLabel("Configure Apache Camel editor settings."), BorderLayout.PAGE_START);
         
         return result;
     }
