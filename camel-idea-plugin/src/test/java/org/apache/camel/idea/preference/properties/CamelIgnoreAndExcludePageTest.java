@@ -16,10 +16,15 @@
  */
 package org.apache.camel.idea.preference.properties;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
-
 
 public class CamelIgnoreAndExcludePageTest extends CamelLightCodeInsightFixtureTestCaseIT {
 
@@ -38,6 +43,23 @@ public class CamelIgnoreAndExcludePageTest extends CamelLightCodeInsightFixtureT
         super.tearDown();
         ignoreAndExcludePage = null;
         super.initCamelPreferencesService();
+    }
+
+    public void testPluginXmlShouldContainIgnoreAndExcludePreferencesPage() {
+        File pluginXml = new File("src/main/resources/META-INF/plugin.xml");
+        assertNotNull(pluginXml);
+
+        try {
+            List<String> lines = Files.readAllLines(Paths.get("src/main/resources/META-INF/plugin.xml"), StandardCharsets.UTF_8);
+            List<String> trimmedStrings =
+                    lines.stream().map(String::trim).collect(Collectors.toList());
+            int indexOfApplicationConfigurable = trimmedStrings.indexOf("<applicationConfigurable parentId=\"camel\" id=\"camel.properties\" "
+                    + "groupId=\"language\" displayName=\"Ignore &amp; Exclude Properties\" "
+                    + "instance=\"org.apache.camel.idea.preference.properties.CamelIgnoreAndExcludePage\"/>");
+            assertTrue(indexOfApplicationConfigurable > 0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void testShouldContainIgnorePropertyTable() {

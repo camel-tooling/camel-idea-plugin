@@ -16,6 +16,13 @@
  */
 package org.apache.camel.idea.preference.editorsettings;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.swing.*;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
@@ -39,6 +46,23 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
         super.tearDown();
         editorSettingsPage = null;
         super.initCamelPreferencesService();
+    }
+
+    public void testPluginXmlShouldContainEditorPreferencesPage() {
+        File pluginXml = new File("src/main/resources/META-INF/plugin.xml");
+        assertNotNull(pluginXml);
+
+        try {
+            List<String> lines = Files.readAllLines(Paths.get("src/main/resources/META-INF/plugin.xml"), StandardCharsets.UTF_8);
+            List<String> trimmedStrings =
+                    lines.stream().map(String::trim).collect(Collectors.toList());
+            int indexOfApplicationConfigurable = trimmedStrings.indexOf("<applicationConfigurable parentId=\"camel\" id=\"camel.editor\" "
+                    + "groupId=\"language\" displayName=\"Editor Settings\" "
+                    + "instance=\"org.apache.camel.idea.preference.editorsettings.CamelEditorSettingsPage\"/>");
+            assertTrue(indexOfApplicationConfigurable > 0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void testShouldContainRealTimeEndpointValidationCatalogCheckBox() {

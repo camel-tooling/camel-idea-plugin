@@ -101,8 +101,6 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         getCamelPreferenceService().setShowCamelIconInGutter(camelIconInGutterCheckBox.isSelected());
         getCamelPreferenceService().setChosenCamelIcon(camelIconsComboBox.getSelectedItem().toString());
         getCamelPreferenceService().setCustomIconFilePath(customIconButton.getText());
-
-        //setModified(true);
     }
 
     @Override
@@ -134,8 +132,6 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         camelIconsComboBox.setSelectedItem(getCamelPreferenceService().getChosenCamelIcon());
         customIconButton.setText(getCamelPreferenceService().getCustomIconFilePath());
         customIconButton.setEnabled("Custom Icon".equals(camelIconsComboBox.getSelectedItem()));
-
-        //setModified(false);
     }
 
     @NotNull

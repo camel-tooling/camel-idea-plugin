@@ -16,6 +16,13 @@
  */
 package org.apache.camel.idea.preference;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
 public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtureTestCaseIT {
@@ -37,24 +44,22 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
         super.initCamelPreferencesService();
     }
 
-//    public void testPluginXmlShouldContainPreferencesPage() {
-//        File pluginXml = new File("src/main/resources/META-INF/plugin.xml");
-//        assertNotNull(pluginXml);
-//
-//        try {
-//            List<String> lines = Files.readAllLines(Paths.get("src/main/resources/META-INF/plugin.xml"), StandardCharsets.UTF_8);
-//            List<String> trimmedStrings =
-//                    lines.stream().map(String::trim).collect(Collectors.toList());
-//            int indexOfApplicationConfigurable = trimmedStrings.indexOf("<applicationConfigurable id=\"camel\" groupId=\"language\" displayName=\"Apache Camel\"");
-//
-//            assertTrue(indexOfApplicationConfigurable > 0);
-//            assertEquals("<applicationConfigurable id=\"camel\" displayName=\"Apache Camel\" groupId=\"language\"", trimmedStrings.get(indexOfApplicationConfigurable));
-//            String secondLineOfApplicationConfigurable = trimmedStrings.get(indexOfApplicationConfigurable + 1);
-//            assertEquals("instance=\"org.apache.camel.idea.preference.CamelPreferenceEntryPage\"/>", secondLineOfApplicationConfigurable);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public void testPluginXmlShouldContainPreferencesPage() {
+        File pluginXml = new File("src/main/resources/META-INF/plugin.xml");
+        assertNotNull(pluginXml);
+
+        try {
+            List<String> lines = Files.readAllLines(Paths.get("src/main/resources/META-INF/plugin.xml"), StandardCharsets.UTF_8);
+            List<String> trimmedStrings =
+                    lines.stream().map(String::trim).collect(Collectors.toList());
+            int indexOfApplicationConfigurable = trimmedStrings.indexOf("<applicationConfigurable id=\"camel\" "
+                    + "groupId=\"language\" displayName=\"Apache Camel\" "
+                    + "instance=\"org.apache.camel.idea.preference.CamelPreferenceEntryPage\" />");
+            assertTrue(indexOfApplicationConfigurable > 0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public void testDisplayNameShouldBeApacheCamel() {
         assertEquals("Apache Camel", camelPreferenceEntryPage.getDisplayName());
