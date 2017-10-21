@@ -17,9 +17,7 @@
 package org.apache.camel.idea.completion.extension;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.Properties;
-
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.PlainPrefixMatcher;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;

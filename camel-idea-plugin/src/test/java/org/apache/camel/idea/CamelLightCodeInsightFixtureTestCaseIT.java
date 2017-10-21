@@ -18,14 +18,16 @@ package org.apache.camel.idea;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.testFramework.PsiTestUtil;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import org.apache.camel.idea.service.CamelCatalogService;
+import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-
 
 /**
  * Super class for Camel Plugin Testing. If you are testing plug-in code with LightCodeInsightFixtureTestCase
@@ -33,7 +35,8 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
  */
 public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeInsightFixtureTestCase {
 
-    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.19.0-SNAPSHOT";
+    private static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.19.0";
+
     private static File[] mavenArtifacts;
     private boolean ignoreCamelCoreLib;
 
@@ -47,7 +50,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        if (!isIgnoreCamelCoreLib()) {
+        if (!ignoreCamelCoreLib) {
             PsiTestUtil.addLibrary(myModule, "Maven: " + CAMEL_CORE_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
         }
         disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelCatalogService.class));
@@ -63,13 +66,13 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
     /**
      * Get a list of artifact declared as dependencies in the pom.xml file.
      * <p>
-     *   The method take a String arrays off "G:A:P:C:?" "org.apache.camel:camel-core:2.19.0-SNAPSHOT"
+     *   The method take a String arrays off "G:A:P:C:?" "org.apache.camel:camel-core:2.19.0"
      * </p>
      * @param mavneAritfiact - Array of maven artifact to resolve
      * @return Array of artifact files
      * @throws IOException
      */
-    protected static File[] getMavenArtifacts(String... mavneAritfiact) throws IOException {
+    private static File[] getMavenArtifacts(String... mavneAritfiact) throws IOException {
         File[] libs = Maven.resolver().loadPomFromFile("pom.xml")
             .resolve(mavneAritfiact)
             .withoutTransitivity().asFile();
@@ -85,11 +88,26 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         return myFixture.getFile().findElementAt(offset);
     }
 
-    public boolean isIgnoreCamelCoreLib() {
-        return this.ignoreCamelCoreLib;
+    protected void setIgnoreCamelCoreLib(boolean ignoreCamelCoreLib) {
+        this.ignoreCamelCoreLib = ignoreCamelCoreLib;
     }
 
-    public void setIgnoreCamelCoreLib(boolean ignoreCamelCoreLib) {
-        this.ignoreCamelCoreLib = ignoreCamelCoreLib;
+    protected void initCamelPreferencesService() {
+        List<String> expectedExcludedProperties = Arrays.asList("**/log4j.properties", "**/log4j2.properties", "**/logging.properties");
+        CamelPreferenceService service = ServiceManager.getService(CamelPreferenceService.class);
+        service.setExcludePropertyFiles(expectedExcludedProperties);
+        service.setRealTimeEndpointValidation(true);
+        service.setScanThirdPartyLegacyComponents(true);
+        service.setCustomIconFilePath("");
+        service.setDownloadCatalog(true);
+        service.setHighlightCustomOptions(true);
+
+        List<String> expectedIgnoredProperties = Arrays.asList("java.", "Logger.", "logger", "appender.", "rootLogger.",
+                "camel.springboot.", "camel.component.", "camel.dataformat.", "camel.language.");
+        service.setIgnorePropertyList(expectedIgnoredProperties);
+        service.setShowCamelIconInGutter(true);
+        service.setScanThirdPartyComponents(true);
+        service.setRealTimeSimpleValidation(true);
+        service.setChosenCamelIcon("Camel Icon");
     }
 }

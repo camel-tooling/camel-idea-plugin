@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.*;
-
 import com.intellij.codeInsight.intention.LowPriorityAction;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.application.Result;

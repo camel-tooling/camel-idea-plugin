@@ -19,7 +19,6 @@ package org.apache.camel.idea.annotator;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
-
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -31,10 +30,10 @@ import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.EndpointValidationResult;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelPreferenceService;
+import org.apache.camel.idea.service.QueryUtils;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
-
 import static org.apache.camel.idea.util.CamelIdeaUtils.skipEndpointValidation;
 import static org.apache.camel.idea.util.StringUtils.isEmpty;
 
@@ -55,7 +54,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
      * if the URI is not valid a error annotation is created and highlight the invalid value.
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String uri) {
-        if (CamelIdeaUtils.isQueryContainingCamelComponent(element.getProject(), uri)) {
+        if (QueryUtils.isQueryContainingCamelComponent(element.getProject(), uri)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
 
             IElementType type = element.getNode().getElementType();

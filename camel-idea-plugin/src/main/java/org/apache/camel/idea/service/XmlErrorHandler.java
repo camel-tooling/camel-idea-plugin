@@ -14,22 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.beverage;
+package org.apache.camel.idea.service;
 
-import java.util.Map;
-import org.apache.camel.Endpoint;
-import org.apache.camel.impl.DefaultComponent;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
-public class BeverageComponent extends DefaultComponent {
+class XmlErrorHandler implements ErrorHandler {
+
+    XmlErrorHandler() {
+    }
 
     @Override
-    protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
-        BeverageEndpoint answer = new BeverageEndpoint(uri, this);
+    public void warning(SAXParseException exception) throws SAXException {
+        throw new SAXException(saxMsg(exception));
+    }
 
-        Beverages drink = getCamelContext().getTypeConverter().mandatoryConvertTo(Beverages.class, remaining);
-        answer.setDrink(drink);
+    @Override
+    public void error(SAXParseException exception) throws SAXException {
+        throw new SAXException(saxMsg(exception));
+    }
 
-        setProperties(answer, parameters);
-        return answer;
+    @Override
+    public void fatalError(SAXParseException exception) throws SAXException {
+        throw new SAXException(saxMsg(exception));
+    }
+
+    private String saxMsg(SAXParseException e) {
+        return "Line: " + e.getLineNumber() + ", Column: " + e.getColumnNumber() + ", Error: " + e.getMessage();
     }
 }

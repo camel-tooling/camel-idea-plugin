@@ -23,6 +23,7 @@ import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
+
 /**
  * Camel inspection to validate Camel endpoints and languages such as simple.
  */

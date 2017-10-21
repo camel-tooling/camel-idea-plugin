@@ -17,7 +17,6 @@
 package org.apache.camel.idea.annotator;
 
 import java.util.List;
-
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
 import com.intellij.lang.annotation.HighlightSeverity;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
@@ -44,7 +43,7 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         List<HighlightInfo> list = myFixture.doHighlighting();
 
         // there should not be any invalid boolean warnings as String.format should work
-        boolean found = list.stream().anyMatch((i) -> i.getDescription() != null && i.getDescription().startsWith("Invalid boolean value"));
+        boolean found = list.stream().anyMatch(i -> i.getDescription() != null && i.getDescription().startsWith("Invalid boolean value"));
         assertFalse("Should not find any warning", found);
     }
 
@@ -156,7 +155,7 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         List<HighlightInfo> list = myFixture.doHighlighting();
 
         // find the warning from the highlights as checkWarning cannot do that for us for warnings
-        boolean found = list.stream().anyMatch((i) -> i.getText().equals("fileExist")
+        boolean found = list.stream().anyMatch(i -> i.getText().equals("fileExist")
             && i.getDescription().equals("Option not applicable in consumer only mode")
             && i.getSeverity().equals(HighlightSeverity.WARNING));
         assertTrue("Should find the warning", found);
@@ -169,7 +168,7 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         List<HighlightInfo> list = myFixture.doHighlighting();
 
         // find the warning from the highlights as checkWarning cannot do that for us for warnings
-        boolean found = list.stream().anyMatch((i) -> i.getText().equals("delete")
+        boolean found = list.stream().anyMatch(i -> i.getText().equals("delete")
             && i.getDescription().equals("Option not applicable in producer only mode")
             && i.getSeverity().equals(HighlightSeverity.WARNING));
         assertTrue("Should find the warning", found);
@@ -182,7 +181,7 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         List<HighlightInfo> list = myFixture.doHighlighting();
 
         // there should not be any invalid boolean warnings as fromF should work
-        boolean found = list.stream().anyMatch((i) -> i.getDescription() != null && i.getDescription().startsWith("Invalid boolean value"));
+        boolean found = list.stream().anyMatch(i -> i.getDescription() != null && i.getDescription().startsWith("Invalid boolean value"));
         assertFalse("Should not find any warning", found);
     }
 

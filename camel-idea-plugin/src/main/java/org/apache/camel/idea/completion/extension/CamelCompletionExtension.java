@@ -19,7 +19,7 @@ package org.apache.camel.idea.completion.extension;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.util.ProcessingContext;
-import org.apache.camel.idea.completion.CamelContributor;
+import org.apache.camel.idea.completion.contributor.CamelContributor;
 import org.jetbrains.annotations.NotNull;
 
 /**

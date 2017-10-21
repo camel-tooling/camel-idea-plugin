@@ -18,7 +18,6 @@ package org.apache.camel.idea;
 
 import java.io.File;
 import java.io.IOException;
-
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;

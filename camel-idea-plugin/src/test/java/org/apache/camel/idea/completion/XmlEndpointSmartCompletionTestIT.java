@@ -18,10 +18,8 @@ package org.apache.camel.idea.completion;
 
 import java.util.Arrays;
 import java.util.List;
-
 import com.intellij.codeInsight.completion.CompletionType;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
-
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItems;
@@ -31,6 +29,7 @@ import static org.junit.Assert.assertThat;
 /**
  * Testing smart completion with Camel XML DSL
  */
+@SuppressWarnings("unchecked")
 public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     public void testConsumerCompletion() {

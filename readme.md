@@ -6,14 +6,14 @@ Apache Camel IDEA Plugin
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)]()
 
 
-Plugin for Intellij IDEA to provide a set of small Apache Camel related capabilities to the code editor.
+Plugin for Intellij IDEA to provide a set of Apache Camel related capabilities to the code editor.
 
 The plugin includes:
 
-- Code completion for Camel endpoints in Java, Groovy, Kotlin, Scala, XML, properties or yaml files (`ctrl + space`)
+- Code completion for Camel endpoints in Java, XML, properties or yaml files (`ctrl + space`)
 - Code completion for Camel property placeholders (cursor after `{{`)
-- Real time validation for Camel endpoints in Java, Groovy, Kotlin, Scala, XML (underline errors in red)
-- Real time validation for Camel simple language in Java, Groovy, XML (underline errors in red)
+- Real time validation for Camel endpoints in Java, XML (underline errors in red)
+- Real time validation for Camel simple language in Java, XML (underline errors in red)
 - Endpoint options filtered to only include applicable options when used as consumer vs producer only mode
 - Quick navigation to other Camel routes routing to this route by clicking the Camel icon in the gutter
 - Intention to add new Camel endpoint (`alt + enter` in empty string)
@@ -21,10 +21,11 @@ The plugin includes:
 - Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders
 - Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)
 - Attempts to use same version as camel-core dependency from the loaded project (requires Camel 2.16.1 or newer and may require download over internet)
-- Inspection (analyze code) to validate Camel endpoints in Java, Groovy, Kotlin, Scala, XML
+- Inspection (analyze code) to validate Camel endpoints in Java, XML
 - Camel icon in gutter can be customized by either the two provided icons or load a custom from file system
 - Supports loading camel-catalog from third party Maven repositories define in the project Maven pom.xml file 
 - Supports Maven, Gradle, and SBT based projects
+- Support for Groovy, Scala and Kotlin has been deprecated and is expected to be removed in a future release.
 
 When the plugin becomes more complete and stable then the intention is to donate the source code
 to Apache Software Foundation to be included out of the box at Apache Camel.
@@ -55,12 +56,14 @@ Currently its only endpoint options in the URI query section which can be edited
 support for editing the options in the URI context-path section as well.
 
 
-### Preference
+### Plugin Preferences
 
 The plugin comes with a preference where you can configure global settings for the plugin such as turning on or off the real time validation in the editor, or whether to show the Camel icon in the gutter, etc.
+If you want to change the default preferences open the `Preferences...` menu, select `Languages & Frameworks` and `Apache Camel`. Here is a screenshot of it:
+![Screenshot](https://github.com/camel-idea-plugin/camel-idea-plugin/blob/master/img/26-plugin-preferences.png)
 
 
-### IDEA Compatability
+### IDEA Compatibility
 
 The Camel IDEA plugin currently requires IDEA 2016.2 or newer. If you are using a older version of IDEA and still want to try the plugin, follow the guide [here](#runningwithpreviousversion)
 
@@ -86,10 +89,10 @@ However with some trial and run you can find out bit by bit.
 
 Importing the project into IntelliJ as plug-in project requires a few steps before it possible.
 
-First you need to install the "Intellij plugin development with Maven" in your IDEA
+First you need to install the "IntelliJ plugin development with Maven" in your IDEA
 
  > - Open Preferences -> Plugins
- > - Browse for plug-ins and search "Intellij plugin development with Maven"
+ > - Browse for plug-ins and search "IntelliJ plugin development with Maven"
  > - Install the plug-in by right click and press "Download and Install"
  > - Restart the IDE
  
@@ -97,18 +100,18 @@ Second you need to install the IntelliJ libraries into your local maven reposito
 is the version of the IDEA you have installed locally, second is the locations of the IDEA.
 If you have installed IDEA in a different location than shown in the sample below, then make sure to use the correct path.
 
-Currently we use IDEA 2017.1 as the version and therefore you should download and use that version.
+Currently we use IDEA 2017.2.5 as the version and therefore you should download and use that version.
 An alternative is to change the version in `camel-idea-plugin/pom.xml` file to use a different version but its not recommended.
 
 Linux or Mac users:
 
- > - Execute the script file `./install-intellij-libs.sh 2017.1 /Applications/IntelliJ\ IDEA\ CE.app/Contents /Users/joe/.m2` 
+ > - Execute the script file `./install-intellij-libs.sh 2017.2.5 /Applications/IntelliJ\ IDEA\ CE.app/Contents $HOME/.m2` 
   
 Windows:
 
- > - Execute the script file `./install-intellij-libs.bat 2017.1 "C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2017.1"`
+ > - Execute the script file `./install-intellij-libs.bat 2017.2.5 "C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2017.2"`
 
-Next step you need to update the pom.xml file with the right Intellij version number
+Next step you need to update the pom.xml file with the right IntelliJ version number
 
  > - Open the pom.xml file
  > - Modify the property idea.version with the version number you have installed.
@@ -116,7 +119,7 @@ Next step you need to update the pom.xml file with the right Intellij version nu
 
 Last step you need to import the project as maven project.
 
-> Important : if you are using the Ultimate version you need to enable the maven profile "uiltimate" when importing the
+> Important : if you are using the Ultimate version you need to enable the maven profile "ultimate" when importing the
 project. Otherwise running the test will not work from IDEA
 
 > - Open your IDEA
@@ -197,10 +200,8 @@ Jetbrains provides a FAQ for the IDEA SDK which is massive and takes time to lea
 
 ### TODOs
 
-The plugin is not finished and therefore there is work to be done. 
-
 The issue tracker has a list of tickets with items to implement. This can be a good place
-to look for _stuff_ you can help with. We have labelled the beginner tickets with `beginner` and `help wanted`.
+to look for _stuff_ you can help with. We have labeled the beginner tickets with `beginner` and `help wanted`.
 
 Also we love feedback and you are welcome to log tickets about issues, ideas, etc.
 

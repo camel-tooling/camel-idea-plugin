@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 package org.apache.camel.idea.util;
+
 import java.util.Arrays;
 import java.util.Optional;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
@@ -108,6 +107,20 @@ public final class CamelIdeaUtils {
         return false;
     }
 
+    /**
+     * For java methods tries to find if element is inside a camel route start expression,
+     * otherwise delegates to {@link CamelIdeaUtils#isCamelRouteStart(PsiElement)}.
+     *
+     * @param element
+     * @return
+     */
+    public static boolean isCamelRouteStartExpression(PsiElement element) {
+        // TODO: do parent search also for non java languages (not xml)?
+        if (PsiTreeUtil.findFirstParent(element, true, CamelIdeaUtils::isCamelRouteStart) != null) {
+            return true;
+        }
+        return isCamelRouteStart(element);
+    }
     /**
      * Is this a camel route using using Scala DSL's '==>' method
      */
@@ -223,7 +236,7 @@ public final class CamelIdeaUtils {
                     return "true".equalsIgnoreCase(doWhile);
                 }
             }
-            return Arrays.stream(SIMPLE_PREDICATE).anyMatch((n) -> getIdeaUtils().hasParentXmlTag(xml, n));
+            return Arrays.stream(SIMPLE_PREDICATE).anyMatch(n -> getIdeaUtils().hasParentXmlTag(xml, n));
         }
 
         // groovy
@@ -421,20 +434,6 @@ public final class CamelIdeaUtils {
         }
         // okay then go up and try super
         return isCamelExpressionOrLanguage(clazz.getSuperClass());
-    }
-
-    /**
-     * Validate if the query contain a known camel component
-     */
-    public static boolean isQueryContainingCamelComponent(Project project, String query) {
-        // is this a possible Camel endpoint uri which we know
-        if (query != null && !query.isEmpty()) {
-            String componentName = StringUtils.asComponentName(query);
-            if (componentName != null && ServiceManager.getService(project, CamelCatalogService.class).get().findComponentNames().contains(componentName)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

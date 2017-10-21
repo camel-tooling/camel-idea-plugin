@@ -73,7 +73,7 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
         customIconButton.addBrowseFolderListener("Choose Custom Camel Icon", "The icon should be a 16x16 png file", null, FileChooserDescriptorFactory.createSingleFileDescriptor("png"));
 
         camelIconsComboBox.setRenderer(new CamelChosenIconCellRender(customIconButton));
-        camelIconsComboBox.addItemListener((l) -> {
+        camelIconsComboBox.addItemListener(l -> {
             // only enable custom if selected in the drop down
             customIconButton.setEnabled("Custom Icon".equals(l.getItem()));
         });
@@ -224,7 +224,7 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
         excludePropertyFileTable.reset();
     }
 
-    private CamelPreferenceService getCamelPreferenceService() {
+    CamelPreferenceService getCamelPreferenceService() {
         return ServiceManager.getService(CamelPreferenceService.class);
     }
 
@@ -232,5 +232,49 @@ public class CamelPreferencePage implements SearchableConfigurable, Configurable
     @Override
     public String getId() {
         return "preference.CamelConfigurable";
+    }
+
+    JBCheckBox getRealTimeEndpointValidationCatalogCheckBox() {
+        return realTimeEndpointValidationCatalogCheckBox;
+    }
+
+    JBCheckBox getRealTimeSimpleValidationCatalogCheckBox() {
+        return realTimeSimpleValidationCatalogCheckBox;
+    }
+
+    JBCheckBox getHighlightCustomOptionsCheckBox() {
+        return highlightCustomOptionsCheckBox;
+    }
+
+    JBCheckBox getDownloadCatalogCheckBox() {
+        return downloadCatalogCheckBox;
+    }
+
+    JBCheckBox getScanThirdPartyComponentsCatalogCheckBox() {
+        return scanThirdPartyComponentsCatalogCheckBox;
+    }
+
+    JBCheckBox getScanThirdPartyLegacyComponentsCatalogCheckBox() {
+        return scanThirdPartyLegacyComponentsCatalogCheckBox;
+    }
+
+    JBCheckBox getCamelIconInGutterCheckBox() {
+        return camelIconInGutterCheckBox;
+    }
+
+    JComboBox<String> getCamelIconsComboBox() {
+        return camelIconsComboBox;
+    }
+
+    TextFieldWithBrowseButton getCustomIconButton() {
+        return customIconButton;
+    }
+
+    CamelIgnorePropertyTable getIgnorePropertyTable() {
+        return ignorePropertyTable;
+    }
+
+    CamelExcludePropertyFileTable getExcludePropertyFileTable() {
+        return excludePropertyFileTable;
     }
 }

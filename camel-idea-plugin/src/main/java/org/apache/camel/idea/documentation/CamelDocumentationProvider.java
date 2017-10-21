@@ -19,7 +19,6 @@ package org.apache.camel.idea.documentation;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
 import com.intellij.ide.BrowserUtil;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.Language;
@@ -88,7 +87,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                     // grab first string parameter (as the string would contain the camel endpoint uri
                     final PsiClassType stringType = PsiType.getJavaLangString(element.getManager(), element.getResolveScope());
                     PsiExpression exp = Arrays.stream(exps.getExpressions()).filter(
-                        (e) -> e.getType() != null && stringType.isAssignableFrom(e.getType()))
+                        e -> e.getType() != null && stringType.isAssignableFrom(e.getType()))
                         .findFirst().orElse(null);
                     if (exp instanceof PsiLiteralExpression) {
                         Object o = ((PsiLiteralExpression) exp).getValue();
@@ -97,7 +96,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                         PsiClass clazz = PsiTreeUtil.getParentOfType(originalElement, PsiClass.class);
                         if (clazz != null) {
                             PsiClassType[] types = clazz.getExtendsListTypes();
-                            boolean found = Arrays.stream(types).anyMatch((p) -> p.getClassName().equals("RouteBuilder"));
+                            boolean found = Arrays.stream(types).anyMatch(p -> p.getClassName().equals("RouteBuilder"));
                             if (found) {
                                 String componentName = StringUtils.asComponentName(val);
                                 if (componentName != null) {
@@ -207,7 +206,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
                 // find the line with this prefix as prefix and multivalue
                 EndpointOptionModel endpointOption = component.getEndpointOptions().stream().filter(
-                    (o) -> "true".equals(o.getMultiValue()) && prefixOption.equals(o.getPrefix()))
+                    o -> "true".equals(o.getMultiValue()) && prefixOption.equals(o.getPrefix()))
                     .findFirst().orElse(null);
 
                 // use the real option name instead of the prefix
@@ -293,10 +292,10 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             ComponentModel component = ModelHelper.generateComponentModel(json, false);
 
             // to build external links which points to github
-            String a = component.getArtifactId();
+            String artifactId = component.getArtifactId();
 
             String url;
-            if ("camel-core".equals(a)) {
+            if ("camel-core".equals(artifactId)) {
                 url = GITHUB_EXTERNAL_DOC_URL + "/camel-core/src/main/docs/" + name + "-component.adoc";
             } else {
                 url = GITHUB_EXTERNAL_DOC_URL + "/components/" + component.getArtifactId() + "/src/main/docs/" + name + "-component.adoc";
@@ -365,7 +364,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         if (option.endsWith(".")) {
             // find the line with this prefix as prefix and multivalue
             endpointOption = component.getEndpointOptions().stream().filter(
-                (o) -> "true".equals(o.getMultiValue()) && option.equals(o.getPrefix()))
+                o -> "true".equals(o.getMultiValue()) && option.equals(o.getPrefix()))
                 .findFirst().orElse(null);
         } else {
             endpointOption = component.getEndpointOption(option);

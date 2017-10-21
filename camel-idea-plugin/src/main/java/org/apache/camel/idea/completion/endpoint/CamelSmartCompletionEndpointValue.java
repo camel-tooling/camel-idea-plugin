@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.completion;
+package org.apache.camel.idea.completion.endpoint;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.Lookup;
 import com.intellij.codeInsight.lookup.LookupElement;
@@ -157,13 +156,10 @@ public final class CamelSmartCompletionEndpointValue {
         return builder.withInsertHandler((context, item) -> {
             // enforce using replace select char as we want to replace any existing option
             int pos;
-            String separator;
             if (xmlMode) {
                 pos = suffix.indexOf("&amp;");
-                separator = "&amp;";
             } else {
                 pos = suffix.indexOf("&");
-                separator = "&";
             }
 
             if (context.getCompletionChar() == Lookup.REPLACE_SELECT_CHAR) {

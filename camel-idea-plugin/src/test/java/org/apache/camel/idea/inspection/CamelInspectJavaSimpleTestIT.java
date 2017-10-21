@@ -18,7 +18,6 @@ package org.apache.camel.idea.inspection;
 
 import java.io.File;
 import java.io.IOException;
-
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
@@ -34,7 +33,7 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 public class CamelInspectJavaSimpleTestIT extends InspectionTestCase {
 
-    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.19.0-SNAPSHOT";
+    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.19.0";
 
     @Override
     protected void setUp() throws Exception {
@@ -52,8 +51,8 @@ public class CamelInspectJavaSimpleTestIT extends InspectionTestCase {
         UIUtil.dispatchAllInvocationEvents();
     }
 
-    private File[] getMavenArtifacts(String... mavneAritfiact) throws IOException {
-        File[] libs = Maven.resolver().loadPomFromFile("pom.xml").resolve(mavneAritfiact).withoutTransitivity().asFile();
+    private File[] getMavenArtifacts(String... mavenAritfiact) throws IOException {
+        File[] libs = Maven.resolver().loadPomFromFile("pom.xml").resolve(mavenAritfiact).withoutTransitivity().asFile();
         return libs;
     }
 

@@ -18,7 +18,6 @@ package org.apache.camel.idea.util;
 
 import java.util.List;
 import java.util.Map;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +32,7 @@ public final class StringUtils {
     /**
      * Whether to given value has a question mark or not
      */
-    public static boolean hasQuestionMark(String val) {
+    static boolean hasQuestionMark(String val) {
         return val != null && val.indexOf('?') > 0;
     }
 

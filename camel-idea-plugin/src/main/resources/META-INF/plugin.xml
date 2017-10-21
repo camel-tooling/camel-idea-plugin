@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.3.11</version>
+  <version>0.4.6</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -9,7 +9,7 @@
 
       The plugin includes:
       <ul>
-        <li>Code completion for Camel endpoints in Java, Groovy, Kotlin, Scala, XML, properties or yaml files (ctrl + space)</li>
+        <li>Code completion for Camel endpoints in Java, XML, properties or yaml files (ctrl + space)</li>
         <li>Code completion for Camel property placeholders (cursor after {{)</li>
         <li>Endpoint options filtered to only include applicable options when used as consumer vs producer only mode</li>
         <li>Quick navigation to other Camel routes routing to this route by clicking the Camel icon in the gutter</li>
@@ -18,19 +18,32 @@
         <li>Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders</li>
         <li>Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)</li>
         <li>Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)</li>
-        <li>Real time validation for Camel endpoints in Java, Groovy, Kotlin, Scala, XML (underline errors in red)</li>
-        <li>Real time validation for Camel simple language in Java, XML and Groovy (underline errors in red)</li>
-        <li>Inspection (analyze code) to validate Camel endpoints and Simple language in Java, Groovy, Kotlin, Scala, and XML</li>
+        <li>Real time validation for Camel endpoints in Java, XML (underline errors in red)</li>
+        <li>Real time validation for Camel simple language in Java, XML (underline errors in red)</li>
+        <li>Inspection (analyze code) to validate Camel endpoints and Simple language in Java and XML</li>
         <li>Preference page to customize property ignore list from property completion</li>
         <li>Preference page to exclude property/yml files from property completion</li>
         <li>Supports Maven, Gradle, and SBT based projects</li>
+        <li>Support for Groovy, Scala and Kotlin has been deprecated and is expected to be removed in a future release.</li>
       </ul>
     ]]></description>
 
   <change-notes><![CDATA[
+      v0.4.6
       <ul>
-        <li>0.3.11 - Minor bug fixes.</li>
-        <li>0.3.10 - Minor bug fixes.</li>
+        <li>Work in progress</li>
+      </ul>
+      v0.4.5
+      <ul>
+        <li>Fixed bug with loading 3rd party camel-catalog versions, such as 2.17.0.redhat-630187</li>
+        <li>Upgraded to IntelliJ 2017.2.5</li>
+        <li>Upgraded to Apache Camel 2.20.0</li>
+      </ul>
+      v0.4.4
+      <ul>
+        <li>Important: We are dropping support for Groovy, Scala and Kotlin
+        which are now deprecated in 0.4.x and intended to be removed from 0.5.0 release.
+        <li>Upgraded to Apache Camel 2.19.3</li>
       </ul>
     ]]>
   </change-notes>
@@ -72,12 +85,12 @@
     <applicationService serviceImplementation="org.apache.camel.idea.service.CamelPreferenceService"/>
 
     <!-- allow code completion of Camel endpoints-->
-    <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.completion.CamelJavaReferenceContributor"/>
-    <completion.contributor language="XML" implementationClass="org.apache.camel.idea.completion.CamelXmlReferenceContributor"/>
-    <completion.contributor language="Groovy" implementationClass="org.apache.camel.idea.completion.CamelGroovyReferenceContributor"/>
-    <completion.contributor language="kotlin" implementationClass="org.apache.camel.idea.completion.CamelKotlinReferenceContributor"/>
-    <completion.contributor language="Scala" implementationClass="org.apache.camel.idea.completion.CamelScalaReferenceContributor"/>
-    <completion.contributor language="any" implementationClass="org.apache.camel.idea.completion.CamelPropertiesOrYamlFileReferenceContributor"/>
+    <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.completion.contributor.CamelJavaReferenceContributor"/>
+    <completion.contributor language="XML" implementationClass="org.apache.camel.idea.completion.contributor.CamelXmlReferenceContributor"/>
+    <completion.contributor language="Groovy" implementationClass="org.apache.camel.idea.completion.contributor.CamelGroovyReferenceContributor"/>
+    <completion.contributor language="kotlin" implementationClass="org.apache.camel.idea.completion.contributor.CamelKotlinReferenceContributor"/>
+    <completion.contributor language="Scala" implementationClass="org.apache.camel.idea.completion.contributor.CamelScalaReferenceContributor"/>
+    <completion.contributor language="any" implementationClass="org.apache.camel.idea.completion.contributor.CamelPropertiesOrYamlFileReferenceContributor"/>
 
     <!-- puts the Camel icon in the gutter for each line that starts a Camel route -->
     <codeInsight.lineMarkerProvider language="JAVA" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
@@ -87,7 +100,7 @@
     <codeInsight.lineMarkerProvider language="Scala" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
 
     <!-- code completion of Camel property placeholders, eg {{foo}} style -->
-    <completion.contributor language="any" implementationClass="org.apache.camel.idea.completion.CamelPropertyPlaceholderReferenceContributor"/>
+    <completion.contributor language="any" implementationClass="org.apache.camel.idea.completion.contributor.CamelPropertyPlaceholderReferenceContributor"/>
 
     <!-- quick documentation for Camel endpoints -->
     <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"

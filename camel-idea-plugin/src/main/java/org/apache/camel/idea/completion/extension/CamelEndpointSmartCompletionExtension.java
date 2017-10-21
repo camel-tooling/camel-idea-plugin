@@ -18,7 +18,6 @@ package org.apache.camel.idea.completion.extension;
 
 import java.util.List;
 import java.util.Map;
-
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
@@ -35,10 +34,9 @@ import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
-
-import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
-import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
-import static org.apache.camel.idea.completion.CamelSmartCompletionEndpointValue.addSmartCompletionForEndpointValue;
+import static org.apache.camel.idea.completion.endpoint.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
+import static org.apache.camel.idea.completion.endpoint.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
+import static org.apache.camel.idea.completion.endpoint.CamelSmartCompletionEndpointValue.addSmartCompletionForEndpointValue;
 
 /**
  * Extension for supporting camel smart completion for camel options and values.

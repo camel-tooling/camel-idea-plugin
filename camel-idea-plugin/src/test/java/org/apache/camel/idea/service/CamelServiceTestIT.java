@@ -20,11 +20,9 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.testFramework.PsiTestUtil;
 import com.intellij.testFramework.exceptionCases.AbstractExceptionCase;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
-import org.junit.Test;
 
 public class CamelServiceTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
     
-    @Test
     public void testScanForCamelProjectShouldSupportDependenciesWithoutVersion() throws Throwable {
         CamelService service = ServiceManager.getService(myModule.getProject(), CamelService.class);
         assertNoException(ArrayIndexOutOfBoundsExceptionCase.check(

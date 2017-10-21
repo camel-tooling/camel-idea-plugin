@@ -30,7 +30,6 @@ import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
-
 import static org.apache.camel.idea.util.CamelIdeaUtils.isCameSimpleExpressionUsedAsPredicate;
 
 /**

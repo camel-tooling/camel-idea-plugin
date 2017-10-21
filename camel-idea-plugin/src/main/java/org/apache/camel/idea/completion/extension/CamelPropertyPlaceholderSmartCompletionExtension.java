@@ -18,7 +18,6 @@ package org.apache.camel.idea.completion.extension;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.project.Project;

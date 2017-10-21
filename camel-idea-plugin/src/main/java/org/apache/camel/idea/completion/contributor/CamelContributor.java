@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.completion;
+package org.apache.camel.idea.completion.contributor;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtil;
-import com.intellij.notification.NotificationGroup;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.patterns.InitialPatternCondition;
 import com.intellij.patterns.PsiFilePattern;
@@ -44,8 +42,6 @@ import org.jetbrains.annotations.Nullable;
  */
 public abstract class CamelContributor extends CompletionContributor {
 
-    public static final NotificationGroup CAMEL_NOTIFICATION_GROUP = NotificationGroup.balloonGroup("Apache Camel");
-
     private final List<CamelCompletionExtension> camelCompletionExtensions = new ArrayList<>();
 
     CamelContributor() {
@@ -58,7 +54,7 @@ public abstract class CamelContributor extends CompletionContributor {
 
         private final List<CamelCompletionExtension> camelCompletionExtensions;
 
-        public EndpointCompletion(List<CamelCompletionExtension> camelCompletionExtensions) {
+        EndpointCompletion(List<CamelCompletionExtension> camelCompletionExtensions) {
             this.camelCompletionExtensions = camelCompletionExtensions;
         }
 
@@ -120,11 +116,11 @@ public abstract class CamelContributor extends CompletionContributor {
      * Add additional completion extension to process when the
      * {@link CompletionProvider#addCompletions(CompletionParameters, ProcessingContext, CompletionResultSet)} is called
      */
-    public void addCompletionExtension(CamelCompletionExtension provider) {
+    void addCompletionExtension(CamelCompletionExtension provider) {
         camelCompletionExtensions.add(provider);
     }
 
-    public List<CamelCompletionExtension> getCamelCompletionExtensions() {
+    List<CamelCompletionExtension> getCamelCompletionExtensions() {
         return camelCompletionExtensions;
     }
 

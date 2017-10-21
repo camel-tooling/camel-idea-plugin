@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import javax.swing.*;
-
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
@@ -42,7 +41,7 @@ import org.jetbrains.annotations.Nullable;
 @State(
     name = "CamelPreferences",
     storages = {@Storage("apachecamelplugin.xml")})
-public class CamelPreferenceService implements PersistentStateComponent<CamelPreferenceService>, Disposable {
+public final class CamelPreferenceService implements PersistentStateComponent<CamelPreferenceService>, Disposable {
 
     @Transient
     public static final Icon CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
@@ -77,7 +76,7 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     private List<String> ignorePropertyList = new ArrayList<>();
     private List<String> excludePropertyFiles = new ArrayList<>();
 
-    CamelPreferenceService() { }
+    private CamelPreferenceService() { }
 
     public boolean isRealTimeEndpointValidation() {
         return realTimeEndpointValidation;

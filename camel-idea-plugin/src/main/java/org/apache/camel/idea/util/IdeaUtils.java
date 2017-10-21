@@ -47,7 +47,6 @@ import com.intellij.psi.xml.XmlTag;
 import org.apache.camel.idea.extension.IdeaUtilsExtension;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import static com.intellij.xml.CommonXmlStrings.QUOT;
 
 /**
@@ -113,7 +112,7 @@ public final class IdeaUtils implements Disposable {
      * Is the element from a java setter method (eg setBrokerURL) or from a XML configured <tt>bean</tt> style
      * configuration using <tt>property</tt> element.
      */
-    public boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
+    static boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
         // java method call
         PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
         if (call != null) {
@@ -142,7 +141,7 @@ public final class IdeaUtils implements Disposable {
     /**
      * Is the element from a java annotation with the given name.
      */
-    public boolean isElementFromAnnotation(@NotNull PsiElement element, @NotNull String annotationName) {
+    static boolean isElementFromAnnotation(@NotNull PsiElement element, @NotNull String annotationName) {
         // java method call
         PsiAnnotation ann = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class, false);
         if (ann != null) {
@@ -162,6 +161,7 @@ public final class IdeaUtils implements Disposable {
     /**
      * Is the element from Groovy language
      */
+    @Deprecated
     public boolean isGroovyLanguage(PsiElement element) {
         return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("Groovy");
     }
@@ -169,6 +169,7 @@ public final class IdeaUtils implements Disposable {
     /**
      * Is the element from Scala language
      */
+    @Deprecated
     public boolean isScalaLanguage(PsiElement element) {
         return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("Scala");
     }
@@ -176,6 +177,7 @@ public final class IdeaUtils implements Disposable {
     /**
      * Is the element from Kotlin language
      */
+    @Deprecated
     public boolean isKotlinLanguage(PsiElement element) {
         return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("kotlin");
     }
@@ -251,7 +253,7 @@ public final class IdeaUtils implements Disposable {
      * @param fqnClassName the class name to match
      * @return <tt>true</tt> if the class is a type or subtype of the class name
      */
-    public boolean isClassOrParentOf(@Nullable PsiClass target, @NotNull String fqnClassName) {
+    private static boolean isClassOrParentOf(@Nullable PsiClass target, @NotNull String fqnClassName) {
         if (target == null) {
             return false;
         }
@@ -269,7 +271,7 @@ public final class IdeaUtils implements Disposable {
      * @param constructorName the name of the constructor (eg class)
      * @return <tt>true</tt> if its a constructor call from the given name, <tt>false</tt> otherwise
      */
-    public boolean isElementFromConstructor(@NotNull PsiElement element, @NotNull String constructorName) {
+    static boolean isElementFromConstructor(@NotNull PsiElement element, @NotNull String constructorName) {
         // java constructor
         PsiConstructorCall call = PsiTreeUtil.getParentOfType(element, PsiConstructorCall.class);
         if (call != null) {
@@ -288,7 +290,7 @@ public final class IdeaUtils implements Disposable {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    public boolean isFromJavaMethodCall(PsiElement element, boolean fromRouteBuilder, String... methods) {
+    static boolean isFromJavaMethodCall(PsiElement element, boolean fromRouteBuilder, String... methods) {
         // java method call
         PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
         if (call != null) {
@@ -306,7 +308,7 @@ public final class IdeaUtils implements Disposable {
                 // TODO: this code should likely be moved to something that requires it from being a Camel RouteBuilder
                 if (Arrays.stream(methods).anyMatch(name::equals)) {
                     if (fromRouteBuilder) {
-                        return ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME.stream().anyMatch((t) -> isClassOrParentOf(containingClass, t));
+                        return ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME.stream().anyMatch(t -> isClassOrParentOf(containingClass, t));
                     } else {
                         return true;
                     }
@@ -334,7 +336,7 @@ public final class IdeaUtils implements Disposable {
      * @param methods  xml tag names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    public boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
+    static boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
         String name = xml.getLocalName();
         return Arrays.stream(methods).anyMatch(name::equals);
     }
@@ -346,7 +348,7 @@ public final class IdeaUtils implements Disposable {
      * @param parentTag a special parent tag name to match first
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    public boolean hasParentXmlTag(@NotNull XmlTag xml, @NotNull String parentTag) {
+    static boolean hasParentXmlTag(@NotNull XmlTag xml, @NotNull String parentTag) {
         XmlTag parent = xml.getParentTag();
         return parent != null && parent.getLocalName().equals(parentTag);
     }
@@ -370,6 +372,7 @@ public final class IdeaUtils implements Disposable {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
+    @Deprecated
     public boolean isFromGroovyMethod(PsiElement element, String... methods) {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // must be a groovy string kind
@@ -397,6 +400,7 @@ public final class IdeaUtils implements Disposable {
         return false;
     }
 
+    @Deprecated
     public boolean isPrevSiblingFromGroovyMethod(PsiElement element, String... methods) {
         boolean found = false;
 
@@ -478,7 +482,7 @@ public final class IdeaUtils implements Disposable {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    public boolean isFromScalaMethod(PsiElement element, String... methods) {
+    static boolean isFromScalaMethod(PsiElement element, String... methods) {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // (yes we need to go up till 5 levels up to find the method call expression
         String kind = element.toString();
@@ -503,6 +507,7 @@ public final class IdeaUtils implements Disposable {
         return false;
     }
 
+    @Deprecated
     public boolean isPrevSiblingFromScalaMethod(PsiElement element, String... methods) {
         boolean found = false;
 
@@ -565,7 +570,7 @@ public final class IdeaUtils implements Disposable {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    public boolean isFromKotlinMethod(PsiElement element, String... methods) {
+    static boolean isFromKotlinMethod(PsiElement element, String... methods) {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // (yes we need to go up till 6 levels up to find the method call expression
         String kind = element.toString();
@@ -605,7 +610,7 @@ public final class IdeaUtils implements Disposable {
         return StringUtil.unquoteString(text.replace(QUOT, "\"")).replaceAll("(^\\n\\s+|\\n\\s+$|\\n\\s+)|(\"\\s*\\+\\s*\")|(\"\\s*\\+\\s*\\n\\s*\"*)", "");
     }
 
-    public int getCaretPositionInsidePsiElement(String stringLiteral) {
+    private static int getCaretPositionInsidePsiElement(String stringLiteral) {
         String hackVal = stringLiteral.toLowerCase();
 
         int hackIndex = hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER.toLowerCase());

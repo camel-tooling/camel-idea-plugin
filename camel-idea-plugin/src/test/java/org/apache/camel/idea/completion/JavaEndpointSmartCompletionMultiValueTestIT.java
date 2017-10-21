@@ -16,13 +16,10 @@
  */
 package org.apache.camel.idea.completion;
 
-import java.util.Arrays;
 import java.util.List;
-
 import com.intellij.codeInsight.completion.CompletionType;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.hamcrest.Matchers;
-
 import static org.junit.Assert.assertThat;
 
 /**
