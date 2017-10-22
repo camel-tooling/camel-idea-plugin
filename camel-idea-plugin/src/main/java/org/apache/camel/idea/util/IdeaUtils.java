@@ -324,7 +324,7 @@ public final class IdeaUtils implements Disposable {
      * @param methods  xml tag names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-     boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
+    boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
         String name = xml.getLocalName();
         return Arrays.stream(methods).anyMatch(name::equals);
     }
@@ -336,7 +336,7 @@ public final class IdeaUtils implements Disposable {
      * @param parentTag a special parent tag name to match first
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-     boolean hasParentXmlTag(@NotNull XmlTag xml, @NotNull String parentTag) {
+    boolean hasParentXmlTag(@NotNull XmlTag xml, @NotNull String parentTag) {
         XmlTag parent = xml.getParentTag();
         return parent != null && parent.getLocalName().equals(parentTag);
     }
@@ -558,7 +558,7 @@ public final class IdeaUtils implements Disposable {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-     boolean isFromKotlinMethod(PsiElement element, String... methods) {
+    boolean isFromKotlinMethod(PsiElement element, String... methods) {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // (yes we need to go up till 6 levels up to find the method call expression
         String kind = element.toString();
