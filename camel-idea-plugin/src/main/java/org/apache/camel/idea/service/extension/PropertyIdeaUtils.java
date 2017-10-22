@@ -17,12 +17,13 @@
 package org.apache.camel.idea.service.extension;
 
 import java.util.Optional;
+
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.psi.PsiElement;
 import org.apache.camel.idea.extension.IdeaUtilsExtension;
-
-
+import org.jetbrains.annotations.NotNull;
 
 public class PropertyIdeaUtils implements IdeaUtilsExtension {
     @Override
@@ -37,7 +38,13 @@ public class PropertyIdeaUtils implements IdeaUtilsExtension {
     }
 
     @Override
+    public boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
+        return false;
+    }
+
+    @Override
     public boolean isExtensionEnabled() {
-        return PluginManager.getPlugin(PluginId.getId("com.intellij.properties")) != null;
+        final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.intellij.properties"));
+        return plugin != null && plugin.isEnabled();
     }
 }

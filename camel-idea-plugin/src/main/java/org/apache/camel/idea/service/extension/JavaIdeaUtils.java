@@ -20,9 +20,12 @@ import java.util.*;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiPolyadicExpression;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.apache.camel.idea.extension.IdeaUtilsExtension;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static com.intellij.xml.CommonXmlStrings.QUOT;
@@ -51,6 +54,20 @@ public class JavaIdeaUtils implements IdeaUtilsExtension {
             return Optional.of(StringUtil.unquoteString(text.replace(QUOT, "\"")));
         }
         return Optional.empty();
+    }
+
+    @Override
+    public boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
+        // java method call
+        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        if (call != null) {
+            PsiMethod resolved = call.resolveMethod();
+            if (resolved != null) {
+                String javaSetter = "set" + Character.toUpperCase(setter.charAt(0)) + setter.substring(1);
+                return javaSetter.equals(resolved.getName());
+            }
+        }
+        return false;
     }
 
     @Override

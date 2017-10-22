@@ -59,7 +59,6 @@ import org.jetbrains.annotations.NotNull;
 import static org.apache.camel.catalog.CatalogHelper.loadText;
 import static org.apache.camel.idea.service.XmlUtils.getChildNodeByTagName;
 import static org.apache.camel.idea.service.XmlUtils.loadDocument;
-import static org.apache.camel.idea.util.IdeaUtils.newURLClassLoaderForLibrary;
 
 /**
  * Service access for Camel libraries

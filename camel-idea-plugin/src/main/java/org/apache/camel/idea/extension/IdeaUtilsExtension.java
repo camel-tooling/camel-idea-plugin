@@ -19,10 +19,11 @@ package org.apache.camel.idea.extension;
 import java.util.Optional;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.psi.PsiElement;
+import org.jetbrains.annotations.NotNull;
 
 
 /**
- * Created by fharms on 12/04/2017.
+ * Extension point for IdeaUtils for handling specific plugin language elements
  */
 public interface IdeaUtilsExtension {
 
@@ -36,7 +37,14 @@ public interface IdeaUtilsExtension {
      * @param stripWhitespace
      * @return the text or <tt>null</tt> if the element is not a text/literal kind.
      */
-    Optional<String> extractTextFromElement(PsiElement element, boolean concatString, boolean stripWhitespace);
+    Optional<String> extractTextFromElement(@NotNull PsiElement element, boolean concatString, boolean stripWhitespace);
+
+
+    /**
+     * Is the element from a java setter method (eg setBrokerURL) or from a XML configured <tt>bean</tt> style
+     * configuration using <tt>property</tt> element.
+     */
+    boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter);
 
     boolean isExtensionEnabled();
 

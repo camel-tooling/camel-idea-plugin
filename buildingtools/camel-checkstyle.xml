@@ -8,7 +8,7 @@
   "License"); you may not use this file except in compliance
   with the License. You may obtain a copy of the License at
 
-  http://www.apache.org/licenses/LICENSE-2.0
+         http://www.apache.org/licenses/LICENSE-2.0
 
   Unless required by applicable law or agreed to in writing,
   software distributed under the License is distributed on an
@@ -43,8 +43,8 @@ lengths, if/try depths, etc...
 
     <!-- Header checks -->
     <module name="Header">
-    	<property name="header"
-        	value="/**\n * Licensed to the Apache Software Foundation (ASF) under one or more\n * contributor license agreements.  See the NOTICE file distributed with\n * this work for additional information regarding copyright ownership.\n * The ASF licenses this file to You under the Apache License, Version 2.0\n * (the &quot;License&quot;); you may not use this file except in compliance with\n * the License.  You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n"/>
+        <property name="header"
+                  value="/**\n * Licensed to the Apache Software Foundation (ASF) under one or more\n * contributor license agreements.  See the NOTICE file distributed with\n * this work for additional information regarding copyright ownership.\n * The ASF licenses this file to You under the Apache License, Version 2.0\n * (the &quot;License&quot;); you may not use this file except in compliance with\n * the License.  You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n"/>
     </module>
 
     <module name="RegexpMultiline">
@@ -70,7 +70,7 @@ lengths, if/try depths, etc...
 
     <module name="TreeWalker">
 
-        <module name="SuppressionCommentFilter"/>
+        <!-- module name="SuppressionCommentFilter"/ -->
 
         <!-- Checks for Javadoc comments.                     -->
         <!-- See http://checkstyle.sf.net/config_javadoc.html -->
@@ -108,8 +108,9 @@ lengths, if/try depths, etc...
          -->
         <module name="IllegalImport"/> <!-- defaults to sun.* packages -->
         <module name="RedundantImport"/>
-
+        <!-- When you javadoc {@link } an import is added that checkstyle thinks is unused import.
         <module name="UnusedImports"/>
+        -->
         <module name="ImportOrder">
             <property name="groups" value="java,javax,org.w3c,org.xml,junit"/>
             <property name="ordered" value="true"/>
@@ -161,9 +162,9 @@ lengths, if/try depths, etc...
             <!-- <property name="tokens" value="ASSIGN, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN, BXOR, BXOR_ASSIGN, COLON, DIV, DIV_ASSIGN, EQUAL, GE, GT, LAND, LCURLY, LE, LITERAL_ASSERT, LITERAL_CATCH, LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF, LITERAL_RETURN, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, LOR, LT, MINUS, MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL, PLUS, PLUS_ASSIGN, QUESTION, RCURLY, SL, SLIST, SL_ASSIGN, SR, SR_ASSIGN, STAR, STAR_ASSIGN,TYPE_EXTENSION_AND"/>-->
         </module>
 
-		<!--
-		<module name="GenericWhitespace"/>
-		 -->
+        <!--
+        <module name="GenericWhitespace"/>
+         -->
 
         <!-- Modifier Checks                                    -->
         <!-- See http://checkstyle.sf.net/config_modifiers.html -->
@@ -228,9 +229,9 @@ lengths, if/try depths, etc...
         <!--<module name="SuperClone"/>-->
         <module name="SuperFinalize"/>
         <!--<module name="IllegalCatch"/>-->
-    	<module name="IllegalThrows">
-      		<property name="illegalClassNames" value="java.lang.Error,java.lang.RuntimeException"/>
-    	</module>
+        <module name="IllegalThrows">
+            <property name="illegalClassNames" value="java.lang.Error,java.lang.RuntimeException"/>
+        </module>
         <!--<module name="RedundantThrows"/>-->
         <module name="PackageDeclaration"/>
         <!--
@@ -257,8 +258,8 @@ lengths, if/try depths, etc...
 			<property name="javaFiveCompatibility" value="true"/>
 		</module>
          -->
-         <!-- <module name="PackageAnnotation"/> -->
-         <!-- <module name="SuppressWarnings"/> -->
+        <!-- <module name="PackageAnnotation"/> -->
+        <!-- <module name="SuppressWarnings"/> -->
         <module name="DefaultComesLast"/>
         <!--<module name="MissingCtor"/>-->
         <module name="FallThrough"/>

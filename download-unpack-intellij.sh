@@ -37,4 +37,4 @@ echo 'Downloading IntelliJ...'
 ${DOWNLOAD_CMD}
 
 echo "Unpack intelliJ to ${INTELLIJ_DEST}"
-tar -xvf ideaCI.tar.gz --directory ${INTELLIJ_DEST} --strip=1 ${INTELLIJ_DEST_VERSION}/lib/ ${INTELLIJ_DEST_VERSION}/plugins/properties
+tar -xvf ideaCI.tar.gz --directory ${INTELLIJ_DEST} --strip=1 ${INTELLIJ_DEST_VERSION}/lib/ ${INTELLIJ_DEST_VERSION}/plugins/properties ${INTELLIJ_DEST_VERSION}/plugins/yaml

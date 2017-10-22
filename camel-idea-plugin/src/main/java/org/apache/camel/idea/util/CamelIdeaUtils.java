@@ -18,6 +18,8 @@ package org.apache.camel.idea.util;
 
 import java.util.Arrays;
 import java.util.Optional;
+
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
@@ -32,7 +34,7 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
-import org.apache.camel.idea.service.CamelCatalogService;
+
 
 
 /**

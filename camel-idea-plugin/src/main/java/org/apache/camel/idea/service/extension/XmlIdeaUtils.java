@@ -16,16 +16,17 @@
  */
 package org.apache.camel.idea.service.extension;
 
+import java.util.Arrays;
 import java.util.Optional;
-import com.intellij.ide.plugins.PluginManager;
-import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
 import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.idea.extension.IdeaUtilsExtension;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -59,8 +60,23 @@ public class XmlIdeaUtils implements IdeaUtilsExtension {
     }
 
     @Override
+    public boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
+        // its maybe an XML property
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            boolean bean = isFromXmlTag(xml, "bean", "property");
+            if (bean) {
+                String key = xml.getAttributeValue("name");
+                return setter.equals(key);
+            }
+        }
+        return false;
+
+    }
+
+    @Override
     public boolean isExtensionEnabled() {
-        return PluginManager.getPlugin(PluginId.getId("com.intellij.xml")) != null;
+        return true;
     }
 
     /**
@@ -77,4 +93,17 @@ public class XmlIdeaUtils implements IdeaUtilsExtension {
         // Remove any newline feed + whitespaces + single + double quot to concat a split string
         return StringUtil.unquoteString(text.replace(QUOT, "\"")).replaceAll("(^\\n\\s+|\\n\\s+$|\\n\\s+)|(\"\\s*\\+\\s*\")|(\"\\s*\\+\\s*\\n\\s*\"*)", "");
     }
+
+    /**
+     * Is the given element from a XML tag with any of the given tag names
+     *
+     * @param xml  the xml tag
+     * @param methods  xml tag names
+     * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
+     */
+    boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
+        String name = xml.getLocalName();
+        return Arrays.stream(methods).anyMatch(name::equals);
+    }
+
 }

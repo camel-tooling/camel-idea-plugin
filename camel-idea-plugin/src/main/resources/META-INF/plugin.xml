@@ -54,15 +54,19 @@
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
   <depends>com.intellij.modules.java</depends>
+  <depends>com.intellij.modules.xml</depends>
 
   <!-- depend on the properties plugin -->
   <depends>com.intellij.properties</depends>
 
+  <!-- depend on the yml plugin -->
+  <depends>org.jetbrains.plugins.yaml</depends>
+
   <extensions defaultExtensionNs="org.apache.camel">
-    <IdeaUtilsSupport order="10" implementation="org.apache.camel.idea.service.extension.JavaIdeaUtils" />
-    <IdeaUtilsSupport order="20" implementation="org.apache.camel.idea.service.extension.XmlIdeaUtils" />
-    <IdeaUtilsSupport order="30" implementation="org.apache.camel.idea.service.extension.PropertyIdeaUtils" />
-    <IdeaUtilsSupport order="40" implementation="org.apache.camel.idea.service.extension.YamlIdeaUtils" />
+    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.JavaIdeaUtils" />
+    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.XmlIdeaUtils" />
+    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.PropertyIdeaUtils" />
+    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.YamlIdeaUtils" />
   </extensions>
 
   <extensionPoints>

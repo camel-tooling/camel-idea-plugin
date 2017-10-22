@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.lang.java.JavaLanguage;
@@ -47,6 +48,7 @@ import com.intellij.psi.xml.XmlTag;
 import org.apache.camel.idea.extension.IdeaUtilsExtension;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import static com.intellij.xml.CommonXmlStrings.QUOT;
 
 /**
@@ -60,7 +62,13 @@ public final class IdeaUtils implements Disposable {
         "org.apache.camel.builder.RouteBuilder", "org.apache.camel.builder.BuilderSupport",
         "org.apache.camel.model.ProcessorDefinition", "org.apache.camel.model.language.ExpressionDefinition");
 
+    private final List<IdeaUtilsExtension> enabledExtensions;
+
     private IdeaUtils() {
+        enabledExtensions = Arrays.stream(IdeaUtilsExtension.EP_NAME.getExtensions())
+            .filter(IdeaUtilsExtension::isExtensionEnabled)
+            .filter(e -> e.isExtensionEnabled())
+            .collect(Collectors.toList());
     }
 
     /**
@@ -85,9 +93,10 @@ public final class IdeaUtils implements Disposable {
      */
     @Nullable
     public String extractTextFromElement(PsiElement element, boolean fallBackToGeneric, boolean concatString, boolean stripWhitespace) {
-        return Arrays.stream(IdeaUtilsExtension.EP_NAME.getExtensions())
-            .filter(IdeaUtilsExtension::isExtensionEnabled)
+        return enabledExtensions.stream()
             .map(extension -> extension.extractTextFromElement(element, concatString, stripWhitespace))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
             .findFirst().orElseGet(() -> {
                 if (fallBackToGeneric) {
                     // fallback to generic
@@ -100,42 +109,21 @@ public final class IdeaUtils implements Disposable {
                     }
                     // the text may be quoted so unwrap that
                     if (stripWhitespace) {
-                        return Optional.ofNullable(getInnerText(text));
+                        return getInnerText(text);
                     }
-                    return Optional.ofNullable(StringUtil.unquoteString(text.replace(QUOT, "\"")));
+                    return StringUtil.unquoteString(text.replace(QUOT, "\""));
                 }
-                return Optional.empty();
-            }).orElse(null);
+                return null;
+            });
     }
 
     /**
      * Is the element from a java setter method (eg setBrokerURL) or from a XML configured <tt>bean</tt> style
      * configuration using <tt>property</tt> element.
      */
-    static boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
-        // java method call
-        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-        if (call != null) {
-            PsiMethod resolved = call.resolveMethod();
-            if (resolved != null) {
-                String javaSetter = "set" + Character.toUpperCase(setter.charAt(0)) + setter.substring(1);
-                return javaSetter.equals(resolved.getName());
-            }
-            return false;
-        }
-
-        // its maybe an XML property
-        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        if (xml != null) {
-            boolean bean = isFromXmlTag(xml, "bean", "property");
-            if (bean) {
-                String key = xml.getAttributeValue("name");
-                return setter.equals(key);
-            }
-            return false;
-        }
-
-        return false;
+    boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
+        return enabledExtensions.stream()
+            .anyMatch(extension -> extension.isElementFromSetterProperty(element, setter));
     }
 
     /**
@@ -290,7 +278,7 @@ public final class IdeaUtils implements Disposable {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    static boolean isFromJavaMethodCall(PsiElement element, boolean fromRouteBuilder, String... methods) {
+    boolean isFromJavaMethodCall(PsiElement element, boolean fromRouteBuilder, String... methods) {
         // java method call
         PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
         if (call != null) {
@@ -336,7 +324,7 @@ public final class IdeaUtils implements Disposable {
      * @param methods  xml tag names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    static boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
+     boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
         String name = xml.getLocalName();
         return Arrays.stream(methods).anyMatch(name::equals);
     }
@@ -348,7 +336,7 @@ public final class IdeaUtils implements Disposable {
      * @param parentTag a special parent tag name to match first
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    static boolean hasParentXmlTag(@NotNull XmlTag xml, @NotNull String parentTag) {
+     boolean hasParentXmlTag(@NotNull XmlTag xml, @NotNull String parentTag) {
         XmlTag parent = xml.getParentTag();
         return parent != null && parent.getLocalName().equals(parentTag);
     }
@@ -482,7 +470,7 @@ public final class IdeaUtils implements Disposable {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    static boolean isFromScalaMethod(PsiElement element, String... methods) {
+    boolean isFromScalaMethod(PsiElement element, String... methods) {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // (yes we need to go up till 5 levels up to find the method call expression
         String kind = element.toString();
@@ -570,7 +558,7 @@ public final class IdeaUtils implements Disposable {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    static boolean isFromKotlinMethod(PsiElement element, String... methods) {
+     boolean isFromKotlinMethod(PsiElement element, String... methods) {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // (yes we need to go up till 6 levels up to find the method call expression
         String kind = element.toString();
@@ -599,7 +587,7 @@ public final class IdeaUtils implements Disposable {
      * Code from com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl#getInnerText()
      */
     @Nullable
-    public static String getInnerText(String text) {
+    public String getInnerText(String text) {
         if (text == null) {
             return null;
         }
@@ -610,7 +598,7 @@ public final class IdeaUtils implements Disposable {
         return StringUtil.unquoteString(text.replace(QUOT, "\"")).replaceAll("(^\\n\\s+|\\n\\s+$|\\n\\s+)|(\"\\s*\\+\\s*\")|(\"\\s*\\+\\s*\\n\\s*\"*)", "");
     }
 
-    private static int getCaretPositionInsidePsiElement(String stringLiteral) {
+    private int getCaretPositionInsidePsiElement(String stringLiteral) {
         String hackVal = stringLiteral.toLowerCase();
 
         int hackIndex = hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER.toLowerCase());
