@@ -86,6 +86,12 @@ class CamelIgnoreAndExcludePage extends BaseConfigurable implements SearchableCo
         setModified(false);
     }
 
+    @Override
+    public void disposeUIResources() {
+        ignorePropertyFilePanel = null;
+        excludePropertyFilePanel = null;
+    }
+
     private void resetExcludePropertiesTable() {
         myExcludedProperties = new ArrayList<>();
         List<String> excludePropertyList = getCamelPreferenceService().getExcludePropertyFiles();
@@ -105,87 +111,73 @@ class CamelIgnoreAndExcludePage extends BaseConfigurable implements SearchableCo
     }
 
     private JPanel createExcludePropertiesFilesTable() {
-        final JPanel mainPanel = new JPanel(new GridLayout(1, 1));
-        mainPanel.setPreferredSize(JBUI.size(300, 300));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
-        excludePropertyFilePanel = new AddEditRemovePanel<String>(new IgnoredUrlsModel(), getCamelPreferenceService().getExcludePropertyFiles(), "Exclude property file list") {
-            @Override
-            protected String addItem() {
-                return addIgnoreLocation();
-            }
-
-            @Override
-            protected boolean removeItem(String o) {
-                setModified(true);
-                return true;
-            }
-
-            @Override
-            protected String editItem(String o) {
-                return editIgnoreLocation(o);
-            }
-        };
+        excludePropertyFilePanel = new CamelEditRemovePanel(new CamelEditRemovePanelModel(), myExcludedProperties, "Exclude property file list");
+        JPanel mainPanel = createEmptyTablePanel();
         mainPanel.add(excludePropertyFilePanel);
         excludePropertyFilePanel.setData(myExcludedProperties);
-
         return mainPanel;
     }
 
     private JPanel createIgnorePropertiesFilesTable() {
-        final JPanel mainPanel = new JPanel(new GridLayout(1, 1));
-        mainPanel.setPreferredSize(JBUI.size(300, 300));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
-        ignorePropertyFilePanel = new AddEditRemovePanel<String>(new IgnoredUrlsModel(), myIgnoredProperties, "Property ignore list") {
-            @Override
-            protected String addItem() {
-                return addIgnoreLocation();
-            }
-
-            @Override
-            protected boolean removeItem(String o) {
-                setModified(true);
-                return true;
-            }
-
-            @Override
-            protected String editItem(String o) {
-                return editIgnoreLocation(o);
-            }
-        };
+        ignorePropertyFilePanel = new CamelEditRemovePanel(new CamelEditRemovePanelModel(), myIgnoredProperties, "Property ignore list");
+        JPanel mainPanel = createEmptyTablePanel();
         mainPanel.add(ignorePropertyFilePanel);
         ignorePropertyFilePanel.setData(myIgnoredProperties);
-
         return mainPanel;
     }
 
-    @Nullable
-    private String addIgnoreLocation() {
-        CamelEditDialog dialog = new CamelEditDialog(null);
-        if (!dialog.showAndGet()) {
-            return null;
+    private JPanel createEmptyTablePanel() {
+        final JPanel mainPanel = new JPanel(new GridLayout(1, 1));
+        mainPanel.setPreferredSize(JBUI.size(300, 300));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
+        return mainPanel;
+    }
+
+    private class CamelEditRemovePanel extends AddEditRemovePanel<String> {
+
+        CamelEditRemovePanel(TableModel<String> model, List<String> data, @Nullable String label) {
+            super(model, data, label);
         }
-        setModified(true);
-        return dialog.getTextFieldText();
-    }
 
-    @Nullable
-    private String editIgnoreLocation(Object o) {
-        CamelEditDialog dialog = new CamelEditDialog(null);
-        dialog.init(o.toString());
-        if (!dialog.showAndGet()) {
-            return null;
+        @Override
+        protected String addItem() {
+            return addIgnoreLocation();
         }
-        setModified(true);
-        return dialog.getTextFieldText();
+
+        @Override
+        protected boolean removeItem(String o) {
+            setModified(true);
+            return true;
+        }
+
+        @Override
+        protected String editItem(String o) {
+            return editIgnoreLocation(o);
+        }
+
+        @Nullable
+        private String addIgnoreLocation() {
+            CamelEditDialog dialog = new CamelEditDialog(null);
+            if (!dialog.showAndGet()) {
+                return null;
+            }
+            setModified(true);
+            return dialog.getTextFieldText();
+        }
+
+        @Nullable
+        private String editIgnoreLocation(Object o) {
+            CamelEditDialog dialog = new CamelEditDialog(null);
+            dialog.init(o.toString());
+            if (!dialog.showAndGet()) {
+                return null;
+            }
+            setModified(true);
+            return dialog.getTextFieldText();
+        }
     }
 
-    @Override
-    public void disposeUIResources() {
-        ignorePropertyFilePanel = null;
-        excludePropertyFilePanel = null;
-    }
-
-    private static class IgnoredUrlsModel extends AddEditRemovePanel.TableModel<String> {
+    private class CamelEditRemovePanelModel extends AddEditRemovePanel.TableModel<String> {
 
         @Override
         public int getColumnCount() {
