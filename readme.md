@@ -197,6 +197,11 @@ Jetbrains provides a FAQ for the IDEA SDK which is massive and takes time to lea
 
 - http://www.jetbrains.org/intellij/sdk/docs/faq.html
 
+### Camel IDEA Plugin FAQ
+
+We created a FAQ page to help other developers with common errors when working with the plugin sources.
+
+- https://github.com/camel-idea-plugin/camel-idea-plugin/wiki/Frequently-Asked-Questions
 
 ### TODOs
 
