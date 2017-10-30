@@ -243,7 +243,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
 
         @Override
         public String getErrorMessage(EndpointValidationResult result, String property) {
-            return property + " is a custom option that is not part of the Camel componet";
+            return property + " is a custom option that is not part of the Camel component";
         }
 
         @Override
