@@ -26,11 +26,9 @@ import groovy.grape.Grape;
 import groovy.lang.GroovyClassLoader;
 import org.apache.camel.catalog.VersionManager;
 
-// TODO: Remove me when using Camel 2.19.1
-
 /**
- * A copy of {@link org.apache.camel.catalog.maven.MavenVersionManager.MavenVersionManager} until a bug is fixed in Camel 2.19.1 onwards
- * so we can use it directly.
+ * A copy of {@link org.apache.camel.catalog.maven.MavenVersionManager} as IDEA cannot use this class at runtime,
+ * so we use a simpler copy here.
  */
 class CamelMavenVersionManager implements VersionManager {
 
