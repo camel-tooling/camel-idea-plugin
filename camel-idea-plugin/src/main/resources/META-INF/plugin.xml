@@ -31,9 +31,9 @@
   <change-notes><![CDATA[
       v0.4.6
       <ul>
-        <li>Work in progress</li>
         <li>Fixed bug with apply button in plugin preferences</li>
         <li>Rewrite of plugin preferences page</li>
+        <li>Upgraded to Apache Camel 2.20.1</li>
       </ul>
       v0.4.5
       <ul>
