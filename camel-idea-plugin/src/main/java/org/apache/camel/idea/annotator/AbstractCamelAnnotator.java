@@ -51,7 +51,7 @@ abstract class AbstractCamelAnnotator implements Annotator {
         if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent() && isEnabled()) {
             boolean accept = accept(element);
             if (accept) {
-                String text = IdeaUtils.extractTextFromElement(element, true, false, false);
+                String text = getIdeaUtils().extractTextFromElement(element, true, false, false);
                 if (!StringUtils.isEmpty(text)) {
                     validateText(element, holder, text);
                 }
@@ -109,5 +109,9 @@ abstract class AbstractCamelAnnotator implements Annotator {
      * @param text - String to validate such as an Camel endpoint uri, or a Simple expression
      */
     abstract void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text);
+
+    private IdeaUtils getIdeaUtils() {
+        return ServiceManager.getService(IdeaUtils.class);
+    }
 
 }

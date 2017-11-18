@@ -22,9 +22,13 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.text.StringUtil;
@@ -35,20 +39,16 @@ import com.intellij.psi.PsiConstructorCall;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
-import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiPolyadicExpression;
-import com.intellij.psi.impl.source.tree.LeafPsiElement;
-import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
-import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
-import com.intellij.psi.xml.XmlText;
-import com.intellij.psi.xml.XmlToken;
+import org.apache.camel.idea.extension.IdeaUtilsExtension;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import static com.intellij.xml.CommonXmlStrings.QUOT;
 
 /**
@@ -56,13 +56,19 @@ import static com.intellij.xml.CommonXmlStrings.QUOT;
  * <p/>
  * This class is only for IDEA APIs. If you need Camel related APIs as well then use {@link CamelIdeaUtils} instead.
  */
-public final class IdeaUtils {
+public final class IdeaUtils implements Disposable {
 
     private static final List<String> ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME = Arrays.asList(
         "org.apache.camel.builder.RouteBuilder", "org.apache.camel.builder.BuilderSupport",
         "org.apache.camel.model.ProcessorDefinition", "org.apache.camel.model.language.ExpressionDefinition");
 
+    private final List<IdeaUtilsExtension> enabledExtensions;
+
     private IdeaUtils() {
+        enabledExtensions = Arrays.stream(IdeaUtilsExtension.EP_NAME.getExtensions())
+            .filter(IdeaUtilsExtension::isExtensionEnabled)
+            .filter(e -> e.isExtensionEnabled())
+            .collect(Collectors.toList());
     }
 
     /**
@@ -72,7 +78,7 @@ public final class IdeaUtils {
      * @return the text or <tt>null</tt> if the element is not a text/literal kind.
      */
     @Nullable
-    public static String extractTextFromElement(PsiElement element) {
+    public String extractTextFromElement(PsiElement element) {
         return extractTextFromElement(element, true, false, true);
     }
 
@@ -86,144 +92,38 @@ public final class IdeaUtils {
      * @return the text or <tt>null</tt> if the element is not a text/literal kind.
      */
     @Nullable
-    public static String extractTextFromElement(PsiElement element, boolean fallBackToGeneric, boolean concatString, boolean stripWhitespace) {
-
-        if (element instanceof PsiLiteralExpression) {
-            // need the entire line so find the literal expression that would hold the entire string (java)
-            PsiLiteralExpression literal = (PsiLiteralExpression) element;
-            Object o = literal.getValue();
-            String text = o != null ? o.toString() : null;
-            if (text == null) {
-                return "";
-            }
-            if (concatString) {
-                final PsiPolyadicExpression parentOfType = PsiTreeUtil.getParentOfType(element, PsiPolyadicExpression.class);
-                if (parentOfType != null) {
-                    text = parentOfType.getText();
+    public String extractTextFromElement(PsiElement element, boolean fallBackToGeneric, boolean concatString, boolean stripWhitespace) {
+        return enabledExtensions.stream()
+            .map(extension -> extension.extractTextFromElement(element, concatString, stripWhitespace))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .findFirst().orElseGet(() -> {
+                if (fallBackToGeneric) {
+                    // fallback to generic
+                    String text = element.getText();
+                    if (concatString) {
+                        final PsiPolyadicExpression parentOfType = PsiTreeUtil.getParentOfType(element, PsiPolyadicExpression.class);
+                        if (parentOfType != null) {
+                            text = parentOfType.getText();
+                        }
+                    }
+                    // the text may be quoted so unwrap that
+                    if (stripWhitespace) {
+                        return getInnerText(text);
+                    }
+                    return StringUtil.unquoteString(text.replace(QUOT, "\""));
                 }
-            }
-            // unwrap literal string which can happen in java too
-            if (stripWhitespace) {
-                return getInnerText(text);
-            }
-            return  StringUtil.unquoteString(text.replace(QUOT, "\""));
-        }
-
-        // maybe its xml then try that
-        if (element instanceof XmlAttributeValue) {
-            return ((XmlAttributeValue) element).getValue();
-        } else if (element instanceof XmlText) {
-            return ((XmlText) element).getValue();
-        } else if (element instanceof XmlToken) {
-            // it may be a token which is a part of an combined attribute
-            if (concatString) {
-                XmlAttributeValue xml = PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class);
-                if (xml != null) {
-                    String value = getInnerText(xml.getValue());
-                    return value;
-                }
-            } else {
-                String returnText = element.getText();
-                final PsiElement prevSibling = element.getPrevSibling();
-                if (prevSibling != null && prevSibling.getText().equalsIgnoreCase("&amp;")) {
-                    returnText = prevSibling.getText() + returnText;
-                }
-                return getInnerText(returnText);
-            }
-        }
-
-        // its maybe a property from properties file
-        String fqn = element.getClass().getName();
-        if (fqn.startsWith("com.intellij.lang.properties.psi.impl.PropertyValue")) {
-            // yes we can support this also
-            return element.getText();
-        }
-
-        // maybe its yaml
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("yaml")) {
-                return element.getText();
-            }
-        }
-
-        // maybe its groovy
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Groovy")) {
-                String text = element.getText();
-                // unwrap groovy gstring
-                return getInnerText(text);
-            }
-        }
-
-        // maybe its scala
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Scala")) {
-                String text = element.getText();
-                // unwrap scala string
-                return getInnerText(text);
-            }
-        }
-
-        // maybe its kotlin
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("kotlin")) {
-                String text = element.getText();
-                // unwrap kotlin string
-                return getInnerText(text);
-            }
-        }
-
-        if (fallBackToGeneric) {
-            // fallback to generic
-            String text = element.getText();
-            if (concatString) {
-                final PsiPolyadicExpression parentOfType = PsiTreeUtil.getParentOfType(element, PsiPolyadicExpression.class);
-                if (parentOfType != null) {
-                    text = parentOfType.getText();
-                }
-            }
-            // the text may be quoted so unwrap that
-            if (stripWhitespace) {
-                return getInnerText(text);
-            }
-            return  StringUtil.unquoteString(text.replace(QUOT, "\""));
-        }
-
-        return null;
+                return null;
+            });
     }
 
     /**
      * Is the element from a java setter method (eg setBrokerURL) or from a XML configured <tt>bean</tt> style
      * configuration using <tt>property</tt> element.
      */
-    static boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
-        // java method call
-        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-        if (call != null) {
-            PsiMethod resolved = call.resolveMethod();
-            if (resolved != null) {
-                String javaSetter = "set" + Character.toUpperCase(setter.charAt(0)) + setter.substring(1);
-                return javaSetter.equals(resolved.getName());
-            }
-            return false;
-        }
-
-        // its maybe an XML property
-        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        if (xml != null) {
-            boolean bean = isFromXmlTag(xml, "bean", "property");
-            if (bean) {
-                String key = xml.getAttributeValue("name");
-                return setter.equals(key);
-            }
-            return false;
-        }
-
-        return false;
+    boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
+        return enabledExtensions.stream()
+            .anyMatch(extension -> extension.isElementFromSetterProperty(element, setter));
     }
 
     /**
@@ -242,7 +142,7 @@ public final class IdeaUtils {
     /**
      * Is the element from Java language
      */
-    public static boolean isJavaLanguage(PsiElement element) {
+    public boolean isJavaLanguage(PsiElement element) {
         return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).is(JavaLanguage.INSTANCE);
     }
 
@@ -250,7 +150,7 @@ public final class IdeaUtils {
      * Is the element from Groovy language
      */
     @Deprecated
-    public static boolean isGroovyLanguage(PsiElement element) {
+    public boolean isGroovyLanguage(PsiElement element) {
         return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("Groovy");
     }
 
@@ -258,7 +158,7 @@ public final class IdeaUtils {
      * Is the element from Scala language
      */
     @Deprecated
-    public static boolean isScalaLanguage(PsiElement element) {
+    public boolean isScalaLanguage(PsiElement element) {
         return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("Scala");
     }
 
@@ -266,21 +166,21 @@ public final class IdeaUtils {
      * Is the element from Kotlin language
      */
     @Deprecated
-    public static boolean isKotlinLanguage(PsiElement element) {
+    public boolean isKotlinLanguage(PsiElement element) {
         return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("kotlin");
     }
 
     /**
      * Is the element from XML language
      */
-    public static boolean isXmlLanguage(PsiElement element) {
+    public boolean isXmlLanguage(PsiElement element) {
         return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).is(XMLLanguage.INSTANCE);
     }
 
     /**
      * Is the element from a file of the given extensions such as <tt>java</tt>, <tt>xml</tt>, etc.
      */
-    public static boolean isFromFileType(PsiElement element, @NotNull String... extensions) {
+    public boolean isFromFileType(PsiElement element, @NotNull String... extensions) {
         if (extensions.length == 0) {
             throw new IllegalArgumentException("Extension must be provided");
         }
@@ -308,7 +208,7 @@ public final class IdeaUtils {
      * @param libraries the library or libraries
      * @return the classloader
      */
-    public static @Nullable URLClassLoader newURLClassLoaderForLibrary(Library... libraries) throws MalformedURLException {
+    public @Nullable URLClassLoader newURLClassLoaderForLibrary(Library... libraries) throws MalformedURLException {
         List<URL> urls = new ArrayList<>();
         for (Library library : libraries) {
             if (library != null) {
@@ -378,7 +278,7 @@ public final class IdeaUtils {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    static boolean isFromJavaMethodCall(PsiElement element, boolean fromRouteBuilder, String... methods) {
+    boolean isFromJavaMethodCall(PsiElement element, boolean fromRouteBuilder, String... methods) {
         // java method call
         PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
         if (call != null) {
@@ -387,7 +287,7 @@ public final class IdeaUtils {
         return false;
     }
 
-    private static boolean doIsFromJavaMethod(PsiMethodCallExpression call, boolean fromRouteBuilder, String... methods) {
+    private boolean doIsFromJavaMethod(PsiMethodCallExpression call, boolean fromRouteBuilder, String... methods) {
         PsiMethod method = call.resolveMethod();
         if (method != null) {
             PsiClass containingClass = method.getContainingClass();
@@ -424,7 +324,7 @@ public final class IdeaUtils {
      * @param methods  xml tag names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    static boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
+    boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
         String name = xml.getLocalName();
         return Arrays.stream(methods).anyMatch(name::equals);
     }
@@ -436,7 +336,7 @@ public final class IdeaUtils {
      * @param parentTag a special parent tag name to match first
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    static boolean hasParentXmlTag(@NotNull XmlTag xml, @NotNull String parentTag) {
+    boolean hasParentXmlTag(@NotNull XmlTag xml, @NotNull String parentTag) {
         XmlTag parent = xml.getParentTag();
         return parent != null && parent.getLocalName().equals(parentTag);
     }
@@ -449,7 +349,7 @@ public final class IdeaUtils {
      * @param methods  xml tag names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    public static boolean hasParentAndFromXmlTag(@NotNull XmlTag xml, @NotNull String parentTag, @NotNull String... methods) {
+    public boolean hasParentAndFromXmlTag(@NotNull XmlTag xml, @NotNull String parentTag, @NotNull String... methods) {
         return hasParentXmlTag(xml, parentTag) && isFromFileType(xml, methods);
     }
 
@@ -461,7 +361,7 @@ public final class IdeaUtils {
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
     @Deprecated
-    public static boolean isFromGroovyMethod(PsiElement element, String... methods) {
+    public boolean isFromGroovyMethod(PsiElement element, String... methods) {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // must be a groovy string kind
         String kind = element.toString();
@@ -489,7 +389,7 @@ public final class IdeaUtils {
     }
 
     @Deprecated
-    public static boolean isPrevSiblingFromGroovyMethod(PsiElement element, String... methods) {
+    public boolean isPrevSiblingFromGroovyMethod(PsiElement element, String... methods) {
         boolean found = false;
 
         // need to walk a bit into the psi tree to find the element that holds the method call name
@@ -570,7 +470,7 @@ public final class IdeaUtils {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    static boolean isFromScalaMethod(PsiElement element, String... methods) {
+    boolean isFromScalaMethod(PsiElement element, String... methods) {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // (yes we need to go up till 5 levels up to find the method call expression
         String kind = element.toString();
@@ -596,7 +496,7 @@ public final class IdeaUtils {
     }
 
     @Deprecated
-    public static boolean isPrevSiblingFromScalaMethod(PsiElement element, String... methods) {
+    public boolean isPrevSiblingFromScalaMethod(PsiElement element, String... methods) {
         boolean found = false;
 
         // need to walk a bit into the psi tree to find the element that holds the method call name
@@ -658,7 +558,7 @@ public final class IdeaUtils {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    static boolean isFromKotlinMethod(PsiElement element, String... methods) {
+    boolean isFromKotlinMethod(PsiElement element, String... methods) {
         // need to walk a bit into the psi tree to find the element that holds the method call name
         // (yes we need to go up till 6 levels up to find the method call expression
         String kind = element.toString();
@@ -687,7 +587,7 @@ public final class IdeaUtils {
      * Code from com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl#getInnerText()
      */
     @Nullable
-    public static String getInnerText(String text) {
+    public String getInnerText(String text) {
         if (text == null) {
             return null;
         }
@@ -698,7 +598,7 @@ public final class IdeaUtils {
         return StringUtil.unquoteString(text.replace(QUOT, "\"")).replaceAll("(^\\n\\s+|\\n\\s+$|\\n\\s+)|(\"\\s*\\+\\s*\")|(\"\\s*\\+\\s*\\n\\s*\"*)", "");
     }
 
-    private static int getCaretPositionInsidePsiElement(String stringLiteral) {
+    private int getCaretPositionInsidePsiElement(String stringLiteral) {
         String hackVal = stringLiteral.toLowerCase();
 
         int hackIndex = hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER.toLowerCase());
@@ -720,8 +620,8 @@ public final class IdeaUtils {
      *  </ul>
      * @return a list with the query parameter and the value if present. The query parameter is returned with separator char
      */
-    public static String[] getQueryParameterAtCursorPosition(PsiElement element) {
-        String positionText = IdeaUtils.extractTextFromElement(element);
+    public String[] getQueryParameterAtCursorPosition(PsiElement element) {
+        String positionText = extractTextFromElement(element);
         positionText = positionText.replaceAll("&amp;", "&");
 
         int hackIndex = getCaretPositionInsidePsiElement(positionText);
@@ -752,8 +652,8 @@ public final class IdeaUtils {
         return new String[]{parameter, value};
     }
 
-    public static boolean isCaretAtEndOfLine(PsiElement element) {
-        String value = IdeaUtils.extractTextFromElement(element).trim();
+    public boolean isCaretAtEndOfLine(PsiElement element) {
+        String value = extractTextFromElement(element).trim();
 
         if (value != null) {
             value = value.toLowerCase();
@@ -764,4 +664,8 @@ public final class IdeaUtils {
         return false;
     }
 
+    @Override
+    public void dispose() {
+        //noop
+    }
 }

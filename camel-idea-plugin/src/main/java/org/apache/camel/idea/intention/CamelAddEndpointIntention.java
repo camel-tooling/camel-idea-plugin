@@ -46,12 +46,16 @@ import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
+import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
-import static org.apache.camel.idea.util.IdeaUtils.extractTextFromElement;
-import static org.apache.camel.idea.util.IdeaUtils.getInnerText;
+
 
 public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction implements Iconable, LowPriorityAction {
+
+    public IdeaUtils getIdeaUtils() {
+        return ServiceManager.getService(IdeaUtils.class);
+    }
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
@@ -112,11 +116,11 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
                 // if its a string literal
                 PsiJavaToken token = (PsiJavaToken) element;
                 if (token.getTokenType() == JavaTokenType.STRING_LITERAL) {
-                    text = getInnerText(token.getText());
+                    text = getIdeaUtils().getInnerText(token.getText());
                 }
             } else {
                 // should be a literal element and therefore dont fallback to generic
-                text = extractTextFromElement(element, false, false, true);
+                text = getIdeaUtils().extractTextFromElement(element, false, false, true);
             }
 
             return text != null && text.trim().isEmpty();

@@ -226,7 +226,7 @@ public final class CamelSmartCompletionEndpointOptions {
      */
     private static String removeUnknownOption(String val, Map<String, String> existing, PsiElement element) {
 
-        String[] strToRemove = IdeaUtils.getQueryParameterAtCursorPosition(element);
+        String[] strToRemove = getIdeaUtils().getQueryParameterAtCursorPosition(element);
         //to compare the string against known options we need to strip it from equal sign
         String searchStr = strToRemove[0];
         if (!searchStr.isEmpty() && !searchStr.endsWith("&") && existing != null) {
@@ -248,7 +248,7 @@ public final class CamelSmartCompletionEndpointOptions {
      */
     private static String removeUnknownEnum(String val, PsiElement element) {
 
-        String[] strToRemove = IdeaUtils.getQueryParameterAtCursorPosition(element);
+        String[] strToRemove = getIdeaUtils().getQueryParameterAtCursorPosition(element);
         //to compare the string against known options we need to strip it from equal sign
         strToRemove[0] = strToRemove[0].replace(":", "");
         if (!strToRemove[0].isEmpty()) {
@@ -293,6 +293,10 @@ public final class CamelSmartCompletionEndpointOptions {
 
     private static CamelPreferenceService getCamelPreferenceService() {
         return ServiceManager.getService(CamelPreferenceService.class);
+    }
+
+    private static IdeaUtils getIdeaUtils() {
+        return ServiceManager.getService(IdeaUtils.class);
     }
 
 }

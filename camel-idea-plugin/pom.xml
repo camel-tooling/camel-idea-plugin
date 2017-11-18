@@ -129,6 +129,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.jetbrains.plugins</groupId>
+      <artifactId>yaml</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>com.intellij.plugins</groupId>
       <artifactId>properties</artifactId>
       <version>${idea.version}</version>
@@ -354,7 +360,13 @@
     </dependency>
     <dependency>
       <groupId>com.intellij.plugins</groupId>
-      <artifactId>resources_en</artifactId>
+      <artifactId>properties-resources_en</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.plugins</groupId>
+      <artifactId>yaml-resources_en</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>

@@ -28,12 +28,9 @@ import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
+import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 import static org.apache.camel.idea.util.CamelIdeaUtils.isCameSimpleExpressionUsedAsPredicate;
-import static org.apache.camel.idea.util.IdeaUtils.isFromGroovyMethod;
-import static org.apache.camel.idea.util.IdeaUtils.isJavaLanguage;
-import static org.apache.camel.idea.util.IdeaUtils.isKotlinLanguage;
-import static org.apache.camel.idea.util.IdeaUtils.isScalaLanguage;
 
 /**
  * Validate simple expression and annotated the specific simple expression to highlight the error in the editor
@@ -97,7 +94,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
         if (element instanceof XmlAttributeValue) {
             // we can use the xml range as-is
             range = ((XmlAttributeValue) element).getValueTextRange();
-        } else if (isJavaLanguage(element) || isFromGroovyMethod(element) || isScalaLanguage(element) || isKotlinLanguage(element)) {
+        } else if (getIdeaUtils().isJavaLanguage(element) || getIdeaUtils().isFromGroovyMethod(element) || getIdeaUtils().isScalaLanguage(element) || getIdeaUtils().isKotlinLanguage(element)) {
             // all the programming languages need to have the offset adjusted by 1
             range = TextRange.create(range.getStartOffset() + 1, range.getEndOffset());
         }
@@ -117,6 +114,10 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
         }
         range = TextRange.create(range.getStartOffset() + result.getIndex(), endIdx);
         return range;
+    }
+
+    private IdeaUtils getIdeaUtils() {
+        return ServiceManager.getService(IdeaUtils.class);
     }
 
 }

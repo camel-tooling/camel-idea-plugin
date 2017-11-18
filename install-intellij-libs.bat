@@ -31,4 +31,5 @@ for %%i in ("%INTELLIJ_HOME%\lib\*.jar") do (
 )
 
 call mvn install:install-file -Dfile="%INTELLIJ_HOME%/plugins/properties/lib/properties.jar" -DgroupId=com.intellij.plugins -DartifactId=properties -Dversion=%IDEA_VERSION% -Dpackaging=jar
+call mvn install:install-file -Dfile="%INTELLIJ_HOME%/plugins/yaml/lib/yaml.jar" -DgroupId=com.intellij.plugins -DartifactId=properties -Dversion=%IDEA_VERSION% -Dpackaging=jar
 call mvn install:install-file -Dfile="%INTELLIJ_HOME%/plugins/properties/lib/resources_en.jar" -DgroupId=com.intellij.plugins -DartifactId=resources_en -Dversion=%IDEA_VERSION% -Dpackaging=jar

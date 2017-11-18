@@ -67,7 +67,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
             }
 
             // camel catalog expects &amp; as & when it parses so replace all &amp; as &
-            String camelQuery = IdeaUtils.getInnerText(uri);
+            String camelQuery = getIdeaUtils().getInnerText(uri);
             camelQuery = camelQuery.replaceAll("&amp;", "&");
 
             // strip up ending incomplete parameter
@@ -119,7 +119,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 int propertyIdx = fromElement.indexOf(propertyValue, startIdxQueryParameters);
                 int propertyLength = propertyValue.length();
 
-                propertyIdx = IdeaUtils.isJavaLanguage(element) || IdeaUtils.isXmlLanguage(element) || IdeaUtils.isScalaLanguage(element) ? propertyIdx + 1  : propertyIdx;
+                propertyIdx = getIdeaUtils().isJavaLanguage(element) || getIdeaUtils().isXmlLanguage(element) || getIdeaUtils().isScalaLanguage(element) ? propertyIdx + 1  : propertyIdx;
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
                     element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
@@ -157,7 +157,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 propertyLength = element instanceof XmlToken ? propertyLength - 1 : propertyLength;
 
                 startIdx = propertyValue.isEmpty() ? propertyIdx + 1 : fromElement.indexOf(propertyValue, startIdx) + 1;
-                startIdx = IdeaUtils.isJavaLanguage(element) || IdeaUtils.isXmlLanguage(element) || IdeaUtils.isScalaLanguage(element) ? startIdx  : startIdx - 1;
+                startIdx = getIdeaUtils().isJavaLanguage(element) || getIdeaUtils().isXmlLanguage(element) || getIdeaUtils().isScalaLanguage(element) ? startIdx  : startIdx - 1;
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + startIdx,
                     element.getTextRange().getStartOffset() + startIdx + propertyLength);
@@ -315,6 +315,10 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
 
     private static CamelPreferenceService getCamelPreferenceService() {
         return ServiceManager.getService(CamelPreferenceService.class);
+    }
+
+    private static IdeaUtils getIdeaUtils() {
+        return ServiceManager.getService(IdeaUtils.class);
     }
 
 }

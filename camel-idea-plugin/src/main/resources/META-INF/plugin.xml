@@ -44,6 +44,7 @@
         <li>Fixed bug with loading 3rd party camel-catalog versions, such as 2.17.0.redhat-630187</li>
         <li>Upgraded to IntelliJ 2017.2.5</li>
         <li>Upgraded to Apache Camel 2.20.0</li>
+        <li>Refactor IdeaUtils to use extension point instead</li>
       </ul>
       v0.4.4
       <ul>
@@ -60,9 +61,24 @@
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
   <depends>com.intellij.modules.java</depends>
+  <depends>com.intellij.modules.xml</depends>
 
   <!-- depend on the properties plugin -->
   <depends>com.intellij.properties</depends>
+
+  <!-- depend on the yml plugin -->
+  <depends>org.jetbrains.plugins.yaml</depends>
+
+  <extensions defaultExtensionNs="org.apache.camel">
+    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.JavaIdeaUtils" />
+    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.XmlIdeaUtils" />
+    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.PropertyIdeaUtils" />
+    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.YamlIdeaUtils" />
+  </extensions>
+
+  <extensionPoints>
+    <extensionPoint name="IdeaUtilsSupport" interface="org.apache.camel.idea.extension.IdeaUtilsExtension" />
+  </extensionPoints>
 
   <project-components>
     <!-- Camel project component -->
@@ -76,6 +92,7 @@
     <!-- services which can be requested from IDEA api -->
     <projectService serviceImplementation="org.apache.camel.idea.service.CamelCatalogService"/>
     <projectService serviceImplementation="org.apache.camel.idea.service.CamelService"/>
+    <applicationService serviceImplementation="org.apache.camel.idea.util.IdeaUtils"/>
     <applicationService serviceImplementation="org.apache.camel.idea.service.CamelPreferenceService"/>
 
     <!-- allow code completion of Camel endpoints-->

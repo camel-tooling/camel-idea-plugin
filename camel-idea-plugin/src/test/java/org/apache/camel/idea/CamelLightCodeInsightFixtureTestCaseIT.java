@@ -56,6 +56,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelCatalogService.class));
         disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelService.class));
         ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(true);
+
     }
 
     @Override

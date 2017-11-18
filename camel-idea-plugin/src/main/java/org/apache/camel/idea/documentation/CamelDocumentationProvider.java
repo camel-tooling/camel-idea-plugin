@@ -54,10 +54,11 @@ import org.apache.camel.idea.model.ModelHelper;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
+import org.apache.camel.idea.util.IdeaUtils;
 import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import static org.apache.camel.idea.util.IdeaUtils.extractTextFromElement;
+
 import static org.apache.camel.idea.util.StringUtils.asComponentName;
 import static org.apache.camel.idea.util.StringUtils.asLanguageName;
 import static org.apache.camel.idea.util.StringUtils.wrapSeparator;
@@ -71,6 +72,10 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     private static final Logger LOG = Logger.getInstance(CamelDocumentationProvider.class);
 
     private static final String GITHUB_EXTERNAL_DOC_URL = "https://github.com/apache/camel/blob/master";
+
+    public IdeaUtils getIdeaUtils() {
+        return ServiceManager.getService(IdeaUtils.class);
+    }
 
     @Nullable
     @Override
@@ -337,7 +342,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         if (element == null) {
             return null;
         }
-        return extractTextFromElement(element);
+        return getIdeaUtils().extractTextFromElement(element);
     }
 
     /**

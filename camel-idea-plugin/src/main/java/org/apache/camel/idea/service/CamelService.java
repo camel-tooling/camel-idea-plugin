@@ -59,7 +59,6 @@ import org.jetbrains.annotations.NotNull;
 import static org.apache.camel.catalog.CatalogHelper.loadText;
 import static org.apache.camel.idea.service.XmlUtils.getChildNodeByTagName;
 import static org.apache.camel.idea.service.XmlUtils.loadDocument;
-import static org.apache.camel.idea.util.IdeaUtils.newURLClassLoaderForLibrary;
 
 /**
  * Service access for Camel libraries
@@ -82,6 +81,10 @@ public class CamelService implements Disposable {
     private volatile boolean camelPresent;
     private Notification camelVersionNotification;
     private Notification camelMissingJSonSchemaNotification;
+
+    public IdeaUtils getIdeaUtils() {
+        return ServiceManager.getService(IdeaUtils.class);
+    }
 
     @Override
     public void dispose() {
@@ -149,7 +152,7 @@ public class CamelService implements Disposable {
     public ClassLoader getCamelCoreClassloader() {
         if (camelCoreClassloader == null) {
             try {
-                camelCoreClassloader = IdeaUtils.newURLClassLoaderForLibrary(camelCoreLibrary, slf4japiLibrary);
+                camelCoreClassloader = getIdeaUtils().newURLClassLoaderForLibrary(camelCoreLibrary, slf4japiLibrary);
             } catch (Throwable e) {
                 LOG.warn("Error creating URLClassLoader for loading classes from camel-core", e);
             }
@@ -396,7 +399,7 @@ public class CamelService implements Disposable {
         boolean legacyScan = getCamelPreferenceService().isScanThirdPartyLegacyComponents();
         boolean added = false;
 
-        try (URLClassLoader classLoader = newURLClassLoaderForLibrary(library)) {
+        try (URLClassLoader classLoader = getIdeaUtils().newURLClassLoaderForLibrary(library)) {
             if (classLoader != null) {
                 // is there any custom Camel components in this library?
                 Properties properties = loadComponentProperties(classLoader, legacyScan);

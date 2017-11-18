@@ -41,6 +41,17 @@ done
    mvn install:install-file -Dfile="${INTELLIJ_HOME}/plugins/properties/lib/properties.jar" -DgroupId=com.intellij.plugins -DartifactId=properties -Dversion=${IDEA_VERSION} -Dpackaging=jar
  fi
 
- if [ ! -f "${M2_REPO_HOME}/com/intellij/plugins/resources_en/${IDEA_VERSION}/resources_en-${IDEA_VERSION}.jar" ]; then
-    mvn install:install-file -Dfile="${INTELLIJ_HOME}/plugins/properties/lib/resources_en.jar" -DgroupId=com.intellij.plugins -DartifactId=resources_en -Dversion=${IDEA_VERSION} -Dpackaging=jar
+ if [ ! -f "${M2_REPO_HOME}/com/intellij/plugins/properties-resources_en/${IDEA_VERSION}/resources_en-${IDEA_VERSION}.jar" ]; then
+    mvn install:install-file -Dfile="${INTELLIJ_HOME}/plugins/properties/lib/resources_en.jar" -DgroupId=com.intellij.plugins -DartifactId=properties-resources_en -Dversion=${IDEA_VERSION} -Dpackaging=jar
  fi
+
+
+ if [ ! -f "${M2_REPO_HOME}/org/jetbrains/plugins/yaml/${IDEA_VERSION}/yaml-${IDEA_VERSION}.jar" ]; then
+   mvn install:install-file -Dfile="${INTELLIJ_HOME}/plugins/yaml/lib/yaml.jar" -DgroupId=org.jetbrains.plugins -DartifactId=yaml -Dversion=${IDEA_VERSION} -Dpackaging=jar
+ fi
+
+ if [ ! -f "${M2_REPO_HOME}/org/jetbrains/plugins/yaml-resources_en/${IDEA_VERSION}/resources_en-${IDEA_VERSION}.jar" ]; then
+    mvn install:install-file -Dfile="${INTELLIJ_HOME}/plugins/yaml/lib/resources_en.jar" -DgroupId=org.jetbrains.plugins -DartifactId=yaml-resources_en -Dversion=${IDEA_VERSION} -Dpackaging=jar
+ fi
+
+
