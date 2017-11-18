@@ -29,7 +29,6 @@ import org.apache.camel.idea.service.CamelPreferenceService;
 import static org.apache.camel.idea.gutter.GutterTestUtil.getGutterNavigationDestinationElements;
 import static org.apache.camel.idea.gutter.GutterTestUtil.getGuttersWithJavaTarget;
 import static org.apache.camel.idea.gutter.GutterTestUtil.getGuttersWithMethodTarget;
-import static org.apache.camel.idea.gutter.GutterTestUtil.getGuttersWithVariableTarget;
 
 /**
  * Testing the Camel icon is shown in the gutter where a Camel route starts in Java DSL and the route navigation
@@ -127,28 +126,8 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
         assertEquals("The navigation start element doesn't match", "uriVar",
             firstGutter.getLineMarkerInfo().getElement().getText());
 
-
         List<GotoRelatedItem> firstGutterTargets = getGutterNavigationDestinationElements(firstGutter);
         assertEquals("Navigation should have two targets", 2, firstGutterTargets.size());
-        assertEquals("The navigation for literal expression target element doesn't match", "from(CONSTANT_URI)",
-            getGuttersWithJavaTarget(firstGutterTargets).get(0).getMethodExpression().getQualifierExpression().getText());
-        assertEquals("The navigation variable target element doesn't match", "uriVar",
-            getGuttersWithVariableTarget(firstGutterTargets).get(0).getName());
-
-
-        LineMarkerInfo.LineMarkerGutterIconRenderer secondGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(1);
-
-        assertTrue(secondGutter.getLineMarkerInfo().getElement() instanceof PsiIdentifier);
-        assertEquals("The navigation start element doesn't match", "CONSTANT_URI",
-            (secondGutter.getLineMarkerInfo().getElement()).getText());
-
-        List<GotoRelatedItem> secondGutterTargets = getGutterNavigationDestinationElements(secondGutter);
-        assertEquals("Navigation should have one target", 2, secondGutterTargets.size());
-        assertEquals("The navigation target element doesn't match", "from(uriVar)",
-            getGuttersWithJavaTarget(secondGutterTargets).get(0).getMethodExpression().getQualifierExpression().getText());
-        assertEquals("The navigation constant target element doesn't match", "CONSTANT_URI",
-            getGuttersWithVariableTarget(secondGutterTargets).get(0).getName());
-
     }
 
     public void testCamelGutterForMethodCallFrom() {
@@ -170,12 +149,10 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
         assertEquals("The navigation start element doesn't match", "calcEndpoint",
             firstGutter.getLineMarkerInfo().getElement().getText());
 
-
         List<GotoRelatedItem> firstGutterTargets = getGutterNavigationDestinationElements(firstGutter);
-        assertEquals("Navigation should have one targets", 1, firstGutterTargets.size());
+        assertEquals("Navigation should have two targets", 2, firstGutterTargets.size());
         assertEquals("The navigation variable target element doesn't match", "calcEndpoint",
             getGuttersWithMethodTarget(firstGutterTargets).get(0).getName());
-
     }
 
     private void assertGuttersHasCamelIcon(List<GutterMark> gutters) {
