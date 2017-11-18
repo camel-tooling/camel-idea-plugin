@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import javax.swing.*;
 
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
@@ -55,7 +54,6 @@ import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.CamelRouteSearchScope;
-import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -68,8 +66,8 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
 
     private static final Logger LOG = Logger.getInstance(CamelRouteLineMarkerProvider.class);
 
-    private static final String[] JAVA_ROUTE_START = new String[]{"to", "toF", "toD"};
-    private static final String[] XML_ROUTE_START = new String[]{"to", "toD"};
+    private static final String[] JAVA_ROUTE_CALL = new String[]{"to", "toF", "toD", "enrich", "wireTap"};
+    private static final String[] XML_ROUTE_CALL = new String[]{"to", "toD", "enrich", "wireTap"};
 
     @Override
     protected void collectNavigationMarkers(@NotNull PsiElement element,
@@ -252,17 +250,9 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                     psiElements.add(javaElement);
                 }
             } else if (psiElement instanceof PsiIdentifier) {
-                String value = psiElement.getText();
-                if (route.equals(value)) {
-                    // an identifier can be referring to a constant which we use in a method call
-                    PsiMethodCallExpression methodCall = PsiTreeUtil.getParentOfType(psiElement, PsiMethodCallExpression.class);
-                    if (methodCall != null) {
-                        // must be a method call used in a Camel route to call the route
-                        boolean matched = Arrays.stream(JAVA_ROUTE_START).anyMatch(s -> s.equals(methodCall.getMethodExpression().getReferenceName()));
-                        if (matched) {
-                            psiElements.add(psiElement);
-                        }
-                    }
+                PsiElement javaElement = findJavaElement(route, psiElement);
+                if (javaElement != null) {
+                    psiElements.add(javaElement);
                 }
             } else {
                 resolvedIdentifier(psiElement).ifPresent(psiElements::add);
@@ -294,7 +284,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
             //the method 'to' is a PsiIdentifier not a PsiMethodCallExpression because it's part of method invocation chain
             PsiMethodCallExpression methodCall = PsiTreeUtil.getParentOfType(psiElement, PsiMethodCallExpression.class);
             if (methodCall != null) {
-                if (Arrays.stream(JAVA_ROUTE_START).anyMatch(s -> s.equals(methodCall.getMethodExpression().getReferenceName()))) {
+                if (Arrays.stream(JAVA_ROUTE_CALL).anyMatch(s -> s.equals(methodCall.getMethodExpression().getReferenceName()))) {
                     return psiElement;
                 }
             }
@@ -311,7 +301,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
      */
     private PsiElement findXMLElement(String route, XmlToken psiElement) {
         if (psiElement.getTokenType() == XmlElementType.XML_ATTRIBUTE_VALUE_TOKEN) {
-            if (Arrays.stream(XML_ROUTE_START).anyMatch(s -> s.equals(PsiTreeUtil.getParentOfType(psiElement, XmlTag.class).getLocalName()))) {
+            if (Arrays.stream(XML_ROUTE_CALL).anyMatch(s -> s.equals(PsiTreeUtil.getParentOfType(psiElement, XmlTag.class).getLocalName()))) {
                 if (psiElement.getText().equals(route)) {
                     return psiElement;
                 }
