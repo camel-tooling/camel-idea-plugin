@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import javax.swing.*;
-
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
@@ -33,7 +32,6 @@ import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
-import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiLiteralValue;
@@ -56,7 +54,6 @@ import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.CamelRouteSearchScope;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 
 /**
@@ -238,7 +235,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         String componentName = route.split(":")[0];
 
         helper.processElementsWithWord((psiElement, offsetInElement) -> {
-            LOG.info("processElementsWithWord: " + psiElement + " with offset: " + offsetInElement);
+            LOG.debug("processElementsWithWord: " + psiElement + " with offset: " + offsetInElement);
             if (psiElement instanceof XmlToken) {
                 PsiElement xmlElement = findXMLElement(route, (XmlToken) psiElement);
                 if (xmlElement != null) {
@@ -253,9 +250,10 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                 PsiElement javaElement = findJavaElement(route, psiElement);
                 if (javaElement != null) {
                     psiElements.add(javaElement);
+                } else {
+                    // use alternative lookup for identifier
+                    resolvedIdentifier(psiElement).ifPresent(psiElements::add);
                 }
-            } else {
-                resolvedIdentifier(psiElement).ifPresent(psiElements::add);
             }
             return true;
         }, new CamelRouteSearchScope(), componentName, UsageSearchContext.ANY, false);
@@ -272,11 +270,9 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
      * @return the {@link PsiElement} that contains the exact match of the Camel route, null if there is no exact match
      */
     private PsiElement findJavaElement(String route, PsiElement psiElement) {
-        Object value = null;
+        Object value;
         if (psiElement instanceof PsiLiteralValue) {
             value = ((PsiLiteralValue) psiElement).getValue();
-        } else if (psiElement instanceof PsiField) {
-            value = ((PsiField) psiElement).getNameIdentifier().getText();
         } else {
             value = psiElement.getText();
         }
