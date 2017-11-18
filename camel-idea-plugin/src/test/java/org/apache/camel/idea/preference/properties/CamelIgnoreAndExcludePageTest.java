@@ -14,37 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.preference;
+package org.apache.camel.idea.preference.properties;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
-public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtureTestCaseIT {
+public class CamelIgnoreAndExcludePageTest extends CamelLightCodeInsightFixtureTestCaseIT {
 
-    private CamelPreferenceEntryPage camelPreferenceEntryPage;
+    private CamelIgnoreAndExcludePage ignoreAndExcludePage;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        camelPreferenceEntryPage = new CamelPreferenceEntryPage();
-        camelPreferenceEntryPage.createComponent();
+        ignoreAndExcludePage = new CamelIgnoreAndExcludePage();
+        ignoreAndExcludePage.createComponent();
         super.initCamelPreferencesService();
     }
 
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
-        camelPreferenceEntryPage = null;
+        ignoreAndExcludePage = null;
         super.initCamelPreferencesService();
     }
 
-    public void testPluginXmlShouldContainPreferencesPage() {
+    public void testPluginXmlShouldContainIgnoreAndExcludePreferencesPage() {
         File pluginXml = new File("src/main/resources/META-INF/plugin.xml");
         assertNotNull(pluginXml);
 
@@ -52,24 +53,27 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
             List<String> lines = Files.readAllLines(Paths.get("src/main/resources/META-INF/plugin.xml"), StandardCharsets.UTF_8);
             List<String> trimmedStrings =
                     lines.stream().map(String::trim).collect(Collectors.toList());
-            int indexOfApplicationConfigurable = trimmedStrings.indexOf("<applicationConfigurable id=\"camel\" "
-                    + "groupId=\"language\" displayName=\"Apache Camel\" "
-                    + "instance=\"org.apache.camel.idea.preference.CamelPreferenceEntryPage\" />");
+            int indexOfApplicationConfigurable = trimmedStrings.indexOf("<applicationConfigurable parentId=\"camel\" id=\"camel.properties\" "
+                    + "groupId=\"language\" displayName=\"Ignore &amp; Exclude Properties\" "
+                    + "instance=\"org.apache.camel.idea.preference.properties.CamelIgnoreAndExcludePage\"/>");
             assertTrue(indexOfApplicationConfigurable > 0);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void testDisplayNameShouldBeApacheCamel() {
-        assertEquals("Apache Camel", camelPreferenceEntryPage.getDisplayName());
+    public void testShouldContainIgnorePropertyTable() {
+        List<String> expectedIgnoredProperties = Arrays.asList("java.", "Logger.", "logger", "appender.", "rootLogger.",
+                "camel.springboot.", "camel.component.", "camel.dataformat.", "camel.language.");
+        ignoreAndExcludePage.reset();
+        assertEquals(expectedIgnoredProperties, ignoreAndExcludePage.getMyIgnoredProperties());
+        assertEquals(expectedIgnoredProperties, ignoreAndExcludePage.getIgnorePropertyFilePanel().getData());
     }
 
-    public void testHelpTopicShouldBeNull() {
-        assertNull(camelPreferenceEntryPage.getHelpTopic());
-    }
-
-    public void testPreferencePageIdShouldBeCamelConfigurable() {
-        assertEquals("preference.CamelConfigurable", camelPreferenceEntryPage.getId());
+    public void testShouldContainExcludePropertyTable() {
+        List<String> expectedExcludedProperties = Arrays.asList("**/log4j.properties", "**/log4j2.properties", "**/logging.properties");
+        ignoreAndExcludePage.reset();
+        assertEquals(expectedExcludedProperties, ignoreAndExcludePage.getMyExcludedProperties());
+        assertEquals(expectedExcludedProperties, ignoreAndExcludePage.getExcludePropertyFilePanel().getData());
     }
 }

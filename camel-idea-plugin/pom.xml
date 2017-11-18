@@ -22,19 +22,19 @@
   <parent>
     <groupId>org.apache.camel</groupId>
     <artifactId>camel-ide</artifactId>
-    <version>0.4.6-SNAPSHOT</version>
+    <version>0.4.7-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <artifactId>camel-idea-plugin</artifactId>
-  <version>0.4.6-SNAPSHOT</version>
+  <version>0.4.7-SNAPSHOT</version>
   <name>Apache Camel IDE :: IDEA Plugin</name>
 
   <description>Plugin for Intellij IDEA to provide a set of small Apache Camel related capabilities to IDEA editor.
   </description>
 
   <properties>
-    <idea.version>2017.2.5</idea.version>
+    <idea.version>2017.2.6</idea.version>
     <idea.platform.prefix>-Didea.platform.prefix=Idea</idea.platform.prefix>
     <ij.plugin>true</ij.plugin>
     <argLine>
