@@ -34,6 +34,7 @@
         <li>Work in progress</li>
         <li>Route navigator jumping to who calls me now supports constant fields in Java</li>
         <li>Various internal refactorings to cleanup the code</li>
+        <li>Upgraded to IntelliJ 2017.2.6</li>
       </ul>
       v0.4.6
       <ul>
