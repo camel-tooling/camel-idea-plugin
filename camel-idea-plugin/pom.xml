@@ -129,7 +129,7 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.jetbrains.plugins</groupId>
+      <groupId>com.jetbrains.plugins</groupId>
       <artifactId>yaml</artifactId>
       <version>${idea.version}</version>
       <scope>provided</scope>
@@ -365,7 +365,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.jetbrains.plugins</groupId>
+      <groupId>com.jetbrains.plugins</groupId>
       <artifactId>yaml-resources_en</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
