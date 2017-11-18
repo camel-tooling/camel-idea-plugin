@@ -25,7 +25,7 @@ public class JavaCamelRouteLineMarkerProviderTestData extends RouteBuilder {
     public void configure() throws Exception {
         String uriVar = "file:variable";
         from(uriVar)
-            .to("file:constant");
+            .to(CONSTANT_URI);
         from(CONSTANT_URI)
             .to("file:variable");
     }

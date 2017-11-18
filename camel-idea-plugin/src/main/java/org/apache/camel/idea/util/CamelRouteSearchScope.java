@@ -49,7 +49,6 @@ public class CamelRouteSearchScope extends GlobalSearchScope {
     }
 
     private boolean isAllowedFileExtension(String extension) {
-
         for (String allowedExtension : CAMEL_FILE_EXTENSIONS) {
             if (allowedExtension.equals(extension)) {
                 return true;
