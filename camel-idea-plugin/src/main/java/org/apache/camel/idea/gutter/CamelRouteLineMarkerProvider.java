@@ -21,7 +21,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.swing.*;
+
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
@@ -32,8 +34,10 @@ import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.PsiLiteralValue;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiPolyadicExpression;
@@ -51,8 +55,10 @@ import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.CamelRouteSearchScope;
+import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import static org.apache.camel.idea.util.IdeaUtils.isFromFileType;
 
 /**
@@ -187,6 +193,14 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
             return ((PsiLiteralExpressionImpl) element).getValue() == null ? null : ((PsiLiteralExpressionImpl) element).getValue().toString();
         }
 
+        if (element instanceof PsiIdentifier) {
+            PsiIdentifier id = (PsiIdentifier) element;
+            String text = id.getText();
+            if (text != null) {
+                return text;
+            }
+        }
+
         // Only variables can be resolved?
         Optional<PsiVariable> variable = resolvedIdentifier(element)
             .filter(PsiVariable.class::isInstance)
@@ -226,19 +240,33 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         String componentName = route.split(":")[0];
 
         helper.processElementsWithWord((psiElement, offsetInElement) -> {
+            LOG.info("processElementsWithWord: " + psiElement + " with offset: " + offsetInElement);
             if (psiElement instanceof XmlToken) {
                 PsiElement xmlElement = findXMLElement(route, (XmlToken) psiElement);
                 if (xmlElement != null) {
                     psiElements.add(xmlElement);
                 }
-            }
-            if (psiElement instanceof PsiLiteralExpression) {
-                PsiElement javaElement = findJavaElement(route, (PsiLiteralExpression) psiElement);
+            } else if (psiElement instanceof PsiLiteralExpression) {
+                PsiElement javaElement = findJavaElement(route, psiElement);
                 if (javaElement != null) {
                     psiElements.add(javaElement);
                 }
+            } else if (psiElement instanceof PsiIdentifier) {
+                String value = psiElement.getText();
+                if (route.equals(value)) {
+                    // an identifier can be referring to a constant which we use in a method call
+                    PsiMethodCallExpression methodCall = PsiTreeUtil.getParentOfType(psiElement, PsiMethodCallExpression.class);
+                    if (methodCall != null) {
+                        // must be a method call used in a Camel route to call the route
+                        boolean matched = Arrays.stream(JAVA_ROUTE_START).anyMatch(s -> s.equals(methodCall.getMethodExpression().getReferenceName()));
+                        if (matched) {
+                            psiElements.add(psiElement);
+                        }
+                    }
+                }
+            } else {
+                resolvedIdentifier(psiElement).ifPresent(psiElements::add);
             }
-            resolvedIdentifier(psiElement).ifPresent(psiElements::add);
             return true;
         }, new CamelRouteSearchScope(), componentName, UsageSearchContext.ANY, false);
 
@@ -250,11 +278,19 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
      * Checks if the given {@link PsiElement} contains a 'to' method that points to the give route.
      *
      * @param route      the complete Camel route to search for
-     * @param psiElement the {@link PsiLiteralExpression} that might contain the complete route definition
+     * @param psiElement the {@link PsiElement} that might contain the complete route definition
      * @return the {@link PsiElement} that contains the exact match of the Camel route, null if there is no exact match
      */
-    private PsiElement findJavaElement(String route, PsiLiteralExpression psiElement) {
-        if (route.equals(psiElement.getValue())) {
+    private PsiElement findJavaElement(String route, PsiElement psiElement) {
+        Object value = null;
+        if (psiElement instanceof PsiLiteralValue) {
+            value = ((PsiLiteralValue) psiElement).getValue();
+        } else if (psiElement instanceof PsiField) {
+            value = ((PsiField) psiElement).getNameIdentifier().getText();
+        } else {
+            value = psiElement.getText();
+        }
+        if (route.equals(value)) {
             //the method 'to' is a PsiIdentifier not a PsiMethodCallExpression because it's part of method invocation chain
             PsiMethodCallExpression methodCall = PsiTreeUtil.getParentOfType(psiElement, PsiMethodCallExpression.class);
             if (methodCall != null) {
