@@ -32,6 +32,8 @@
       v0.4.7
       <ul>
         <li>Work in progress</li>
+        <li>Route navigator jumping to who calls me now supports constant fields in Java</li>
+        <li>Various internal refactorings to cleanup the code</li>
       </ul>
       v0.4.6
       <ul>
