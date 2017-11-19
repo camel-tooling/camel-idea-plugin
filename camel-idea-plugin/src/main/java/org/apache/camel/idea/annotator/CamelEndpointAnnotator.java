@@ -34,7 +34,6 @@ import org.apache.camel.idea.service.QueryUtils;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
-import static org.apache.camel.idea.util.CamelIdeaUtils.skipEndpointValidation;
 import static org.apache.camel.idea.util.StringUtils.isEmpty;
 
 /**
@@ -61,7 +60,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
             LOG.trace("Element " + element + " of type: " + type + " to validate endpoint uri: " + uri);
 
             // skip special values such as configuring ActiveMQ brokerURL
-            if (skipEndpointValidation(element)) {
+            if (getCamelIdeaUtils().skipEndpointValidation(element)) {
                 LOG.debug("Skipping element " + element + " for validation with text: " + uri);
                 return;
             }
@@ -75,7 +74,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 camelQuery = camelQuery.substring(0, camelQuery.length() - 1);
             }
 
-            boolean stringFormat = CamelIdeaUtils.isFromStringFormatEndpoint(element);
+            boolean stringFormat = getCamelIdeaUtils().isFromStringFormatEndpoint(element);
             if (stringFormat) {
                 // if the node is fromF or toF, then replace all %X with {{%X}} as we cannot parse that value
                 camelQuery = camelQuery.replaceAll("%s", "\\{\\{\\%s\\}\\}");
@@ -83,8 +82,8 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 camelQuery = camelQuery.replaceAll("%b", "\\{\\{\\%b\\}\\}");
             }
 
-            boolean consumerOnly = CamelIdeaUtils.isConsumerEndpoint(element);
-            boolean producerOnly = CamelIdeaUtils.isProducerEndpoint(element);
+            boolean consumerOnly = getCamelIdeaUtils().isConsumerEndpoint(element);
+            boolean producerOnly = getCamelIdeaUtils().isProducerEndpoint(element);
 
             try {
                 CamelPreferenceService preference = getCamelPreferenceService();
@@ -119,7 +118,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 int propertyIdx = fromElement.indexOf(propertyValue, startIdxQueryParameters);
                 int propertyLength = propertyValue.length();
 
-                propertyIdx = getIdeaUtils().isJavaLanguage(element) || getIdeaUtils().isXmlLanguage(element) || getIdeaUtils().isScalaLanguage(element) ? propertyIdx + 1  : propertyIdx;
+                propertyIdx = getIdeaUtils().isJavaLanguage(element) || getIdeaUtils().isXmlLanguage(element)  ? propertyIdx + 1  : propertyIdx;
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
                     element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
@@ -157,7 +156,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 propertyLength = element instanceof XmlToken ? propertyLength - 1 : propertyLength;
 
                 startIdx = propertyValue.isEmpty() ? propertyIdx + 1 : fromElement.indexOf(propertyValue, startIdx) + 1;
-                startIdx = getIdeaUtils().isJavaLanguage(element) || getIdeaUtils().isXmlLanguage(element) || getIdeaUtils().isScalaLanguage(element) ? startIdx  : startIdx - 1;
+                startIdx = getIdeaUtils().isJavaLanguage(element) || getIdeaUtils().isXmlLanguage(element) ? startIdx  : startIdx - 1;
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + startIdx,
                     element.getTextRange().getStartOffset() + startIdx + propertyLength);
@@ -319,6 +318,10 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
 
     private static IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);
+    }
+
+    private CamelIdeaUtils getCamelIdeaUtils() {
+        return ServiceManager.getService(CamelIdeaUtils.class);
     }
 
 }

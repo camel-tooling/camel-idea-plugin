@@ -24,10 +24,7 @@ public class CamelRouteSearchScopeTest extends PlatformTestCase {
 
     public void testSearchScope() throws Exception {
         VirtualFile javaFile = getVirtualFile(createTempFile("Test.java", ""));
-        VirtualFile kotlinFile = getVirtualFile(createTempFile("Test.kt", ""));
         VirtualFile xmlFile = getVirtualFile(createTempFile("test.xml", ""));
-        VirtualFile groovyFile = getVirtualFile(createTempFile("Test.groovy", ""));
-        VirtualFile scalaFile = getVirtualFile(createTempFile("Test.scala", ""));
 
 
         VirtualFile mavenPomFile = getVirtualFile(createTempFile("pom.xml", ""));
@@ -36,10 +33,7 @@ public class CamelRouteSearchScopeTest extends PlatformTestCase {
         CamelRouteSearchScope camelRouteSearchScope = new CamelRouteSearchScope();
 
         assertTrue(camelRouteSearchScope.contains(javaFile));
-        assertTrue(camelRouteSearchScope.contains(kotlinFile));
         assertTrue(camelRouteSearchScope.contains(xmlFile));
-        assertTrue(camelRouteSearchScope.contains(groovyFile));
-        assertTrue(camelRouteSearchScope.contains(scalaFile));
 
         assertFalse(camelRouteSearchScope.contains(mavenPomFile));
         assertFalse(camelRouteSearchScope.contains(xsdFile));

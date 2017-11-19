@@ -63,28 +63,32 @@ public class IdeaUtilsSkipEndointValidationTestIT extends CamelLightCodeInsightF
     public void testShouldSkipActiveMQComponentFactoryMethod() {
         myFixture.configureByText("DummyTestData.java", CODE);
         PsiElement element = myFixture.findElementByText("\"vm://localhost\"", PsiLiteralExpression.class);
-        assertTrue("ActiveMQComponent.activeMQComponent should be skipped", CamelIdeaUtils.skipEndpointValidation(element));
+        assertTrue("ActiveMQComponent.activeMQComponent should be skipped", getCamelIdeaUtils().skipEndpointValidation(element));
     }
 
     public void testShouldSkipSetBrokerUrlMethod() {
         myFixture.configureByText("DummyTestData.java", CODE);
         PsiElement element = myFixture.findElementByText("\"tcp://evilhost:666\"", PsiLiteralExpression.class);
-        assertTrue("setBrokerURL method should be skipped", CamelIdeaUtils.skipEndpointValidation(element));
+        assertTrue("setBrokerURL method should be skipped", getCamelIdeaUtils().skipEndpointValidation(element));
     }
 
     public void testShouldSkipActiveMQConnectionFactoryConstructor() {
         myFixture.configureByText("DummyTestData.java", CODE);
         PsiElement element = myFixture.findElementByText("\"vm://broker\"", PsiLiteralExpression.class);
-        assertTrue("ActiveMQConnectionFactory constructor should be skipped", CamelIdeaUtils.skipEndpointValidation(element));
+        assertTrue("ActiveMQConnectionFactory constructor should be skipped", getCamelIdeaUtils().skipEndpointValidation(element));
         element = myFixture.findElementByText("\"vm://spring\"", PsiLiteralExpression.class);
-        assertTrue("spring ActiveMQConnectionFactory constructor should be skipped", CamelIdeaUtils.skipEndpointValidation(element));
+        assertTrue("spring ActiveMQConnectionFactory constructor should be skipped", getCamelIdeaUtils().skipEndpointValidation(element));
     }
     public void testShouldSkipActiveMQXAConnectionFactoryConstructor() {
         myFixture.configureByText("DummyTestData.java", CODE);
         PsiElement element = myFixture.findElementByText("\"vm://broker-xa\"", PsiLiteralExpression.class);
-        assertTrue("ActiveMQXAConnectionFactory constructor should be skipped", CamelIdeaUtils.skipEndpointValidation(element));
+        assertTrue("ActiveMQXAConnectionFactory constructor should be skipped", getCamelIdeaUtils().skipEndpointValidation(element));
         element = myFixture.findElementByText("\"vm://spring-xa\"", PsiLiteralExpression.class);
-        assertTrue("spring ActiveMQXAConnectionFactory constructor should be skipped", CamelIdeaUtils.skipEndpointValidation(element));
+        assertTrue("spring ActiveMQXAConnectionFactory constructor should be skipped", getCamelIdeaUtils().skipEndpointValidation(element));
+    }
+
+    private CamelIdeaUtils getCamelIdeaUtils() {
+        return ServiceManager.getService(CamelIdeaUtils.class);
     }
 
 }

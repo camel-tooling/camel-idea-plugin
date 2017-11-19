@@ -17,10 +17,14 @@
 package org.apache.camel.idea.util;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
@@ -34,7 +38,7 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
-
+import org.apache.camel.idea.extension.CamelIdeaUtilsExtension;
 
 
 /**
@@ -42,71 +46,25 @@ import com.intellij.psi.xml.XmlTag;
  * <p/>
  * This class is only for Camel related IDEA APIs. If you need only IDEA APIs then use {@link IdeaUtils} instead.
  */
-public final class CamelIdeaUtils {
+public final class CamelIdeaUtils implements Disposable {
 
-    public static final String[] CAMEL_FILE_EXTENSIONS = {"java", "xml", "groovy", "kt", "scala"};
+    public static final String[] CAMEL_FILE_EXTENSIONS = {"java", "xml"};
 
-    private static final Logger LOG = Logger.getInstance(CamelIdeaUtils.class);
-
-    private static final String[] ACCEPTED_NAMESPACES = new String[]{
-        "http://camel.apache.org/schema/spring",
-        "http://camel.apache.org/schema/blueprint",
-        "http://www.springframework.org/schema/beans",
-        "http://www.osgi.org/xmlns/blueprint"
-    };
-
-    private static final String[] ROUTE_START = new String[]{"from", "fromF"};
-    private static final String[] CONSUMER_ENDPOINT = new String[]{"from", "fromF", "interceptFrom", "pollEnrich"};
-    private static final String[] PRODUCER_ENDPOINT = new String[]{"to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel"};
-    private static final String[] STRING_FORMAT_ENDPOINT = new String[]{"fromF", "toF", "format"};
-    private static final String[] SIMPLE_PREDICATE = new String[]{"completion", "completionPredicate", "when", "onWhen", "handled", "continued", "retryWhile", "filter", "validate", "loopDoWhile"};
+    private final List<CamelIdeaUtilsExtension> enabledExtensions;
 
     private CamelIdeaUtils() {
+        enabledExtensions = Arrays.stream(CamelIdeaUtilsExtension.EP_NAME.getExtensions())
+            .filter(CamelIdeaUtilsExtension::isExtensionEnabled)
+            .filter(e -> e.isExtensionEnabled())
+            .collect(Collectors.toList());
     }
 
     /**
      * Is the given element from the start of a Camel route, eg <tt>from</tt>, ot &lt;from&gt;.
      */
-    public static boolean isCamelRouteStart(PsiElement element) {
-        // java method call
-        if (getIdeaUtils().isFromJavaMethodCall(element, true, ROUTE_START)) {
-            return true;
-        }
-        // xml
-        if (element.getText().equals("from")) {
-            XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-            if (xml != null) {
-                String name = xml.getLocalName();
-                XmlTag parentTag = xml.getParentTag();
-                if (parentTag != null) {
-                    return "from".equals(name) && "route".equals(parentTag.getLocalName());
-                }
-            }
-        }
-        // groovy
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Groovy")) {
-                return getIdeaUtils().isFromGroovyMethod(element, ROUTE_START);
-            }
-        }
-        // kotlin
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("kotlin")) {
-                return getIdeaUtils().isFromKotlinMethod(element, ROUTE_START);
-            }
-        }
-        // scala
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Scala")) {
-                boolean isRouteViaMethod = getIdeaUtils().isFromScalaMethod(element, ROUTE_START);
-                return isRouteViaMethod  || isScalaArrowRouteDefinition(element);
-            }
-        }
-
-        return false;
+    public boolean isCamelRouteStart(PsiElement element) {
+        return enabledExtensions.stream()
+            .anyMatch(extension -> extension.isCamelRouteStart(element));
     }
 
     /**
@@ -116,291 +74,54 @@ public final class CamelIdeaUtils {
      * @param element
      * @return
      */
-    public static boolean isCamelRouteStartExpression(PsiElement element) {
-        // TODO: do parent search also for non java languages (not xml)?
-        if (PsiTreeUtil.findFirstParent(element, true, CamelIdeaUtils::isCamelRouteStart) != null) {
+    public boolean isCamelRouteStartExpression(PsiElement element) {
+        if (PsiTreeUtil.findFirstParent(element, true, psiElement -> isCamelRouteStart(psiElement)) != null) {
             return true;
         }
         return isCamelRouteStart(element);
-    }
-    /**
-     * Is this a camel route using using Scala DSL's '==>' method
-     */
-    private static boolean isScalaArrowRouteDefinition(PsiElement element) {
-        IElementType type = ((LeafPsiElement) element).getElementType();
-        if (type.toString().contains("string")) {
-            Optional<PsiElement> infixExpression = Optional.ofNullable(element.getParent()).flatMap(e -> Optional.ofNullable(e.getParent()));
-            return infixExpression.map(PsiElement::getChildren).filter(c -> c.length >= 2).map(c -> c[1].getText()).map(t -> t.equals("==>")).orElseGet(() -> false);
-        }
-        return false;
     }
 
     /**
      * Is the given element a simple of a Camel DSL, eg <tt>simple</tt> or &lt;simple&gt;, <tt>log</tt> or &lt;log&gt;.
      */
-    public static boolean isCamelSimpleExpression(PsiElement element) {
-        // java method call
-        if (getIdeaUtils().isFromJavaMethodCall(element, true, "simple", "log")) {
-            return true;
-        }
-        // xml
-        XmlTag xml;
-        if (element instanceof XmlTag) {
-            xml = (XmlTag) element;
-        } else {
-            xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        }
-        if (xml != null) {
-            String name = xml.getLocalName();
-            return "simple".equals(name) || "log".equals(name);
-        }
-        // groovy
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Groovy")) {
-                return getIdeaUtils().isFromGroovyMethod(element, "simple", "log");
-            }
-        }
-        // kotlin
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("kotlin")) {
-                return getIdeaUtils().isFromKotlinMethod(element, "simple");
-            }
-        }
-        // scala
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Scala")) {
-                return getIdeaUtils().isFromScalaMethod(element, "simple");
-            }
-        }
-
-        return false;
+    public boolean isCamelSimpleExpression(PsiElement element) {
+        return enabledExtensions.stream()
+            .anyMatch(extension -> extension.isCamelSimpleExpression(element));
     }
 
     /**
      * Is the given element a simple of a Camel route, eg <tt>simple</tt>, ot &lt;simple&gt;
      */
-    public static boolean isCameSimpleExpressionUsedAsPredicate(PsiElement element) {
-
-        // java
-        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-        if (call != null) {
-
-            PsiMethod method = call.resolveMethod();
-            if (method != null) {
-                // if its coming from the log EIP then its not a predicate
-                String name = method.getName();
-                if ("log".equals(name)) {
-                    return false;
-                }
-            }
-
-            // okay dive into the psi and find out which EIP are using the simple
-            PsiElement child = call.getFirstChild();
-            if (child instanceof PsiReferenceExpression) {
-                PsiExpression exp = ((PsiReferenceExpression) child).getQualifierExpression();
-                if (exp == null) {
-                    // okay it was not a direct method call, so see if it was passed in as a parameter instead (expression list)
-                    element = element.getParent();
-                    if (element instanceof PsiExpressionList) {
-                        element = element.getParent();
-                    }
-                    if (element instanceof PsiMethodCallExpression) {
-                        exp = PsiTreeUtil.getParentOfType(element.getParent(), PsiMethodCallExpression.class);
-                    }
-                }
-                if (exp instanceof PsiMethodCallExpression) {
-                    method = ((PsiMethodCallExpression) exp).resolveMethod();
-                    if (method != null) {
-                        String name = method.getName();
-                        return Arrays.stream(SIMPLE_PREDICATE).anyMatch(name::equals);
-                    }
-                }
-            }
-            return false;
-        }
-
-        // xml
-        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        if (xml != null) {
-            // if its coming from the log EIP then its not a predicate
-            if (xml.getLocalName().equals("log")) {
-                return false;
-            }
-
-            // special for loop which can be both expression or predicate
-            if (getIdeaUtils().hasParentXmlTag(xml, "loop")) {
-                XmlTag parent = PsiTreeUtil.getParentOfType(xml, XmlTag.class);
-                if (parent != null) {
-                    String doWhile = parent.getAttributeValue("doWhile");
-                    return "true".equalsIgnoreCase(doWhile);
-                }
-            }
-            return Arrays.stream(SIMPLE_PREDICATE).anyMatch(n -> getIdeaUtils().hasParentXmlTag(xml, n));
-        }
-
-        // groovy
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Groovy")) {
-                if (getIdeaUtils().isFromGroovyMethod(element, "log")) {
-                    // if its coming from the log EIP then its not a predicate
-                    return false;
-                }
-                return getIdeaUtils().isPrevSiblingFromGroovyMethod(element, SIMPLE_PREDICATE);
-            }
-        }
-        // kotlin
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("kotlin")) {
-                if (getIdeaUtils().isFromKotlinMethod(element, "log")) {
-                    // if its coming from the log EIP then its not a predicate
-                    return false;
-                }
-                // TODO: need to do like in groovy prev sibling
-                return getIdeaUtils().isFromKotlinMethod(element, SIMPLE_PREDICATE);
-            }
-        }
-        // scala
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Scala")) {
-                if (getIdeaUtils().isFromScalaMethod(element, "log")) {
-                    // if its coming from the log EIP then its not a predicate
-                    return false;
-                }
-                return getIdeaUtils().isPrevSiblingFromScalaMethod(element, SIMPLE_PREDICATE);
-            }
-        }
-
-        return false;
+    public boolean isCameSimpleExpressionUsedAsPredicate(PsiElement element) {
+        return enabledExtensions.stream()
+            .anyMatch(extension -> extension.isCameSimpleExpressionUsedAsPredicate(element));
     }
 
     /**
      * Is the given element from a consumer endpoint used in a route from a <tt>from</tt>, <tt>fromF</tt>,
      * <tt>interceptFrom</tt>, or <tt>pollEnrich</tt> pattern.
      */
-    public static boolean isConsumerEndpoint(PsiElement element) {
-        // java method call
-        if (getIdeaUtils().isFromJavaMethodCall(element, true, CONSUMER_ENDPOINT)) {
-            return true;
-        }
-        // annotation
-        PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
-        if (annotation != null && annotation.getQualifiedName() != null) {
-            return annotation.getQualifiedName().equals("org.apache.camel.Consume");
-        }
-        // xml
-        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        if (xml != null) {
-            return getIdeaUtils().hasParentXmlTag(xml, "pollEnrich")
-                || getIdeaUtils().isFromXmlTag(xml, "from", "interceptFrom");
-        }
-        // groovy
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Groovy")) {
-                return getIdeaUtils().isFromGroovyMethod(element, CONSUMER_ENDPOINT);
-            }
-        }
-        // kotlin
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("kotlin")) {
-                return getIdeaUtils().isFromKotlinMethod(element, CONSUMER_ENDPOINT);
-            }
-        }
-        // scala
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Scala")) {
-                return getIdeaUtils().isFromScalaMethod(element, CONSUMER_ENDPOINT);
-            }
-        }
-
-        return false;
+    public boolean isConsumerEndpoint(PsiElement element) {
+        return enabledExtensions.stream()
+            .anyMatch(extension -> extension.isConsumerEndpoint(element));
     }
 
     /**
      * Is the given element from a producer endpoint used in a route from a <tt>to</tt>, <tt>toF</tt>,
      * <tt>interceptSendToEndpoint</tt>, <tt>wireTap</tt>, or <tt>enrich</tt> pattern.
      */
-    public static boolean isProducerEndpoint(PsiElement element) {
-        // java method call
-        if (getIdeaUtils().isFromJavaMethodCall(element, true, PRODUCER_ENDPOINT)) {
-            return true;
-        }
-        // annotation
-        PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
-        if (annotation != null && annotation.getQualifiedName() != null) {
-            return annotation.getQualifiedName().equals("org.apache.camel.Produce");
-        }
-        // xml
-        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        if (xml != null) {
-            return getIdeaUtils().hasParentXmlTag(xml, "enrich")
-                || getIdeaUtils().isFromXmlTag(xml, "to", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
-        }
-        // groovy
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Groovy")) {
-                return getIdeaUtils().isFromGroovyMethod(element, PRODUCER_ENDPOINT);
-            }
-        }
-        // kotlin
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("kotlin")) {
-                return getIdeaUtils().isFromKotlinMethod(element, PRODUCER_ENDPOINT);
-            }
-        }
-        // scala
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Scala")) {
-                return getIdeaUtils().isFromScalaMethod(element, PRODUCER_ENDPOINT);
-            }
-        }
-
-        return false;
+    public boolean isProducerEndpoint(PsiElement element) {
+        return enabledExtensions.stream()
+            .anyMatch(extension -> extension.isProducerEndpoint(element));
     }
 
     /**
      * Is the given element from a method call named <tt>fromF</tt> or <tt>toF</tt>, or <tt>String.format</tt> which supports the
      * {@link String#format(String, Object...)} syntax and therefore we need special handling.
      */
-    public static boolean isFromStringFormatEndpoint(PsiElement element) {
-        // java method call
-        if (getIdeaUtils().isFromJavaMethodCall(element, false, STRING_FORMAT_ENDPOINT)) {
-            return true;
-        }
-        // groovy
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Groovy")) {
-                return getIdeaUtils().isFromGroovyMethod(element, STRING_FORMAT_ENDPOINT);
-            }
-        }
-        // kotlin
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("kotlin")) {
-                return getIdeaUtils().isFromKotlinMethod(element, STRING_FORMAT_ENDPOINT);
-            }
-        }
-        // scala
-        if (element instanceof LeafPsiElement) {
-            IElementType type = ((LeafPsiElement) element).getElementType();
-            if (type.getLanguage().isKindOf("Scala")) {
-                return getIdeaUtils().isFromScalaMethod(element, STRING_FORMAT_ENDPOINT);
-            }
-        }
-
-        return false;
+    public boolean isFromStringFormatEndpoint(PsiElement element) {
+        return enabledExtensions.stream()
+            .anyMatch(extension -> extension.isFromStringFormatEndpoint(element));
     }
 
     /**
@@ -409,7 +130,7 @@ public final class CamelIdeaUtils {
      * @param clazz  the class
      * @return <tt>true</tt> if its a Camel expression class, <tt>false</tt> otherwise.
      */
-    public static boolean isCamelExpressionOrLanguage(PsiClass clazz) {
+    public boolean isCamelExpressionOrLanguage(PsiClass clazz) {
         if (clazz == null) {
             return false;
         }
@@ -441,34 +162,9 @@ public final class CamelIdeaUtils {
     /**
      * Certain elements should be skipped for endpoint validation such as ActiveMQ brokerURL property and others.
      */
-    public static boolean skipEndpointValidation(PsiElement element) {
-        if (getIdeaUtils().isElementFromSetterProperty(element, "brokerURL")) {
-            return true;
-        }
-        if (getIdeaUtils().isElementFromConstructor(element, "ActiveMQConnectionFactory")) {
-            return true;
-        }
-        if (getIdeaUtils().isElementFromConstructor(element, "ActiveMQXAConnectionFactory")) {
-            return true;
-        }
-        if (getIdeaUtils().isElementFromAnnotation(element, "org.apache.camel.spi.UriEndpoint")) {
-            return true;
-        }
-        if (getIdeaUtils().isFromJavaMethodCall(element, false, "activeMQComponent")) {
-            return true;
-        }
-
-        // only accept xml tags from namespaces we support
-        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        if (xml != null) {
-            String ns = xml.getNamespace();
-            // accept empty namespace which can be from testing
-            boolean accepted = StringUtils.isEmpty(ns) || Arrays.stream(ACCEPTED_NAMESPACES).anyMatch(ns::contains);
-            LOG.trace("XmlTag " + xml.getName() + " with namespace: " + ns + " is accepted namespace: " + accepted);
-            return !accepted; // skip is the opposite
-        }
-
-        return false;
+    public boolean skipEndpointValidation(PsiElement element) {
+        return enabledExtensions.stream()
+            .anyMatch(extension -> extension.skipEndpointValidation(element));
     }
 
     /**
@@ -479,38 +175,13 @@ public final class CamelIdeaUtils {
      * @param element the element
      * @return <tt>true</tt> to accept, <tt>false</tt> to skip
      */
-    public static boolean acceptForAnnotatorOrInspection(PsiElement element) {
-        // skip XML limit on siblings
-        boolean xml = getIdeaUtils().isFromFileType(element, "xml");
-        if (!xml) {
-            // for programming languages you can have complex structures with concat which we dont support yet
-            int siblings = countSiblings(element);
-            if (siblings > 1) {
-                // we currently only support one liners, so check how many siblings the element has (it has 1 with ending parenthesis which is okay)
-                return false;
-            }
-        }
-        return true;
+    public boolean acceptForAnnotatorOrInspection(PsiElement element) {
+        return enabledExtensions.stream()
+            .anyMatch(extension -> extension.acceptForAnnotatorOrInspection(element));
     }
 
-    /**
-     * Count the number of siblings there are in the chain the element has
-     *
-     * @param element the element
-     * @return number of siblings added up in the chain
-     */
-    public static int countSiblings(PsiElement element) {
-        int count = 0;
-        PsiElement sibling = element.getNextSibling();
-        while (sibling != null) {
-            count++;
-            sibling = sibling.getNextSibling();
-        }
-        return count;
-    }
+    @Override
+    public void dispose() {
 
-    private static IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
     }
-
 }

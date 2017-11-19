@@ -63,7 +63,7 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         Set<String> artifacts = ServiceManager.getService(project, CamelService.class).getLibraries();
 
         // find the camel component from those libraries
-        boolean consumerOnly = CamelIdeaUtils.isConsumerEndpoint(element);
+        boolean consumerOnly = getCamelIdeaUtils().isConsumerEndpoint(element);
         List<String> names = findCamelComponentNamesInArtifact(artifacts, consumerOnly, project);
 
         // no camel endpoints then exit
@@ -177,6 +177,10 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
     private CamelPreferenceService getCamelPreferenceService() {
         return ServiceManager.getService(CamelPreferenceService.class);
+    }
+
+    private CamelIdeaUtils getCamelIdeaUtils() {
+        return ServiceManager.getService(CamelIdeaUtils.class);
     }
 
 }

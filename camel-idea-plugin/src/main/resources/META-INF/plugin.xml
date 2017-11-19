@@ -70,14 +70,21 @@
   <depends>org.jetbrains.plugins.yaml</depends>
 
   <extensions defaultExtensionNs="org.apache.camel">
-    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.JavaIdeaUtils" />
-    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.XmlIdeaUtils" />
-    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.PropertyIdeaUtils" />
-    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.YamlIdeaUtils" />
+    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.idea.JavaIdeaUtils" />
+    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.idea.XmlIdeaUtils" />
+    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.idea.PropertyIdeaUtils" />
+    <IdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.idea.YamlIdeaUtils" />
+
+    <CamelIdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.camel.JavaCamelIdeaUtils" />
+    <CamelIdeaUtilsSupport implementation="org.apache.camel.idea.service.extension.camel.XmlCamelIdeaUtils" />
   </extensions>
 
   <extensionPoints>
     <extensionPoint name="IdeaUtilsSupport" interface="org.apache.camel.idea.extension.IdeaUtilsExtension" />
+  </extensionPoints>
+
+  <extensionPoints>
+    <extensionPoint name="CamelIdeaUtilsSupport" interface="org.apache.camel.idea.extension.CamelIdeaUtilsExtension" />
   </extensionPoints>
 
   <project-components>
@@ -93,22 +100,17 @@
     <projectService serviceImplementation="org.apache.camel.idea.service.CamelCatalogService"/>
     <projectService serviceImplementation="org.apache.camel.idea.service.CamelService"/>
     <applicationService serviceImplementation="org.apache.camel.idea.util.IdeaUtils"/>
+    <applicationService serviceImplementation="org.apache.camel.idea.util.CamelIdeaUtils"/>
     <applicationService serviceImplementation="org.apache.camel.idea.service.CamelPreferenceService"/>
 
     <!-- allow code completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.completion.contributor.CamelJavaReferenceContributor"/>
     <completion.contributor language="XML" implementationClass="org.apache.camel.idea.completion.contributor.CamelXmlReferenceContributor"/>
-    <completion.contributor language="Groovy" implementationClass="org.apache.camel.idea.completion.contributor.CamelGroovyReferenceContributor"/>
-    <completion.contributor language="kotlin" implementationClass="org.apache.camel.idea.completion.contributor.CamelKotlinReferenceContributor"/>
-    <completion.contributor language="Scala" implementationClass="org.apache.camel.idea.completion.contributor.CamelScalaReferenceContributor"/>
     <completion.contributor language="any" implementationClass="org.apache.camel.idea.completion.contributor.CamelPropertiesOrYamlFileReferenceContributor"/>
 
     <!-- puts the Camel icon in the gutter for each line that starts a Camel route -->
     <codeInsight.lineMarkerProvider language="JAVA" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
     <codeInsight.lineMarkerProvider language="XML" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
-    <codeInsight.lineMarkerProvider language="Groovy" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
-    <codeInsight.lineMarkerProvider language="kotlin" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
-    <codeInsight.lineMarkerProvider language="Scala" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
 
     <!-- code completion of Camel property placeholders, eg {{foo}} style -->
     <completion.contributor language="any" implementationClass="org.apache.camel.idea.completion.contributor.CamelPropertyPlaceholderReferenceContributor"/>
@@ -117,12 +119,6 @@
     <lang.documentationProvider language="JAVA" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
                                 order="first"/>
     <lang.documentationProvider language="XML" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
-                                order="first"/>
-    <lang.documentationProvider language="Groovy" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
-                                order="first"/>
-    <lang.documentationProvider language="kotlin" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
-                                order="first"/>
-    <lang.documentationProvider language="Scala" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
                                 order="first"/>
     <lang.documentationProvider language="Properties" implementationClass="org.apache.camel.idea.documentation.CamelDocumentationProvider"
                                 order="first"/>
@@ -137,17 +133,12 @@
     <!-- annotator to validate endpoints -->
     <annotator language="JAVA" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
     <annotator language="XML" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
-    <annotator language="Groovy" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
-    <annotator language="kotlin" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
-    <annotator language="Scala" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
     <annotator language="Properties" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
     <annotator language="yaml" implementationClass="org.apache.camel.idea.annotator.CamelEndpointAnnotator"/>
 
     <!-- annotator to validate simple language -->
     <annotator language="JAVA" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
     <annotator language="XML" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
-    <annotator language="Groovy" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
-    <annotator language="Scala" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
 
     <!-- inspection to validate endpoints -->
     <localInspection groupName="Apache Camel" implementationClass="org.apache.camel.idea.inspection.CamelInspection"/>

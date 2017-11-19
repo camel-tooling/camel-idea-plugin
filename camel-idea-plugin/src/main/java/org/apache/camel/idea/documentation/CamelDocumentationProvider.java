@@ -77,6 +77,10 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         return ServiceManager.getService(IdeaUtils.class);
     }
 
+    public CamelIdeaUtils getCamelIdeaUtils() {
+        return ServiceManager.getService(CamelIdeaUtils.class);
+    }
+
     @Nullable
     @Override
     public String getQuickNavigateInfo(PsiElement element, PsiElement originalElement) {
@@ -507,7 +511,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             PsiClassReferenceType clazz = (PsiClassReferenceType) type;
             PsiClass resolved = clazz.resolve();
             if (resolved != null) {
-                boolean language = CamelIdeaUtils.isCamelExpressionOrLanguage(resolved);
+                boolean language = getCamelIdeaUtils().isCamelExpressionOrLanguage(resolved);
                 // try parent using some weird/nasty stub stuff which is how complex IDEA AST
                 // is when its parsing the Camel route builder
                 if (!language) {
@@ -516,7 +520,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                         elem = elem.getParent();
                     }
                     if (elem instanceof PsiClass) {
-                        language = CamelIdeaUtils.isCamelExpressionOrLanguage((PsiClass) elem);
+                        language = getCamelIdeaUtils().isCamelExpressionOrLanguage((PsiClass) elem);
                     }
                 }
                 return language;
