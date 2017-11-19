@@ -34,6 +34,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.PsiLiteralValue;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiPolyadicExpression;
@@ -63,8 +64,8 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
 
     private static final Logger LOG = Logger.getInstance(CamelRouteLineMarkerProvider.class);
 
-    private static final String[] JAVA_ROUTE_START = new String[]{"to", "toF", "toD"};
-    private static final String[] XML_ROUTE_START = new String[]{"to", "toD"};
+    private static final String[] JAVA_ROUTE_CALL = new String[]{"to", "toF", "toD", "enrich", "wireTap"};
+    private static final String[] XML_ROUTE_CALL = new String[]{"to", "toD", "enrich", "wireTap"};
 
     public IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);
@@ -192,6 +193,14 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
             return ((PsiLiteralExpressionImpl) element).getValue() == null ? null : ((PsiLiteralExpressionImpl) element).getValue().toString();
         }
 
+        if (element instanceof PsiIdentifier) {
+            PsiIdentifier id = (PsiIdentifier) element;
+            String text = id.getText();
+            if (text != null) {
+                return text;
+            }
+        }
+
         // Only variables can be resolved?
         Optional<PsiVariable> variable = resolvedIdentifier(element)
             .filter(PsiVariable.class::isInstance)
@@ -231,19 +240,26 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         String componentName = route.split(":")[0];
 
         helper.processElementsWithWord((psiElement, offsetInElement) -> {
+            LOG.debug("processElementsWithWord: " + psiElement + " with offset: " + offsetInElement);
             if (psiElement instanceof XmlToken) {
                 PsiElement xmlElement = findXMLElement(route, (XmlToken) psiElement);
                 if (xmlElement != null) {
                     psiElements.add(xmlElement);
                 }
-            }
-            if (psiElement instanceof PsiLiteralExpression) {
-                PsiElement javaElement = findJavaElement(route, (PsiLiteralExpression) psiElement);
+            } else if (psiElement instanceof PsiLiteralExpression) {
+                PsiElement javaElement = findJavaElement(route, psiElement);
                 if (javaElement != null) {
                     psiElements.add(javaElement);
                 }
+            } else if (psiElement instanceof PsiIdentifier) {
+                PsiElement javaElement = findJavaElement(route, psiElement);
+                if (javaElement != null) {
+                    psiElements.add(javaElement);
+                } else {
+                    // use alternative lookup for identifier
+                    resolvedIdentifier(psiElement).ifPresent(psiElements::add);
+                }
             }
-            resolvedIdentifier(psiElement).ifPresent(psiElements::add);
             return true;
         }, new CamelRouteSearchScope(), componentName, UsageSearchContext.ANY, false);
 
@@ -255,15 +271,21 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
      * Checks if the given {@link PsiElement} contains a 'to' method that points to the give route.
      *
      * @param route      the complete Camel route to search for
-     * @param psiElement the {@link PsiLiteralExpression} that might contain the complete route definition
+     * @param psiElement the {@link PsiElement} that might contain the complete route definition
      * @return the {@link PsiElement} that contains the exact match of the Camel route, null if there is no exact match
      */
-    private PsiElement findJavaElement(String route, PsiLiteralExpression psiElement) {
-        if (route.equals(psiElement.getValue())) {
+    private PsiElement findJavaElement(String route, PsiElement psiElement) {
+        Object value;
+        if (psiElement instanceof PsiLiteralValue) {
+            value = ((PsiLiteralValue) psiElement).getValue();
+        } else {
+            value = psiElement.getText();
+        }
+        if (route.equals(value)) {
             //the method 'to' is a PsiIdentifier not a PsiMethodCallExpression because it's part of method invocation chain
             PsiMethodCallExpression methodCall = PsiTreeUtil.getParentOfType(psiElement, PsiMethodCallExpression.class);
             if (methodCall != null) {
-                if (Arrays.stream(JAVA_ROUTE_START).anyMatch(s -> s.equals(methodCall.getMethodExpression().getReferenceName()))) {
+                if (Arrays.stream(JAVA_ROUTE_CALL).anyMatch(s -> s.equals(methodCall.getMethodExpression().getReferenceName()))) {
                     return psiElement;
                 }
             }
@@ -280,7 +302,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
      */
     private PsiElement findXMLElement(String route, XmlToken psiElement) {
         if (psiElement.getTokenType() == XmlElementType.XML_ATTRIBUTE_VALUE_TOKEN) {
-            if (Arrays.stream(XML_ROUTE_START).anyMatch(s -> s.equals(PsiTreeUtil.getParentOfType(psiElement, XmlTag.class).getLocalName()))) {
+            if (Arrays.stream(XML_ROUTE_CALL).anyMatch(s -> s.equals(PsiTreeUtil.getParentOfType(psiElement, XmlTag.class).getLocalName()))) {
                 if (psiElement.getText().equals(route)) {
                     return psiElement;
                 }

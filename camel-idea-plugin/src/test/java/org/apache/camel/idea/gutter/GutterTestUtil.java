@@ -72,9 +72,6 @@ final class GutterTestUtil {
 
     /**
      * For the given gutters return all the gutter navigation targets that are {@link PsiMethodCallExpressionImpl} elements.
-     *
-     * @param gutterList
-     * @return
      */
     static List<PsiMethodCallExpressionImpl> getGuttersWithJavaTarget(List<GotoRelatedItem> gutterList) {
         return gutterList
