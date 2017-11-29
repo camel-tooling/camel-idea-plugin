@@ -33,10 +33,9 @@ import com.intellij.psi.PsiElement;
 import org.apache.camel.idea.model.ComponentModel;
 import org.apache.camel.idea.model.EndpointOptionModel;
 import org.apache.camel.idea.service.CamelPreferenceService;
+import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
-import static org.apache.camel.idea.util.CamelIdeaUtils.isConsumerEndpoint;
-import static org.apache.camel.idea.util.CamelIdeaUtils.isProducerEndpoint;
 
 /**
  * Smart completion for editing a Camel endpoint uri, to show a list of possible endpoint options which can be added.
@@ -53,8 +52,8 @@ public final class CamelSmartCompletionEndpointOptions {
                                                                                    Map<String, String> existing, boolean xmlMode, PsiElement element, Editor editor) {
         List<LookupElement> answer = new ArrayList<>();
 
-        boolean consumerOnly = isConsumerEndpoint(element);
-        boolean producerOnly = isProducerEndpoint(element);
+        boolean consumerOnly = getCamelIdeaUtils().isConsumerEndpoint(element);
+        boolean producerOnly = getCamelIdeaUtils().isProducerEndpoint(element);
 
         String concatQuery = query[0];
         String suffix = query[1];
@@ -297,6 +296,10 @@ public final class CamelSmartCompletionEndpointOptions {
 
     private static IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);
+    }
+
+    private static CamelIdeaUtils getCamelIdeaUtils() {
+        return ServiceManager.getService(CamelIdeaUtils.class);
     }
 
 }

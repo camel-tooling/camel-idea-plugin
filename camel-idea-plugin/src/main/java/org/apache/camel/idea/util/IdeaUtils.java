@@ -121,7 +121,7 @@ public final class IdeaUtils implements Disposable {
      * Is the element from a java setter method (eg setBrokerURL) or from a XML configured <tt>bean</tt> style
      * configuration using <tt>property</tt> element.
      */
-    boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
+    public boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
         return enabledExtensions.stream()
             .anyMatch(extension -> extension.isElementFromSetterProperty(element, setter));
     }
@@ -129,7 +129,7 @@ public final class IdeaUtils implements Disposable {
     /**
      * Is the element from a java annotation with the given name.
      */
-    static boolean isElementFromAnnotation(@NotNull PsiElement element, @NotNull String annotationName) {
+    public boolean isElementFromAnnotation(@NotNull PsiElement element, @NotNull String annotationName) {
         // java method call
         PsiAnnotation ann = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class, false);
         if (ann != null) {
@@ -144,30 +144,6 @@ public final class IdeaUtils implements Disposable {
      */
     public boolean isJavaLanguage(PsiElement element) {
         return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).is(JavaLanguage.INSTANCE);
-    }
-
-    /**
-     * Is the element from Groovy language
-     */
-    @Deprecated
-    public boolean isGroovyLanguage(PsiElement element) {
-        return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("Groovy");
-    }
-
-    /**
-     * Is the element from Scala language
-     */
-    @Deprecated
-    public boolean isScalaLanguage(PsiElement element) {
-        return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("Scala");
-    }
-
-    /**
-     * Is the element from Kotlin language
-     */
-    @Deprecated
-    public boolean isKotlinLanguage(PsiElement element) {
-        return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).isKindOf("kotlin");
     }
 
     /**
@@ -259,7 +235,7 @@ public final class IdeaUtils implements Disposable {
      * @param constructorName the name of the constructor (eg class)
      * @return <tt>true</tt> if its a constructor call from the given name, <tt>false</tt> otherwise
      */
-    static boolean isElementFromConstructor(@NotNull PsiElement element, @NotNull String constructorName) {
+    public boolean isElementFromConstructor(@NotNull PsiElement element, @NotNull String constructorName) {
         // java constructor
         PsiConstructorCall call = PsiTreeUtil.getParentOfType(element, PsiConstructorCall.class);
         if (call != null) {
@@ -278,7 +254,7 @@ public final class IdeaUtils implements Disposable {
      * @param methods  method call names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    boolean isFromJavaMethodCall(PsiElement element, boolean fromRouteBuilder, String... methods) {
+    public boolean isFromJavaMethodCall(PsiElement element, boolean fromRouteBuilder, String... methods) {
         // java method call
         PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
         if (call != null) {
@@ -324,7 +300,7 @@ public final class IdeaUtils implements Disposable {
      * @param methods  xml tag names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
+    public boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
         String name = xml.getLocalName();
         return Arrays.stream(methods).anyMatch(name::equals);
     }
@@ -336,7 +312,7 @@ public final class IdeaUtils implements Disposable {
      * @param parentTag a special parent tag name to match first
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    boolean hasParentXmlTag(@NotNull XmlTag xml, @NotNull String parentTag) {
+    public boolean hasParentXmlTag(@NotNull XmlTag xml, @NotNull String parentTag) {
         XmlTag parent = xml.getParentTag();
         return parent != null && parent.getLocalName().equals(parentTag);
     }
@@ -351,236 +327,6 @@ public final class IdeaUtils implements Disposable {
      */
     public boolean hasParentAndFromXmlTag(@NotNull XmlTag xml, @NotNull String parentTag, @NotNull String... methods) {
         return hasParentXmlTag(xml, parentTag) && isFromFileType(xml, methods);
-    }
-
-    /**
-     * Is the given element from a Groovy method call with any of the given method names
-     *
-     * @param element  the psi element
-     * @param methods  method call names
-     * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
-     */
-    @Deprecated
-    public boolean isFromGroovyMethod(PsiElement element, String... methods) {
-        // need to walk a bit into the psi tree to find the element that holds the method call name
-        // must be a groovy string kind
-        String kind = element.toString();
-        if (kind.contains("Gstring") || kind.contains("(string)")) {
-            PsiElement parent = element.getParent();
-            if (parent != null) {
-                parent = parent.getParent();
-            }
-            if (parent != null) {
-                element = parent.getPrevSibling();
-            }
-            if (element != null) {
-                element = element.getLastChild();
-            }
-        }
-        if (element != null) {
-            kind = element.toString();
-            // must be an identifier which is part of the method call
-            if (kind.contains("identifier")) {
-                String name = element.getText();
-                return Arrays.stream(methods).anyMatch(name::equals);
-            }
-        }
-        return false;
-    }
-
-    @Deprecated
-    public boolean isPrevSiblingFromGroovyMethod(PsiElement element, String... methods) {
-        boolean found = false;
-
-        // need to walk a bit into the psi tree to find the element that holds the method call name
-        // must be a groovy string kind
-        String kind = element.toString();
-        if (kind.contains("Gstring") || kind.contains("(string)")) {
-
-            // there are two ways to dig into the groovy ast so try first and then second
-            PsiElement first = element.getParent();
-            if (first != null) {
-                first = first.getParent();
-            }
-            if (first != null) {
-                first = first.getPrevSibling();
-            }
-            if (first != null) {
-                first = first.getFirstChild();
-            }
-            if (first != null) {
-                first = first.getFirstChild();
-            }
-            if (first != null) {
-                first = first.getLastChild();
-            }
-            if (first != null) {
-                kind = first.toString();
-                found = kind.contains("identifier");
-                if (found) {
-                    element = first;
-                }
-            }
-
-            if (!found) {
-                PsiElement second = element.getParent();
-                if (second != null) {
-                    second = second.getParent();
-                }
-                if (second != null) {
-                    second = second.getParent();
-                }
-                if (second != null) {
-                    second = second.getPrevSibling();
-                }
-                if (second != null) {
-                    second = second.getParent();
-                }
-                if (second != null) {
-                    second = second.getPrevSibling();
-                }
-                if (second != null) {
-                    second = second.getLastChild();
-                }
-                if (second != null) {
-                    kind = second.toString();
-                    found = kind.contains("identifier");
-                    if (found) {
-                        element = second;
-                    }
-                }
-            }
-        }
-
-        if (found) {
-            kind = element.toString();
-            // must be an identifier which is part of the method call
-            if (kind.contains("identifier")) {
-                String name = element.getText();
-                return Arrays.stream(methods).anyMatch(name::equals);
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Is the given element from a Scala method call with any of the given method names
-     *
-     * @param element  the psi element
-     * @param methods  method call names
-     * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
-     */
-    boolean isFromScalaMethod(PsiElement element, String... methods) {
-        // need to walk a bit into the psi tree to find the element that holds the method call name
-        // (yes we need to go up till 5 levels up to find the method call expression
-        String kind = element.toString();
-        // must be a string kind
-        if (kind.contains("string")) {
-            for (int i = 0; i < 5; i++) {
-                if (element != null) {
-                    kind = element.toString();
-                    if ("MethodCall".equals(kind)) {
-                        element = element.getFirstChild();
-                        if (element != null) {
-                            String name = element.getText();
-                            return Arrays.stream(methods).anyMatch(name::equals);
-                        }
-                    }
-                    if (element != null) {
-                        element = element.getParent();
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    @Deprecated
-    public boolean isPrevSiblingFromScalaMethod(PsiElement element, String... methods) {
-        boolean found = false;
-
-        // need to walk a bit into the psi tree to find the element that holds the method call name
-        // must be a scala string kind
-        String kind = element.toString();
-        if (kind.contains("string")) {
-
-            // there are two ways to dig into the groovy ast so try first and then second
-            PsiElement first = element.getParent();
-            if (first != null) {
-                first = first.getPrevSibling();
-            }
-            if (first != null) {
-                first = first.getParent();
-            }
-            if (first != null) {
-                first = first.getPrevSibling();
-            }
-            if (first != null) {
-                first = first.getParent();
-            }
-            if (first != null) {
-                first = first.getPrevSibling();
-            }
-            if (first != null) {
-                first = first.getParent();
-            }
-            if (first != null) {
-                first = first.getPrevSibling();
-            }
-            if (first != null) {
-                first = first.getFirstChild();
-            }
-
-            if (first != null) {
-                kind = first.toString();
-                found = kind.contains("identifier");
-                if (found) {
-                    element = first;
-                }
-            }
-
-        }
-
-        if (found) {
-            kind = element.toString();
-            if (kind.contains("identifier")) {
-                String name = element.getText();
-                return Arrays.stream(methods).anyMatch(name::equals);
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Is the given element from a Kotlin method call with any of the given method names
-     *
-     * @param element  the psi element
-     * @param methods  method call names
-     * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
-     */
-    boolean isFromKotlinMethod(PsiElement element, String... methods) {
-        // need to walk a bit into the psi tree to find the element that holds the method call name
-        // (yes we need to go up till 6 levels up to find the method call expression
-        String kind = element.toString();
-        // must be a string kind
-        if (kind.contains("STRING")) {
-            for (int i = 0; i < 6; i++) {
-                if (element != null) {
-                    kind = element.toString();
-                    if ("CALL_EXPRESSION".equals(kind)) {
-                        element = element.getFirstChild();
-                        if (element != null) {
-                            String name = element.getText();
-                            return Arrays.stream(methods).anyMatch(name::equals);
-                        }
-                    }
-                    if (element != null) {
-                        element = element.getParent();
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     /**

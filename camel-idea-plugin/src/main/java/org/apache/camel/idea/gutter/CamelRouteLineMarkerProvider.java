@@ -104,7 +104,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
 
         Icon icon = getCamelPreferenceService().getCamelIcon();
 
-        if (CamelIdeaUtils.isCamelRouteStartExpression(element)) {
+        if (getCamelIdeaUtils().isCamelRouteStartExpression(element)) {
 
             // evaluate the targets lazy
             NotNullLazyValue<Collection<? extends PsiElement>> targets = new NotNullLazyValue<Collection<? extends PsiElement>>() {
@@ -174,7 +174,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         if (element == null) {
             return false;
         }
-        return CamelIdeaUtils.isCamelRouteStartExpression(element);
+        return getCamelIdeaUtils().isCamelRouteStartExpression(element);
     }
 
     /**
@@ -338,4 +338,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         return null;
     }
 
+    private static CamelIdeaUtils getCamelIdeaUtils() {
+        return ServiceManager.getService(CamelIdeaUtils.class);
+    }
 }

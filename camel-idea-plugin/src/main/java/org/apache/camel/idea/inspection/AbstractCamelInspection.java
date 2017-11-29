@@ -39,9 +39,6 @@ import org.apache.camel.idea.util.IdeaUtils;
 import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import static org.apache.camel.idea.util.CamelIdeaUtils.acceptForAnnotatorOrInspection;
-import static org.apache.camel.idea.util.CamelIdeaUtils.isCameSimpleExpressionUsedAsPredicate;
-import static org.apache.camel.idea.util.CamelIdeaUtils.skipEndpointValidation;
 import static org.apache.camel.idea.util.StringUtils.isEmpty;
 
 /**
@@ -108,13 +105,13 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
      * if the URI is not valid a error annotation is created and highlight the invalid value.
      */
     private void validateText(@NotNull PsiElement element, final @NotNull ProblemsHolder holder, @NotNull String text, boolean isOnTheFly) {
-        if (!acceptForAnnotatorOrInspection(element)) {
+        if (!getCamelIdeaUtils().acceptForAnnotatorOrInspection(element)) {
             LOG.debug("Skipping complex element  " + element + " for inspecting text: " + text);
             return;
         }
 
         boolean hasSimple = text.contains("${") || text.contains("$simple{");
-        if (hasSimple && CamelIdeaUtils.isCamelSimpleExpression(element)) {
+        if (hasSimple && getCamelIdeaUtils().isCamelSimpleExpression(element)) {
             validateSimple(element, holder, text, isOnTheFly);
         } else if (QueryUtils.isQueryContainingCamelComponent(element.getProject(), text)) {
             validateEndpoint(element, holder, text, isOnTheFly);
@@ -133,7 +130,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
             ClassLoader loader = camelService.getCamelCoreClassloader();
             if (loader != null) {
                 SimpleValidationResult result;
-                boolean predicate = isCameSimpleExpressionUsedAsPredicate(element);
+                boolean predicate = getCamelIdeaUtils().isCameSimpleExpressionUsedAsPredicate(element);
                 if (predicate) {
                     LOG.debug("Inspecting simple predicate: " + text);
                     result = catalogService.validateSimplePredicate(loader, text);
@@ -162,7 +159,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
         LOG.trace("Element " + element + " of type: " + type + " to inspect endpoint uri: " + text);
 
         // skip special values such as configuring ActiveMQ brokerURL
-        if (skipEndpointValidation(element)) {
+        if (getCamelIdeaUtils().skipEndpointValidation(element)) {
             LOG.debug("Skipping element " + element + " for validation with text: " + text);
             return;
         }
@@ -176,7 +173,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
             camelQuery = camelQuery.substring(0, camelQuery.length() - 1);
         }
 
-        boolean stringFormat = CamelIdeaUtils.isFromStringFormatEndpoint(element);
+        boolean stringFormat = getCamelIdeaUtils().isFromStringFormatEndpoint(element);
         if (stringFormat) {
             // if the node is fromF or toF, then replace all %X with {{%X}} as we cannot parse that value
             camelQuery = camelQuery.replaceAll("%s", "\\{\\{\\%s\\}\\}");
@@ -184,8 +181,8 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
             camelQuery = camelQuery.replaceAll("%b", "\\{\\{\\%b\\}\\}");
         }
 
-        boolean consumerOnly = CamelIdeaUtils.isConsumerEndpoint(element);
-        boolean producerOnly = CamelIdeaUtils.isProducerEndpoint(element);
+        boolean consumerOnly = getCamelIdeaUtils().isConsumerEndpoint(element);
+        boolean producerOnly = getCamelIdeaUtils().isProducerEndpoint(element);
 
         try {
             EndpointValidationResult result = catalogService.validateEndpointProperties(camelQuery, false, consumerOnly, producerOnly);
@@ -354,7 +351,10 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
         return msg.getErrorMessage(result, entry);
     }
 
-    private static IdeaUtils getIdeaUtils() {
+    private IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);
+    }
+    private CamelIdeaUtils getCamelIdeaUtils() {
+        return ServiceManager.getService(CamelIdeaUtils.class);
     }
 }

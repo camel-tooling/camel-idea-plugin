@@ -8,3 +8,5 @@ target
 .DS_Store
 workspace/**
 /camel-idea-plugin.iml
+test-system/**
+buildingtools/build/**

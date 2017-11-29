@@ -14,60 +14,64 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.service.extension;
+package org.apache.camel.idea.service.extension.idea;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Optional;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiLiteralExpression;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.PsiPolyadicExpression;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.XmlText;
+import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.idea.extension.IdeaUtilsExtension;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+
 import static com.intellij.xml.CommonXmlStrings.QUOT;
 
-public class JavaIdeaUtils implements IdeaUtilsExtension {
+public class XmlIdeaUtils implements IdeaUtilsExtension {
     @Override
     public Optional<String> extractTextFromElement(PsiElement element, boolean concatString, boolean stripWhitespace) {
-        if (element instanceof PsiLiteralExpression) {
-            // need the entire line so find the literal expression that would hold the entire string (java)
-            PsiLiteralExpression literal = (PsiLiteralExpression) element;
-            Object o = literal.getValue();
-            String text = o != null ? o.toString() : null;
-            if (text == null) {
-                return Optional.empty();
-            }
+        // maybe its xml then try that
+        if (element instanceof XmlAttributeValue) {
+            return Optional.ofNullable(((XmlAttributeValue) element).getValue());
+        } else if (element instanceof XmlText) {
+            return Optional.ofNullable(((XmlText) element).getValue());
+        } else if (element instanceof XmlToken) {
+            // it may be a token which is a part of an combined attribute
             if (concatString) {
-                final PsiPolyadicExpression parentOfType = PsiTreeUtil.getParentOfType(element, PsiPolyadicExpression.class);
-                if (parentOfType != null) {
-                    text = parentOfType.getText();
+                XmlAttributeValue xml = PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class);
+                if (xml != null) {
+                    return Optional.ofNullable(getInnerText(xml.getValue()));
                 }
+            } else {
+                String returnText = element.getText();
+                final PsiElement prevSibling = element.getPrevSibling();
+                if (prevSibling != null && prevSibling.getText().equalsIgnoreCase("&amp;")) {
+                    returnText = prevSibling.getText() + returnText;
+                }
+                return Optional.ofNullable(getInnerText(returnText));
             }
-            // unwrap literal string which can happen in java too
-            if (stripWhitespace) {
-                return Optional.ofNullable(getInnerText(text));
-            }
-            return Optional.of(StringUtil.unquoteString(text.replace(QUOT, "\"")));
         }
         return Optional.empty();
     }
 
     @Override
     public boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
-        // java method call
-        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-        if (call != null) {
-            PsiMethod resolved = call.resolveMethod();
-            if (resolved != null) {
-                String javaSetter = "set" + Character.toUpperCase(setter.charAt(0)) + setter.substring(1);
-                return javaSetter.equals(resolved.getName());
+        // its maybe an XML property
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            boolean bean = isFromXmlTag(xml, "bean", "property");
+            if (bean) {
+                String key = xml.getAttributeValue("name");
+                return setter.equals(key);
             }
         }
         return false;
+
     }
 
     @Override
@@ -89,4 +93,17 @@ public class JavaIdeaUtils implements IdeaUtilsExtension {
         // Remove any newline feed + whitespaces + single + double quot to concat a split string
         return StringUtil.unquoteString(text.replace(QUOT, "\"")).replaceAll("(^\\n\\s+|\\n\\s+$|\\n\\s+)|(\"\\s*\\+\\s*\")|(\"\\s*\\+\\s*\\n\\s*\"*)", "");
     }
+
+    /**
+     * Is the given element from a XML tag with any of the given tag names
+     *
+     * @param xml  the xml tag
+     * @param methods  xml tag names
+     * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
+     */
+    boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
+        String name = xml.getLocalName();
+        return Arrays.stream(methods).anyMatch(name::equals);
+    }
+
 }

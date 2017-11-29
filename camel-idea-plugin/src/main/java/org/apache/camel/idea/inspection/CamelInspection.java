@@ -54,7 +54,6 @@ public class CamelInspection extends AbstractCamelInspection {
             return false;
         }
 
-        // we support java, xml, groovy, scala and kotlin
         return getIdeaUtils().isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
     }
 
