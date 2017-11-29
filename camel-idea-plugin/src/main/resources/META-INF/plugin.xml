@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.4.7</version>
+  <version>0.5.0</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -29,9 +29,14 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v0.4.7
+      v0.5.0
       <ul>
         <li>Work in progress</li>
+        <li>Remove support for Groovy, Scala and Kotlin</li>
+        <li>Various internal refactorings to cleanup the code</li>
+      </ul>
+      v0.4.7
+      <ul>
         <li>Route navigator jumping to who calls me now supports constant fields in Java</li>
         <li>Various internal refactorings to cleanup the code</li>
         <li>Upgraded to IntelliJ 2017.2.6</li>
