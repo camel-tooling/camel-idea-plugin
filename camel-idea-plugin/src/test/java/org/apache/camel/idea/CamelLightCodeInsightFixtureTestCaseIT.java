@@ -35,7 +35,7 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
  */
 public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeInsightFixtureTestCase {
 
-    private static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.19.0";
+    private static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.20.1";
 
     private static File[] mavenArtifacts;
     private boolean ignoreCamelCoreLib;
