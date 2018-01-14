@@ -20,9 +20,11 @@ import java.util.List;
 import com.intellij.codeInsight.daemon.GutterMark;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
-import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
+
+
 import static org.apache.camel.idea.gutter.GutterTestUtil.getGuttersWithJavaTarget;
 import static org.apache.camel.idea.gutter.GutterTestUtil.getGuttersWithXMLTarget;
 
@@ -47,9 +49,9 @@ public class MultiLanguageCamelRouteLineMarkerProviderTestIT extends CamelLightC
 
         //from Java to XML
         LineMarkerInfo.LineMarkerGutterIconRenderer firstJavaGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) javaGutters.get(0);
-        assertTrue(firstJavaGutter.getLineMarkerInfo().getElement() instanceof PsiLiteralExpression);
-        assertEquals("The navigation start element doesn't match", "file:inbox",
-                ((PsiLiteralExpression) firstJavaGutter.getLineMarkerInfo().getElement()).getValue());
+        assertTrue(firstJavaGutter.getLineMarkerInfo().getElement() instanceof PsiJavaToken);
+        assertEquals("The navigation start element doesn't match", "\"file:inbox\"",
+            firstJavaGutter.getLineMarkerInfo().getElement().getText());
 
 
         List<GotoRelatedItem> firstJavaGutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(firstJavaGutter);
@@ -61,8 +63,8 @@ public class MultiLanguageCamelRouteLineMarkerProviderTestIT extends CamelLightC
         //from XML to Java
         LineMarkerInfo.LineMarkerGutterIconRenderer firstXmlGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) xmlGutters.get(0);
         assertTrue(firstXmlGutter.getLineMarkerInfo().getElement() instanceof XmlToken);
-        assertEquals("The navigation start element doesn't match", "file:inbox",
-                ((PsiLiteralExpression) firstJavaGutter.getLineMarkerInfo().getElement()).getValue());
+        assertEquals("The navigation start element doesn't match", "\"file:inbox\"",
+                (firstJavaGutter.getLineMarkerInfo().getElement()).getText());
 
 
         List<GotoRelatedItem> firstXmlGutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(firstXmlGutter);

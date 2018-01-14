@@ -16,7 +16,6 @@
  */
 package org.apache.camel.idea.util;
 
-import java.io.File;
 import java.util.stream.Stream;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
@@ -26,7 +25,8 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.apache.camel.idea.service.CamelService;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
-public class IdeaUtilsSkipEndointValidationTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
+
+public class IdeaUtilsSkipEndpointValidationTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     private static final String ACTIVEMQ_ARTIFACT = "org.apache.activemq:activemq-camel:5.14.3";
     
@@ -56,8 +56,7 @@ public class IdeaUtilsSkipEndointValidationTestIT extends CamelLightCodeInsightF
         Stream.of(
             Maven.resolver().resolve(ACTIVEMQ_ARTIFACT)
                 .withTransitivity().asFile()
-        ).map(File::getAbsolutePath)
-            .forEach(path -> PsiTestUtil.addLibrary(myFixture.getModule(), path));
+        ).forEach(f -> PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myFixture.getModule(), f.getName(), f.getParentFile().getAbsolutePath(), f.getName()));
     }
 
     public void testShouldSkipActiveMQComponentFactoryMethod() {
