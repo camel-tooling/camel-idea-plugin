@@ -34,7 +34,7 @@
   </description>
 
   <properties>
-    <idea.version>2017.3.2</idea.version>
+    <idea.version>2017.3.3</idea.version>
     <idea.platform.prefix>-Didea.platform.prefix=Idea</idea.platform.prefix>
     <ij.plugin>true</ij.plugin>
     <argLine>
