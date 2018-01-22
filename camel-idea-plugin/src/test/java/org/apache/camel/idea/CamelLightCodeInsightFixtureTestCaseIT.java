@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.testFramework.PsiTestUtil;
@@ -47,16 +48,16 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
             e.printStackTrace();
         }
     }
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         if (!ignoreCamelCoreLib) {
-            PsiTestUtil.addLibrary(myModule, "Maven: " + CAMEL_CORE_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
+            PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myModule, "Maven: " + CAMEL_CORE_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
         }
         disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelCatalogService.class));
         disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelService.class));
         ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(true);
-
     }
 
     @Override
@@ -104,7 +105,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         service.setHighlightCustomOptions(true);
 
         List<String> expectedIgnoredProperties = Arrays.asList("java.", "Logger.", "logger", "appender.", "rootLogger.",
-                "camel.springboot.", "camel.component.", "camel.dataformat.", "camel.language.");
+            "camel.springboot.", "camel.component.", "camel.dataformat.", "camel.language.");
         service.setIgnorePropertyList(expectedIgnoredProperties);
         service.setShowCamelIconInGutter(true);
         service.setScanThirdPartyComponents(true);

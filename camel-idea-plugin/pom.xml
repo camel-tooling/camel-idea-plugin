@@ -34,7 +34,7 @@
   </description>
 
   <properties>
-    <idea.version>2017.2.6</idea.version>
+    <idea.version>2017.3.2</idea.version>
     <idea.platform.prefix>-Didea.platform.prefix=Idea</idea.platform.prefix>
     <ij.plugin>true</ij.plugin>
     <argLine>
@@ -258,25 +258,25 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>netty-all-4.1.10.Final</artifactId>
+      <artifactId>netty-all-4.1.13.Final</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>xercesImpl</artifactId>
+      <artifactId>common-image-3.2.1</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>xml-apis</artifactId>
+      <artifactId>commons-imaging-1.0-RC</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>streamex-0.6.2</artifactId>
+      <artifactId>streamex-0.6.5</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -348,7 +348,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>protobuf-2.5.0</artifactId>
+      <artifactId>protobuf-java-2.5.0</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -373,12 +373,6 @@
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>icons</artifactId>
-      <version>${idea.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>sanselan-0.98-snapshot</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
