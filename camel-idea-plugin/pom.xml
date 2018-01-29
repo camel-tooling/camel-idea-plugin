@@ -57,6 +57,8 @@
     <profile>
       <id>ultimate</id>
       <properties>
+        <idea.version>2017.3</idea.version>
+        <!-- PLEASE DON'T DELETE THIS EMPTY TAG. IT'S NECESSARY TO KEEP THIS EMPTY TAG FOR IDEA ULTIMATE! -->
         <idea.platform.prefix></idea.platform.prefix>
       </properties>
       <dependencies>
@@ -72,6 +74,12 @@
           <artifactId>jsp-api</artifactId>
           <version>${idea.version}</version>
           <optional>true</optional>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>com.intellij</groupId>
+          <artifactId>jsch-0.1.54</artifactId>
+          <version>${idea.version}</version>
           <scope>test</scope>
         </dependency>
       </dependencies>
