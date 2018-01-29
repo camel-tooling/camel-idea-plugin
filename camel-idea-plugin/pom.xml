@@ -58,6 +58,7 @@
       <id>ultimate</id>
       <properties>
         <idea.version>2017.3</idea.version>
+        <!-- PLEASE DON'T DELETE THIS EMPTY TAG. IT'S NECESSARY TO KEEP THIS EMPTY TAG FOR IDEA ULTIMATE! -->
         <idea.platform.prefix></idea.platform.prefix>
       </properties>
       <dependencies>
