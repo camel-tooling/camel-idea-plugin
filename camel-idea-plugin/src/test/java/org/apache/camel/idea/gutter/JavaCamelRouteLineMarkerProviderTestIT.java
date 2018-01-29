@@ -23,7 +23,7 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiIdentifier;
-import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.PsiJavaToken;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import static org.apache.camel.idea.gutter.GutterTestUtil.getGutterNavigationDestinationElements;
@@ -49,9 +49,9 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
 
         LineMarkerInfo.LineMarkerGutterIconRenderer firstGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(0);
 
-        assertTrue(firstGutter.getLineMarkerInfo().getElement() instanceof PsiLiteralExpression);
-        assertEquals("The navigation start element doesn't match", "file:inbox",
-            ((PsiLiteralExpression) firstGutter.getLineMarkerInfo().getElement()).getValue());
+        assertTrue(firstGutter.getLineMarkerInfo().getElement() instanceof PsiJavaToken);
+        assertEquals("The navigation start element doesn't match", "\"file:inbox\"",
+            firstGutter.getLineMarkerInfo().getElement().getText());
 
 
         List<GotoRelatedItem> firstGutterTargets = getGutterNavigationDestinationElements(firstGutter);
@@ -62,9 +62,9 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
 
         LineMarkerInfo.LineMarkerGutterIconRenderer secondGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(1);
 
-        assertTrue(secondGutter.getLineMarkerInfo().getElement() instanceof PsiLiteralExpression);
-        assertEquals("The navigation start element doesn't match", "file:outbox",
-            ((PsiLiteralExpression) secondGutter.getLineMarkerInfo().getElement()).getValue());
+        assertTrue(secondGutter.getLineMarkerInfo().getElement() instanceof PsiJavaToken);
+        assertEquals("The navigation start element doesn't match", "\"file:outbox\"",
+            secondGutter.getLineMarkerInfo().getElement().getText());
 
         List<GotoRelatedItem> secondGutterTargets = getGutterNavigationDestinationElements(secondGutter);
         assertEquals("Navigation should have one target", 1, secondGutterTargets.size());
@@ -86,9 +86,9 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
 
         LineMarkerInfo.LineMarkerGutterIconRenderer firstGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(0);
 
-        assertTrue(firstGutter.getLineMarkerInfo().getElement() instanceof PsiLiteralExpression);
-        assertEquals("The navigation start element doesn't match", "file:test",
-            ((PsiLiteralExpression) firstGutter.getLineMarkerInfo().getElement()).getValue());
+        assertTrue(firstGutter.getLineMarkerInfo().getElement() instanceof PsiJavaToken);
+        assertEquals("The navigation start element doesn't match", "\"file:test\"",
+            firstGutter.getLineMarkerInfo().getElement().getText());
 
 
         List<GotoRelatedItem> firstGutterTargets = getGutterNavigationDestinationElements(firstGutter);
@@ -99,9 +99,9 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
 
         LineMarkerInfo.LineMarkerGutterIconRenderer secondGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(1);
 
-        assertTrue(secondGutter.getLineMarkerInfo().getElement() instanceof PsiLiteralExpression);
-        assertEquals("The navigation start element doesn't match", "file:test",
-            ((PsiLiteralExpression) secondGutter.getLineMarkerInfo().getElement()).getValue());
+        assertTrue(secondGutter.getLineMarkerInfo().getElement() instanceof PsiJavaToken);
+        assertEquals("The navigation start element doesn't match", "\"file:test\"",
+            secondGutter.getLineMarkerInfo().getElement().getText());
 
         List<GotoRelatedItem> secondGutterTargets = getGutterNavigationDestinationElements(secondGutter);
         assertEquals("Navigation should have one target", 1, secondGutterTargets.size());

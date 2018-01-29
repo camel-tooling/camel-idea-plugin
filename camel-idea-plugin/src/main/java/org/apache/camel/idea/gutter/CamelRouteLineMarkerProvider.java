@@ -25,7 +25,6 @@ import javax.swing.*;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
-import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
@@ -33,14 +32,13 @@ import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiIdentifier;
+import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteralExpression;
-import com.intellij.psi.PsiLiteralValue;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiPolyadicExpression;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiVariable;
-import com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl;
 import com.intellij.psi.impl.source.xml.XmlTagImpl;
 import com.intellij.psi.search.PsiSearchHelper;
 import com.intellij.psi.search.UsageSearchContext;
@@ -67,7 +65,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
     private static final String[] JAVA_ROUTE_CALL = new String[]{"to", "toF", "toD", "enrich", "wireTap"};
     private static final String[] XML_ROUTE_CALL = new String[]{"to", "toD", "enrich", "wireTap"};
 
-    public IdeaUtils getIdeaUtils() {
+    private IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);
     }
 
@@ -75,60 +73,68 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
     protected void collectNavigationMarkers(@NotNull PsiElement element,
                                             Collection<? super RelatedItemLineMarkerInfo> result) {
         //TODO: remove this when IdeaUtils.isFromJavaMethodCall will be fixed
-        if (element.getLanguage().equals(JavaLanguage.INSTANCE)
-            && !(element instanceof PsiLiteralExpression || isCamelRouteStartIdentifierExpression(element))) {
-            return;
-        }
-        boolean showIcon = getCamelPreferenceService().isShowCamelIconInGutter();
-        boolean camelPresent = ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent();
+        if (isJavaTokenLiteralExpression(element)
+            || isXmlTokenLiteralExpression(element)
+            || isCamelRouteStartIdentifierExpression(element)) {
+            boolean showIcon = getCamelPreferenceService().isShowCamelIconInGutter();
+            boolean camelPresent = ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent();
 
-        if (!showIcon || !camelPresent) {
-            return;
-        }
+            if (!showIcon || !camelPresent) {
+                return;
+            }
 
-        // must be in valid file
-        boolean validFile = getIdeaUtils().isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
-        if (!validFile) {
-            return;
-        }
+            // must be in valid file
+            boolean validFile = getIdeaUtils().isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
+            if (!validFile) {
+                return;
+            }
 
-        //skip the PsiLiteralExpression that are not the first operand of PsiPolyadicExpression to avoid having multiple gutter icons
-        // on the same PsiPolyadicExpression
-        if (element instanceof PsiLiteralExpression) {
-            if (isPartOfPolyadicExpression((PsiLiteralExpression) element)) {
-                if (!element.isEquivalentTo(getFirstExpressionFromPolyadicExpression((PsiLiteralExpression) element))) {
-                    return;
+            //skip the PsiLiteralExpression that are not the first operand of PsiPolyadicExpression to avoid having multiple gutter icons
+            // on the same PsiPolyadicExpression
+            if (element instanceof PsiLiteralExpression) {
+                if (isPartOfPolyadicExpression((PsiLiteralExpression) element)) {
+                    if (!element.isEquivalentTo(getFirstExpressionFromPolyadicExpression((PsiLiteralExpression) element))) {
+                        return;
+                    }
                 }
             }
+
+            Icon icon = getCamelPreferenceService().getCamelIcon();
+
+            if (getCamelIdeaUtils().isCamelRouteStartExpression(element)) {
+
+                // evaluate the targets lazy
+                NotNullLazyValue<Collection<? extends PsiElement>> targets = new NotNullLazyValue<Collection<? extends PsiElement>>() {
+                    @NotNull
+                    @Override
+                    protected Collection<PsiElement> compute() {
+                        List<PsiElement> routeDestinationForPsiElement = findRouteDestinationForPsiElement(element);
+                        // Add identifier references as navigation target
+                        resolvedIdentifier(element)
+                            .map(PsiElement::getNavigationElement)
+                            .ifPresent(routeDestinationForPsiElement::add);
+                        return routeDestinationForPsiElement;
+                    }
+                };
+
+                NavigationGutterIconBuilder<PsiElement> builder =
+                    NavigationGutterIconBuilder.create(icon)
+                        .setTargets(targets)
+                        .setTooltipText("Camel route")
+                        .setPopupTitle("Navigate to " + findRouteFromElement(element))
+                        .setAlignment(GutterIconRenderer.Alignment.RIGHT)
+                        .setCellRenderer(new GutterPsiElementListCellRenderer());
+                result.add(builder.createLineMarkerInfo(element));
+            }
         }
+    }
 
-        Icon icon = getCamelPreferenceService().getCamelIcon();
+    private boolean isXmlTokenLiteralExpression(@NotNull PsiElement element) {
+        return element instanceof XmlToken && (element.getParent() instanceof XmlTag);
+    }
 
-        if (getCamelIdeaUtils().isCamelRouteStartExpression(element)) {
-
-            // evaluate the targets lazy
-            NotNullLazyValue<Collection<? extends PsiElement>> targets = new NotNullLazyValue<Collection<? extends PsiElement>>() {
-                @NotNull
-                @Override
-                protected Collection<PsiElement> compute() {
-                    List<PsiElement> routeDestinationForPsiElement = findRouteDestinationForPsiElement(element);
-                    // Add identifier references as navigation target
-                    resolvedIdentifier(element)
-                        .map(PsiElement::getNavigationElement)
-                        .ifPresent(routeDestinationForPsiElement::add);
-                    return routeDestinationForPsiElement;
-                }
-            };
-
-            NavigationGutterIconBuilder<PsiElement> builder =
-                NavigationGutterIconBuilder.create(icon)
-                    .setTargets(targets)
-                    .setTooltipText("Camel route")
-                    .setPopupTitle("Navigate to " + findRouteFromElement(element))
-                    .setAlignment(GutterIconRenderer.Alignment.RIGHT)
-                    .setCellRenderer(new GutterPsiElementListCellRenderer());
-            result.add(builder.createLineMarkerInfo(element));
-        }
+    private boolean isJavaTokenLiteralExpression(@NotNull PsiElement element) {
+        return element instanceof PsiJavaToken && (element.getParent() instanceof PsiLiteralExpression);
     }
 
     /**
@@ -189,9 +195,6 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
             return ((XmlTagImpl) element.getParent()).getAttributeValue("uri");
         }
 
-        if (element instanceof PsiLiteralExpressionImpl) {
-            return ((PsiLiteralExpressionImpl) element).getValue() == null ? null : ((PsiLiteralExpressionImpl) element).getValue().toString();
-        }
 
         if (element instanceof PsiIdentifier) {
             PsiIdentifier id = (PsiIdentifier) element;
@@ -199,6 +202,10 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
             if (text != null) {
                 return text;
             }
+        }
+
+        if (element instanceof PsiJavaToken) {
+            return element.getText();
         }
 
         // Only variables can be resolved?
@@ -229,7 +236,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         LOG.debug("Finding Camel routes which is calling me: " + startElement);
 
         List<PsiElement> psiElements = new ArrayList<>();
-        String route = findRouteFromElement(startElement);
+        String route = findRouteFromElement(startElement).replace("\"", "");
 
         if (route == null || route.isEmpty()) {
             return psiElements;
@@ -246,11 +253,6 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                 if (xmlElement != null) {
                     psiElements.add(xmlElement);
                 }
-            } else if (psiElement instanceof PsiLiteralExpression) {
-                PsiElement javaElement = findJavaElement(route, psiElement);
-                if (javaElement != null) {
-                    psiElements.add(javaElement);
-                }
             } else if (psiElement instanceof PsiIdentifier) {
                 PsiElement javaElement = findJavaElement(route, psiElement);
                 if (javaElement != null) {
@@ -258,6 +260,11 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                 } else {
                     // use alternative lookup for identifier
                     resolvedIdentifier(psiElement).ifPresent(psiElements::add);
+                }
+            } else if (psiElement instanceof PsiJavaToken) {
+                PsiElement javaElement = findJavaElement(route, psiElement);
+                if (javaElement != null) {
+                    psiElements.add(javaElement);
                 }
             }
             return true;
@@ -275,12 +282,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
      * @return the {@link PsiElement} that contains the exact match of the Camel route, null if there is no exact match
      */
     private PsiElement findJavaElement(String route, PsiElement psiElement) {
-        Object value;
-        if (psiElement instanceof PsiLiteralValue) {
-            value = ((PsiLiteralValue) psiElement).getValue();
-        } else {
-            value = psiElement.getText();
-        }
+        Object value = psiElement.getText().replace("\"", "");
         if (route.equals(value)) {
             //the method 'to' is a PsiIdentifier not a PsiMethodCallExpression because it's part of method invocation chain
             PsiMethodCallExpression methodCall = PsiTreeUtil.getParentOfType(psiElement, PsiMethodCallExpression.class);

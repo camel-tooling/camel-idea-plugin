@@ -27,12 +27,14 @@ import com.intellij.codeInsight.daemon.impl.LineMarkersPass;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiVariable;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
+
 
 /**
  * Utility class to test the gutter navigation.
@@ -73,11 +75,11 @@ final class GutterTestUtil {
     /**
      * For the given gutters return all the gutter navigation targets that are {@link PsiMethodCallExpressionImpl} elements.
      */
-    static List<PsiMethodCallExpressionImpl> getGuttersWithJavaTarget(List<GotoRelatedItem> gutterList) {
+    static List<PsiMethodCallExpression> getGuttersWithJavaTarget(List<GotoRelatedItem> gutterList) {
         return gutterList
             .stream()
-            .filter(gotoRelatedItem -> gotoRelatedItem.getElement() instanceof PsiLiteralExpression)
-            .map(gotoRelatedItem -> (PsiMethodCallExpressionImpl) gotoRelatedItem.getElement().getParent().getParent())
+            .filter(gotoRelatedItem -> gotoRelatedItem.getElement() instanceof PsiJavaToken)
+            .map(gotoRelatedItem -> PsiTreeUtil.getParentOfType(gotoRelatedItem.getElement(), PsiMethodCallExpression.class))
             .collect(Collectors.toList());
     }
 
