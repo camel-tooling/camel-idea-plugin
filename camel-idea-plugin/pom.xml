@@ -34,7 +34,7 @@
   </description>
 
   <properties>
-    <idea.version>2017.3.3</idea.version>
+    <idea.version>2017.3</idea.version>
     <idea.platform.prefix>-Didea.platform.prefix=Idea</idea.platform.prefix>
     <ij.plugin>true</ij.plugin>
     <argLine>
@@ -373,6 +373,12 @@
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>icons</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>jsch-0.1.54</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
