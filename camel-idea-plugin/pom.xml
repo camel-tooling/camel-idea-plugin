@@ -74,6 +74,12 @@
           <optional>true</optional>
           <scope>test</scope>
         </dependency>
+        <dependency>
+          <groupId>com.intellij</groupId>
+          <artifactId>jsch-0.1.54</artifactId>
+          <version>${idea.version}</version>
+          <scope>test</scope>
+        </dependency>
       </dependencies>
     </profile>
   </profiles>
@@ -373,12 +379,6 @@
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>icons</artifactId>
-      <version>${idea.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>jsch-0.1.54</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
