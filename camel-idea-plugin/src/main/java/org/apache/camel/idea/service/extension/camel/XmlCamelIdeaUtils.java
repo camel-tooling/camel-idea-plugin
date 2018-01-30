@@ -36,7 +36,9 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
                 String name = xml.getLocalName();
                 XmlTag parentTag = xml.getParentTag();
                 if (parentTag != null) {
-                    return "routes".equals(parentTag.getLocalName()) && ("from".equals(name) || "rest".equals(name));
+                    boolean xmlEndTag = element.getPrevSibling().getText().equals("</");
+                    return "routes".equals(parentTag.getLocalName()) && "rest".equals(name) && !xmlEndTag
+                            || "route".equals(parentTag.getLocalName()) && "from".equals(name);
                 }
             }
         }
