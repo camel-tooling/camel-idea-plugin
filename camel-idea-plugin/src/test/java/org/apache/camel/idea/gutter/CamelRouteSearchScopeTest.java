@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.util;
+package org.apache.camel.idea.gutter;
 
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.PlatformTestCase;
 
 public class CamelRouteSearchScopeTest extends PlatformTestCase {
-
 
     public void testSearchScope() throws Exception {
         VirtualFile javaFile = getVirtualFile(createTempFile("Test.java", ""));

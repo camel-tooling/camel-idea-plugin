@@ -49,7 +49,6 @@ import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
-import org.apache.camel.idea.util.CamelRouteSearchScope;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
