@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.util;
+package org.apache.camel.idea.gutter;
 
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -25,8 +25,7 @@ import static org.apache.camel.idea.util.CamelIdeaUtils.CAMEL_FILE_EXTENSIONS;
 /**
  * Search scope for Camel routes.
  */
-public class CamelRouteSearchScope extends GlobalSearchScope {
-
+class CamelRouteSearchScope extends GlobalSearchScope {
 
     @Override
     public boolean contains(@NotNull VirtualFile virtualFile) {
