@@ -105,11 +105,11 @@ An alternative is to change the version in `camel-idea-plugin/pom.xml` file to u
 
 Linux or Mac users:
 
- > - Execute the script file `./install-intellij-libs.sh 2017.3.3 /Applications/IntelliJ\ IDEA\ CE.app/Contents $HOME/.m2` 
+ > - Execute the script file `./install-intellij-libs.sh 2017.3 /Applications/IntelliJ\ IDEA\ CE.app/Contents $HOME/.m2` 
   
 Windows:
 
- > - Execute the script file `./install-intellij-libs.bat 2017.3.3 "C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2017.2"`
+ > - Execute the script file `./install-intellij-libs.bat 2017.3 "C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2017.2"`
 
 Next step you need to update the pom.xml file with the right IntelliJ version number
 
