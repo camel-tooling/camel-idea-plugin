@@ -83,9 +83,8 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                 return;
             }
 
-            // must be in valid file
-            boolean validFile = getIdeaUtils().isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
-            if (!validFile) {
+            boolean validCamelFile = isCamelFile(element);
+            if (!validCamelFile) {
                 return;
             }
 
@@ -127,6 +126,10 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                 result.add(builder.createLineMarkerInfo(element));
             }
         }
+    }
+
+    private boolean isCamelFile(@NotNull PsiElement element) {
+        return getIdeaUtils().isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
     }
 
     private boolean isXmlTokenLiteralExpression(@NotNull PsiElement element) {

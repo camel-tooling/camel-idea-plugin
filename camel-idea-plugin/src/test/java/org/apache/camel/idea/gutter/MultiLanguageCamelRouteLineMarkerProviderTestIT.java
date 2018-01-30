@@ -44,11 +44,11 @@ public class MultiLanguageCamelRouteLineMarkerProviderTestIT extends CamelLightC
         //remove first element since it is navigate to super implementation gutter icon
         javaGutters.remove(0);
 
-        assertEquals("Should contain 2 Java Camel gutters", 2, javaGutters.size());
+        assertEquals("Should contain 3 Java Camel gutters", 3, javaGutters.size());
         assertEquals("Should contain 2 XML Camel gutters", 2, xmlGutters.size());
 
         //from Java to XML
-        LineMarkerInfo.LineMarkerGutterIconRenderer firstJavaGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) javaGutters.get(0);
+        LineMarkerInfo.LineMarkerGutterIconRenderer firstJavaGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) javaGutters.get(1);
         assertTrue(firstJavaGutter.getLineMarkerInfo().getElement() instanceof PsiJavaToken);
         assertEquals("The navigation start element doesn't match", "\"file:inbox\"",
             firstJavaGutter.getLineMarkerInfo().getElement().getText());
