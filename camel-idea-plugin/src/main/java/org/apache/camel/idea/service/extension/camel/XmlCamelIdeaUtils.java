@@ -30,13 +30,13 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
 
     @Override
     public boolean isCamelRouteStart(PsiElement element) {
-        if (element.getText().equals("from")) {
+        if (element.getText().equals("from") || element.getText().equals("rest")) {
             XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
             if (xml != null) {
                 String name = xml.getLocalName();
                 XmlTag parentTag = xml.getParentTag();
                 if (parentTag != null) {
-                    return "from".equals(name) && "route".equals(parentTag.getLocalName());
+                    return "routes".equals(parentTag.getLocalName()) && ("from".equals(name) || "rest".equals(name));
                 }
             }
         }
