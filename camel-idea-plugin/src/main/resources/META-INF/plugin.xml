@@ -34,6 +34,8 @@
         <li>Work in progress</li>
         <li>Remove support for Groovy, Scala and Kotlin</li>
         <li>Various internal refactorings to cleanup the code</li>
+        <li>Upgraded to Apache Camel 2.20.2</li>
+        <li>Upgraded to IntelliJ 2017.3.3</li>
       </ul>
       v0.4.7
       <ul>
