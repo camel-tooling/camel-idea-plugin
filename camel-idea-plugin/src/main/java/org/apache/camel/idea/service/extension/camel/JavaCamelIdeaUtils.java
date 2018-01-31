@@ -17,11 +17,19 @@
 package org.apache.camel.idea.service.extension.camel;
 
 import java.util.Arrays;
+
+import com.intellij.codeInsight.completion.JavaKeywordCompletion;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.patterns.ObjectPattern;
+import com.intellij.patterns.PsiJavaPatterns;
+import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
+import com.intellij.psi.PsiJavaCodeReferenceElement;
+import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
@@ -160,11 +168,30 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         return true;
     }
 
+    @Override
+    public PsiClass getCamelBean(PsiElement element) {
+        final ObjectPattern pattern = PsiJavaPatterns
+            .psiElement()
+            .withParents(PsiLiteralExpression.class)
+            .withChild(StandardPatterns.instanceOf()).andNot(JavaKeywordCompletion.AFTER_DOT);
+        pattern.accepts(element);
+
+        final PsiExpressionList expressionList = PsiTreeUtil.getParentOfType(element, PsiExpressionList.class);
+        if (expressionList != null && expressionList.getNextSibling() == null) {
+            final PsiJavaCodeReferenceElement javaCodeReferenceElement = PsiTreeUtil.findChildOfType(expressionList, PsiJavaCodeReferenceElement.class);
+            if (javaCodeReferenceElement != null) {
+                return (PsiClass) javaCodeReferenceElement.getReference().resolve();
+
+            }
+        }
+        return null;
+    }
 
     @Override
     public boolean isExtensionEnabled() {
         return true;
     }
+
 
     private IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);

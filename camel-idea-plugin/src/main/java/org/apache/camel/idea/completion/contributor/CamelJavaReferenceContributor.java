@@ -17,8 +17,16 @@
 package org.apache.camel.idea.completion.contributor;
 
 import com.intellij.codeInsight.completion.CompletionType;
+import com.intellij.codeInsight.completion.JavaKeywordCompletion;
+import com.intellij.patterns.ObjectPattern;
+import com.intellij.patterns.PsiJavaPatterns;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiJavaCodeReferenceElement;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiTypeElement;
 import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionExtension;
+import org.apache.camel.idea.completion.extension.JavaBeanSmartCompletion;
+
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
@@ -26,8 +34,16 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
  */
 public class CamelJavaReferenceContributor extends CamelContributor {
 
+
+    private static final ObjectPattern IN_METHOD_RETURN_TYPE;
+
+    static {
+        IN_METHOD_RETURN_TYPE = PsiJavaPatterns.psiElement().withParents(new Class[]{PsiJavaCodeReferenceElement.class, PsiTypeElement.class, PsiMethod.class}).andNot(JavaKeywordCompletion.AFTER_DOT);
+    }
     public CamelJavaReferenceContributor() {
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
+        extend(CompletionType.BASIC,
+            psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("java"))), new JavaBeanSmartCompletion());
         extend(CompletionType.BASIC,
                 psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("java"))),
                 new EndpointCompletion(getCamelCompletionExtensions())

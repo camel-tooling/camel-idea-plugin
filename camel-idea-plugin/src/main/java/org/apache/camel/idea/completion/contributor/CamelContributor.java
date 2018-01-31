@@ -96,7 +96,7 @@ public abstract class CamelContributor extends CompletionContributor {
         String hackVal = valueAtPosition.toLowerCase();
         int len = CompletionUtil.DUMMY_IDENTIFIER.length();
         int hackIndex = hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER.toLowerCase());
-        //let's scrup the data for any Intellij stuff
+        //let's scrub the data for any Intellij stuff
         val = val.replace(CompletionUtil.DUMMY_IDENTIFIER, "");
         if (hackIndex == -1) {
             val = val.replace(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED, "");

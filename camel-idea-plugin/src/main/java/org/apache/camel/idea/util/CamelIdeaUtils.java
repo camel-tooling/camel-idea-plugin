@@ -18,26 +18,14 @@ package org.apache.camel.idea.util;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.Condition;
-import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiExpression;
-import com.intellij.psi.PsiExpressionList;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.PsiReferenceExpression;
-import com.intellij.psi.impl.source.tree.LeafPsiElement;
-import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlTag;
 import org.apache.camel.idea.extension.CamelIdeaUtilsExtension;
 
 
@@ -178,6 +166,13 @@ public final class CamelIdeaUtils implements Disposable {
     public boolean acceptForAnnotatorOrInspection(PsiElement element) {
         return enabledExtensions.stream()
             .anyMatch(extension -> extension.acceptForAnnotatorOrInspection(element));
+    }
+
+    public PsiClass getCamelBean(PsiElement element) {
+        return enabledExtensions.stream()
+            .map(c -> c.getCamelBean(element))
+            .filter(Objects::nonNull)
+            .findFirst().orElse(null);
     }
 
     @Override

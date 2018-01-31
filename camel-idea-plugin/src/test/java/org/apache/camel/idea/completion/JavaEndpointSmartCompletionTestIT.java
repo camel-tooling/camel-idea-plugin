@@ -36,6 +36,16 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
         assertTrue("There is many options", strings.size() > 60);
     }
 
+   /*  public void testJavaBeanTestDataCompletion() {
+
+        myFixture.configureByFiles("CompleteJavaBeanTestData.java", "MyJavaBeanTestData.java");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertThat(strings, Matchers.not(Matchers.contains("file:inbox?fileExist", "file:inbox?forceWrites")));
+        assertThat(strings, Matchers.hasItems("file:inbox?autoCreate", "file:inbox?include", "file:inbox?delay", "file:inbox?delete"));
+        assertTrue("There is many options", strings.size() > 60);
+    } */
+
     public void testProducerCompletion() {
         myFixture.configureByFiles("CompleteJavaEndpointProducerTestData.java");
         myFixture.complete(CompletionType.BASIC, 1);
