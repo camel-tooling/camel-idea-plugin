@@ -19,12 +19,15 @@ package org.apache.camel.idea.util;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.intellij.lang.jvm.JvmModifier;
 import com.intellij.openapi.Disposable;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiMethod;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.apache.camel.idea.extension.CamelIdeaUtilsExtension;
 
@@ -168,11 +171,33 @@ public final class CamelIdeaUtils implements Disposable {
             .anyMatch(extension -> extension.acceptForAnnotatorOrInspection(element));
     }
 
-    public PsiClass getCamelBean(PsiElement element) {
+    public PsiClass getBean(PsiElement element) {
         return enabledExtensions.stream()
-            .map(c -> c.getCamelBean(element))
+            .map(c -> c.getBeanClass(element))
             .filter(Objects::nonNull)
             .findFirst().orElse(null);
+    }
+
+    public PsiElement getBeanPsiElement(PsiElement element) {
+        return enabledExtensions.stream()
+            .map(c -> c.getBeanPsiElement(element))
+            .filter(Objects::nonNull)
+            .findFirst().orElse(null);
+    }
+
+    public boolean isAnnotatedWithHandler(PsiMethod psiMethod) {
+        return  Arrays.stream(psiMethod.getAnnotations()).anyMatch(a -> a.getQualifiedName().equals("org.apache.camel.Handler"));
+    }
+
+    public boolean isOneOfModifierType(PsiMethod method, JvmModifier... type) {
+        return Arrays.stream(method.getModifiers())
+            .anyMatch(m -> Arrays.stream(type).anyMatch(Predicate.isEqual(m)));
+    }
+
+    public boolean isExtendingRouteBuild(PsiClass clazz) {
+        final PsiClass[] interfaces = clazz.getSupers();
+        return Arrays.stream(interfaces)
+            .anyMatch(c -> "org.apache.camel.RoutesBuilder".equals(c.getQualifiedName()));
     }
 
     @Override

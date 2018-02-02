@@ -28,7 +28,9 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
+import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
+import com.intellij.psi.PsiLiteral;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
@@ -169,19 +171,26 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     }
 
     @Override
-    public PsiClass getCamelBean(PsiElement element) {
-        final ObjectPattern pattern = PsiJavaPatterns
-            .psiElement()
-            .withParents(PsiLiteralExpression.class)
-            .withChild(StandardPatterns.instanceOf()).andNot(JavaKeywordCompletion.AFTER_DOT);
-        pattern.accepts(element);
+    public PsiClass getBeanClass(PsiElement element) {
+        final PsiElement beanPsiElement = getBeanPsiElement(element);
+        if (beanPsiElement != null) {
+            PsiElement resolve = beanPsiElement.getReference().resolve();
+            if (resolve instanceof PsiClass) {
+                return (PsiClass) resolve;
+            }
+        }
+        return null;
+    }
 
-        final PsiExpressionList expressionList = PsiTreeUtil.getParentOfType(element, PsiExpressionList.class);
-        if (expressionList != null && expressionList.getNextSibling() == null) {
-            final PsiJavaCodeReferenceElement javaCodeReferenceElement = PsiTreeUtil.findChildOfType(expressionList, PsiJavaCodeReferenceElement.class);
-            if (javaCodeReferenceElement != null) {
-                return (PsiClass) javaCodeReferenceElement.getReference().resolve();
-
+    @Override
+    public PsiElement getBeanPsiElement(PsiElement element) {
+        if (element instanceof PsiLiteral || element.getParent() instanceof PsiLiteralExpression) {
+            final PsiExpressionList expressionList = PsiTreeUtil.getParentOfType(element, PsiExpressionList.class);
+            if (expressionList != null) {
+                final PsiIdentifier identifier = PsiTreeUtil.getChildOfType(expressionList.getPrevSibling(), PsiIdentifier.class);
+                if (expressionList != null && expressionList.getNextSibling() == null && "bean".equals(identifier.getText())) {
+                    return PsiTreeUtil.findChildOfType(expressionList, PsiJavaCodeReferenceElement.class);
+                }
             }
         }
         return null;
@@ -191,7 +200,6 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     public boolean isExtensionEnabled() {
         return true;
     }
-
 
     private IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);

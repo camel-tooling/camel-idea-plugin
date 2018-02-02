@@ -17,37 +17,43 @@
 package org.apache.camel.idea.completion.contributor;
 
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.codeInsight.completion.JavaKeywordCompletion;
-import com.intellij.patterns.ObjectPattern;
-import com.intellij.patterns.PsiJavaPatterns;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.patterns.PatternCondition;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiJavaCodeReferenceElement;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiTypeElement;
+import com.intellij.psi.PsiJavaToken;
+import com.intellij.util.ProcessingContext;
 import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionExtension;
-import org.apache.camel.idea.completion.extension.JavaBeanSmartCompletion;
+import org.apache.camel.idea.completion.extension.CamelJavaBeanReferenceSmartCompletion;
+import org.apache.camel.idea.util.CamelIdeaUtils;
+import org.jetbrains.annotations.NotNull;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
+import static org.apache.camel.idea.completion.extension.CamelJavaBeanReferenceSmartCompletion.BEAN_CLASS_KEY;
 
 /**
  * Plugin to hook into the IDEA Java language, to setup Camel smart completion for editing Java source code.
  */
 public class CamelJavaReferenceContributor extends CamelContributor {
 
-
-    private static final ObjectPattern IN_METHOD_RETURN_TYPE;
-
-    static {
-        IN_METHOD_RETURN_TYPE = PsiJavaPatterns.psiElement().withParents(new Class[]{PsiJavaCodeReferenceElement.class, PsiTypeElement.class, PsiMethod.class}).andNot(JavaKeywordCompletion.AFTER_DOT);
-    }
     public CamelJavaReferenceContributor() {
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
-        extend(CompletionType.BASIC,
-            psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("java"))), new JavaBeanSmartCompletion());
-        extend(CompletionType.BASIC,
-                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("java"))),
+        extend(CompletionType.BASIC, psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("java"))),
                 new EndpointCompletion(getCamelCompletionExtensions())
         );
+        extend(CompletionType.BASIC, psiElement(PsiJavaToken.class).with(new PatternCondition<PsiJavaToken>("CamelJavaBeanReferenceSmartCompletion") {
+            @Override
+            public boolean accepts(@NotNull PsiJavaToken psiJavaToken, ProcessingContext processingContext) {
+                final PsiClass beanClass = getCamelIdeaUtils().getBean(psiJavaToken);
+                if (beanClass != null) {
+                    processingContext.put(BEAN_CLASS_KEY, beanClass);
+                }
+                return beanClass != null;
+            }
+        }), new CamelJavaBeanReferenceSmartCompletion());
     }
 
+    private CamelIdeaUtils getCamelIdeaUtils() {
+        return ServiceManager.getService(CamelIdeaUtils.class);
+    }
 }

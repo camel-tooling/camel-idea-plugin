@@ -79,6 +79,14 @@ public interface CamelIdeaUtilsExtension {
 
     boolean isExtensionEnabled();
 
-    PsiClass getCamelBean(PsiElement element);
+    /**
+     * @return Resolve the {@link PsiClass} from the specified element or return null
+     */
+    PsiClass getBeanClass(PsiElement element);
+
+    /**
+     * @return the bean {@link PsiElement} for the specified element
+     */
+    PsiElement getBeanPsiElement(PsiElement element);
 
 }

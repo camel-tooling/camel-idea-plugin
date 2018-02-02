@@ -136,10 +136,15 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
     }
 
     @Override
-    public PsiClass getCamelBean(PsiElement element) {
+    public PsiClass getBeanClass(PsiElement element) {
         if (element instanceof XmlToken) {
 
         }
+        return null;
+    }
+
+    @Override
+    public PsiElement getBeanPsiElement(PsiElement element) {
         return null;
     }
 

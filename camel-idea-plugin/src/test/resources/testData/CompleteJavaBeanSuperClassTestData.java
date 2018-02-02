@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import testData.CompleteJavaBeanSuperClassTestData;
+package testData;
 
-public class CompleteJavaBeanTestData extends CompleteJavaBeanSuperClassTestData {
+public class CompleteJavaBeanSuperClassTestData {
 
-    public void letsDoThis() {}
-    public void anotherBeanMethod() {}
-    public void mySuperAbstractMethod() {}
+    public boolean mySuperMethod() {
+        mySuperAbstractMethod();
+        return false;
+    }
 
-    private void thisIsVeryPrivate() {}
-
+    public abstract void mySuperAbstractMethod();
 }

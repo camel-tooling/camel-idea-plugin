@@ -14,14 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package testData;
+package org.apache.camel.idea.rename;
 
-public final class MyJavaBeanTestData {
+import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
-    private MyJavaBeanTestData() { }
+public class RenameCamelBeanMethodRefTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
-    public void letsDoThis() {
-
+    public void testCamelBeanMethodRefRename() {
+        myFixture.configureByFiles("RenameCamelBeanMethodRefTestData.java", "CompleteJavaBeanTestData.java");
+        myFixture.renameElementAtCaret("letNotDoThis");
+        myFixture.checkResultByFile("RenameCamelBeanMethodRefResultTestData.java");
     }
 
 }
