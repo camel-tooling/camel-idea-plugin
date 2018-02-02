@@ -16,31 +16,30 @@
  */
 package org.apache.camel.idea.gutter;
 
+import java.io.IOException;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.PlatformTestCase;
-
-import java.io.IOException;
 
 public class CamelRouteSearchScopeTest extends PlatformTestCase {
 
     private CamelRouteSearchScope camelRouteSearchScope = new CamelRouteSearchScope();
 
-    public void test_search_scope_should_contain_java_file() throws IOException {
+    public void testSearchScopeShouldContainJavaFile() throws IOException {
         VirtualFile javaFile = getVirtualFile(createTempFile("Test.java", ""));
         assertTrue(camelRouteSearchScope.contains(javaFile));
     }
 
-    public void test_search_scope_should_contain_xml_file() throws IOException {
+    public void testSearchScopeShouldContainXmlFile() throws IOException {
         VirtualFile xmlFile = getVirtualFile(createTempFile("test.xml", ""));
         assertTrue(camelRouteSearchScope.contains(xmlFile));
     }
 
-    public void test_search_scope_should_contain_pom_xml() throws IOException {
+    public void testSearchScopeShouldContainPomXml() throws IOException {
         VirtualFile mavenPomFile = getVirtualFile(createTempFile("pom.xml", ""));
         assertFalse(camelRouteSearchScope.contains(mavenPomFile));
     }
 
-    public void test_search_scope_should_contain_xsd_file() throws IOException {
+    public void testSearchScopeShouldContainXsdFile() throws IOException {
         VirtualFile xsdFile = getVirtualFile(createTempFile("test.xsd", ""));
         assertFalse(camelRouteSearchScope.contains(xsdFile));
     }
