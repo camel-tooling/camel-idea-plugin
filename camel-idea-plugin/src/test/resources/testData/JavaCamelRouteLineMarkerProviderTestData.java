@@ -21,6 +21,10 @@ import org.apache.camel.main.Main;
 public class JavaCamelRouteLineMarkerProviderTestData extends RouteBuilder {
     @Override
     public void configure() throws Exception {
+        rest("/say")
+                .get("/hello").to("direct:hello")
+                .get("/bye").consumes("application/json").to("direct:bye")
+                .post("/bye").to("mock:update");
         from("file:inbox")
                 .to("file:outbox");
         from("file:outbox")
