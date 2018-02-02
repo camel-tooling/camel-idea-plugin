@@ -33,45 +33,90 @@ import static org.apache.camel.idea.gutter.GutterTestUtil.getGuttersWithXMLTarge
  */
 public class MultiLanguageCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
-    public void testCamelGutterForJavaAndXMLRoutes() {
+    public void testShouldContainJavaGutters() {
         myFixture.configureByFiles("XmlCamelRouteLineMarkerProviderTestData.xml", "JavaCamelRouteLineMarkerProviderTestData.java");
         List<GutterMark> javaGutters = myFixture.findAllGutters("JavaCamelRouteLineMarkerProviderTestData.java");
         assertNotNull(javaGutters);
+    }
 
+    public void testShouldContainXmlGutters() {
         List<GutterMark> xmlGutters = myFixture.findAllGutters("XmlCamelRouteLineMarkerProviderTestData.xml");
         assertNotNull(xmlGutters);
+    }
 
+    public void testShouldContainTwoJavaGutters() {
+        myFixture.configureByFiles("XmlCamelRouteLineMarkerProviderTestData.xml", "JavaCamelRouteLineMarkerProviderTestData.java");
+        List<GutterMark> javaGutters = myFixture.findAllGutters("JavaCamelRouteLineMarkerProviderTestData.java");
+
+        assertEquals("Should contain 3 gutters", 3, javaGutters.size());
         //remove first element since it is navigate to super implementation gutter icon
         javaGutters.remove(0);
+        assertEquals("Should contain 2 Java Camel gutters", 2, javaGutters.size());
+    }
 
-        assertEquals("Should contain 3 Java Camel gutters", 3, javaGutters.size());
-        assertEquals("Should contain 2 XML Camel gutters", 3, xmlGutters.size());
+    public void testShouldContainTwoXmlGutters() {
+        List<GutterMark> xmlGutters = myFixture.findAllGutters("XmlCamelRouteLineMarkerProviderTestData.xml");
+        assertEquals("Should contain 2 XML Camel gutters", 2, xmlGutters.size());
+    }
 
-        //from Java to XML
-        LineMarkerInfo.LineMarkerGutterIconRenderer firstJavaGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) javaGutters.get(1);
+    public void testFirstJavaGutterElementShouldBeJavaElement() {
+        List<GutterMark> javaGutters = myFixture.findAllGutters("JavaCamelRouteLineMarkerProviderTestData.java");
+        LineMarkerInfo.LineMarkerGutterIconRenderer firstJavaGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) javaGutters.get(0);
         assertTrue(firstJavaGutter.getLineMarkerInfo().getElement() instanceof PsiJavaToken);
+    }
+
+    public void testFirstJavaGutterElementShouldContainFileInboxAsNavigationStart() {
+        List<GutterMark> javaGutters = myFixture.findAllGutters("JavaCamelRouteLineMarkerProviderTestData.java");
+        LineMarkerInfo.LineMarkerGutterIconRenderer firstJavaGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) javaGutters.get(1);
         assertEquals("The navigation start element doesn't match", "\"file:inbox\"",
-            firstJavaGutter.getLineMarkerInfo().getElement().getText());
+                firstJavaGutter.getLineMarkerInfo().getElement().getText());
+    }
 
-
+    public void testNavigationShouldHaveTwoTargets() {
+        myFixture.configureByFiles("XmlCamelRouteLineMarkerProviderTestData.xml", "JavaCamelRouteLineMarkerProviderTestData.java");
+        List<GutterMark> javaGutters = myFixture.findAllGutters("JavaCamelRouteLineMarkerProviderTestData.java");
+        LineMarkerInfo.LineMarkerGutterIconRenderer firstJavaGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) javaGutters.get(1);
         List<GotoRelatedItem> firstJavaGutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(firstJavaGutter);
         assertEquals("Navigation should have two targets", 2, firstJavaGutterTargets.size());
+    }
+
+    public void testNavigationTargetXmlShouldMatchTo() {
+        myFixture.configureByFiles("XmlCamelRouteLineMarkerProviderTestData.xml", "JavaCamelRouteLineMarkerProviderTestData.java");
+        List<GutterMark> javaGutters = myFixture.findAllGutters("JavaCamelRouteLineMarkerProviderTestData.java");
+        javaGutters.remove(0);
+        LineMarkerInfo.LineMarkerGutterIconRenderer firstJavaGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) javaGutters.get(0);
+        List<GotoRelatedItem> firstJavaGutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(firstJavaGutter);
         assertEquals("The navigation target XML tag name doesn't match", "to", getGuttersWithXMLTarget(firstJavaGutterTargets).get(0).getLocalName());
-        assertEquals("The navigation Java target element doesn't match", "from(\"file:outbox\")",
-                getGuttersWithJavaTarget(firstJavaGutterTargets).get(0).getMethodExpression().getQualifierExpression().getText());
+    }
 
-        //from XML to Java
-        LineMarkerInfo.LineMarkerGutterIconRenderer firstXmlGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) xmlGutters.get(1);
+    public void testFirstXmlGutterShouldBeXmlElement() {
+        List<GutterMark> xmlGutters = myFixture.findAllGutters("XmlCamelRouteLineMarkerProviderTestData.xml");
+        LineMarkerInfo.LineMarkerGutterIconRenderer firstXmlGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) xmlGutters.get(0);
         assertTrue(firstXmlGutter.getLineMarkerInfo().getElement() instanceof XmlToken);
-        assertEquals("The navigation start element doesn't match", "\"file:inbox\"",
-                (firstJavaGutter.getLineMarkerInfo().getElement()).getText());
+    }
 
-
+    public void testXmlNavigationShouldHaveTwoTargets() {
+        myFixture.configureByFiles("XmlCamelRouteLineMarkerProviderTestData.xml", "JavaCamelRouteLineMarkerProviderTestData.java");
+        List<GutterMark> xmlGutters = myFixture.findAllGutters("XmlCamelRouteLineMarkerProviderTestData.xml");
+        LineMarkerInfo.LineMarkerGutterIconRenderer firstXmlGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) xmlGutters.get(0);
         List<GotoRelatedItem> firstXmlGutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(firstXmlGutter);
         assertEquals("Navigation should have two targets", 2, firstXmlGutterTargets.size());
+    }
+
+    public void testXmlNavigationTargetShouldMatchTo() {
+        myFixture.configureByFiles("XmlCamelRouteLineMarkerProviderTestData.xml", "JavaCamelRouteLineMarkerProviderTestData.java");
+        List<GutterMark> xmlGutters = myFixture.findAllGutters("XmlCamelRouteLineMarkerProviderTestData.xml");
+        LineMarkerInfo.LineMarkerGutterIconRenderer firstXmlGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) xmlGutters.get(0);
+        List<GotoRelatedItem> firstXmlGutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(firstXmlGutter);
         assertEquals("The navigation target XML tag name doesn't match", "to", getGuttersWithXMLTarget(firstXmlGutterTargets).get(0).getLocalName());
+    }
+
+    public void testJavaNavigationTargetShouldMatchTo() {
+        myFixture.configureByFiles("XmlCamelRouteLineMarkerProviderTestData.xml", "JavaCamelRouteLineMarkerProviderTestData.java");
+        List<GutterMark> xmlGutters = myFixture.findAllGutters("XmlCamelRouteLineMarkerProviderTestData.xml");
+        LineMarkerInfo.LineMarkerGutterIconRenderer firstXmlGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) xmlGutters.get(0);
+        List<GotoRelatedItem> firstXmlGutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(firstXmlGutter);
         assertEquals("The navigation Java target element doesn't match", "from(\"file:outbox\")",
                 getGuttersWithJavaTarget(firstXmlGutterTargets).get(0).getMethodExpression().getQualifierExpression().getText());
     }
-
 }

@@ -50,7 +50,7 @@ public abstract class CamelContributor extends CompletionContributor {
     /**
      * Smart completion for Camel endpoints.
      */
-    protected static class EndpointCompletion extends CompletionProvider<CompletionParameters> {
+    public static class EndpointCompletion extends CompletionProvider<CompletionParameters> {
 
         private final List<CamelCompletionExtension> camelCompletionExtensions;
 
