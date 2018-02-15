@@ -22,6 +22,10 @@ public class BeverageRoute extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+        rest("/say")
+                .get("/hello").to("direct:hello")
+                .get("/bye").consumes("application/json").to("direct:bye")
+                .post("/bye").to("mock:update");
         from("timer:hello?period=2000")
             .to("beverage:GinTonic?amount=2")
             .log("${body}");
