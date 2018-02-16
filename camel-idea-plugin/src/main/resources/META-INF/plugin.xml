@@ -32,7 +32,7 @@
       v0.5.0
       <ul>
         <li>Work in progress</li>
-        <li>Add Camel Gutter for each HTTP methods when using REST DSL components
+        <li>Add Camel Gutter for each HTTP methods when using REST DSL components</li>
         <li>Remove support for Groovy, Scala and Kotlin</li>
         <li>Various internal refactorings to cleanup the code</li>
         <li>Upgraded to Apache Camel 2.20.2</li>
@@ -67,7 +67,7 @@
   </change-notes>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="162.0"/>
+  <idea-version since-build="173.0"/>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
