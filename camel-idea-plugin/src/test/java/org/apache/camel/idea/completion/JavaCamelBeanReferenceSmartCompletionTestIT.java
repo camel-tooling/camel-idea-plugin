@@ -132,7 +132,6 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
         assertEquals("There is many options", 4, strings.size());
     }
 
-
     public void testJavaBeanTestDataCompletion2File() {
         myFixture.configureByFiles("CompleteJavaBeanRoute2TestData.java", "CompleteJavaBeanTestData.java", "CompleteJavaBeanSuperClassTestData.java");
         myFixture.complete(CompletionType.BASIC, 1);

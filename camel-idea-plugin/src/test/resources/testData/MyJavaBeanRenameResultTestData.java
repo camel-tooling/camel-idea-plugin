@@ -26,6 +26,4 @@ public final class MyJavaBeanTestData {
 
     private void thisIsVeryPrivate() {}
 
-
-
 }

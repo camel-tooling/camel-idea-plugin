@@ -18,11 +18,7 @@ package org.apache.camel.idea.service.extension.camel;
 
 import java.util.Arrays;
 
-import com.intellij.codeInsight.completion.JavaKeywordCompletion;
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.patterns.ObjectPattern;
-import com.intellij.patterns.PsiJavaPatterns;
-import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
