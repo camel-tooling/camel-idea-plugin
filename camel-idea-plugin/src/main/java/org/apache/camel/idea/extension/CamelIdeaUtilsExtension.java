@@ -17,7 +17,9 @@
 package org.apache.camel.idea.extension;
 
 import com.intellij.openapi.extensions.ExtensionPointName;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+
 
 
 /**
@@ -76,5 +78,15 @@ public interface CamelIdeaUtilsExtension {
     boolean acceptForAnnotatorOrInspection(PsiElement element);
 
     boolean isExtensionEnabled();
+
+    /**
+     * @return Resolve the {@link PsiClass} from the specified element or return null
+     */
+    PsiClass getBeanClass(PsiElement element);
+
+    /**
+     * @return the bean {@link PsiElement} for the specified element
+     */
+    PsiElement getBeanPsiElement(PsiElement element);
 
 }

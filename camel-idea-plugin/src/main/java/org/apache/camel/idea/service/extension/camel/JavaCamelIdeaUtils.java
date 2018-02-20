@@ -17,11 +17,17 @@
 package org.apache.camel.idea.service.extension.camel;
 
 import java.util.Arrays;
+
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
+import com.intellij.psi.PsiIdentifier;
+import com.intellij.psi.PsiJavaCodeReferenceElement;
+import com.intellij.psi.PsiLiteral;
+import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
@@ -160,6 +166,31 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         return true;
     }
 
+    @Override
+    public PsiClass getBeanClass(PsiElement element) {
+        final PsiElement beanPsiElement = getBeanPsiElement(element);
+        if (beanPsiElement != null) {
+            PsiElement resolve = beanPsiElement.getReference().resolve();
+            if (resolve instanceof PsiClass) {
+                return (PsiClass) resolve;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public PsiElement getBeanPsiElement(PsiElement element) {
+        if (element instanceof PsiLiteral || element.getParent() instanceof PsiLiteralExpression) {
+            final PsiExpressionList expressionList = PsiTreeUtil.getParentOfType(element, PsiExpressionList.class);
+            if (expressionList != null) {
+                final PsiIdentifier identifier = PsiTreeUtil.getChildOfType(expressionList.getPrevSibling(), PsiIdentifier.class);
+                if (expressionList != null && expressionList.getNextSibling() == null && "bean".equals(identifier.getText())) {
+                    return PsiTreeUtil.findChildOfType(expressionList, PsiJavaCodeReferenceElement.class);
+                }
+            }
+        }
+        return null;
+    }
 
     @Override
     public boolean isExtensionEnabled() {

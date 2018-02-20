@@ -17,10 +17,13 @@
 package org.apache.camel.idea.service.extension.camel;
 
 import java.util.Arrays;
+
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.idea.extension.CamelIdeaUtilsExtension;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.apache.camel.idea.util.StringUtils;
@@ -131,6 +134,20 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
     public boolean acceptForAnnotatorOrInspection(PsiElement element) {
         return false;
     }
+
+    @Override
+    public PsiClass getBeanClass(PsiElement element) {
+        if (element instanceof XmlToken) {
+
+        }
+        return null;
+    }
+
+    @Override
+    public PsiElement getBeanPsiElement(PsiElement element) {
+        return null;
+    }
+
 
     @Override
     public boolean isExtensionEnabled() {
