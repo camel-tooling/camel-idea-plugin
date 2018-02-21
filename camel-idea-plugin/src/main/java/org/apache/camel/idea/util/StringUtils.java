@@ -33,7 +33,7 @@ public final class StringUtils {
      * Whether to given value has a question mark or not
      */
     static boolean hasQuestionMark(String val) {
-        return val != null && val.indexOf('?') > 0;
+        return val != null && val.indexOf('?') >= 0;
     }
 
     /**
