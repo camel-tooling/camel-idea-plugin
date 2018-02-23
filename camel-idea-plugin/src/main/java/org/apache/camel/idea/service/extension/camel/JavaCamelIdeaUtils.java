@@ -184,7 +184,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             final PsiExpressionList expressionList = PsiTreeUtil.getParentOfType(element, PsiExpressionList.class);
             if (expressionList != null) {
                 final PsiIdentifier identifier = PsiTreeUtil.getChildOfType(expressionList.getPrevSibling(), PsiIdentifier.class);
-                if (expressionList != null && expressionList.getNextSibling() == null && "bean".equals(identifier.getText())) {
+                if (identifier != null && identifier.getNextSibling() == null && "bean".equals(identifier.getText())) {
                     return PsiTreeUtil.findChildOfType(expressionList, PsiJavaCodeReferenceElement.class);
                 }
             }
