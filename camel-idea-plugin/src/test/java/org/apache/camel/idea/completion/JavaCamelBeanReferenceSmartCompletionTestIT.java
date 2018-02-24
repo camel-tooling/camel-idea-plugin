@@ -123,6 +123,15 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
         assertThat(strings, Matchers.not(Matchers.contains("thisIsVeryPrivate")));
     }
 
+    public void testJavaBeanTestDataCompletionWithCaretInsideMultipleMethodRef() {
+        myFixture.configureByFiles("CompleteJavaBeanRoute5TestData.java", "CompleteJavaBeanMultipleMethodTestData.java",
+            "CompleteJavaBeanSuperClassTestData.java", "CompleteJavaBeanMethodPropertyTestData.properties");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals(3, strings.size());
+        assertThat(strings, Matchers.hasItems("multipleMethodsWithAnotherName", "multipleMethodsWithSameName", "multipleMethodsWithSameName"));
+    }
+
     public void testJavaBeanTestDataCompletionFile() {
         myFixture.configureByFiles("CompleteJavaBeanRouteTestData.java", "CompleteJavaBeanTestData.java", "CompleteJavaBeanSuperClassTestData.java");
         myFixture.complete(CompletionType.BASIC, 1);

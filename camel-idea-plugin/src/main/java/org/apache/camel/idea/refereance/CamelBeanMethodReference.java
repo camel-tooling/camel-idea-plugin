@@ -106,6 +106,6 @@ public class CamelBeanMethodReference extends PsiReferenceBase<PsiClass> impleme
 
     @Override
     public boolean isSoft() {
-        return true;
+        return false;
     }
 }
