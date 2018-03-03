@@ -55,7 +55,6 @@
   </scm>
 
   <modules>
-    <module>custom-components</module>
     <module>camel-idea-plugin</module>
   </modules>
 
