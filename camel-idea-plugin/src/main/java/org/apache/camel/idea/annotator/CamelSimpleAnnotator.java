@@ -118,6 +118,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
     private IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);
     }
+    
     private CamelIdeaUtils getCamelIdeaUtils() {
         return ServiceManager.getService(CamelIdeaUtils.class);
     }
