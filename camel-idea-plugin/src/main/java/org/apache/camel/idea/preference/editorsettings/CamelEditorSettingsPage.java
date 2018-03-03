@@ -38,6 +38,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
 
     private JBCheckBox realTimeEndpointValidationCatalogCheckBox;
     private JBCheckBox realTimeSimpleValidationCatalogCheckBox;
+    private JBCheckBox realTimeJSonPathValidationCatalogCheckBox;
     private JBCheckBox highlightCustomOptionsCheckBox;
     private JBCheckBox downloadCatalogCheckBox;
     private JBCheckBox scanThirdPartyComponentsCatalogCheckBox;
@@ -51,6 +52,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
     public JComponent createComponent() {
         realTimeEndpointValidationCatalogCheckBox = new JBCheckBox("Real time validation of Camel endpoints in editor");
         realTimeSimpleValidationCatalogCheckBox = new JBCheckBox("Real time validation of Camel simple language in editor");
+        realTimeJSonPathValidationCatalogCheckBox = new JBCheckBox("Real time validation of Camel JSonPath language in editor");
         highlightCustomOptionsCheckBox = new JBCheckBox("Highlight custom endpoint options as warnings in editor");
         downloadCatalogCheckBox = new JBCheckBox("Allow downloading camel-catalog over the internet");
         scanThirdPartyComponentsCatalogCheckBox = new JBCheckBox("Scan classpath for third party Camel components using modern component packaging");
@@ -72,6 +74,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
 
         panel.add(realTimeEndpointValidationCatalogCheckBox, "span 2");
         panel.add(realTimeSimpleValidationCatalogCheckBox, "span 2");
+        panel.add(realTimeJSonPathValidationCatalogCheckBox, "span 2");
         panel.add(highlightCustomOptionsCheckBox, "span 2");
         panel.add(downloadCatalogCheckBox, "span 2");
         panel.add(scanThirdPartyComponentsCatalogCheckBox, "span 2");
@@ -94,6 +97,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
     public void apply() throws ConfigurationException {
         getCamelPreferenceService().setRealTimeEndpointValidation(realTimeEndpointValidationCatalogCheckBox.isSelected());
         getCamelPreferenceService().setRealTimeSimpleValidation(realTimeSimpleValidationCatalogCheckBox.isSelected());
+        getCamelPreferenceService().setRealTimeJSonPathValidation(realTimeJSonPathValidationCatalogCheckBox.isSelected());
         getCamelPreferenceService().setHighlightCustomOptions(highlightCustomOptionsCheckBox.isSelected());
         getCamelPreferenceService().setDownloadCatalog(downloadCatalogCheckBox.isSelected());
         getCamelPreferenceService().setScanThirdPartyComponents(scanThirdPartyComponentsCatalogCheckBox.isSelected());
@@ -108,22 +112,25 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         // check boxes
         boolean b1 = getCamelPreferenceService().isRealTimeEndpointValidation() != realTimeEndpointValidationCatalogCheckBox.isSelected()
                 || getCamelPreferenceService().isRealTimeSimpleValidation() != realTimeSimpleValidationCatalogCheckBox.isSelected()
+                || getCamelPreferenceService().isRealTimeJSonPathValidation() != realTimeJSonPathValidationCatalogCheckBox.isSelected()
                 || getCamelPreferenceService().isHighlightCustomOptions() != highlightCustomOptionsCheckBox.isSelected()
                 || getCamelPreferenceService().isDownloadCatalog() != downloadCatalogCheckBox.isSelected()
-                || getCamelPreferenceService().isScanThirdPartyComponents() != scanThirdPartyComponentsCatalogCheckBox.isSelected()
-                || getCamelPreferenceService().isScanThirdPartyLegacyComponents() != scanThirdPartyLegacyComponentsCatalogCheckBox.isSelected()
+                || getCamelPreferenceService().isScanThirdPartyComponents() != scanThirdPartyComponentsCatalogCheckBox.isSelected();
+        boolean b2 = getCamelPreferenceService().isScanThirdPartyLegacyComponents() != scanThirdPartyLegacyComponentsCatalogCheckBox.isSelected()
                 || getCamelPreferenceService().isShowCamelIconInGutter() != camelIconInGutterCheckBox.isSelected();
 
         // other fields
-        boolean b2 = !Objects.equals(getCamelPreferenceService().getChosenCamelIcon(), camelIconsComboBox.getSelectedItem())
+        boolean b3 = !Objects.equals(getCamelPreferenceService().getChosenCamelIcon(), camelIconsComboBox.getSelectedItem())
                 || !Objects.equals(getCamelPreferenceService().getCustomIconFilePath(), customIconButton.getText());
-        return b1 || b2;
+
+        return b1 || b2 || b3;
     }
 
     @Override
     public void reset() {
         realTimeEndpointValidationCatalogCheckBox.setSelected(getCamelPreferenceService().isRealTimeEndpointValidation());
         realTimeSimpleValidationCatalogCheckBox.setSelected(getCamelPreferenceService().isRealTimeSimpleValidation());
+        realTimeJSonPathValidationCatalogCheckBox.setSelected(getCamelPreferenceService().isRealTimeJSonPathValidation());
         highlightCustomOptionsCheckBox.setSelected(getCamelPreferenceService().isHighlightCustomOptions());
         downloadCatalogCheckBox.setSelected(getCamelPreferenceService().isDownloadCatalog());
         scanThirdPartyComponentsCatalogCheckBox.setSelected(getCamelPreferenceService().isScanThirdPartyComponents());
@@ -137,7 +144,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
     @NotNull
     @Override
     public String getId() {
-        return null;
+        return "camel.settings";
     }
 
     @Nls
@@ -156,6 +163,10 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
 
     JBCheckBox getRealTimeSimpleValidationCatalogCheckBox() {
         return realTimeSimpleValidationCatalogCheckBox;
+    }
+
+    JBCheckBox getRealTimeJSonPathValidationCatalogCheckBox() {
+        return realTimeJSonPathValidationCatalogCheckBox;
     }
 
     JBCheckBox getHighlightCustomOptionsCheckBox() {

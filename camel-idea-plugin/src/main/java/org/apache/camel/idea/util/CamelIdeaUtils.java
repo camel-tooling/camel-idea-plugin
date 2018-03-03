@@ -89,6 +89,14 @@ public final class CamelIdeaUtils implements Disposable {
     }
 
     /**
+     * Is the given element a simple of a Camel DSL, eg <tt>jsonpath</tt>.
+     */
+    public boolean isCamelJSonPathExpression(PsiElement element) {
+        return enabledExtensions.stream()
+            .anyMatch(extension -> extension.isCamelJSonPathExpression(element));
+    }
+
+    /**
      * Is the given element from a consumer endpoint used in a route from a <tt>from</tt>, <tt>fromF</tt>,
      * <tt>interceptFrom</tt>, or <tt>pollEnrich</tt> pattern.
      */

@@ -65,6 +65,22 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
     }
 
     @Override
+    public boolean isCamelJSonPathExpression(PsiElement element) {
+        // xml
+        XmlTag xml;
+        if (element instanceof XmlTag) {
+            xml = (XmlTag) element;
+        } else {
+            xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        }
+        if (xml != null) {
+            String name = xml.getLocalName();
+            return "jsonopath".equals(name);
+        }
+        return false;
+    }
+
+    @Override
     public boolean isCameSimpleExpressionUsedAsPredicate(PsiElement element) {
         // xml
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);

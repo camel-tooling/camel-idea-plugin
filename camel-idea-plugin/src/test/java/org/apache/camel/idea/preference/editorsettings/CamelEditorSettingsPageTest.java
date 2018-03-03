@@ -265,4 +265,15 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
         assertNotNull(comboBox.getSelectedItem());
         assertEquals("Camel Icon", comboBox.getSelectedItem().toString());
     }
+
+    public void testShouldChangeStateOfRealTimeJSonPathValidationCatalogCheckBox() throws ConfigurationException {
+        JBCheckBox checkBox = editorSettingsPage.getRealTimeJSonPathValidationCatalogCheckBox();
+        assertEquals(true, checkBox.isSelected());
+        assertEquals(true, editorSettingsPage.getCamelPreferenceService().isRealTimeJSonPathValidation());
+        checkBox.setSelected(false);
+        editorSettingsPage.apply();
+        assertEquals(false, checkBox.isSelected());
+        assertEquals(false, editorSettingsPage.getCamelPreferenceService().isRealTimeJSonPathValidation());
+    }
+
 }

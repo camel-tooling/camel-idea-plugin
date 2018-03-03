@@ -52,7 +52,7 @@ class CamelEditDialog extends DialogWrapper {
 
     @Override
     protected void init() {
-        setTitle("Enter filename pattern (**/file.properties)");
+        setTitle("Enter Filename Pattern (**/file.properties)");
         textfield = new JTextField();
         super.init();
     }

@@ -56,6 +56,15 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     }
 
     @Override
+    public boolean isCamelJSonPathExpression(PsiElement element) {
+        // java method call
+        if (getIdeaUtils().isFromJavaMethodCall(element, true, "jsonpath")) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public boolean isCameSimpleExpressionUsedAsPredicate(PsiElement element) {
         // java
         PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);

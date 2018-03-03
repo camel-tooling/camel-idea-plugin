@@ -151,6 +151,9 @@
     <!-- annotator to validate simple language -->
     <annotator language="JAVA" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
     <annotator language="XML" implementationClass="org.apache.camel.idea.annotator.CamelSimpleAnnotator"/>
+    <!-- annotator to validate jsonpath language -->
+    <annotator language="JAVA" implementationClass="org.apache.camel.idea.annotator.CamelJSonPathAnnotator"/>
+    <annotator language="XML" implementationClass="org.apache.camel.idea.annotator.CamelJSonPathAnnotator"/>
 
     <!-- inspection to validate endpoints -->
     <localInspection groupName="Apache Camel" implementationClass="org.apache.camel.idea.inspection.CamelInspection"/>

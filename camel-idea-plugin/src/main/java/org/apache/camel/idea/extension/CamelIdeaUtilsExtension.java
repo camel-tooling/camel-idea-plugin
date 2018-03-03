@@ -45,6 +45,11 @@ public interface CamelIdeaUtilsExtension {
     boolean isCameSimpleExpressionUsedAsPredicate(PsiElement element);
 
     /**
+     * Is the given element a jsonpath of a Camel DSL, eg <tt>jsonpath</tt> or &lt;jsonpath&gt;.
+     */
+    boolean isCamelJSonPathExpression(PsiElement element);
+
+    /**
      * Is the given element from a consumer endpoint used in a route from a <tt>from</tt>, <tt>fromF</tt>,
      * <tt>interceptFrom</tt>, or <tt>pollEnrich</tt> pattern.
      */
