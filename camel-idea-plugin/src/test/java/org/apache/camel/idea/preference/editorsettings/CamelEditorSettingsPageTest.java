@@ -111,10 +111,11 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
         JComboBox<String> comboBox = editorSettingsPage.getCamelIconsComboBox();
         assertNotNull(comboBox.getSelectedItem());
         assertEquals("Camel Icon", comboBox.getSelectedItem());
-        assertEquals(3, comboBox.getItemCount());
+        assertEquals(4, comboBox.getItemCount());
         assertEquals("Camel Icon", comboBox.getItemAt(0));
-        assertEquals("Camel Badge Icon", comboBox.getItemAt(1));
-        assertEquals("Custom Icon", comboBox.getItemAt(2));
+        assertEquals("Camel Animal Icon", comboBox.getItemAt(1));
+        assertEquals("Camel Badge Icon", comboBox.getItemAt(2));
+        assertEquals("Custom Icon", comboBox.getItemAt(3));
         assertEquals(0, comboBox.getSelectedIndex());
     }
 
@@ -129,8 +130,8 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
         assertNotNull(comboBox.getSelectedItem());
         assertEquals("Camel Icon", comboBox.getSelectedItem());
         assertEquals(false, button.isEnabled());
-        comboBox.setSelectedIndex(2);
-        assertEquals(2, comboBox.getSelectedIndex());
+        comboBox.setSelectedIndex(3);
+        assertEquals(3, comboBox.getSelectedIndex());
         assertNotNull(comboBox.getSelectedItem());
         assertEquals("Custom Icon", comboBox.getSelectedItem().toString());
         assertEquals(true, button.isEnabled());
@@ -146,17 +147,22 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
 
         comboBox.setSelectedIndex(1);
         assertNotNull(comboBox.getSelectedItem());
-        assertEquals("Camel Badge Icon", comboBox.getSelectedItem().toString());
+        assertEquals("Camel Animal Icon", comboBox.getSelectedItem().toString());
         assertEquals(false, button.isEnabled());
 
         comboBox.setSelectedIndex(2);
+        assertNotNull(comboBox.getSelectedItem());
+        assertEquals("Camel Badge Icon", comboBox.getSelectedItem().toString());
+        assertEquals(false, button.isEnabled());
+
+        comboBox.setSelectedIndex(3);
         assertNotNull(comboBox.getSelectedItem());
         assertEquals("Custom Icon", comboBox.getSelectedItem().toString());
         assertEquals(true, button.isEnabled());
 
         comboBox.setSelectedIndex(1);
         assertNotNull(comboBox.getSelectedItem());
-        assertEquals("Camel Badge Icon", comboBox.getSelectedItem().toString());
+        assertEquals("Camel Animal Icon", comboBox.getSelectedItem().toString());
         assertEquals(false, button.isEnabled());
     }
 

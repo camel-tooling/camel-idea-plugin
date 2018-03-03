@@ -32,11 +32,12 @@
       v0.5.0
       <ul>
         <li>Work in progress</li>
+        <li>Added official Camel logo as new default gutter icon</li>
         <li>Add Camel Gutter for each HTTP methods when using REST DSL components</li>
         <li>Remove support for Groovy, Scala and Kotlin</li>
         <li>Various internal refactorings to cleanup the code</li>
         <li>Upgraded to Apache Camel 2.20.2</li>
-        <li>Upgraded to IntelliJ 2017.3.3</li>
+        <li>Upgraded to IntelliJ 2017.3.4</li>
       </ul>
       v0.4.7
       <ul>

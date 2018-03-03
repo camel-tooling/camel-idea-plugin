@@ -46,6 +46,8 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     @Transient
     public static final Icon CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
     @Transient
+    public static final Icon CAMEL_ANIMAL_ICON = IconLoader.getIcon("/icons/camel-animal.png");
+    @Transient
     public static final Icon CAMEL_BADGE_ICON = IconLoader.getIcon("/icons/camel-badge.png");
     @Transient
     private static final Logger LOG = Logger.getInstance(CamelPreferenceService.class);
@@ -177,6 +179,8 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     public Icon getCamelIcon() {
         if (chosenCamelIcon.equals("Camel Icon")) {
             return CAMEL_ICON;
+        } else if (chosenCamelIcon.equals("Camel Animal Icon")) {
+            return CAMEL_ANIMAL_ICON;
         } else if (chosenCamelIcon.equals("Camel Badge Icon")) {
             return CAMEL_BADGE_ICON;
         }
