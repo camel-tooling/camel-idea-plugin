@@ -56,7 +56,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         scanThirdPartyComponentsCatalogCheckBox = new JBCheckBox("Scan classpath for third party Camel components using modern component packaging");
         scanThirdPartyLegacyComponentsCatalogCheckBox = new JBCheckBox("Scan classpath for third party Camel components using legacy component packaging");
         camelIconInGutterCheckBox = new JBCheckBox("Show Camel icon in gutter");
-        camelIconsComboBox = new ComboBox<>(new String[]{"Camel Icon", "Camel Badge Icon", "Custom Icon"});
+        camelIconsComboBox = new ComboBox<>(new String[]{"Camel Icon", "Camel Animal Icon", "Camel Badge Icon", "Custom Icon"});
         customIconButton = new TextFieldWithBrowseButton();
         customIconButton.addBrowseFolderListener("Choose Custom Camel Icon", "The icon should be a 16x16 png file", null, FileChooserDescriptorFactory.createSingleFileDescriptor("png"));
 
