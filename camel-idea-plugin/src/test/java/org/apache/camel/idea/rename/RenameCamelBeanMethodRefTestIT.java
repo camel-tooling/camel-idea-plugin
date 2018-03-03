@@ -22,7 +22,7 @@ public class RenameCamelBeanMethodRefTestIT extends CamelLightCodeInsightFixture
 
     public void testCamelBeanMethodRefRename() {
         myFixture.configureByFiles("RenameCamelBeanMethodRefTestData.java", "CompleteJavaBeanTestData.java");
-        myFixture.renameElementAtCaret("letNotDoThis");
+        myFixture.renameElementAtCaretUsingHandler("letNotDoThis");
         myFixture.checkResultByFile("RenameCamelBeanMethodRefResultTestData.java");
     }
 
