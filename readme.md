@@ -100,7 +100,7 @@ Second you need to install the IntelliJ libraries into your local maven reposito
 is the version of the IDEA you have installed locally, second is the locations of the IDEA.
 If you have installed IDEA in a different location than shown in the sample below, then make sure to use the correct path.
 
-Currently we use IDEA 2017.3.3 as the version and therefore you should download and use that version.
+Currently we use IDEA 2017.3.4 as the version and therefore you should download and use that version.
 An alternative is to change the version in `camel-idea-plugin/pom.xml` file to use a different version but its not recommended.
 
 Linux or Mac users:
