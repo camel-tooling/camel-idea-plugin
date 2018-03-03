@@ -36,7 +36,7 @@ public class CamelBeanReferenceRenameHandler extends PsiElementRenameHandler {
     public boolean isAvailableOnDataContext(DataContext dataContext) {
         final PsiElement psiElement = findPsiElementAt(dataContext);
         if (psiElement == null) {
-            return false;
+     //       return false;
         }
         //Make sure the cursor is located in the text where the method name is defined.
         return psiElement.getParent() instanceof PsiLiteralExpression
@@ -46,8 +46,12 @@ public class CamelBeanReferenceRenameHandler extends PsiElementRenameHandler {
 
     private static PsiElement findPsiElementAt(DataContext dataContext) {
         final Editor editor = CommonDataKeys.EDITOR.getData(dataContext);
-        final PsiFile file = CommonDataKeys.PSI_FILE.getData(dataContext);
 
+        if (editor == null) {
+            return null;
+        }
+
+        final PsiFile file = CommonDataKeys.PSI_FILE.getData(dataContext);
         PsiElement elementAt = file.findElementAt(editor.getCaretModel().getOffset());
         if (elementAt == null && editor.getCaretModel().getOffset() > 0) {
             elementAt = file.findElementAt(editor.getCaretModel().getOffset() - 1);
