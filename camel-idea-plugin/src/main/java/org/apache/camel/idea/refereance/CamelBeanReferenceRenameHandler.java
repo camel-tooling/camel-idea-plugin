@@ -36,7 +36,7 @@ public class CamelBeanReferenceRenameHandler extends PsiElementRenameHandler {
     public boolean isAvailableOnDataContext(DataContext dataContext) {
         final PsiElement psiElement = findPsiElementAt(dataContext);
         if (psiElement == null) {
-     //       return false;
+            return false;
         }
         //Make sure the cursor is located in the text where the method name is defined.
         return psiElement.getParent() instanceof PsiLiteralExpression
