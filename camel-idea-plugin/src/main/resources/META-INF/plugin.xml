@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.5.0</version>
+  <version>0.5.1</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -30,6 +30,10 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      v0.5.1
+      <ul>
+        <li>Work in progress</li>
+      </ul>
       v0.5.0
       <ul>
         <li>Added official Camel logo as new default gutter icon</li>
