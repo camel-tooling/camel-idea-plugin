@@ -62,6 +62,21 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
             + "   private void thisIsVeryPrivate() {}\n"
             + "}";
 
+    private static final String CAMEL_ROUTE_WITH_WHEN_METHOD_REF =
+        "import org.apache.camel.builder.RouteBuilder;\n"
+        + "import org.apache.camel.main.Main;\n"
+        + "\n"
+        + "public final class CompleteJavaBeanTestData extends RouteBuilder {\n"
+        + "\n"
+        + "    @Override\n"
+        + "    public void configure() {\n"
+        + "       from(\"direct:start\")\n"
+        + "         .choice().when().method(CompleteJavaBeanTestData.class,\"<caret>\");\n"
+        + "    }\n"
+        + "   public void letsDoThis() { }\n"
+        + "   private void thisIsVeryPrivate() {}\n"
+        + "}";
+
     private static final String CAMEL_ROUTE_CARET_OUTSIDE_BEAN_REF =
         "import org.apache.camel.builder.RouteBuilder;\n"
             + "import org.apache.camel.main.Main;\n"
@@ -103,6 +118,14 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
 
     public void testJavaBeanTestDataCompletion() {
         myFixture.configureByText("CompleteJavaBeanTestData.java", CAMEL_ROUTE_WITH_INTERNAL_BEAN_REF);
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertThat(strings, Matchers.not(Matchers.contains("thisIsVeryPrivate")));
+        assertThat(strings, Matchers.hasItems("letsDoThis"));
+    }
+
+    public void testJavaBeanTestDataCompletionWithWhenMethod() {
+        myFixture.configureByText("CompleteJavaBeanTestData.java", CAMEL_ROUTE_WITH_WHEN_METHOD_REF);
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, Matchers.not(Matchers.contains("thisIsVeryPrivate")));
