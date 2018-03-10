@@ -16,6 +16,7 @@
  */
 package org.apache.camel.idea.util;
 
+import java.io.File;
 import java.util.stream.Stream;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
@@ -25,11 +26,11 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.apache.camel.idea.service.CamelService;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
-
 public class IdeaUtilsSkipEndpointValidationTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     private static final String ACTIVEMQ_ARTIFACT = "org.apache.activemq:activemq-camel:5.14.3";
-    
+    private static final String QPID_ARTIFACT = "org.apache.qpid:qpid-jms-client:0.29.0";
+
     private static final String CODE = "import org.apache.camel.builder.RouteBuilder;\n"
         + "import org.apache.activemq.camel.component.ActiveMQComponent;\n"
         + "\n"
@@ -41,6 +42,7 @@ public class IdeaUtilsSkipEndpointValidationTestIT extends CamelLightCodeInsight
         + "        new org.apache.activemq.spring.ActiveMQConnectionFactory(\"vm://spring\");\n"
         + "        new org.apache.activemq.ActiveMQXAConnectionFactory(\"vm://broker-xa\");\n"
         + "        new org.apache.activemq.spring.ActiveMQXAConnectionFactory(\"vm://spring-xa\");\n"
+        + "        new org.apache.qpid.jms.JmsConnectionFactory(\"amqp://localhost:5672\");\n"
         + "        ActiveMQComponent aq = ActiveMQComponent.activeMQComponent(\"vm://localhost\");\n"
         + "        aq.setBrokerURL(\"tcp://evilhost:666\");\n"
         + "        getContext().addComponent(\"queue\", aq);"
@@ -54,7 +56,7 @@ public class IdeaUtilsSkipEndpointValidationTestIT extends CamelLightCodeInsight
         super.setUp();
         ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(true);
         Stream.of(
-            Maven.resolver().resolve(ACTIVEMQ_ARTIFACT)
+            Maven.resolver().resolve(ACTIVEMQ_ARTIFACT, QPID_ARTIFACT)
                 .withTransitivity().asFile()
         ).forEach(f -> PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myFixture.getModule(), f.getName(), f.getParentFile().getAbsolutePath(), f.getName()));
     }
@@ -78,12 +80,19 @@ public class IdeaUtilsSkipEndpointValidationTestIT extends CamelLightCodeInsight
         element = myFixture.findElementByText("\"vm://spring\"", PsiLiteralExpression.class);
         assertTrue("spring ActiveMQConnectionFactory constructor should be skipped", getCamelIdeaUtils().skipEndpointValidation(element));
     }
+
     public void testShouldSkipActiveMQXAConnectionFactoryConstructor() {
         myFixture.configureByText("DummyTestData.java", CODE);
         PsiElement element = myFixture.findElementByText("\"vm://broker-xa\"", PsiLiteralExpression.class);
         assertTrue("ActiveMQXAConnectionFactory constructor should be skipped", getCamelIdeaUtils().skipEndpointValidation(element));
         element = myFixture.findElementByText("\"vm://spring-xa\"", PsiLiteralExpression.class);
         assertTrue("spring ActiveMQXAConnectionFactory constructor should be skipped", getCamelIdeaUtils().skipEndpointValidation(element));
+    }
+
+    public void testShouldSkipQpidJmsConnectionFactoryConstructor() {
+        myFixture.configureByText("DummyTestData.java", CODE);
+        PsiElement element = myFixture.findElementByText("\"amqp://localhost:5672\"", PsiLiteralExpression.class);
+        assertTrue("JmsConnectionFactory constructor should be skipped", getCamelIdeaUtils().skipEndpointValidation(element));
     }
 
     private CamelIdeaUtils getCamelIdeaUtils() {
