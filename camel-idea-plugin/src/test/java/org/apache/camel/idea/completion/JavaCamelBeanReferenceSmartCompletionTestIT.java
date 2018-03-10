@@ -155,7 +155,7 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
         assertThat(strings, Matchers.hasItems("multipleMethodsWithAnotherName", "multipleMethodsWithSameName", "multipleMethodsWithSameName"));
     }
 
-    public void testJavaBeanTestDataCompletionFile() {
+    public void testJavaBeanWithClassHierarchy() {
         myFixture.configureByFiles("CompleteJavaBeanRouteTestData.java", "CompleteJavaBeanTestData.java", "CompleteJavaBeanSuperClassTestData.java");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
@@ -168,6 +168,22 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
         myFixture.configureByFiles("CompleteJavaBeanRoute2TestData.java", "CompleteJavaBeanTestData.java", "CompleteJavaBeanSuperClassTestData.java");
         myFixture.complete(CompletionType.BASIC, 1);
         myFixture.checkResultByFile("CompleteJavaBeanRoute2ResultData.java", true);
+    }
+    
+    public void testJavaFieldBeanReference() {
+        myFixture.configureByFiles("CompleteJavaBeanRoute1TestData.java", "CompleteJavaBeanTestData.java");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertThat(strings, Matchers.not(Matchers.contains("thisIsVeryPrivate")));
+        assertThat(strings, Matchers.hasItems("letsDoThis", "anotherBeanMethod", "mySuperAbstractMethod"));
+        assertEquals("There is many options", 3, strings.size());
+    }
+
+    public void testJavaFieldBeanWithNoReference() {
+        myFixture.configureByFiles("CompleteJavaBeanRoute5TestData.java", "CompleteJavaBeanTestData.java");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals("There is many options", 0, strings.size());
     }
 
 
