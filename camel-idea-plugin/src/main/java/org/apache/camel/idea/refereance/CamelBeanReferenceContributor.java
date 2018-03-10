@@ -57,9 +57,10 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
     }
 
     private PsiReference[] createCamelBeanMethodReference(@NotNull PsiElement element) {
+
         final PsiElement beanClassElement = getCamelIdeaUtils().getBeanPsiElement(element);
         if (beanClassElement != null) {
-            PsiClass psiClass = (PsiClass) beanClassElement.getReference().resolve();
+            PsiClass psiClass = getCamelIdeaUtils().getBean(element);
             if (psiClass != null) {
                 final PsiLiteral beanNameElement = PsiTreeUtil.findChildOfType(PsiTreeUtil.getParentOfType(beanClassElement, PsiExpressionList.class), PsiLiteral.class);
                 String methodName = beanNameElement.getText().replace("\"", "");
