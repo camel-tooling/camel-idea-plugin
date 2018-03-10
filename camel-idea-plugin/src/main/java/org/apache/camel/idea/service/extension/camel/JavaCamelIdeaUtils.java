@@ -138,6 +138,9 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         if (getIdeaUtils().isElementFromConstructor(element, "ActiveMQXAConnectionFactory")) {
             return true;
         }
+        if (getIdeaUtils().isElementFromConstructor(element, "JmsConnectionFactory")) {
+            return true;
+        }
         if (getIdeaUtils().isElementFromAnnotation(element, "org.apache.camel.spi.UriEndpoint")) {
             return true;
         }
