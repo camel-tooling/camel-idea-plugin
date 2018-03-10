@@ -25,7 +25,6 @@ The plugin includes:
 - Camel icon in gutter can be customized by either the two provided icons or load a custom from file system
 - Supports loading camel-catalog from third party Maven repositories define in the project Maven pom.xml file 
 - Supports Maven, Gradle, and SBT based projects
-- Support for Groovy, Scala and Kotlin has been deprecated and is expected to be removed in a future release.
 
 When the plugin becomes more complete and stable then the intention is to donate the source code
 to Apache Software Foundation to be included out of the box at Apache Camel.

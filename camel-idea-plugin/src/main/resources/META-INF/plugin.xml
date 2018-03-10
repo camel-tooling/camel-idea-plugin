@@ -25,7 +25,6 @@
         <li>Preference page to customize property ignore list from property completion</li>
         <li>Preference page to exclude property/yml files from property completion</li>
         <li>Supports Maven, Gradle, and SBT based projects</li>
-        <li>Support for Groovy, Scala and Kotlin has been deprecated and is expected to be removed in a future release.</li>
       </ul>
     ]]></description>
 
@@ -33,6 +32,7 @@
       v0.5.1
       <ul>
         <li>Work in progress</li>
+        <li>Bug fixes</li>
       </ul>
       v0.5.0
       <ul>
