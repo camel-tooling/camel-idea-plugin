@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.inspection;
+package org.apache.camel.idea.annotator;
 
 import java.io.File;
 import java.io.IOException;
 
-import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
@@ -28,13 +28,23 @@ import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.testFramework.InspectionTestCase;
-import com.intellij.util.ui.UIUtil;
+import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import org.apache.camel.idea.service.CamelCatalogService;
+import org.apache.camel.idea.service.CamelService;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
-public class CamelInspectJavaJSonPathTestIT extends InspectionTestCase {
+/**
+ * Test Camel jsonpath validation and the expected value is highlighted
+ *
+ * @see CamelSimpleAnnotatorTestIT
+ */
+public class CamelJSonPathAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     public static final String CAMEL_JSONPATH_MAVEN_ARTIFACT = "org.apache.camel:camel-jsonpath:2.20.2";
+
+    public CamelJSonPathAnnotatorTestIT() {
+        setIgnoreCamelCoreLib(true);
+    }
 
     @Override
     protected void setUp() throws Exception {
@@ -68,7 +78,19 @@ public class CamelInspectJavaJSonPathTestIT extends InspectionTestCase {
                 ModuleRootModificationUtil.addDependency(myModule, library);
             });
         }
-        UIUtil.dispatchAllInvocationEvents();
+
+        disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelCatalogService.class));
+        disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelService.class));
+        ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(true);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        try {
+            super.tearDown();
+        } catch (Throwable e) {
+            // ignore
+        }
     }
 
     private File[] getMavenArtifacts(String... mavenAritfiact) throws IOException {
@@ -78,15 +100,23 @@ public class CamelInspectJavaJSonPathTestIT extends InspectionTestCase {
 
     @Override
     protected String getTestDataPath() {
-        return "src/test/resources/";
+        return "src/test/resources/testData/annotator";
     }
 
-    public void testJSonPathInspection() {
-        // force Camel enabled so the inspection test can run
-        CamelInspection inspection = new CamelInspection(true);
+    public void testAnnotatorJSonPathValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaWithJSonPath());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
 
-        // must be called fooroute as inspectionsimplejava fails for some odd reason
-        doTest("testData/barroute/", new LocalInspectionToolWrapper(inspection), "java 1.8");
+    private String getJavaWithJSonPath() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"direct:start\")\n"
+            + "            .transform()\n"
+            + "            .jsonpath(<error descr=\"Illegal syntax: $.store.book[* xxxxxxx]\">\"$.store.book[* xxxxxxx]\"</error>);"
+            + "        }\n"
+            + "    }";
     }
 
 }
