@@ -29,6 +29,7 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.tree.IElementType;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.EndpointValidationResult;
+import org.apache.camel.catalog.LanguageValidationResult;
 import org.apache.camel.catalog.SimpleValidationResult;
 import org.apache.camel.idea.annotator.CamelAnnotatorEndpointMessage;
 import org.apache.camel.idea.service.CamelCatalogService;
@@ -68,16 +69,10 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
         return true;
     }
 
-    @NotNull
-    @Override
-    public String getGroupDisplayName() {
-        return "Apache Camel";
-    }
-
     @Nullable
     @Override
     public String getStaticDescription() {
-        return "Inspects all Camel endpoints and Simple languages";
+        return "Inspects all Camel endpoints and languages";
     }
 
     @NotNull
@@ -113,6 +108,8 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
         boolean hasSimple = text.contains("${") || text.contains("$simple{");
         if (hasSimple && getCamelIdeaUtils().isCamelSimpleExpression(element)) {
             validateSimple(element, holder, text, isOnTheFly);
+        } else if (getCamelIdeaUtils().isCamelJSonPathExpression(element)) {
+            validateJSonPath(element, holder, text, isOnTheFly);
         } else if (QueryUtils.isQueryContainingCamelComponent(element.getProject(), text)) {
             validateEndpoint(element, holder, text, isOnTheFly);
         }
@@ -149,6 +146,46 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
             }
         } catch (Throwable e) {
             LOG.warn("Error inspection Camel simple: " + text, e);
+        }
+    }
+
+    private void validateJSonPath(@NotNull PsiElement element, final @NotNull ProblemsHolder holder, @NotNull String text, boolean isOnTheFly) {
+        CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
+        CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
+
+        IElementType type = element.getNode().getElementType();
+        LOG.trace("Element " + element + " of type: " + type + " to inspect jsonpath: " + text);
+
+        // must have camel-json library
+        boolean jsonLib = camelService.containsLibrary("camel-jsonpath", false);
+        if (!jsonLib) {
+            return;
+        }
+
+        try {
+            // need to use the classloader that can load classes from the project
+            ClassLoader loader = camelService.getProjectClassloader();
+            if (loader != null) {
+                LanguageValidationResult result;
+                boolean predicate = getCamelIdeaUtils().isCameJSonPathExpressionUsedAsPredicate(element);
+                if (predicate) {
+                    LOG.debug("Inspecting jsonpath predicate: " + text);
+                    result = catalogService.validateLanguagePredicate(loader, "jsonpath", text);
+                } else {
+                    LOG.debug("Inspecting jsonpath expression: " + text);
+                    result = catalogService.validateLanguageExpression(loader, "jsonpath", text);
+                }
+                if (!result.isSuccess()) {
+                    // favor the short error message
+                    String msg = result.getShortError();
+                    if (msg == null) {
+                        msg = result.getError();
+                    }
+                    holder.registerProblem(element, msg);
+                }
+            }
+        } catch (Throwable e) {
+            LOG.warn("Error inspection Camel jsonpath: " + text, e);
         }
     }
 

@@ -410,6 +410,13 @@
       <version>${hamcrest.version}</version>
       <scope>test</scope>
     </dependency>
+    <!-- TODO: delete me -->
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-jsonpath</artifactId>
+      <version>${camel.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

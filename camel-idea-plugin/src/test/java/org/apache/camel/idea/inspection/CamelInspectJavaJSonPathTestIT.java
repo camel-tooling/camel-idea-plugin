@@ -18,6 +18,7 @@ package org.apache.camel.idea.inspection;
 
 import java.io.File;
 import java.io.IOException;
+
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
@@ -31,28 +32,47 @@ import com.intellij.testFramework.InspectionTestCase;
 import com.intellij.util.ui.UIUtil;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
-public class CamelInspectJavaSimpleTestIT extends InspectionTestCase {
+public class CamelInspectJavaJSonPathTestIT extends InspectionTestCase {
 
-    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.20.2";
+    public static final String CAMEL_JSONPATH_MAVEN_ARTIFACT = "org.apache.camel:camel-jsonpath:2.20.2";
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        File[] mavenArtifacts = getMavenArtifacts(CAMEL_CORE_MAVEN_ARTIFACT);
-        VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(mavenArtifacts[0]);
-        final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myModule.getProject());
-        ApplicationManager.getApplication().runWriteAction(() -> {
-            Library library = projectLibraryTable.createLibrary("Maven: " + CAMEL_CORE_MAVEN_ARTIFACT);
-            final Library.ModifiableModel libraryModifiableModel = library.getModifiableModel();
-            libraryModifiableModel.addRoot(virtualFile, OrderRootType.CLASSES);
-            libraryModifiableModel.commit();
-            ModuleRootModificationUtil.addDependency(myModule, library);
-        });
+        File[] mavenArtifacts = getMavenArtifacts(CAMEL_JSONPATH_MAVEN_ARTIFACT);
+        for (File file : mavenArtifacts) {
+            final VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
+            final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myModule.getProject());
+            ApplicationManager.getApplication().runWriteAction(() -> {
+                String name = file.getName();
+                // special for camel JARs
+                if (name.contains("camel-core")) {
+                    name = "org.apache.camel:camel-core:2.20.2";
+                } else if (name.contains("camel-jsonpath")) {
+                    name = "org.apache.camel:camel-jsonpath:2.20.2";
+                } else {
+                    // need to fix the name
+                    if (name.endsWith(".jar")) {
+                        name = name.substring(0, name.length() - 4);
+                    }
+                    int lastDash = name.lastIndexOf('-');
+                    name = name.substring(0, lastDash) + ":" + name.substring(lastDash + 1);
+                    // add bogus groupid
+                    name = "com.foo:" + name;
+                }
+
+                Library library = projectLibraryTable.createLibrary("maven: " + name);
+                final Library.ModifiableModel libraryModifiableModel = library.getModifiableModel();
+                libraryModifiableModel.addRoot(virtualFile, OrderRootType.CLASSES);
+                libraryModifiableModel.commit();
+                ModuleRootModificationUtil.addDependency(myModule, library);
+            });
+        }
         UIUtil.dispatchAllInvocationEvents();
     }
 
     private File[] getMavenArtifacts(String... mavenAritfiact) throws IOException {
-        File[] libs = Maven.resolver().loadPomFromFile("pom.xml").resolve(mavenAritfiact).withoutTransitivity().asFile();
+        File[] libs = Maven.resolver().loadPomFromFile("pom.xml").resolve(mavenAritfiact).withTransitivity().asFile();
         return libs;
     }
 
@@ -61,12 +81,12 @@ public class CamelInspectJavaSimpleTestIT extends InspectionTestCase {
         return "src/test/resources/";
     }
 
-    public void testSimpleInspection() {
+    public void testJSonPathInspection() {
         // force Camel enabled so the inspection test can run
         CamelInspection inspection = new CamelInspection(true);
 
         // must be called fooroute as inspectionsimplejava fails for some odd reason
-        doTest("testData/fooroute/", new LocalInspectionToolWrapper(inspection), "java 1.8");
+        doTest("testData/barroute/", new LocalInspectionToolWrapper(inspection), "java 1.8");
     }
 
 }

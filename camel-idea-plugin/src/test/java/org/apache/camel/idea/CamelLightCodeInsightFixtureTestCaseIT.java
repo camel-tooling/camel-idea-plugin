@@ -68,7 +68,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
     /**
      * Get a list of artifact declared as dependencies in the pom.xml file.
      * <p>
-     *   The method take a String arrays off "G:A:P:C:?" "org.apache.camel:camel-core:2.19.0"
+     *   The method take a String arrays off "G:A:P:C:?" "org.apache.camel:camel-core:2.20.2"
      * </p>
      * @param mavneAritfiact - Array of maven artifact to resolve
      * @return Array of artifact files

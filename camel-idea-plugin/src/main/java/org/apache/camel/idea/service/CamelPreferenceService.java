@@ -67,6 +67,7 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
 
     private boolean realTimeEndpointValidation = true;
     private boolean realTimeSimpleValidation = true;
+    private boolean realTimeJSonPathValidation = true;
     private boolean highlightCustomOptions = true;
     private boolean downloadCatalog = true;
     private boolean scanThirdPartyComponents = true;
@@ -94,6 +95,14 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
 
     public void setRealTimeSimpleValidation(boolean realTimeSimpleValidation) {
         this.realTimeSimpleValidation = realTimeSimpleValidation;
+    }
+
+    public boolean isRealTimeJSonPathValidation() {
+        return realTimeJSonPathValidation;
+    }
+
+    public void setRealTimeJSonPathValidation(boolean realTimeJSonPathValidation) {
+        this.realTimeJSonPathValidation = realTimeJSonPathValidation;
     }
 
     public boolean isHighlightCustomOptions() {
@@ -246,6 +255,7 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
         CamelPreferenceService that = (CamelPreferenceService) o;
         return realTimeEndpointValidation == that.realTimeEndpointValidation
             && realTimeSimpleValidation == that.realTimeSimpleValidation
+            && realTimeJSonPathValidation == that.realTimeJSonPathValidation
             && downloadCatalog == that.downloadCatalog
             && scanThirdPartyComponents == that.scanThirdPartyComponents
             && scanThirdPartyLegacyComponents == that.scanThirdPartyLegacyComponents
@@ -261,11 +271,10 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     @Override
     public int hashCode() {
         return Objects.hash(currentCustomIcon, currentCustomIconPath,
-            realTimeEndpointValidation, realTimeSimpleValidation,
+            realTimeEndpointValidation, realTimeSimpleValidation, realTimeJSonPathValidation,
             downloadCatalog, scanThirdPartyComponents,
             scanThirdPartyLegacyComponents, showCamelIconInGutter,
             chosenCamelIcon, customIconFilePath, ignorePropertyList, excludePropertyFiles);
     }
-
 
 }

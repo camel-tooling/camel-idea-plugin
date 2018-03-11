@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<problems>
+  <problem>
+    <file>BarRoute.java</file>
+    <line>34</line>
+    <description>Illegal syntax: $.store.book[* xxxxxxx]</description>
+  </problem>
+</problems>
