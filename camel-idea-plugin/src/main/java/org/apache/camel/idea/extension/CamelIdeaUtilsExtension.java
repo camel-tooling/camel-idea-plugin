@@ -20,8 +20,6 @@ import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 
-
-
 /**
  * Extension point for CamelIdeaUtils for handling specific plugin language elements
  */
@@ -35,24 +33,20 @@ public interface CamelIdeaUtilsExtension {
     boolean isCamelRouteStart(PsiElement element);
 
     /**
-     * Is the given element a simple of a Camel DSL, eg <tt>simple</tt> or &lt;simple&gt;, <tt>log</tt> or &lt;log&gt;.
+     * Is the given element a language of a Camel route
+     *
+     * @param element the element
+     * @param language the language such as simple, jsonpath
      */
-    boolean isCamelSimpleExpression(PsiElement element);
+    boolean isCamelExpression(PsiElement element, String language);
 
     /**
-     * Is the given element a simple of a Camel route, eg <tt>simple</tt>, ot &lt;simple&gt;
+     * Is the given element a language used in a predicate of a Camel route
+     *
+     * @param element the element
+     * @param language the language such as simple, jsonpath
      */
-    boolean isCameSimpleExpressionUsedAsPredicate(PsiElement element);
-
-    /**
-     * Is the given element a jsonpath of a Camel route, eg <tt>jsonpath</tt>, ot &lt;jsonpath&gt;
-     */
-    boolean isCameJSonPathExpressionUsedAsPredicate(PsiElement element);
-
-    /**
-     * Is the given element a jsonpath of a Camel DSL, eg <tt>jsonpath</tt> or &lt;jsonpath&gt;.
-     */
-    boolean isCamelJSonPathExpression(PsiElement element);
+    boolean isCamelExpressionUsedAsPredicate(PsiElement element, String language);
 
     /**
      * Is the given element from a consumer endpoint used in a route from a <tt>from</tt>, <tt>fromF</tt>,
