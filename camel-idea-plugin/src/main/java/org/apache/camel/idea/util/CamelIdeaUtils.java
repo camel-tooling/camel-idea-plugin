@@ -30,7 +30,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.apache.camel.idea.extension.CamelIdeaUtilsExtension;
-
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Utility methods to work with Camel related {@link com.intellij.psi.PsiElement} elements.
@@ -61,9 +61,6 @@ public final class CamelIdeaUtils implements Disposable {
     /**
      * For java methods tries to find if element is inside a camel route start expression,
      * otherwise delegates to {@link CamelIdeaUtils#isCamelRouteStart(PsiElement)}.
-     *
-     * @param element
-     * @return
      */
     public boolean isCamelRouteStartExpression(PsiElement element) {
         if (PsiTreeUtil.findFirstParent(element, true, psiElement -> isCamelRouteStart(psiElement)) != null) {
@@ -73,35 +70,25 @@ public final class CamelIdeaUtils implements Disposable {
     }
 
     /**
-     * Is the given element a simple of a Camel DSL, eg <tt>simple</tt> or &lt;simple&gt;, <tt>log</tt> or &lt;log&gt;.
+     * Is the given element a language of a Camel DSL, eg <tt>simple</tt> or &lt;simple&gt;, <tt>log</tt> or &lt;log&gt;.
+     *
+     * @param element  the element
+     * @param language the language such as simple, jsonpath
      */
-    public boolean isCamelSimpleExpression(PsiElement element) {
+    public boolean isCamelExpression(@NotNull PsiElement element, @NotNull String language) {
         return enabledExtensions.stream()
-            .anyMatch(extension -> extension.isCamelExpression(element, "simple"));
+            .anyMatch(extension -> extension.isCamelExpression(element, language));
     }
 
     /**
-     * Is the given element a simple of a Camel route, eg <tt>simple</tt>, ot &lt;simple&gt;
+     * Is the given element a language of a Camel route, eg <tt>simple</tt>, ot &lt;simple&gt;
+     *
+     * @param element  the element
+     * @param language the language such as simple, jsonpath
      */
-    public boolean isCameSimpleExpressionUsedAsPredicate(PsiElement element) {
+    public boolean isCamelExpressionUsedAsPredicate(@NotNull PsiElement element, @NotNull String language) {
         return enabledExtensions.stream()
-            .anyMatch(extension -> extension.isCamelExpressionUsedAsPredicate(element, "simple"));
-    }
-
-    /**
-     * Is the given element a simple of a Camel DSL, eg <tt>jsonpath</tt>.
-     */
-    public boolean isCamelJSonPathExpression(PsiElement element) {
-        return enabledExtensions.stream()
-            .anyMatch(extension -> extension.isCamelExpression(element, "jsonpath"));
-    }
-
-    /**
-     * Is the given element a jsonpath of a Camel route, eg <tt>jsonpath</tt>, ot &lt;jsonpath&gt;
-     */
-    public boolean isCameJSonPathExpressionUsedAsPredicate(PsiElement element) {
-        return enabledExtensions.stream()
-            .anyMatch(extension -> extension.isCamelExpressionUsedAsPredicate(element, "jsonpath"));
+            .anyMatch(extension -> extension.isCamelExpressionUsedAsPredicate(element, language));
     }
 
     /**

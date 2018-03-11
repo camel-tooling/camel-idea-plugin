@@ -106,9 +106,9 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
         }
 
         boolean hasSimple = text.contains("${") || text.contains("$simple{");
-        if (hasSimple && getCamelIdeaUtils().isCamelSimpleExpression(element)) {
+        if (hasSimple && getCamelIdeaUtils().isCamelExpression(element, "simple")) {
             validateSimple(element, holder, text, isOnTheFly);
-        } else if (getCamelIdeaUtils().isCamelJSonPathExpression(element)) {
+        } else if (getCamelIdeaUtils().isCamelExpression(element, "jsonpath")) {
             validateJSonPath(element, holder, text, isOnTheFly);
         } else if (QueryUtils.isQueryContainingCamelComponent(element.getProject(), text)) {
             validateEndpoint(element, holder, text, isOnTheFly);
@@ -127,7 +127,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
             ClassLoader loader = camelService.getCamelCoreClassloader();
             if (loader != null) {
                 SimpleValidationResult result;
-                boolean predicate = getCamelIdeaUtils().isCameSimpleExpressionUsedAsPredicate(element);
+                boolean predicate = getCamelIdeaUtils().isCamelExpressionUsedAsPredicate(element, "simple");
                 if (predicate) {
                     LOG.debug("Inspecting simple predicate: " + text);
                     result = catalogService.validateSimplePredicate(loader, text);
@@ -167,7 +167,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
             ClassLoader loader = camelService.getProjectClassloader();
             if (loader != null) {
                 LanguageValidationResult result;
-                boolean predicate = getCamelIdeaUtils().isCameJSonPathExpressionUsedAsPredicate(element);
+                boolean predicate = getCamelIdeaUtils().isCamelExpressionUsedAsPredicate(element, "jsonpath");
                 if (predicate) {
                     LOG.debug("Inspecting jsonpath predicate: " + text);
                     result = catalogService.validateLanguagePredicate(loader, "jsonpath", text);

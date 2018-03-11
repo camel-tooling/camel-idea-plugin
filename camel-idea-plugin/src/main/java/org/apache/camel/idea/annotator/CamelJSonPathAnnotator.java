@@ -50,7 +50,7 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
 
         // only validate if the element is jsonpath element
-        if (getCamelIdeaUtils().isCamelJSonPathExpression(element)) {
+        if (getCamelIdeaUtils().isCamelExpression(element, "jsonpath")) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
             CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
 
@@ -66,7 +66,7 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
                 ClassLoader loader = camelService.getProjectClassloader();
                 if (loader != null) {
                     LanguageValidationResult result;
-                    boolean predicate = getCamelIdeaUtils().isCameJSonPathExpressionUsedAsPredicate(element);
+                    boolean predicate = getCamelIdeaUtils().isCamelExpressionUsedAsPredicate(element, "jsonpath");
                     if (predicate) {
                         LOG.debug("Inspecting jsonpath predicate: " + text);
                         result = catalogService.validateLanguagePredicate(loader, "jsonpath", text);
