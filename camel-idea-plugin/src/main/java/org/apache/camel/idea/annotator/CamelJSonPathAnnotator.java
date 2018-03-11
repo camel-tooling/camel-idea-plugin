@@ -54,6 +54,13 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
             CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
 
+            // must have camel-json library
+            boolean jsonLib = camelService.containsLibrary("camel-jsonpath");
+            if (!jsonLib) {
+                camelService.showMissingJSonPathJarNotification(element.getProject());
+                return;
+            }
+
             try {
                 // need to use the classloader that can load classes from the project
                 ClassLoader loader = camelService.getProjectClassloader();
@@ -63,6 +70,9 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
                     result = catalogService.validateLanguageExpression(loader, "jsonpath", text);
                     if (!result.isSuccess()) {
                         String error = result.getShortError();
+                        if (error == null) {
+                            result.getError();
+                        }
                         TextRange range = element.getTextRange();
                         if (result.getIndex() > 0) {
                             range = getAdjustedTextRange(element, range, text, result);
@@ -72,7 +82,7 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
                     }
                 }
             } catch (Throwable e) {
-                LOG.warn("Error validating Camel jsonpath expression: " + text, e);
+                LOG.warn("Error validating Camel JSonPath expression: " + text, e);
             }
         }
     }

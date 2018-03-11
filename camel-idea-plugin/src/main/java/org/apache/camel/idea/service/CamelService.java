@@ -26,7 +26,6 @@ import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -84,6 +83,7 @@ public class CamelService implements Disposable {
     private volatile boolean camelPresent;
     private Notification camelVersionNotification;
     private Notification camelMissingJSonSchemaNotification;
+    private Notification camelMissingJSonPathJarNotification;
 
     public IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);
@@ -101,6 +101,10 @@ public class CamelService implements Disposable {
         if (camelMissingJSonSchemaNotification != null) {
             camelMissingJSonSchemaNotification.expire();
             camelMissingJSonSchemaNotification = null;
+        }
+        if (camelMissingJSonPathJarNotification != null) {
+            camelMissingJSonPathJarNotification.expire();
+            camelMissingJSonPathJarNotification = null;
         }
 
         camelCoreClassloader = null;
@@ -175,10 +179,19 @@ public class CamelService implements Disposable {
                 Library[] libs = projectLibraries.toArray(new Library[projectLibraries.size()]);
                 projectClassloader = getIdeaUtils().newURLClassLoaderForLibrary(libs);
             } catch (Throwable e) {
-                LOG.warn("Error creating URLClassLoader for project", e);
+                LOG.warn("Error creating URLClassLoader for project. This exception is ignored.", e);
             }
         }
         return projectClassloader;
+    }
+
+    public void showMissingJSonPathJarNotification(Project project) {
+        if (camelMissingJSonPathJarNotification == null) {
+            Icon icon = getCamelPreferenceService().getCamelIcon();
+            camelMissingJSonPathJarNotification = CAMEL_NOTIFICATION_GROUP.createNotification("camel-jsonpath is not on classpath. Cannot perform real time JSonPath validation.",
+                NotificationType.WARNING).setImportant(true).setIcon(icon);
+            camelMissingJSonPathJarNotification.notify(project);
+        }
     }
 
     /**
