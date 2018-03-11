@@ -155,7 +155,17 @@ public class CamelService implements Disposable {
      * @return true if the library name is cached
      */
     public boolean containsLibrary(String lib) {
-        return processedLibraries.contains(lib);
+        boolean answer = processedLibraries.contains(lib);
+        if (!answer) {
+            for (Library l : projectLibraries) {
+                String name = l.getName();
+                if (name != null && name.contains(lib)) {
+                    answer = true;
+                    break;
+                }
+            }
+        }
+        return answer;
     }
 
     /**
