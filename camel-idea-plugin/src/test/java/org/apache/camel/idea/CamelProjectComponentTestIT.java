@@ -55,11 +55,11 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         CamelService service = ServiceManager.getService(myProject, CamelService.class);
         assertEquals(0, service.getLibraries().size());
 
-        File camelJar = createTestArchive("camel-core-2.19.0.jar");
+        File camelJar = createTestArchive("camel-core-2.20.2.jar");
         VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(camelJar);
 
         final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myProject);
-        addLibraryToModule(virtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-core:2.19.0-snapshot");
+        addLibraryToModule(virtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-core:2.20.2-snapshot");
 
         UIUtil.dispatchAllInvocationEvents();
         assertEquals(1, service.getLibraries().size());
@@ -70,13 +70,13 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         CamelService service = ServiceManager.getService(myProject, CamelService.class);
         assertEquals(0, service.getLibraries().size());
 
-        VirtualFile camelCoreVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(createTestArchive("camel-core-2.19.0.jar"));
-        VirtualFile camelSpringVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(createTestArchive("camel-spring-2.19.0.jar"));
+        VirtualFile camelCoreVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(createTestArchive("camel-core-2.20.2.jar"));
+        VirtualFile camelSpringVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(createTestArchive("camel-spring-2.20.2.jar"));
 
         final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myProject);
 
-        Library springLibrary = addLibraryToModule(camelSpringVirtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-spring:2.19.0-snapshot");
-        Library coreLibrary = addLibraryToModule(camelCoreVirtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-core:2.19.0-snapshot");
+        Library springLibrary = addLibraryToModule(camelSpringVirtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-spring:2.20.2-snapshot");
+        Library coreLibrary = addLibraryToModule(camelCoreVirtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-core:2.20.2-snapshot");
 
         UIUtil.dispatchAllInvocationEvents();
         assertEquals(2, service.getLibraries().size());
@@ -92,13 +92,13 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         CamelService service = ServiceManager.getService(myProject, CamelService.class);
         assertEquals(0, service.getLibraries().size());
 
-        File camelJar = createTestArchive("camel-core-2.19.0.jar");
+        File camelJar = createTestArchive("camel-core-2.20.2.jar");
         VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(camelJar);
 
         final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myProject);
         ApplicationManager.getApplication().runWriteAction(() -> {
             final Module moduleA = createModule("myNewModel.iml");
-            Library library = projectLibraryTable.createLibrary("Maven: org.apache.camel:camel-core:2.19.0-snapshot");
+            Library library = projectLibraryTable.createLibrary("Maven: org.apache.camel:camel-core:2.20.2-snapshot");
             final Library.ModifiableModel libraryModifiableModel = library.getModifiableModel();
             libraryModifiableModel.addRoot(virtualFile, OrderRootType.CLASSES);
             libraryModifiableModel.commit();
@@ -113,12 +113,12 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         CamelService service = ServiceManager.getService(myProject, CamelService.class);
         assertEquals(0, service.getLibraries().size());
 
-        VirtualFile camelCoreVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(createTestArchive("camel-core-2.19.0.jar"));
+        VirtualFile camelCoreVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(createTestArchive("camel-core-2.20.2.jar"));
         VirtualFile legacyJarPackagingFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(createTestArchive("legacy-custom-file-0.12.snapshot.jar"));
 
         final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myProject);
 
-        addLibraryToModule(camelCoreVirtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-core:2.19.0-snapshot");
+        addLibraryToModule(camelCoreVirtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-core:2.20.2-snapshot");
         addLibraryToModule(legacyJarPackagingFile, projectLibraryTable, "c:\\test\\libs\\legacy-custom-file-0.12.snapshot.jar");
 
         UIUtil.dispatchAllInvocationEvents();
@@ -130,11 +130,11 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         CamelService service = ServiceManager.getService(myProject, CamelService.class);
         assertEquals(0, service.getLibraries().size());
 
-        VirtualFile camelCoreVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(createTestArchive("camel-core-2.19.0.jar"));
+        VirtualFile camelCoreVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(createTestArchive("camel-core-2.20.2.jar"));
 
         final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myProject);
 
-        addLibraryToModule(camelCoreVirtualFile, projectLibraryTable, "org.apache.camel:camel-core:2.19.0-snapshot");
+        addLibraryToModule(camelCoreVirtualFile, projectLibraryTable, "org.apache.camel:camel-core:2.20.2-snapshot");
 
         UIUtil.dispatchAllInvocationEvents();
         assertEquals(1, service.getLibraries().size());
