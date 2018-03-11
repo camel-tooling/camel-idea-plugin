@@ -68,7 +68,7 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
                     LanguageValidationResult result;
                     boolean predicate = getCamelIdeaUtils().isCameJSonPathExpressionUsedAsPredicate(element);
                     if (predicate) {
-                        LOG.debug("Inspecting jsonpath expression: " + text);
+                        LOG.debug("Inspecting jsonpath predicate: " + text);
                         result = catalogService.validateLanguagePredicate(loader, "jsonpath", text);
                     } else {
                         LOG.debug("Inspecting jsonpath expression: " + text);
@@ -77,7 +77,7 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
                     if (!result.isSuccess()) {
                         String error = result.getShortError();
                         if (error == null) {
-                            result.getError();
+                            error = result.getError();
                         }
                         TextRange range = element.getTextRange();
                         if (result.getIndex() > 0) {
@@ -88,7 +88,7 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
                     }
                 }
             } catch (Throwable e) {
-                LOG.warn("Error validating Camel JSonPath expression: " + text, e);
+                LOG.warn("Error inspecting Camel jsonpath: " + text, e);
             }
         }
     }
