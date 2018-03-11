@@ -98,7 +98,25 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
                     return "true".equalsIgnoreCase(doWhile);
                 }
             }
-            return Arrays.stream(SIMPLE_PREDICATE).anyMatch(n -> getIdeaUtils().hasParentXmlTag(xml, n));
+            return Arrays.stream(PREDICATE_EIPS).anyMatch(n -> getIdeaUtils().hasParentXmlTag(xml, n));
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isCameJSonPathExpressionUsedAsPredicate(PsiElement element) {
+        // xml
+        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        if (xml != null) {
+            // special for loop which can be both expression or predicate
+            if (getIdeaUtils().hasParentXmlTag(xml, "loop")) {
+                XmlTag parent = PsiTreeUtil.getParentOfType(xml, XmlTag.class);
+                if (parent != null) {
+                    String doWhile = parent.getAttributeValue("doWhile");
+                    return "true".equalsIgnoreCase(doWhile);
+                }
+            }
+            return Arrays.stream(PREDICATE_EIPS).anyMatch(n -> getIdeaUtils().hasParentXmlTag(xml, n));
         }
         return false;
     }

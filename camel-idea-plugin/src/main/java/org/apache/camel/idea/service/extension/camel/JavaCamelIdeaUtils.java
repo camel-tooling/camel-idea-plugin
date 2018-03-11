@@ -97,7 +97,39 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                     method = ((PsiMethodCallExpression) exp).resolveMethod();
                     if (method != null) {
                         String name = method.getName();
-                        return Arrays.stream(SIMPLE_PREDICATE).anyMatch(name::equals);
+                        return Arrays.stream(PREDICATE_EIPS).anyMatch(name::equals);
+                    }
+                }
+            }
+            return false;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isCameJSonPathExpressionUsedAsPredicate(PsiElement element) {
+        // java
+        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        if (call != null) {
+            // okay dive into the psi and find out which EIP are using the simple
+            PsiElement child = call.getFirstChild();
+            if (child instanceof PsiReferenceExpression) {
+                PsiExpression exp = ((PsiReferenceExpression) child).getQualifierExpression();
+                if (exp == null) {
+                    // okay it was not a direct method call, so see if it was passed in as a parameter instead (expression list)
+                    element = element.getParent();
+                    if (element instanceof PsiExpressionList) {
+                        element = element.getParent();
+                    }
+                    if (element instanceof PsiMethodCallExpression) {
+                        exp = PsiTreeUtil.getParentOfType(element.getParent(), PsiMethodCallExpression.class);
+                    }
+                }
+                if (exp instanceof PsiMethodCallExpression) {
+                    PsiMethod method = ((PsiMethodCallExpression) exp).resolveMethod();
+                    if (method != null) {
+                        String name = method.getName();
+                        return Arrays.stream(PREDICATE_EIPS).anyMatch(name::equals);
                     }
                 }
             }

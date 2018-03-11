@@ -66,8 +66,14 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
                 ClassLoader loader = camelService.getProjectClassloader();
                 if (loader != null) {
                     LanguageValidationResult result;
-                    LOG.debug("Validate jsonpath expression: " + text);
-                    result = catalogService.validateLanguageExpression(loader, "jsonpath", text);
+                    boolean predicate = getCamelIdeaUtils().isCameJSonPathExpressionUsedAsPredicate(element);
+                    if (predicate) {
+                        LOG.debug("Inspecting jsonpath expression: " + text);
+                        result = catalogService.validateLanguagePredicate(loader, "jsonpath", text);
+                    } else {
+                        LOG.debug("Inspecting jsonpath expression: " + text);
+                        result = catalogService.validateLanguageExpression(loader, "jsonpath", text);
+                    }
                     if (!result.isSuccess()) {
                         String error = result.getShortError();
                         if (error == null) {

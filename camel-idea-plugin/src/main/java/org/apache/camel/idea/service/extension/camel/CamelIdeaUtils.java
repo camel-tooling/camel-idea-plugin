@@ -24,7 +24,7 @@ abstract class CamelIdeaUtils {
     protected static final Logger LOG = Logger.getInstance(CamelIdeaUtils.class);
 
     protected static final String[] ROUTE_START = new String[]{"from", "fromF", "rest"};
-    protected static final String[] SIMPLE_PREDICATE = new String[]{"completion", "completionPredicate", "when", "onWhen", "handled", "continued", "retryWhile", "filter", "validate", "loopDoWhile"};
+    protected static final String[] PREDICATE_EIPS = new String[]{"completion", "completionPredicate", "when", "onWhen", "handled", "continued", "retryWhile", "filter", "validate", "loopDoWhile"};
     protected static final String[] CONSUMER_ENDPOINT = new String[]{"from", "fromF", "interceptFrom", "pollEnrich"};
     protected static final String[] PRODUCER_ENDPOINT = new String[]{"to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel"};
     protected static final String[] STRING_FORMAT_ENDPOINT = new String[]{"fromF", "toF", "format"};
