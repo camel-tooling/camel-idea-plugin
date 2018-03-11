@@ -50,7 +50,7 @@ public class CamelPreferenceEntryPage implements SearchableConfigurable, Configu
 
     @Override
     public void apply() throws ConfigurationException {
-
+        // noop
     }
 
     @Nls

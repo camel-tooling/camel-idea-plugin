@@ -78,9 +78,12 @@ public class CamelService implements Disposable {
     private Library slf4japiLibrary;
     private ClassLoader camelCoreClassloader;
     private Set<String> processedLibraries = new HashSet<>();
+    private Set<Library> projectLibraries = new HashSet<>();
+    private ClassLoader projectClassloader;
     private volatile boolean camelPresent;
     private Notification camelVersionNotification;
     private Notification camelMissingJSonSchemaNotification;
+    private Notification camelMissingJSonPathJarNotification;
 
     public IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);
@@ -89,6 +92,7 @@ public class CamelService implements Disposable {
     @Override
     public void dispose() {
         processedLibraries.clear();
+        projectLibraries.clear();
 
         if (camelVersionNotification != null) {
             camelVersionNotification.expire();
@@ -98,10 +102,15 @@ public class CamelService implements Disposable {
             camelMissingJSonSchemaNotification.expire();
             camelMissingJSonSchemaNotification = null;
         }
+        if (camelMissingJSonPathJarNotification != null) {
+            camelMissingJSonPathJarNotification.expire();
+            camelMissingJSonPathJarNotification = null;
+        }
 
         camelCoreClassloader = null;
         camelCoreLibrary = null;
         slf4japiLibrary = null;
+        projectClassloader = null;
     }
 
     /**
@@ -161,6 +170,31 @@ public class CamelService implements Disposable {
     }
 
     /**
+     * Gets the classloader for the project classpath
+     */
+    public ClassLoader getProjectClassloader() {
+        ClassLoader loader = projectClassloader;
+        if (loader == null) {
+            try {
+                Library[] libs = projectLibraries.toArray(new Library[projectLibraries.size()]);
+                projectClassloader = getIdeaUtils().newURLClassLoaderForLibrary(libs);
+            } catch (Throwable e) {
+                LOG.warn("Error creating URLClassLoader for project. This exception is ignored.", e);
+            }
+        }
+        return projectClassloader;
+    }
+
+    public void showMissingJSonPathJarNotification(Project project) {
+        if (camelMissingJSonPathJarNotification == null) {
+            Icon icon = getCamelPreferenceService().getCamelIcon();
+            camelMissingJSonPathJarNotification = CAMEL_NOTIFICATION_GROUP.createNotification("camel-jsonpath is not on classpath. Cannot perform real time JSonPath validation.",
+                NotificationType.WARNING).setImportant(true).setIcon(icon);
+            camelMissingJSonPathJarNotification.notify(project);
+        }
+    }
+
+    /**
      * Scan for Camel project present and setup {@link CamelCatalog} to use same version of Camel as the project does.
      * These two version needs to be aligned to offer the best tooling support on the given project.
      */
@@ -200,9 +234,11 @@ public class CamelService implements Disposable {
                 version = version.replace("snapshot", "SNAPSHOT");
             }
 
+            projectLibraries.add(library);
+
             if (isSlf4jMavenDependency(groupId, artifactId)) {
                 slf4japiLibrary = library;
-            } else if (isCamelMavenDependency(groupId, artifactId)) {
+            } else if (isCamelCoreMavenDependency(groupId, artifactId)) {
                 camelCoreLibrary = library;
 
                 // okay its a camel project
@@ -249,7 +285,7 @@ public class CamelService implements Disposable {
         return "org.slf4j".equals(groupId) && "slf4j-api".equals(artifactId);
     }
 
-    private boolean isCamelMavenDependency(String groupId, String artifactId) {
+    private boolean isCamelCoreMavenDependency(String groupId, String artifactId) {
         return "org.apache.camel".equals(groupId) && "camel-core".equals(artifactId);
     }
 

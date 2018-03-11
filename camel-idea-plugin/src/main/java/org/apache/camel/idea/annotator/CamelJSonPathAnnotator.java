@@ -23,7 +23,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlAttributeValue;
 import org.apache.camel.catalog.CamelCatalog;
-import org.apache.camel.catalog.SimpleValidationResult;
+import org.apache.camel.catalog.LanguageValidationResult;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
@@ -32,45 +32,53 @@ import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Validate simple expression and annotated the specific simple expression to highlight the error in the editor
+ * Validate JSonPath expression and annotated the specific jsonpath expression to highlight the error in the editor
  */
-public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
+public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
 
     private static final Logger LOG = Logger.getInstance(CamelEndpointAnnotator.class);
 
     @Override
     boolean isEnabled() {
-        return ServiceManager.getService(CamelPreferenceService.class).isRealTimeSimpleValidation();
+        return ServiceManager.getService(CamelPreferenceService.class).isRealTimeJSonPathValidation();
     }
 
     /**
-     * Validate simple expression. eg simple("${body}")
+     * Validate jsonpath expression. eg jsonpath("$.store.book[?(@.price < 10)]")
      * if the expression is not valid a error annotation is created and highlight the invalid value.
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
 
-        // we only want to evaluate if there is a simple function as plain text without functions dont make sense to validate
-        boolean hasSimple = text.contains("${") || text.contains("$simple{");
-        if (hasSimple && getCamelIdeaUtils().isCamelSimpleExpression(element)) {
+        // only validate if the element is jsonpath element
+        if (getCamelIdeaUtils().isCamelJSonPathExpression(element)) {
             CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
             CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
 
-            boolean predicate = false;
+            // must have camel-json library
+            boolean jsonLib = camelService.containsLibrary("camel-jsonpath");
+            if (!jsonLib) {
+                camelService.showMissingJSonPathJarNotification(element.getProject());
+                return;
+            }
+
             try {
-                // need to use the classloader that can load classes from the camel-core
-                ClassLoader loader = camelService.getCamelCoreClassloader();
+                // need to use the classloader that can load classes from the project
+                ClassLoader loader = camelService.getProjectClassloader();
                 if (loader != null) {
-                    SimpleValidationResult result;
-                    predicate = getCamelIdeaUtils().isCameSimpleExpressionUsedAsPredicate(element);
+                    LanguageValidationResult result;
+                    boolean predicate = getCamelIdeaUtils().isCameJSonPathExpressionUsedAsPredicate(element);
                     if (predicate) {
-                        LOG.debug("Validate simple predicate: " + text);
-                        result = catalogService.validateSimplePredicate(loader, text);
+                        LOG.debug("Inspecting jsonpath expression: " + text);
+                        result = catalogService.validateLanguagePredicate(loader, "jsonpath", text);
                     } else {
-                        LOG.debug("Validate simple expression: " + text);
-                        result = catalogService.validateSimpleExpression(loader, text);
+                        LOG.debug("Inspecting jsonpath expression: " + text);
+                        result = catalogService.validateLanguageExpression(loader, "jsonpath", text);
                     }
                     if (!result.isSuccess()) {
                         String error = result.getShortError();
+                        if (error == null) {
+                            result.getError();
+                        }
                         TextRange range = element.getTextRange();
                         if (result.getIndex() > 0) {
                             range = getAdjustedTextRange(element, range, text, result);
@@ -80,7 +88,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                     }
                 }
             } catch (Throwable e) {
-                LOG.warn("Error validating Camel simple " + (predicate ? "predicate" : "expression") + ": " + text, e);
+                LOG.warn("Error validating Camel JSonPath expression: " + text, e);
             }
         }
     }
@@ -89,7 +97,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
      * Adjust the text range according to the type of ${@link PsiElement}
      * @return a new text range
      */
-    private TextRange getAdjustedTextRange(@NotNull PsiElement element, TextRange range, String text, SimpleValidationResult result) {
+    private TextRange getAdjustedTextRange(@NotNull PsiElement element, TextRange range, String text, LanguageValidationResult result) {
         if (element instanceof XmlAttributeValue) {
             // we can use the xml range as-is
             range = ((XmlAttributeValue) element).getValueTextRange();
