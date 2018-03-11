@@ -55,7 +55,7 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
             CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
 
             // must have camel-json library
-            boolean jsonLib = camelService.containsLibrary("camel-jsonpath");
+            boolean jsonLib = camelService.containsLibrary("camel-jsonpath", false);
             if (!jsonLib) {
                 camelService.showMissingJSonPathJarNotification(element.getProject());
                 return;

@@ -157,7 +157,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
         LOG.trace("Element " + element + " of type: " + type + " to inspect jsonpath: " + text);
 
         // must have camel-json library
-        boolean jsonLib = camelService.containsLibrary("camel-jsonpath");
+        boolean jsonLib = camelService.containsLibrary("camel-jsonpath", false);
         if (!jsonLib) {
             return;
         }

@@ -154,9 +154,9 @@ public class CamelService implements Disposable {
     /**
      * @return true if the library name is cached
      */
-    public boolean containsLibrary(String lib) {
+    public boolean containsLibrary(String lib, boolean quickCheck) {
         boolean answer = processedLibraries.contains(lib);
-        if (!answer) {
+        if (!answer && !quickCheck) {
             for (Library l : projectLibraries) {
                 String name = l.getName();
                 if (name != null && name.contains(lib)) {
@@ -370,7 +370,7 @@ public class CamelService implements Disposable {
                     String artifactId = split[startIdx].trim();
 
                     // is it a known library then continue
-                    if (containsLibrary(artifactId)) {
+                    if (containsLibrary(artifactId, true)) {
                         continue;
                     }
 
