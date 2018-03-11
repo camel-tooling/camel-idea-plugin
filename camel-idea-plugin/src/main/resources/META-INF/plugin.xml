@@ -140,7 +140,7 @@
     <annotator language="XML" implementationClass="org.apache.camel.idea.annotator.CamelJSonPathAnnotator"/>
 
     <!-- inspection to validate endpoints -->
-    <localInspection groupName="Apache Camel" implementationClass="org.apache.camel.idea.inspection.CamelInspection"/>
+    <localInspection displayName="Camel inspection" groupName="Apache Camel" implementationClass="org.apache.camel.idea.inspection.CamelInspection"/>
 
     <!-- preference -->
     <applicationConfigurable id="camel" groupId="language" displayName="Apache Camel" instance="org.apache.camel.idea.preference.CamelPreferenceEntryPage" />

@@ -69,12 +69,6 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
         return true;
     }
 
-    @NotNull
-    @Override
-    public String getGroupDisplayName() {
-        return "Apache Camel";
-    }
-
     @Nullable
     @Override
     public String getStaticDescription() {

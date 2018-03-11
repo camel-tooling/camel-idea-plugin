@@ -21,8 +21,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.IdeaUtils;
-import org.jetbrains.annotations.NotNull;
-
 
 /**
  * Camel inspection to validate Camel endpoints and languages such as simple.
@@ -38,12 +36,6 @@ public class CamelInspection extends AbstractCamelInspection {
 
     public IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);
-    }
-
-    @NotNull
-    @Override
-    public String getDisplayName() {
-        return "Camel Inspection";
     }
 
     @Override
