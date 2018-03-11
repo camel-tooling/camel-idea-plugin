@@ -21,7 +21,7 @@
 
   <groupId>org.apache.camel</groupId>
   <artifactId>camel-ide</artifactId>
-  <version>0.5.1-SNAPSHOT</version>
+  <version>0.5.2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Apache Camel IDE :: Parent</name>
  
