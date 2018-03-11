@@ -77,7 +77,7 @@ public final class CamelIdeaUtils implements Disposable {
      */
     public boolean isCamelSimpleExpression(PsiElement element) {
         return enabledExtensions.stream()
-            .anyMatch(extension -> extension.isCamelSimpleExpression(element));
+            .anyMatch(extension -> extension.isCamelExpression(element, "simple"));
     }
 
     /**
@@ -85,7 +85,7 @@ public final class CamelIdeaUtils implements Disposable {
      */
     public boolean isCameSimpleExpressionUsedAsPredicate(PsiElement element) {
         return enabledExtensions.stream()
-            .anyMatch(extension -> extension.isCameSimpleExpressionUsedAsPredicate(element));
+            .anyMatch(extension -> extension.isCamelExpressionUsedAsPredicate(element, "simple"));
     }
 
     /**
@@ -93,7 +93,7 @@ public final class CamelIdeaUtils implements Disposable {
      */
     public boolean isCamelJSonPathExpression(PsiElement element) {
         return enabledExtensions.stream()
-            .anyMatch(extension -> extension.isCamelJSonPathExpression(element));
+            .anyMatch(extension -> extension.isCamelExpression(element, "jsonpath"));
     }
 
     /**
@@ -101,7 +101,7 @@ public final class CamelIdeaUtils implements Disposable {
      */
     public boolean isCameJSonPathExpressionUsedAsPredicate(PsiElement element) {
         return enabledExtensions.stream()
-            .anyMatch(extension -> extension.isCameJSonPathExpressionUsedAsPredicate(element));
+            .anyMatch(extension -> extension.isCamelExpressionUsedAsPredicate(element, "jsonpath"));
     }
 
     /**

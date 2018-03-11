@@ -39,7 +39,6 @@ import com.intellij.psi.util.PsiUtil;
 import org.apache.camel.idea.extension.CamelIdeaUtilsExtension;
 import org.apache.camel.idea.util.IdeaUtils;
 
-
 public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
 
     @Override
@@ -51,70 +50,38 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     }
 
     @Override
-    public boolean isCamelSimpleExpression(PsiElement element) {
+    public boolean isCamelExpression(PsiElement element, String language) {
         // java method call
-        if (getIdeaUtils().isFromJavaMethodCall(element, true, "simple", "log")) {
+        String[] methods = null;
+        if ("simple".equals(language)) {
+            methods = new String[]{"simple", "log"};
+        } else if ("jsonpath".equals(language)) {
+            methods = new String[]{"jsonpath"};
+        }
+        if (getIdeaUtils().isFromJavaMethodCall(element, true, methods)) {
             return true;
         }
         return false;
     }
 
     @Override
-    public boolean isCamelJSonPathExpression(PsiElement element) {
-        // java method call
-        if (getIdeaUtils().isFromJavaMethodCall(element, true, "jsonpath")) {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean isCameSimpleExpressionUsedAsPredicate(PsiElement element) {
+    public boolean isCamelExpressionUsedAsPredicate(PsiElement element, String language) {
         // java
         PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
         if (call != null) {
 
-            PsiMethod method = call.resolveMethod();
-            if (method != null) {
-                // if its coming from the log EIP then its not a predicate
-                String name = method.getName();
-                if ("log".equals(name)) {
-                    return false;
-                }
-            }
-
-            // okay dive into the psi and find out which EIP are using the simple
-            PsiElement child = call.getFirstChild();
-            if (child instanceof PsiReferenceExpression) {
-                PsiExpression exp = ((PsiReferenceExpression) child).getQualifierExpression();
-                if (exp == null) {
-                    // okay it was not a direct method call, so see if it was passed in as a parameter instead (expression list)
-                    element = element.getParent();
-                    if (element instanceof PsiExpressionList) {
-                        element = element.getParent();
-                    }
-                    if (element instanceof PsiMethodCallExpression) {
-                        exp = PsiTreeUtil.getParentOfType(element.getParent(), PsiMethodCallExpression.class);
-                    }
-                }
-                if (exp instanceof PsiMethodCallExpression) {
-                    method = ((PsiMethodCallExpression) exp).resolveMethod();
-                    if (method != null) {
-                        String name = method.getName();
-                        return Arrays.stream(PREDICATE_EIPS).anyMatch(name::equals);
+            if ("simple".equals(language)) {
+                // extra check for simple language
+                PsiMethod method = call.resolveMethod();
+                if (method != null) {
+                    // if its coming from the log EIP then its not a predicate
+                    String name = method.getName();
+                    if ("log".equals(name)) {
+                        return false;
                     }
                 }
             }
-            return false;
-        }
-        return false;
-    }
 
-    @Override
-    public boolean isCameJSonPathExpressionUsedAsPredicate(PsiElement element) {
-        // java
-        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-        if (call != null) {
             // okay dive into the psi and find out which EIP are using the simple
             PsiElement child = call.getFirstChild();
             if (child instanceof PsiReferenceExpression) {

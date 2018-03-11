@@ -28,7 +28,6 @@ import org.apache.camel.idea.extension.CamelIdeaUtilsExtension;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.apache.camel.idea.util.StringUtils;
 
-
 public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
 
     @Override
@@ -49,7 +48,7 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
     }
 
     @Override
-    public boolean isCamelSimpleExpression(PsiElement element) {
+    public boolean isCamelExpression(PsiElement element, String language) {
         // xml
         XmlTag xml;
         if (element instanceof XmlTag) {
@@ -59,55 +58,25 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
         }
         if (xml != null) {
             String name = xml.getLocalName();
-            return "simple".equals(name) || "log".equals(name);
+            // extra check for simple language
+            if ("simple".equals(language) && "log".equals(name)) {
+                return true;
+            }
+            return language.equals(name);
         }
         return false;
     }
 
     @Override
-    public boolean isCamelJSonPathExpression(PsiElement element) {
-        // xml
-        XmlTag xml;
-        if (element instanceof XmlTag) {
-            xml = (XmlTag) element;
-        } else {
-            xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        }
-        if (xml != null) {
-            String name = xml.getLocalName();
-            return "jsonopath".equals(name);
-        }
-        return false;
-    }
-
-    @Override
-    public boolean isCameSimpleExpressionUsedAsPredicate(PsiElement element) {
+    public boolean isCamelExpressionUsedAsPredicate(PsiElement element, String language) {
         // xml
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (xml != null) {
             // if its coming from the log EIP then its not a predicate
-            if (xml.getLocalName().equals("log")) {
+            if ("simple".equals(language) && xml.getLocalName().equals("log")) {
                 return false;
             }
 
-            // special for loop which can be both expression or predicate
-            if (getIdeaUtils().hasParentXmlTag(xml, "loop")) {
-                XmlTag parent = PsiTreeUtil.getParentOfType(xml, XmlTag.class);
-                if (parent != null) {
-                    String doWhile = parent.getAttributeValue("doWhile");
-                    return "true".equalsIgnoreCase(doWhile);
-                }
-            }
-            return Arrays.stream(PREDICATE_EIPS).anyMatch(n -> getIdeaUtils().hasParentXmlTag(xml, n));
-        }
-        return false;
-    }
-
-    @Override
-    public boolean isCameJSonPathExpressionUsedAsPredicate(PsiElement element) {
-        // xml
-        XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        if (xml != null) {
             // special for loop which can be both expression or predicate
             if (getIdeaUtils().hasParentXmlTag(xml, "loop")) {
                 XmlTag parent = PsiTreeUtil.getParentOfType(xml, XmlTag.class);
