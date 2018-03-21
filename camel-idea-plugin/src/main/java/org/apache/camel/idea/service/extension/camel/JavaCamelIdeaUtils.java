@@ -85,6 +85,8 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             // okay dive into the psi and find out which EIP are using the simple
             PsiElement child = call.getFirstChild();
             if (child instanceof PsiReferenceExpression) {
+                // this code is needed as it may be used as a method call as a parameter and this requires
+                // a bit of psi code to unwrap the right elements.
                 PsiExpression exp = ((PsiReferenceExpression) child).getQualifierExpression();
                 if (exp == null) {
                     // okay it was not a direct method call, so see if it was passed in as a parameter instead (expression list)
