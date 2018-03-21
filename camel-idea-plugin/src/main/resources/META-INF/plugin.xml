@@ -31,6 +31,7 @@
   <change-notes><![CDATA[
       v0.5.3
       <ul>
+        <li>The preference UI has now a separate page for validation settings</li>
         <li>Bug fixes</li>
       </ul>
       v0.5.2
