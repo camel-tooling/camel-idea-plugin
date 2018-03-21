@@ -24,7 +24,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.*;
-import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.components.JBCheckBox;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
@@ -56,31 +55,13 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
             List<String> lines = Files.readAllLines(Paths.get("src/main/resources/META-INF/plugin.xml"), StandardCharsets.UTF_8);
             List<String> trimmedStrings =
                     lines.stream().map(String::trim).collect(Collectors.toList());
-            int indexOfApplicationConfigurable = trimmedStrings.indexOf("<applicationConfigurable parentId=\"camel\" id=\"camel.editor\" "
-                    + "groupId=\"language\" displayName=\"Editor Settings\" "
+            int indexOfApplicationConfigurable = trimmedStrings.indexOf("<applicationConfigurable parentId=\"camel\" id=\"camel.misc\" "
+                    + "groupId=\"language\" displayName=\"Miscellaneous\" "
                     + "instance=\"org.apache.camel.idea.preference.editorsettings.CamelEditorSettingsPage\"/>");
             assertTrue(indexOfApplicationConfigurable > 0);
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void testShouldContainRealTimeEndpointValidationCatalogCheckBox() {
-        JBCheckBox checkBox = editorSettingsPage.getRealTimeEndpointValidationCatalogCheckBox();
-        assertEquals("Real time validation of Camel endpoints in editor", checkBox.getText());
-        assertTrue(checkBox.isSelected());
-    }
-
-    public void testShouldContainRealTimeSimpleValidationCatalogCheckBox() {
-        JBCheckBox checkBox = editorSettingsPage.getRealTimeSimpleValidationCatalogCheckBox();
-        assertEquals("Real time validation of Camel simple language in editor", checkBox.getText());
-        assertTrue(checkBox.isSelected());
-    }
-
-    public void testShouldContainHighlightCustomOptionsCheckBox() {
-        JBCheckBox checkBox = editorSettingsPage.getHighlightCustomOptionsCheckBox();
-        assertEquals("Highlight custom endpoint options as warnings in editor", checkBox.getText());
-        assertTrue(checkBox.isSelected());
     }
 
     public void testShouldContainDownloadCatalogCheckBox() {
@@ -166,59 +147,6 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
         assertEquals(false, button.isEnabled());
     }
 
-    public void testShouldChangeStateOfRealTimeEndpointValidationCatalogCheckBox() throws ConfigurationException {
-        JBCheckBox checkBox = editorSettingsPage.getRealTimeEndpointValidationCatalogCheckBox();
-        assertEquals(true, checkBox.isSelected());
-        assertEquals(true, editorSettingsPage.getCamelPreferenceService().isRealTimeEndpointValidation());
-        checkBox.setSelected(false);
-        editorSettingsPage.apply();
-        assertEquals(false, checkBox.isSelected());
-        assertEquals(false, editorSettingsPage.getCamelPreferenceService().isRealTimeEndpointValidation());
-    }
-
-    public void testShouldChangeStateOfRealTimeSimpleValidationCatalogCheckBox() throws ConfigurationException {
-        JBCheckBox checkBox = editorSettingsPage.getRealTimeSimpleValidationCatalogCheckBox();
-        assertEquals(true, checkBox.isSelected());
-        assertEquals(true, editorSettingsPage.getCamelPreferenceService().isRealTimeSimpleValidation());
-        checkBox.setSelected(false);
-        editorSettingsPage.apply();
-        assertEquals(false, checkBox.isSelected());
-        assertEquals(false, editorSettingsPage.getCamelPreferenceService().isRealTimeSimpleValidation());
-    }
-
-    public void testShouldChangeStateOfHighlightCustomOptionsCheckBox() throws ConfigurationException {
-        JBCheckBox checkBox = editorSettingsPage.getHighlightCustomOptionsCheckBox();
-        assertEquals(true, checkBox.isSelected());
-        assertEquals(true, editorSettingsPage.getCamelPreferenceService().isHighlightCustomOptions());
-        checkBox.setSelected(false);
-        editorSettingsPage.apply();
-        assertEquals(false, checkBox.isSelected());
-        assertEquals(false, editorSettingsPage.getCamelPreferenceService().isHighlightCustomOptions());
-    }
-
-    public void testShouldResetRealTimeEndpointValidationCatalogCheckBox() {
-        JBCheckBox checkBox = editorSettingsPage.getRealTimeEndpointValidationCatalogCheckBox();
-        checkBox.setSelected(false);
-        editorSettingsPage.reset();
-        assertTrue(checkBox.isSelected());
-    }
-
-    public void testShouldRestRealTimeSimpleValidationCatalogCheckBox() {
-        JBCheckBox checkBox = editorSettingsPage.getRealTimeSimpleValidationCatalogCheckBox();
-        boolean status = checkBox.isSelected();
-        checkBox.setSelected(!status);
-        editorSettingsPage.reset();
-        assertEquals(status, checkBox.isSelected());
-    }
-
-    public void testShouldResetHighlightCustomOptionsCheckBox() {
-        JBCheckBox checkBox = editorSettingsPage.getHighlightCustomOptionsCheckBox();
-        boolean status = checkBox.isSelected();
-        checkBox.setSelected(!status);
-        editorSettingsPage.reset();
-        assertEquals(status, checkBox.isSelected());
-    }
-
     public void testShouldDownloadCatalogCheckBox() {
         JBCheckBox checkBox = editorSettingsPage.getDownloadCatalogCheckBox();
         checkBox.setSelected(false);
@@ -264,16 +192,6 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
         editorSettingsPage.reset();
         assertNotNull(comboBox.getSelectedItem());
         assertEquals("Camel Icon", comboBox.getSelectedItem().toString());
-    }
-
-    public void testShouldChangeStateOfRealTimeJSonPathValidationCatalogCheckBox() throws ConfigurationException {
-        JBCheckBox checkBox = editorSettingsPage.getRealTimeJSonPathValidationCatalogCheckBox();
-        assertEquals(true, checkBox.isSelected());
-        assertEquals(true, editorSettingsPage.getCamelPreferenceService().isRealTimeJSonPathValidation());
-        checkBox.setSelected(false);
-        editorSettingsPage.apply();
-        assertEquals(false, checkBox.isSelected());
-        assertEquals(false, editorSettingsPage.getCamelPreferenceService().isRealTimeJSonPathValidation());
     }
 
 }

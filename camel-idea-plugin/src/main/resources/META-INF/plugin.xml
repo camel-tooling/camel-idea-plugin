@@ -148,8 +148,9 @@
     <localInspection displayName="Camel inspection" groupName="Apache Camel" implementationClass="org.apache.camel.idea.inspection.CamelInspection"/>
 
     <!-- preference -->
-    <applicationConfigurable id="camel" groupId="language" displayName="Apache Camel" instance="org.apache.camel.idea.preference.CamelPreferenceEntryPage" />
-    <applicationConfigurable parentId="camel" id="camel.editor" groupId="language" displayName="Editor Settings" instance="org.apache.camel.idea.preference.editorsettings.CamelEditorSettingsPage"/>
+    <applicationConfigurable id="camel" groupId="language" displayName="Apache Camel" instance="org.apache.camel.idea.preference.CamelPreferenceEntryPage"/>
+    <applicationConfigurable parentId="camel" id="camel.annotator" groupId="language" displayName="Validation" instance="org.apache.camel.idea.preference.annotator.CamelAnnotatorPage"/>
+    <applicationConfigurable parentId="camel" id="camel.misc" groupId="language" displayName="Miscellaneous" instance="org.apache.camel.idea.preference.editorsettings.CamelEditorSettingsPage"/>
     <applicationConfigurable parentId="camel" id="camel.properties" groupId="language" displayName="Ignore &amp; Exclude Properties" instance="org.apache.camel.idea.preference.properties.CamelIgnoreAndExcludePage"/>
 
     <psi.referenceContributor implementation="org.apache.camel.idea.refereance.CamelBeanReferenceContributor"/>

@@ -54,7 +54,7 @@ public class CamelChosenIconCellRendererTest extends CamelLightCodeInsightFixtur
                     lines.stream().map(String::trim).collect(Collectors.toList());
             int indexOfApplicationConfigurable = trimmedStrings.indexOf("<applicationConfigurable id=\"camel\" "
                     + "groupId=\"language\" displayName=\"Apache Camel\" "
-                    + "instance=\"org.apache.camel.idea.preference.CamelPreferenceEntryPage\" />");
+                    + "instance=\"org.apache.camel.idea.preference.CamelPreferenceEntryPage\"/>");
             assertTrue(indexOfApplicationConfigurable > 0);
         } catch (IOException e) {
             e.printStackTrace();
