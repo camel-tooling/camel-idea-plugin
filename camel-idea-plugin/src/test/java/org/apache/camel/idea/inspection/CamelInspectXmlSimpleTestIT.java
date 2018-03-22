@@ -33,7 +33,7 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 public class CamelInspectXmlSimpleTestIT extends InspectionTestCase {
 
-    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.20.2";
+    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.21.0";
 
     @Override
     protected void setUp() throws Exception {

@@ -34,7 +34,7 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 public class CamelInspectJavaJSonPathTestIT extends InspectionTestCase {
 
-    public static final String CAMEL_JSONPATH_MAVEN_ARTIFACT = "org.apache.camel:camel-jsonpath:2.20.2";
+    public static final String CAMEL_JSONPATH_MAVEN_ARTIFACT = "org.apache.camel:camel-jsonpath:2.21.0";
 
     @Override
     protected void setUp() throws Exception {
@@ -47,9 +47,9 @@ public class CamelInspectJavaJSonPathTestIT extends InspectionTestCase {
                 String name = file.getName();
                 // special for camel JARs
                 if (name.contains("camel-core")) {
-                    name = "org.apache.camel:camel-core:2.20.2";
+                    name = "org.apache.camel:camel-core:2.21.0";
                 } else if (name.contains("camel-jsonpath")) {
-                    name = "org.apache.camel:camel-jsonpath:2.20.2";
+                    name = "org.apache.camel:camel-jsonpath:2.21.0";
                 } else {
                     // need to fix the name
                     if (name.endsWith(".jar")) {
