@@ -160,7 +160,7 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, Matchers.not(Matchers.contains("thisIsVeryPrivate")));
-        assertThat(strings, Matchers.hasItems("letsDoThis", "anotherBeanMethod", "mySuperAbstractMethod", "mySuperMethod","myOverLoadedBean","myOverLoadedBean"));
+        assertThat(strings, Matchers.hasItems("letsDoThis", "anotherBeanMethod", "mySuperAbstractMethod", "mySuperMethod", "myOverLoadedBean", "myOverLoadedBean"));
         assertEquals("There is many options", 6, strings.size());
     }
 
@@ -175,7 +175,7 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, Matchers.not(Matchers.contains("thisIsVeryPrivate")));
-        assertThat(strings, Matchers.hasItems("letsDoThis", "anotherBeanMethod", "mySuperAbstractMethod","myOverLoadedBean","myOverLoadedBean"));
+        assertThat(strings, Matchers.hasItems("letsDoThis", "anotherBeanMethod", "mySuperAbstractMethod", "myOverLoadedBean", "myOverLoadedBean"));
         assertEquals("There is many options", 5, strings.size());
     }
 
