@@ -65,7 +65,7 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
                 final PsiLiteral beanNameElement = PsiTreeUtil.findChildOfType(PsiTreeUtil.getParentOfType(beanClassElement, PsiExpressionList.class), PsiLiteral.class);
                 String methodName = beanNameElement.getText().replace("\"", "");
                 if (!methodName.isEmpty()) {
-                    return new PsiReference[] {new CamelBeanMethodReference(psiClass, beanNameElement, methodName, new TextRange(1, methodName.length() + 1))};
+                    return new PsiReference[] {new CamelBeanMethodReference(element, psiClass, methodName, new TextRange(1, methodName.length() + 1))};
                 }
             }
         }

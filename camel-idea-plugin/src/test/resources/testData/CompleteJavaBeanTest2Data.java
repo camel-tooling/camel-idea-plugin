@@ -14,23 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.main.Main;
-import testData.CompleteJavaBeanTestData;
+import testData.CompleteJavaBeanSuperClassTestData;
 
-public final class CompleteJavaBeanRoute1TestData extends RouteBuilder {
+/**
+ * Use for testing find usage with overload methods
+ */
+public class CompleteJavaBeanTest2Data extends CompleteJavaBeanSuperClassTestData {
 
-    private CompleteJavaBeanTestData beanTestData;
+    public void letsDoThis() {}
+    public void another<caret>BeanMethod() {}
+    public void mySuperAbstractMethod() {}
+    public void myOverLoadedBean() {}
+    public void myOver<caret>LoadedBean(String name) {}
 
-    @Override
-    public void configure() {
-        from("file:inbox")
-            .bean(beanTestData, "<caret>")
-            .to("log:out");
+    private void thisIsVeryPrivate() {}
 
-        //use for testing find usage from bean method to Camel bean DSL
-        from("file:inbox2")
-            .bean(beanTestData, "anotherBeanMethod")
-            .to("log:out2");
-    }
 }

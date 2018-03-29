@@ -160,8 +160,8 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, Matchers.not(Matchers.contains("thisIsVeryPrivate")));
-        assertThat(strings, Matchers.hasItems("letsDoThis", "anotherBeanMethod", "mySuperAbstractMethod", "mySuperMethod"));
-        assertEquals("There is many options", 4, strings.size());
+        assertThat(strings, Matchers.hasItems("letsDoThis", "anotherBeanMethod", "mySuperAbstractMethod", "mySuperMethod", "myOverLoadedBean", "myOverLoadedBean"));
+        assertEquals("There is many options", 6, strings.size());
     }
 
     public void testJavaBeanTestDataCompletion2File() {
@@ -175,8 +175,8 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, Matchers.not(Matchers.contains("thisIsVeryPrivate")));
-        assertThat(strings, Matchers.hasItems("letsDoThis", "anotherBeanMethod", "mySuperAbstractMethod"));
-        assertEquals("There is many options", 3, strings.size());
+        assertThat(strings, Matchers.hasItems("letsDoThis", "anotherBeanMethod", "mySuperAbstractMethod", "myOverLoadedBean", "myOverLoadedBean"));
+        assertEquals("There is many options", 5, strings.size());
     }
 
     public void testJavaFieldBeanWithNoReference() {

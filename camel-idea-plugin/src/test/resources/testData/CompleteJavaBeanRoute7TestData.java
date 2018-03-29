@@ -16,21 +16,20 @@
  */
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.main.Main;
-import testData.CompleteJavaBeanTestData;
+import testData.CompleteJavaBeanTest2Data;
 
-public final class CompleteJavaBeanRoute1TestData extends RouteBuilder {
+/**
+ * Test route for testing find usage from bean method "myOverLoadedBean" to the route Camel bean DSL.
+ * The purpose of the class is to setup a test scenario with overload methods and find usage
+ */
+public final class CompleteJavaBeanRoute7TestData extends RouteBuilder {
 
-    private CompleteJavaBeanTestData beanTestData;
+    private CompleteJavaBeanTest2Data beanTestData;
 
     @Override
     public void configure() {
         from("file:inbox")
-            .bean(beanTestData, "<caret>")
+            .bean(beanTestData, "myOverLoadedBean")
             .to("log:out");
-
-        //use for testing find usage from bean method to Camel bean DSL
-        from("file:inbox2")
-            .bean(beanTestData, "anotherBeanMethod")
-            .to("log:out2");
     }
 }

@@ -16,10 +16,17 @@
  */
 package org.apache.camel.idea.reference;
 
+import java.util.ArrayList;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.ResolveResult;
+import com.intellij.usageView.UsageInfo;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.apache.camel.idea.refereance.CamelBeanMethodReference;
+
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 /**
  * Test method reference link between the Java Camel DSL bean reference method @{code bean(MyClass.class,"myMethodName")}
@@ -48,5 +55,25 @@ public class JavaCamelBeanMethodReferenceTest extends CamelLightCodeInsightFixtu
         myFixture.configureByFiles("CompleteJavaBeanRoute4TestData.java");
         PsiElement element = myFixture.getFile().findElementAt(myFixture.getCaretOffset()).getParent();
         assertEquals(0, element.getReferences().length);
+    }
+
+    public void testFindUsageFromMethodToBeanDSL() {
+        ArrayList<UsageInfo> usageInfos = (ArrayList<UsageInfo>) myFixture.testFindUsages("CompleteJavaBeanTestData.java", "CompleteJavaBeanRoute1TestData.java");
+        assertEquals(1, usageInfos.size());
+
+        final UsageInfo usageInfo = usageInfos.get(0);
+        final PsiElement referenceElement = usageInfo.getElement();
+        assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
+        assertEquals("(beanTestData, \"anotherBeanMethod\")", referenceElement.getParent().getText());
+    }
+
+    public void testFindUsageFromWithOverloadedMethodToBeanDSL() {
+        ArrayList<UsageInfo> usageInfos = (ArrayList<UsageInfo>) myFixture.testFindUsages("CompleteJavaBeanTest2Data.java", "CompleteJavaBeanRoute7TestData.java");
+        assertEquals(1, usageInfos.size());
+
+        final UsageInfo usageInfo = usageInfos.get(0);
+        final PsiElement referenceElement = usageInfo.getElement();
+        assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
+        assertEquals("(beanTestData, \"myOverLoadedBean\")", referenceElement.getParent().getText());
     }
 }

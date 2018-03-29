@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.main.Main;
 import testData.CompleteJavaBeanTestData;
 
 public final class RenameCamelBeanMethodRefTestData extends RouteBuilder {

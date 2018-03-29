@@ -200,6 +200,9 @@ Jetbrains provides a FAQ for the IDEA SDK which is massive and takes time to lea
 They also provide a forum for API Plugin Development.
 - https://intellij-support.jetbrains.com/hc/en-us/community/topics/200366979-IntelliJ-IDEA-Open-API-and-Plugin-Development
 
+For Gitter Channel
+- https://gitter.im/IntelliJ-Plugin-Developers
+
 ### Camel IDEA Plugin FAQ
 
 We created a FAQ page to help other developers with common errors when working with the plugin sources.
