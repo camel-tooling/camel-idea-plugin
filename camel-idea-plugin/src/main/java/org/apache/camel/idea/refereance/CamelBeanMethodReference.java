@@ -25,10 +25,8 @@ import com.intellij.psi.ElementManipulators;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
-import com.intellij.psi.PsiLiteral;
 import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiPolyVariantReference;
-import com.intellij.psi.PsiReferenceBase;
+import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.intellij.util.IncorrectOperationException;
 import org.apache.camel.idea.util.CamelIdeaUtils;
@@ -38,16 +36,22 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * A reference between the Camel DSL bean ref method ".bean(MyClass.class,"myMethod") and the {@link PsiMethod}
- *
  */
-public class CamelBeanMethodReference extends PsiReferenceBase<PsiClass> implements PsiPolyVariantReference {
+public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
-    private final PsiLiteral beanNameElement;
+    private final PsiClass psiClass;
     private final String methodName;
 
-    CamelBeanMethodReference(PsiClass element, PsiLiteral beanNameElement, String methodName, TextRange textRange) {
+    /**
+     * Reference between the Camel bean method DSL and the actually method.
+     * @param element - The Camel bean method element
+     * @param psiClass - The Class the method referer to exist in
+     * @param methodName - The name of the method it referer from
+     * @param textRange
+     */
+    CamelBeanMethodReference(PsiElement element, PsiClass psiClass, String methodName, TextRange textRange) {
         super(element, textRange);
-        this.beanNameElement = beanNameElement;
+        this.psiClass = psiClass;
         this.methodName = methodName;
     }
 
@@ -55,7 +59,7 @@ public class CamelBeanMethodReference extends PsiReferenceBase<PsiClass> impleme
     @Override
     public ResolveResult[] multiResolve(boolean b) {
         List<ResolveResult> results = new ArrayList<>();
-        final PsiMethod[] methodsByName = getElement().findMethodsByName(methodName, true);
+        final PsiMethod[] methodsByName = getPsiClass().findMethodsByName(methodName, true);
         for (PsiMethod psiMethod : methodsByName) {
             final boolean isPrivate = getCamelIdeaUtils().isOneOfModifierType(psiMethod, JvmModifier.PRIVATE, JvmModifier.ABSTRACT);
 
@@ -85,27 +89,26 @@ public class CamelBeanMethodReference extends PsiReferenceBase<PsiClass> impleme
     @Override
     public PsiElement handleElementRename(String newElementName) throws IncorrectOperationException {
         //Find all the method with the registered method name on it's class.
-        final PsiMethod[] methodsByName = getElement().findMethodsByName(methodName, true);
+        final PsiMethod[] methodsByName = getPsiClass().findMethodsByName(methodName, true);
 
         for (PsiMethod psiMethod : methodsByName) {
             psiMethod.setName(newElementName);
         }
         //Rename the Camel DSL bean ref method
-        ElementManipulators.getManipulator(beanNameElement).handleContentChange(this.beanNameElement, this.getRangeInElement(), newElementName);
+        ElementManipulators.getManipulator(getElement()).handleContentChange(getElement(), this.getRangeInElement(), newElementName);
         return getElement();
-    }
-
-    @Override
-    public PsiElement bindToElement(@NotNull PsiElement element) throws IncorrectOperationException {
-        return super.bindToElement(element);
-    }
-
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
     }
 
     @Override
     public boolean isSoft() {
         return false;
+    }
+
+    private PsiClass getPsiClass() {
+        return psiClass;
+    }
+
+    private CamelIdeaUtils getCamelIdeaUtils() {
+        return ServiceManager.getService(CamelIdeaUtils.class);
     }
 }

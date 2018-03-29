@@ -19,8 +19,10 @@ import testData.CompleteJavaBeanSuperClassTestData;
 public class CompleteJavaBeanTestData extends CompleteJavaBeanSuperClassTestData {
 
     public void letsDoThis() {}
-    public void anotherBeanMethod() {}
+    public void another<caret>BeanMethod() {}
     public void mySuperAbstractMethod() {}
+    public void myOverLoadedBean() {}
+    public void myOverLoadedBean(String name) {}
 
     private void thisIsVeryPrivate() {}
 
