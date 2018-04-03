@@ -22,13 +22,11 @@ import testData.annotator.method.AnnotatorJavaBeanTestData;
 
 public final class AnnotatorJavaBeanRoute1TestData extends RouteBuilder {
 
-    @Override
     public void configure() {
         from("file:inbox")
             .bean(AnnotatorJavaBeanTestData.class, <error descr="'thisIsVeryPrivate' has private access in bean 'testData.annotator.method.AnnotatorJavaBeanTestData'">"thisIsVeryPrivate"</error>)
             .bean(AnnotatorJavaBeanTestData.class, <error descr="Can not resolve method 'methodDoesNotExist' in bean 'testData.annotator.method.AnnotatorJavaBeanTestData'">"methodDoesNotExist"</error>)
             .bean(AnnotatorJavaBeanTestData.class, "letsDoThis")
             .to("log:out");
-
     }
 }

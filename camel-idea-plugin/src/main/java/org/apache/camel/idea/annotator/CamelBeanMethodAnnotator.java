@@ -39,9 +39,9 @@ import org.jetbrains.annotations.NotNull;
  */
 public class CamelBeanMethodAnnotator implements Annotator {
 
-    private static final Logger LOG = Logger.getInstance(CamelBeanMethodAnnotator.class);
     public static final String METHOD_CAN_NOT_RESOLVED = "Can not resolve method '%s' in bean '%s'";
     public static final String METHOD_HAS_PRIVATE_ACCESS = "'%s' has private access in bean '%s'";
+    private static final Logger LOG = Logger.getInstance(CamelBeanMethodAnnotator.class);
 
     boolean isEnabled() {
         return ServiceManager.getService(CamelPreferenceService.class).isRealTimeSimpleValidation();

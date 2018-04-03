@@ -25,13 +25,11 @@ public final class AnnotatorJavaBeanRoute2TestData extends RouteBuilder {
 
     private AnnotatorJavaBeanSuperClassTestData beanTestData = new AnnotatorJavaBeanTestData();
 
-    @Override
     public void configure() {
         from("file:inbox")
             .bean(beanTestData, "mySuperAbstractMethod")
             .bean(beanTestData, <error descr="Can not resolve method 'letsDoThis' in bean 'testData.annotator.method.AnnotatorJavaBeanSuperClassTestData'">"letsDoThis"</error>)
             .bean(beanTestData, <error descr="Can not resolve method 'thisIsVeryPrivate' in bean 'testData.annotator.method.AnnotatorJavaBeanSuperClassTestData'">"thisIsVeryPrivate"</error>)
             .to("log:out");
-
     }
 }

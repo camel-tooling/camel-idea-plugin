@@ -24,8 +24,8 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 /**
  * Test if the {@link CamelBeanMethodAnnotator} work as expected with private, overload and none exiting bean reference calls
  * <pre>
- *     To run this test from IDEA add the vm Options to run configuration
- *     -Didea.home.path=/Users/fharms/work/idea/
+ * if this test run with the "-Didea.home.path=/Users/home/work/idea/" it will report 2 as error count, because the idea.home
+ * path point to the SDK and it able to resolve basic JDK classes.
  * </pre>
  */
 public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
@@ -39,22 +39,22 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
      * Test if the annotator mark the bean call "thisIsVeryPrivate","methodDoesNotExist" as errors
      */
     public void testAnnotatorJavaBeanWithPrivateAndNoneExistingMethod() {
-        myFixture.configureByFiles("AnnotatorJavaBeanRoute1TestData.java","AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
-        myFixture.checkHighlighting(false, false, true, false);
+        myFixture.configureByFiles("AnnotatorJavaBeanRoute1TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
+        myFixture.checkHighlighting(false, false, true, true);
 
         List<HighlightInfo> list = myFixture.doHighlighting();
-        assertEquals(2,list.stream().filter(i -> i.getSeverity().getName().equals("ERROR")).count());
+        assertEquals(3, list.stream().filter(i -> i.getSeverity().getName().equals("ERROR")).count());
     }
 
     /**
      * Test if the annotator mark the bean call "thisIsVeryPrivate","methodDoesNotExist" as errors
      */
     public void testAnnotatorJavaBeanWithAbstractMethod() {
-        myFixture.configureByFiles("AnnotatorJavaBeanRoute2TestData.java","AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
-        myFixture.checkHighlighting(false, false, true, false);
+        myFixture.configureByFiles("AnnotatorJavaBeanRoute2TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
+        myFixture.checkHighlighting(false, false, true, true);
 
         List<HighlightInfo> list = myFixture.doHighlighting();
-        assertEquals(2,list.stream().filter(i -> i.getSeverity().getName().equals("ERROR")).count());
+        assertEquals(3, list.stream().filter(i -> i.getSeverity().getName().equals("ERROR")).count());
     }
 
 
