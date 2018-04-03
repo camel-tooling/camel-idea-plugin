@@ -34,7 +34,7 @@
   </description>
 
   <properties>
-    <idea.version>2017.3.5</idea.version>
+    <idea.version>2018.1.0</idea.version>
     <idea.platform.prefix>-Didea.platform.prefix=Idea</idea.platform.prefix>
     <ij.plugin>true</ij.plugin>
     <argLine>
@@ -108,7 +108,37 @@
     <!-- IntelliJ Dependencies -->
     <dependency>
       <groupId>com.intellij</groupId>
+      <artifactId>java-api</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>java_resources_en</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>java-impl</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
       <artifactId>openapi</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>platform-api</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>platform-impl</artifactId>
       <version>${idea.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -153,6 +183,18 @@
       <artifactId>snakeyaml</artifactId>
       <version>${snakeyaml.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>imgscalr-lib-4.2</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>lz4-java-1.3</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
 
     <!-- Swing MigLayout -->
     <dependency>
@@ -185,12 +227,6 @@
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>log4j</artifactId>
-      <version>${idea.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>boot</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -320,7 +356,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>oromatcher</artifactId>
+      <artifactId>oro-2.0.8</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -356,7 +392,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>protobuf-java-2.5.0</artifactId>
+      <artifactId>protobuf-java-3.0.0</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
