@@ -28,6 +28,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import org.apache.camel.idea.service.CamelPreferenceService;
+import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.apache.camel.idea.util.JavaMethodUtils;
@@ -39,17 +40,17 @@ import org.jetbrains.annotations.NotNull;
  */
 public class CamelBeanMethodAnnotator implements Annotator {
 
-    public static final String METHOD_CAN_NOT_RESOLVED = "Can not resolve method '%s' in bean '%s'";
-    public static final String METHOD_HAS_PRIVATE_ACCESS = "'%s' has private access in bean '%s'";
+    private static final String METHOD_CAN_NOT_RESOLVED = "Can not resolve method '%s' in bean '%s'";
+    private static final String METHOD_HAS_PRIVATE_ACCESS = "'%s' has private access in bean '%s'";
     private static final Logger LOG = Logger.getInstance(CamelBeanMethodAnnotator.class);
 
-    boolean isEnabled() {
-        return ServiceManager.getService(CamelPreferenceService.class).isRealTimeSimpleValidation();
+    boolean isEnabled(@NotNull PsiElement element) {
+        return ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent() && ServiceManager.getService(CamelPreferenceService.class).isRealTimeBeanMethodValidationCheckBox();
     }
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
-        if (!isEnabled()) {
+        if (!isEnabled(element)) {
             return;
         }
 

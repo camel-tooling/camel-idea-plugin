@@ -135,7 +135,7 @@ public class CamelAnnotatorPageTest extends CamelLightCodeInsightFixtureTestCase
         assertEquals(status, checkBox.isSelected());
     }
 
-    public void testShouldChangeStateOfRealTimeJSonPathValidationCatalogCheckBox() throws ConfigurationException {
+    public void testShouldChangeStateOfRealTimeJSonPathValidationCatalogCheckBox() {
         JBCheckBox checkBox = annotatorPage.getRealTimeJSonPathValidationCatalogCheckBox();
         assertEquals(true, checkBox.isSelected());
         assertEquals(true, annotatorPage.getCamelPreferenceService().isRealTimeJSonPathValidation());
@@ -143,6 +143,16 @@ public class CamelAnnotatorPageTest extends CamelLightCodeInsightFixtureTestCase
         annotatorPage.apply();
         assertEquals(false, checkBox.isSelected());
         assertEquals(false, annotatorPage.getCamelPreferenceService().isRealTimeJSonPathValidation());
+    }
+
+    public void testShouldChangeStateOfRealTimeBeanMethodValidationCheckBox() {
+        JBCheckBox checkBox = annotatorPage.getRealTimeBeanMethodValidationCheckBox();
+        assertEquals(true, checkBox.isSelected());
+        assertEquals(true, annotatorPage.getCamelPreferenceService().isRealTimeBeanMethodValidationCheckBox());
+        checkBox.setSelected(false);
+        annotatorPage.apply();
+        assertEquals(false, checkBox.isSelected());
+        assertEquals(false, annotatorPage.getCamelPreferenceService().isRealTimeBeanMethodValidationCheckBox());
     }
 
 }
