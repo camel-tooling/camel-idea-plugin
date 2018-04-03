@@ -14,20 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.rename;
+package testData.annotator.method;
 
-import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import testData.annotator.method.AnnotatorJavaBeanSuperClassTestData;
 
-public class RenameCamelBeanMethodRefTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
-    @Override
-    protected String getTestDataPath() {
-        return "src/test/resources/testData/rename";
-    }
+public class AnnotatorJavaBeanTestData extends AnnotatorJavaBeanSuperClassTestData {
 
-    public void testCamelBeanMethodRefRename() {
-        myFixture.configureByFiles("RenameCamelBeanMethodRefTestData.java", "RenameCompleteJavaBeanTestData.java");
-        myFixture.renameElementAtCaretUsingHandler("letNotDoThis");
-        myFixture.checkResultByFile("RenameCamelBeanMethodRefResultTestData.java");
-    }
+    public void letsDoThis() {}
+    public void anotherBeanMethod() {}
+    public void mySuperAbstractMethod() {}
+    public void myOverLoadedBean() {}
+    public void myOverLoadedBean(String name) {}
+
+    private void thisIsVeryPrivate() {}
 
 }

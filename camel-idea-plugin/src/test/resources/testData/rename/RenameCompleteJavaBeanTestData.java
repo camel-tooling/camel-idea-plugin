@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.main.Main;
-import testData.CompleteJavaBeanTestData;
 
-public final class CompleteJavaBeanRoute6TestData extends RouteBuilder {
+public class RenameCompleteJavaBeanTestData {
 
+    public void letsDoThis() {}
+    public void another<caret>BeanMethod() {}
+    public void mySuperAbstractMethod() {}
+    public void myOverLoadedBean() {}
+    public void myOverLoadedBean(String name) {}
 
-    @Override
-    public void configure() {
-        from("file:inbox")
-            .bean(beanTestData, "<caret>")
-            .to("log:out");
-    }
+    private void thisIsVeryPrivate() {}
+
 }

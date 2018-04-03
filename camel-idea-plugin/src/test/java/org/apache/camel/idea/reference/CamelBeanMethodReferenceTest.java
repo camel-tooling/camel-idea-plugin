@@ -31,7 +31,12 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 /**
  * Test method reference link between the Java Camel DSL bean reference method @{code bean(MyClass.class,"myMethodName")}
  */
-public class JavaCamelBeanMethodReferenceTest extends CamelLightCodeInsightFixtureTestCaseIT {
+public class CamelBeanMethodReferenceTest extends CamelLightCodeInsightFixtureTestCaseIT {
+
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/resources/testData/completion/method";
+    }
 
     public void testCamelMethodReference() {
         myFixture.configureByFiles("CompleteJavaBeanRoute3TestData.java", "CompleteJavaBeanTestData.java",

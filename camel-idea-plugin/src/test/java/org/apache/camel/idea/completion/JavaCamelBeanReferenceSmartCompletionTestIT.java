@@ -29,6 +29,11 @@ import static org.junit.Assert.assertThat;
  */
 public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/resources/testData/completion/method";
+    }
+
     private static final String CAMEL_ROUTE_WITH_INCORRECT_BEAN_REF =
         "import org.apache.camel.builder.RouteBuilder;\n"
             + "import org.apache.camel.main.Main;\n"

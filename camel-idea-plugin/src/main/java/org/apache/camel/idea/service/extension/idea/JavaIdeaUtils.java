@@ -17,6 +17,7 @@
 package org.apache.camel.idea.service.extension.idea;
 
 import java.util.*;
+
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
@@ -79,7 +80,7 @@ public class JavaIdeaUtils implements IdeaUtilsExtension {
      * Code from com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl#getInnerText()
      */
     @Nullable
-    public static String getInnerText(String text) {
+    private String getInnerText(String text) {
         if (text == null) {
             return null;
         }

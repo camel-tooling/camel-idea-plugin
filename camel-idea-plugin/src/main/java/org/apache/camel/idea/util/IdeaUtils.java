@@ -42,6 +42,9 @@ import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiPolyadicExpression;
+import com.intellij.psi.TokenType;
+import com.intellij.psi.impl.source.tree.JavaDocElementType;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
 import com.intellij.psi.xml.XmlTag;
@@ -407,6 +410,22 @@ public final class IdeaUtils implements Disposable {
                 || value.endsWith(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED.toLowerCase());
         }
 
+        return false;
+    }
+
+    public boolean isWhiteSpace(PsiElement element) {
+        IElementType type = element.getNode().getElementType();
+        if (type == TokenType.WHITE_SPACE) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isJavaDoc(PsiElement element) {
+        IElementType type = element.getNode().getElementType();
+        if (JavaDocElementType.ALL_JAVADOC_ELEMENTS.contains(type)) {
+            return true;
+        }
         return false;
     }
 

@@ -14,20 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.camel.idea.rename;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.main.Main;
+import testData.rename.RenameCompleteJavaBeanTestData;
 
-import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
+public final class RenameCamelBeanMethodRefTestData extends RouteBuilder {
 
-public class RenameCamelBeanMethodRefTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
     @Override
-    protected String getTestDataPath() {
-        return "src/test/resources/testData/rename";
+    public void configure() {
+        from("file:inbox")
+            .bean(RenameCompleteJavaBeanTestData.class, "letsDoThis<caret>")
+            .to("log:out");
     }
-
-    public void testCamelBeanMethodRefRename() {
-        myFixture.configureByFiles("RenameCamelBeanMethodRefTestData.java", "RenameCompleteJavaBeanTestData.java");
-        myFixture.renameElementAtCaretUsingHandler("letNotDoThis");
-        myFixture.checkResultByFile("RenameCamelBeanMethodRefResultTestData.java");
-    }
-
 }

@@ -212,4 +212,11 @@ public final class StringUtils {
         return !isEmpty(str);
     }
 
+    /**
+     * @return strip the string for double quotes
+     */
+    public static String stripDoubleQuotes(String text) {
+        return text.replace("\"", "");
+    }
+
 }

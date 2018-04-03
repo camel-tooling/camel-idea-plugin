@@ -16,12 +16,9 @@
  */
 package org.apache.camel.idea.completion.extension;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import static java.util.stream.Collectors.toList;
 
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
@@ -31,15 +28,15 @@ import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
-import com.intellij.lang.jvm.JvmModifier;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiParameter;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.idea.util.CamelIdeaUtils;
+import org.apache.camel.idea.util.JavaMethodUtils;
 import org.jetbrains.annotations.NotNull;
+
 
 
 /**
@@ -59,18 +56,14 @@ public class CamelJavaBeanReferenceSmartCompletion extends CompletionProvider<Co
         final PsiElement element = completionParameters.getPosition();
         final PsiClass psiClass = (PsiClass) processingContext.get(BEAN_CLASS_KEY);
 
-        List<LookupElement> answer = new ArrayList<>();
 
-        Collection<PsiMethod> methods = getMethods(psiClass);
+        Collection<PsiMethod> methods = getJavaMethodUtils().getMethods(psiClass);
 
-        for (PsiMethod method : methods) {
-            boolean isPrivate = getCamelIdeaUtils().isOneOfModifierType(method, JvmModifier.PRIVATE, JvmModifier.ABSTRACT);
+        List<LookupElement> answer = getJavaMethodUtils().getBeanAccessibleMethods(methods)
+            .stream()
+            .map(method -> buildLookupElement(method, getJavaMethodUtils().getPresentableMethodWithParameters(method)))
+            .collect(toList());
 
-            if (!method.isConstructor() && !isPrivate) {
-                String presentableMethod = getPresentableMethodWithParameters(method);
-                answer.add(buildLookupElement(method, presentableMethod));
-            }
-        }
         // are there any results then add them
         if (!answer.isEmpty()) {
             String hackVal = element.getText();
@@ -97,36 +90,12 @@ public class CamelJavaBeanReferenceSmartCompletion extends CompletionProvider<Co
         return  builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE);
     }
 
-    private String getPresentableMethodWithParameters(PsiMethod method) {
-        final String parameters = getMethodParameters(method);
-        String presentableMethod = method.getName();
-        if (!parameters.isEmpty()) {
-            presentableMethod = String.format("%s(%s)", method.getName(), parameters);
-        }
-        return presentableMethod;
-    }
-
-    private String getMethodParameters(PsiMethod method) {
-        return Arrays.stream(method.getParameters())
-            .map(PsiParameter.class::cast)
-            .map(PsiParameter::getText)
-            .collect(Collectors.joining(", "));
-    }
-
-    /**
-     * Return all method names for the specific class and it's super classes, except
-     * Object and Class
-     */
-    private Collection<PsiMethod> getMethods(PsiClass psiClass) {
-        return Stream.of(psiClass.getAllMethods())
-            .filter(p -> !p.isConstructor())
-            .filter(p -> !Object.class.getName().equals(p.getContainingClass().getQualifiedName()))
-            .filter(p -> !Class.class.getName().equals(p.getContainingClass().getQualifiedName()))
-            .collect(Collectors.toCollection(ArrayList::new));
-    }
-
     private CamelIdeaUtils getCamelIdeaUtils() {
         return ServiceManager.getService(CamelIdeaUtils.class);
+    }
+
+    private JavaMethodUtils getJavaMethodUtils() {
+        return ServiceManager.getService(JavaMethodUtils.class);
     }
 
 }

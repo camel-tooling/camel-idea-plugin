@@ -17,8 +17,9 @@
 package org.apache.camel.idea.refereance;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import com.intellij.lang.jvm.JvmModifier;
+
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.ElementManipulators;
@@ -30,6 +31,7 @@ import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.intellij.util.IncorrectOperationException;
 import org.apache.camel.idea.util.CamelIdeaUtils;
+import org.apache.camel.idea.util.JavaMethodUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,15 +62,11 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
     public ResolveResult[] multiResolve(boolean b) {
         List<ResolveResult> results = new ArrayList<>();
         final PsiMethod[] methodsByName = getPsiClass().findMethodsByName(methodName, true);
-        for (PsiMethod psiMethod : methodsByName) {
-            final boolean isPrivate = getCamelIdeaUtils().isOneOfModifierType(psiMethod, JvmModifier.PRIVATE, JvmModifier.ABSTRACT);
-
-            if (!isPrivate) {
-                if (getCamelIdeaUtils().isAnnotatedWithHandler(psiMethod)) {
-                    return new ResolveResult[] {new PsiElementResolveResult(psiMethod)};
-                }
-                results.add(new PsiElementResolveResult(psiMethod));
+        for (PsiMethod psiMethod : getJavaMethodUtils().getBeanMethods(Arrays.asList(methodsByName))) {
+            if (getCamelIdeaUtils().isAnnotatedWithHandler(psiMethod)) {
+                return new ResolveResult[] {new PsiElementResolveResult(psiMethod)};
             }
+            results.add(new PsiElementResolveResult(psiMethod));
         }
         return results.toArray(new ResolveResult[results.size()]);
     }
@@ -110,5 +108,9 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
 
     private CamelIdeaUtils getCamelIdeaUtils() {
         return ServiceManager.getService(CamelIdeaUtils.class);
+    }
+
+    private JavaMethodUtils getJavaMethodUtils() {
+        return ServiceManager.getService(JavaMethodUtils.class);
     }
 }
