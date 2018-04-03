@@ -7,12 +7,14 @@
 #   destination     : Download and unpack destination directory
 #   source-version  : Directory version to unpack from TAR ball
 #   m2-home         : M2 home directory
+#   --force         : Force download
 
 IDEA_VERSION=$1
 INTELLIJ_DEST=$2
 INTELLIJ_DEST_VERSION=$3
 DOWNLOAD_CMD="curl -L -o ideaCI.tar.gz https://download.jetbrains.com/idea/ideaIC-${IDEA_VERSION}.tar.gz"
 M2_REPO_ARTIFACT=$4/repository/com/intellij/idea/${IDEA_VERSION}/idea-${IDEA_VERSION}.jar
+FORCE_DOWNLOAD=$5
 
 if [ -z "$INTELLIJ_DEST" ]
 then
@@ -21,7 +23,7 @@ then
 fi
 
 echo "Checking if IntelliJ artifact is already installed $M2_REPO_ARTIFACT"
-if [ -f "$M2_REPO_ARTIFACT" ]
+if [ -f "$M2_REPO_ARTIFACT" ] && [ "$FORCE_DOWNLOAD" != "--force" ]
 then
   echo "Artifacts for Intellij ${IDEA_VERSION} already installed, exit script "
   exit 0

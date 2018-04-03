@@ -68,6 +68,7 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     private boolean realTimeEndpointValidation = true;
     private boolean realTimeSimpleValidation = true;
     private boolean realTimeJSonPathValidation = true;
+    private boolean realTimeBeanMethodValidationCheckBox = true;
     private boolean highlightCustomOptions = true;
     private boolean downloadCatalog = true;
     private boolean scanThirdPartyComponents = true;
@@ -277,4 +278,11 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
             chosenCamelIcon, customIconFilePath, ignorePropertyList, excludePropertyFiles);
     }
 
+    public boolean isRealTimeBeanMethodValidationCheckBox() {
+        return realTimeBeanMethodValidationCheckBox;
+    }
+
+    public void setRealTimeBeanMethodValidationCheckBox(boolean realTimeBeanMethodValidationCheckBox) {
+        this.realTimeBeanMethodValidationCheckBox = realTimeBeanMethodValidationCheckBox;
+    }
 }

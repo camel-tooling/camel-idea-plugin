@@ -192,11 +192,6 @@ public final class CamelIdeaUtils implements Disposable {
         return  Arrays.stream(psiMethod.getAnnotations()).anyMatch(a -> a.getQualifiedName().equals("org.apache.camel.Handler"));
     }
 
-    public boolean isOneOfModifierType(PsiMethod method, JvmModifier... type) {
-        return Arrays.stream(method.getModifiers())
-            .anyMatch(m -> Arrays.stream(type).anyMatch(Predicate.isEqual(m)));
-    }
-
     public boolean isExtendingRouteBuild(PsiClass clazz) {
         final PsiClass[] interfaces = clazz.getSupers();
         return Arrays.stream(interfaces)

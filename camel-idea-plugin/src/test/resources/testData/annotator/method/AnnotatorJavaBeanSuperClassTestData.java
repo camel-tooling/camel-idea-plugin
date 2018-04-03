@@ -14,16 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.main.Main;
-import testData.CompleteJavaBeanTestData;
+package testData.annotator.method;
 
-public final class RenameCamelBeanMethodRefTestData extends RouteBuilder {
+public class AnnotatorJavaBeanSuperClassTestData {
 
-    @Override
-    public void configure() {
-        from("file:inbox")
-            .bean(CompleteJavaBeanTestData.class, "letsDoThis<caret>")
-            .to("log:out");
+    public boolean mySuperMethod() {
+        mySuperAbstractMethod();
+        return false;
     }
+
+    public abstract void mySuperAbstractMethod();
 }

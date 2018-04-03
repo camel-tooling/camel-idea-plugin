@@ -24,7 +24,7 @@ import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
  * it will fail, but the error messaged might still be correct. In this case it's likely the TextRange
  * is incorrect.
  *
- * So far we can have been able to avoid pointing the -Didea.home.path=<location of Intellij CI source code>
+ * So far we have been able to avoid pointing the -Didea.home.path=<location of Intellij CI source code>
  * because it's didn't really matter it could not resolve JDK classes when testing highlight. If you need
  * to resolve the JDK classes you will have to point the idea.home.path to the right location
  */
