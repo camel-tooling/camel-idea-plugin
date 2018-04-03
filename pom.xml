@@ -85,14 +85,15 @@
             <id>validate</id>
             <phase>validate</phase>
             <configuration>
-              <includeResources>false</includeResources>
               <configLocation>buildingtools/camel-checkstyle.xml</configLocation>
               <consoleOutput>true</consoleOutput>
               <failsOnError>true</failsOnError>
               <linkXRef>false</linkXRef>
               <suppressionsLocation>buildingtools/camel-checkstyle-suppressions.xml</suppressionsLocation>
               <encoding>UTF-8</encoding>
-              <sourceDirectory>${basedir}/src</sourceDirectory>
+              <sourceDirectories>
+                <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+              </sourceDirectories>
             </configuration>
             <goals>
               <goal>checkstyle</goal>
