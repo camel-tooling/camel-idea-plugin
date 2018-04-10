@@ -45,6 +45,7 @@ import com.intellij.psi.PsiPolyadicExpression;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.impl.source.tree.JavaDocElementType;
 import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.tree.java.IJavaDocElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
 import com.intellij.psi.xml.XmlTag;
@@ -423,7 +424,7 @@ public final class IdeaUtils implements Disposable {
 
     public boolean isJavaDoc(PsiElement element) {
         IElementType type = element.getNode().getElementType();
-        if (JavaDocElementType.ALL_JAVADOC_ELEMENTS.contains(type)) {
+        if (IJavaDocElementType.class.isAssignableFrom(type.getClass()) || JavaDocElementType.ALL_JAVADOC_ELEMENTS.contains(element.getNode().getElementType())) {
             return true;
         }
         return false;
