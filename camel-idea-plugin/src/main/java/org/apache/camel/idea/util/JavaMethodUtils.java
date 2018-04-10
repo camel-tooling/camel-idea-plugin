@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import com.intellij.lang.jvm.JvmModifier;
 import com.intellij.openapi.Disposable;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiParameter;
 
@@ -103,6 +104,19 @@ public class JavaMethodUtils implements Disposable {
         return methods.stream()
             .filter(method -> !method.isConstructor())
             .collect(Collectors.toList());
+    }
+
+    /**
+     * Return only the method name in free text from an {@link PsiElement}
+     * @param methodLiteral - PsiElement is parse for method name
+     * @return the text representation of the method name
+     */
+    public String getMethodNameWithOutParameters(PsiElement methodLiteral) {
+        String completeMethodText = methodLiteral.getText();
+        if (completeMethodText.indexOf("(") > 0) {
+            return completeMethodText.substring(0, completeMethodText.indexOf("("));
+        }
+        return completeMethodText;
     }
 
     @Override

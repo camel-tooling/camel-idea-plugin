@@ -57,5 +57,28 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
         assertEquals(3, list.stream().filter(i -> i.getSeverity().getName().equals("ERROR")).count());
     }
 
+    /**
+     * Test if the annotator mark the bean call "myOverLoadedBean" as errors because it's Ambiguous. This test also test if the scenario where one of the
+     * overloaded methods is private and the other is public
+     */
+    public void testAnnotatorJavaBeanAmbiguousMatch() {
+        myFixture.configureByFiles("AnnotatorJavaBeanRoute3TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
+        myFixture.checkHighlighting(false, false, true, true);
+
+        List<HighlightInfo> list = myFixture.doHighlighting();
+        assertEquals(3, list.stream().filter(i -> i.getSeverity().getName().equals("ERROR")).count());
+    }
+
+    /**
+     * Test if the annotator is false and don't mark any methods even it's ambiguous, but one of the methods are marked as @Handle
+     */
+    public void testAnnotatorJavaBeanWithHandlerAnnotation() {
+        myFixture.configureByFiles("AnnotatorJavaBeanRoute4TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
+        myFixture.checkHighlighting(false, false, true, true);
+
+        List<HighlightInfo> list = myFixture.doHighlighting();
+        assertEquals(1, list.stream().filter(i -> i.getSeverity().getName().equals("ERROR")).count());
+    }
+
 
 }

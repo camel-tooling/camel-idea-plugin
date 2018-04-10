@@ -42,10 +42,17 @@ public class CamelBeanMethodAnnotator implements Annotator {
 
     private static final String METHOD_CAN_NOT_RESOLVED = "Can not resolve method '%s' in bean '%s'";
     private static final String METHOD_HAS_PRIVATE_ACCESS = "'%s' has private access in bean '%s'";
+    private static final String METHOD_HAS_AMBIGUOUS_ACCESS = "Ambiguous matches '%s' in bean '%s'";
     private static final Logger LOG = Logger.getInstance(CamelBeanMethodAnnotator.class);
 
     boolean isEnabled(@NotNull PsiElement element) {
-        return ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent() && ServiceManager.getService(CamelPreferenceService.class).isRealTimeBeanMethodValidationCheckBox();
+        final boolean valid = ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()
+            && ServiceManager.getService(CamelPreferenceService.class).isRealTimeBeanMethodValidationCheckBox()
+            // skip whitespace noise
+            && !getIdeaUtils().isWhiteSpace(element)
+            // skip java doc noise
+            && !getIdeaUtils().isJavaDoc(element);
+        return valid;
     }
 
     @Override
@@ -54,44 +61,56 @@ public class CamelBeanMethodAnnotator implements Annotator {
             return;
         }
 
-        // skip whitespace noise
-        if (getIdeaUtils().isWhiteSpace(element)) {
-            return;
-        }
-
-        // skip java doc noise
-        if (getIdeaUtils().isJavaDoc(element)) {
-            return;
-        }
-
         final PsiElement beanClassElement = getCamelIdeaUtils().getBeanPsiElement(element);
-        if (beanClassElement != null) {
-            PsiClass psiClass = getCamelIdeaUtils().getBean(element);
-            if (psiClass != null) {
-                String errorMessage;
-                final String methodName = StringUtils.stripDoubleQuotes(element.getText());
-                final List<PsiMethod> matchMethods = getJavaMethodUtils().getBeanMethods(getJavaMethodUtils().getMethods(psiClass))
-                    .stream()
-                    .peek(method -> {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug(String.format("element %s = %s method in bean %s", methodName, StringUtils.stripDoubleQuotes(method.getName()), psiClass.getQualifiedName()));
-                        }
-                    })
-                    .filter(method -> StringUtils.stripDoubleQuotes(method.getName()).equals(methodName))
-                    .collect(toList());
+        if (beanClassElement == null) {
+            return;
+        }
 
-                if (matchMethods.isEmpty()) {
-                    errorMessage = matchMethods.isEmpty() ? String.format(METHOD_CAN_NOT_RESOLVED, methodName, psiClass.getQualifiedName()) : null;
-                } else {
-                    errorMessage = matchMethods.stream()
-                        .allMatch(method -> getJavaMethodUtils().isMatchOneOfModifierType(method, JvmModifier.PRIVATE))
-                        ? String.format(METHOD_HAS_PRIVATE_ACCESS, methodName, psiClass.getQualifiedName()) : null;
-                }
+        PsiClass psiClass = getCamelIdeaUtils().getBean(element);
+        if (psiClass == null) {
+            return;
+        }
 
-                if (errorMessage != null) {
-                    holder.createErrorAnnotation(element, errorMessage);
+        String errorMessage;
+        final String methodNameWithParameters = StringUtils.stripDoubleQuotes(element.getText());
+        final String methodName = StringUtils.stripDoubleQuotes(getJavaMethodUtils().getMethodNameWithOutParameters(element));
+
+        final List<PsiMethod> matchMethods = getJavaMethodUtils().getBeanMethods(getJavaMethodUtils().getMethods(psiClass))
+            .stream()
+            .peek(method -> {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("element %s = %s method in bean %s", methodName, StringUtils.stripDoubleQuotes(method.getName()), psiClass.getQualifiedName()));
                 }
+            })
+            .filter(method -> StringUtils.stripDoubleQuotes(method.getName()).equals(methodName))
+            .collect(toList());
+
+        if (matchMethods.isEmpty()) {
+            errorMessage = matchMethods.isEmpty() ? String.format(METHOD_CAN_NOT_RESOLVED, methodNameWithParameters, psiClass.getQualifiedName()) : null;
+        } else {
+            final long privateMethods = matchMethods.stream()
+                .filter(method -> getJavaMethodUtils().isMatchOneOfModifierType(method, JvmModifier.PRIVATE))
+                .count();
+
+            final boolean isAnnotatedWithHandler = matchMethods.stream().anyMatch(psiMethod -> getCamelIdeaUtils().isAnnotatedWithHandler(psiMethod));
+
+            final boolean allPrivates = privateMethods == matchMethods.size() ? true : false;
+
+            if (methodName.indexOf("(", methodNameWithParameters.length()) > 0 && methodNameWithParameters.endsWith(")") && !allPrivates) {
+                //TODO implement logic for matching on parameters.
+                return;
             }
+
+            if ((matchMethods.size() - privateMethods) > 1 && (!isAnnotatedWithHandler)) {
+                errorMessage = String.format(METHOD_HAS_AMBIGUOUS_ACCESS, methodNameWithParameters, psiClass.getQualifiedName());
+            } else {
+                errorMessage = allPrivates ? String.format(METHOD_HAS_PRIVATE_ACCESS, methodNameWithParameters, psiClass.getQualifiedName()) : null;
+            }
+
+        }
+
+        if (errorMessage != null) {
+            holder.createErrorAnnotation(element, errorMessage);
         }
 
     }

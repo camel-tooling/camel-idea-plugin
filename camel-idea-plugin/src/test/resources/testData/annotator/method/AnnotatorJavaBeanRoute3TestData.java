@@ -16,24 +16,20 @@
  */
 package testData.annotator.method;
 
-import org.apache.camel.Handler;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.main.Main;
+import testData.annotator.method.AnnotatorJavaBeanTestData;
 import testData.annotator.method.AnnotatorJavaBeanSuperClassTestData;
 
-public class AnnotatorJavaBeanTestData extends AnnotatorJavaBeanSuperClassTestData {
+public final class AnnotatorJavaBeanRoute3TestData extends RouteBuilder {
 
-    public void letsDoThis() {}
-    public void anotherBeanMethod() {}
-    public void mySuperAbstractMethod() {}
-    public void myOverLoadedBean() {}
-    public void myOverLoadedBean(String name) {}
+    private AnnotatorJavaBeanTestData beanTestData = new AnnotatorJavaBeanTestData();
 
-    private void myOverLoadedBean2(String name) {}
-    public void myOverLoadedBean2(String name, int count) {}
-
-    @Handler
-    public void myOverLoadedBean3(String name) {}
-    public void myOverLoadedBean3(String name, int count) {}
-
-    private void thisIsVeryPrivate() {}
-
+    public void configure() {
+        from("file:inbox")
+            .bean(beanTestData, "myOverLoadedBean2")
+            .bean(beanTestData, <error descr="Ambiguous matches 'myOverLoadedBean(${body})' in bean 'testData.annotator.method.AnnotatorJavaBeanTestData'">"myOverLoadedBean(${body})"</error>)
+            .bean(beanTestData, <error descr="Ambiguous matches 'myOverLoadedBean' in bean 'testData.annotator.method.AnnotatorJavaBeanTestData'">"myOverLoadedBean"</error>)
+            .to("log:out");
+    }
 }
