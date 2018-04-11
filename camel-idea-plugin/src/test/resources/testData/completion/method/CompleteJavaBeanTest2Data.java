@@ -27,8 +27,6 @@ public class CompleteJavaBeanTest2Data extends CompleteJavaBeanSuperClassTestDat
     public void myOverLoadedBean() {}
     public void myOver<caret>LoadedBean(String name) {}
 
-    public void <caret>myAmbiguousMethod() {}
-    public void myAmbiguousMethod(String name) {}
     private void thisIsVeryPrivate() {}
 
 }

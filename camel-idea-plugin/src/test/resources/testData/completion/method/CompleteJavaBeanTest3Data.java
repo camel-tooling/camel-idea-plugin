@@ -20,7 +20,7 @@
  */
 public class CompleteJavaBeanTest3Data {
 
-    public void <caret>myAmbiguousMethod() {}
+    public void myAmbiguousMethod() {}
     public void <caret>myAmbiguousMethod(String name) {}
 
 }
