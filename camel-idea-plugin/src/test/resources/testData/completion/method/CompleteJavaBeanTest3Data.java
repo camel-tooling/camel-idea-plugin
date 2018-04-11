@@ -14,22 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package testData.annotator.method;
 
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.main.Main;
-import testData.annotator.method.AnnotatorJavaBeanTestData;
-import testData.annotator.method.AnnotatorJavaBeanSuperClassTestData;
+/**
+ * Use for testing find usage with overload methods
+ */
+public class CompleteJavaBeanTest3Data {
 
-public final class AnnotatorJavaBeanRoute3TestData extends RouteBuilder {
+    public void myAmbiguousMethod() {}
+    public void <caret>myAmbiguousMethod(String name) {}
 
-    private AnnotatorJavaBeanTestData beanTestData = new AnnotatorJavaBeanTestData();
-
-    public void configure() {
-        from("file:inbox")
-            .bean(beanTestData, "myOverLoadedBean2")
-            .bean(beanTestData, "myOverLoadedBean(${body})")
-            .bean(beanTestData, <error descr="Ambiguous matches 'myOverLoadedBean' in bean 'testData.annotator.method.AnnotatorJavaBeanTestData'">"myOverLoadedBean"</error>)
-            .to("log:out");
-    }
 }

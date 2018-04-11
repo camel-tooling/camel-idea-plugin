@@ -21,15 +21,13 @@ import org.apache.camel.main.Main;
 import testData.annotator.method.AnnotatorJavaBeanTestData;
 import testData.annotator.method.AnnotatorJavaBeanSuperClassTestData;
 
-public final class AnnotatorJavaBeanRoute3TestData extends RouteBuilder {
+public final class AnnotatorJavaBeanRoute4TestData extends RouteBuilder {
 
     private AnnotatorJavaBeanTestData beanTestData = new AnnotatorJavaBeanTestData();
 
     public void configure() {
         from("file:inbox")
-            .bean(beanTestData, "myOverLoadedBean2")
             .bean(beanTestData, "myOverLoadedBean(${body})")
-            .bean(beanTestData, <error descr="Ambiguous matches 'myOverLoadedBean' in bean 'testData.annotator.method.AnnotatorJavaBeanTestData'">"myOverLoadedBean"</error>)
             .to("log:out");
     }
 }
