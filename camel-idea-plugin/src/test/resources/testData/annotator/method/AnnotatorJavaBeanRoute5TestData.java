@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import testData.CompleteJavaBeanSuperClassTestData;
+package testData.annotator.method;
 
-/**
- * Use for testing find usage with overload methods
- */
-public class CompleteJavaBeanTest2Data extends CompleteJavaBeanSuperClassTestData {
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.main.Main;
+import testData.annotator.method.AnnotatorJavaBeanTestData;
+import testData.annotator.method.AnnotatorJavaBeanSuperClassTestData;
 
-    public void letsDoThis() {}
-    public void another<caret>BeanMethod() {}
-    public void mySuperAbstractMethod() {}
-    public void myOverLoadedBean() {}
-    public void myOver<caret>LoadedBean(String name) {}
+public final class AnnotatorJavaBeanRoute4TestData extends RouteBuilder {
 
-    public void <caret>myAmbiguousMethod() {}
-    public void myAmbiguousMethod(String name) {}
-    private void thisIsVeryPrivate() {}
+    private AnnotatorJavaBeanTestData beanTestData = new AnnotatorJavaBeanTestData();
 
+    public void configure() {
+        from("file:inbox")
+            .bean(beanTestData, "myOverLoadedBean(${body})")
+            .to("log:out");
+    }
 }

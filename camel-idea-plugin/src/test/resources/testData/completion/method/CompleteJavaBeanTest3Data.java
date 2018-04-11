@@ -14,21 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import testData.CompleteJavaBeanSuperClassTestData;
 
 /**
  * Use for testing find usage with overload methods
  */
-public class CompleteJavaBeanTest2Data extends CompleteJavaBeanSuperClassTestData {
-
-    public void letsDoThis() {}
-    public void another<caret>BeanMethod() {}
-    public void mySuperAbstractMethod() {}
-    public void myOverLoadedBean() {}
-    public void myOver<caret>LoadedBean(String name) {}
+public class CompleteJavaBeanTest3Data {
 
     public void <caret>myAmbiguousMethod() {}
-    public void myAmbiguousMethod(String name) {}
-    private void thisIsVeryPrivate() {}
+    public void <caret>myAmbiguousMethod(String name) {}
 
 }

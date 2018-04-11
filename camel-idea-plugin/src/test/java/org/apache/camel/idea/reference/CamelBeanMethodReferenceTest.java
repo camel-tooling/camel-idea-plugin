@@ -81,4 +81,17 @@ public class CamelBeanMethodReferenceTest extends CamelLightCodeInsightFixtureTe
         assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
         assertEquals("(beanTestData, \"myOverLoadedBean\")", referenceElement.getParent().getText());
     }
+
+    /**
+     * Test if the find usage is working with camel DSL bean method call with parameters
+     */
+    public void testFindUsageFromWithAmbiguousToBeanDSLWithParameters() {
+        ArrayList<UsageInfo> usageInfos = (ArrayList<UsageInfo>) myFixture.testFindUsages("CompleteJavaBeanTest3Data.java", "CompleteJavaBeanRoute8TestData.java");
+        assertEquals(1, usageInfos.size());
+
+        final UsageInfo usageInfo = usageInfos.get(0);
+        final PsiElement referenceElement = usageInfo.getElement();
+        assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
+        assertEquals("(beanTestData, \"myAmbiguousMethod(${body})\")", referenceElement.getParent().getText());
+    }
 }

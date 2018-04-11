@@ -80,5 +80,16 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
         assertEquals(1, list.stream().filter(i -> i.getSeverity().getName().equals("ERROR")).count());
     }
 
+    /**
+     * Test if the calling methods is ambiguous and the Camel DSL bean calling method is with parameters
+     */
+    public void testAnnotatorJavaBeanAmbiguousMatchWithParameter() {
+        myFixture.configureByFiles("AnnotatorJavaBeanRoute5TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
+        myFixture.checkHighlighting(false, false, true, true);
+
+        List<HighlightInfo> list = myFixture.doHighlighting();
+        assertEquals(1, list.stream().filter(i -> i.getSeverity().getName().equals("ERROR")).count());
+    }
+
 
 }

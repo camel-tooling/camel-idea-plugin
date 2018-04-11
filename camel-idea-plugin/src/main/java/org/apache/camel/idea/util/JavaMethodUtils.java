@@ -112,11 +112,18 @@ public class JavaMethodUtils implements Disposable {
      * @return the text representation of the method name
      */
     public String getMethodNameWithOutParameters(PsiElement methodLiteral) {
-        String completeMethodText = methodLiteral.getText();
-        if (completeMethodText.indexOf("(") > 0) {
-            return completeMethodText.substring(0, completeMethodText.indexOf("("));
+        return getMethodNameWithOutParameters(methodLiteral.getText());
+    }
+    /**
+     * Return only the method name in free text from an {@link String}
+     * @param completeMethodWithParmText - The text representation of the method name and it's parameters
+     * @return the text representation of the method name
+     */
+    public String getMethodNameWithOutParameters(String completeMethodWithParmText) {
+        if (completeMethodWithParmText.indexOf("(") > 0) {
+            return completeMethodWithParmText.substring(0, completeMethodWithParmText.indexOf("("));
         }
-        return completeMethodText;
+        return completeMethodWithParmText;
     }
 
     @Override

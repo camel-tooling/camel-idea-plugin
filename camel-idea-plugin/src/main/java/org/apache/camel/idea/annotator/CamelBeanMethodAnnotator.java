@@ -96,7 +96,7 @@ public class CamelBeanMethodAnnotator implements Annotator {
 
             final boolean allPrivates = privateMethods == matchMethods.size() ? true : false;
 
-            if (methodName.indexOf("(", methodNameWithParameters.length()) > 0 && methodNameWithParameters.endsWith(")") && !allPrivates) {
+            if (methodNameWithParameters.indexOf("(", methodName.length()) > 0 && methodNameWithParameters.endsWith(")") && !allPrivates) {
                 //TODO implement logic for matching on parameters.
                 return;
             }

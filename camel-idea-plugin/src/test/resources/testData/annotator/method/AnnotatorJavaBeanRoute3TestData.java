@@ -28,7 +28,7 @@ public final class AnnotatorJavaBeanRoute3TestData extends RouteBuilder {
     public void configure() {
         from("file:inbox")
             .bean(beanTestData, "myOverLoadedBean2")
-            .bean(beanTestData, <error descr="Ambiguous matches 'myOverLoadedBean(${body})' in bean 'testData.annotator.method.AnnotatorJavaBeanTestData'">"myOverLoadedBean(${body})"</error>)
+            .bean(beanTestData, "myOverLoadedBean(${body})")
             .bean(beanTestData, <error descr="Ambiguous matches 'myOverLoadedBean' in bean 'testData.annotator.method.AnnotatorJavaBeanTestData'">"myOverLoadedBean"</error>)
             .to("log:out");
     }

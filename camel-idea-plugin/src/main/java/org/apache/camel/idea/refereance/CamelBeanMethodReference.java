@@ -43,6 +43,7 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
 
     private final PsiClass psiClass;
     private final String methodName;
+    private final String methodNameOnly;
 
     /**
      * Reference between the Camel bean method DSL and the actually method.
@@ -55,13 +56,15 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
         super(element, textRange);
         this.psiClass = psiClass;
         this.methodName = methodName;
+        this.methodNameOnly = getJavaMethodUtils().getMethodNameWithOutParameters(methodName);
     }
 
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean b) {
         List<ResolveResult> results = new ArrayList<>();
-        final PsiMethod[] methodsByName = getPsiClass().findMethodsByName(methodName, true);
+
+        final PsiMethod[] methodsByName = getPsiClass().findMethodsByName(methodNameOnly, true);
         for (PsiMethod psiMethod : getJavaMethodUtils().getBeanMethods(Arrays.asList(methodsByName))) {
             if (getCamelIdeaUtils().isAnnotatedWithHandler(psiMethod)) {
                 return new ResolveResult[] {new PsiElementResolveResult(psiMethod)};
@@ -87,7 +90,8 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
     @Override
     public PsiElement handleElementRename(String newElementName) throws IncorrectOperationException {
         //Find all the method with the registered method name on it's class.
-        final PsiMethod[] methodsByName = getPsiClass().findMethodsByName(methodName, true);
+
+        final PsiMethod[] methodsByName = getPsiClass().findMethodsByName(methodNameOnly, true);
 
         for (PsiMethod psiMethod : methodsByName) {
             psiMethod.setName(newElementName);

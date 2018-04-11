@@ -14,21 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import testData.CompleteJavaBeanSuperClassTestData;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.main.Main;
+import testData.CompleteJavaBeanTest2Data;
 
 /**
- * Use for testing find usage with overload methods
+ * Test route for testing find usage from bean method "myOverLoadedBean" to the route Camel bean DSL.
+ * The purpose of the class is to setup a test scenario with overload methods and find usage
  */
-public class CompleteJavaBeanTest2Data extends CompleteJavaBeanSuperClassTestData {
+public final class CompleteJavaBeanRoute8TestData extends RouteBuilder {
 
-    public void letsDoThis() {}
-    public void another<caret>BeanMethod() {}
-    public void mySuperAbstractMethod() {}
-    public void myOverLoadedBean() {}
-    public void myOver<caret>LoadedBean(String name) {}
+    private CompleteJavaBeanTest3Data beanTestData;
 
-    public void <caret>myAmbiguousMethod() {}
-    public void myAmbiguousMethod(String name) {}
-    private void thisIsVeryPrivate() {}
-
+    @Override
+    public void configure() {
+        from("file:inbox")
+            .bean(beanTestData, "myAmbiguousMethod(${body})")
+            .to("log:out");
+    }
 }
