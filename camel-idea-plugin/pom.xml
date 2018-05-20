@@ -314,7 +314,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>commons-imaging-1.0-RC</artifactId>
+      <artifactId>commons-imaging-1.0-RC-1</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
