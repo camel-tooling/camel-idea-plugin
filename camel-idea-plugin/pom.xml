@@ -271,7 +271,8 @@
       <artifactId>jna-platform</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
-    </dependency><dependency>
+    </dependency>
+    <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>jna</artifactId>
       <version>${idea.version}</version>
@@ -417,6 +418,12 @@
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>icons</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>external-system-rt</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
