@@ -34,7 +34,7 @@
   </description>
 
   <properties>
-    <idea.version>2018.1.0</idea.version>
+    <idea.version>2018.1.3</idea.version>
     <idea.platform.prefix>-Didea.platform.prefix=Idea</idea.platform.prefix>
     <ij.plugin>true</ij.plugin>
     <argLine>
@@ -417,6 +417,12 @@
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>icons</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>external-system-rt</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
