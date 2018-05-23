@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.5.3</version>
+  <version>0.5.4</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -30,6 +30,11 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      v0.5.4
+      <ul>
+        <li>Upgrade to IntelliJ 2018.1.4</li>
+        <li>Bug fixes</li>
+      </ul>
       v0.5.3
       <ul>
         <li>Upgrade to IntelliJ 2018.1.3</li>
@@ -37,26 +42,6 @@
         <li>The preference UI has now a separate page for validation settings</li>
         <li>Bug fixes</li>
         <li>Upgraded to Apache Camel 2.21.1</li>
-      </ul>
-      v0.5.2
-      <ul>
-        <li>Added support for real time validation of JSonPath language</li>
-        <li>Bug fixes</li>
-        <li>Upgraded to Apache Camel 2.21.0</li>
-      </ul>
-      v0.5.1
-      <ul>
-        <li>Bug fixes</li>
-      </ul>
-      v0.5.0
-      <ul>
-        <li>Added official Camel logo as new default gutter icon</li>
-        <li>Add Camel Gutter for each HTTP methods when using REST DSL components</li>
-        <li>Added initial support for quick navigation to bean methods from Java DSL</li>
-        <li>Remove support for Groovy, Scala and Kotlin</li>
-        <li>Various internal refactorings to cleanup the code</li>
-        <li>Upgraded to Apache Camel 2.20.2</li>
-        <li>Upgraded to IntelliJ 2017.3.4</li>
       </ul>
     ]]>
   </change-notes>
