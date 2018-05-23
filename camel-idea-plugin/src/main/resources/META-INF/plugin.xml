@@ -36,6 +36,7 @@
         <li>Find usage where methods are called from Camel routes.</li>
         <li>The preference UI has now a separate page for validation settings</li>
         <li>Bug fixes</li>
+        <li>Upgraded to Apache Camel 2.21.1</li>
       </ul>
       v0.5.2
       <ul>
