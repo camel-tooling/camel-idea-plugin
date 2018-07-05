@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.5.4</version>
+  <version>0.5.5</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -30,19 +30,15 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      v0.5.5
+      <ul>
+        <li>TODO</li>
+      </ul>
       v0.5.4
       <ul>
         <li>Upgrade to IntelliJ 2018.1.4</li>
         <li>Bug fixes</li>
         <li>Upgraded to Apache Camel 2.22.0</li>
-      </ul>
-      v0.5.3
-      <ul>
-        <li>Upgrade to IntelliJ 2018.1.3</li>
-        <li>Find usage where methods are called from Camel routes.</li>
-        <li>The preference UI has now a separate page for validation settings</li>
-        <li>Bug fixes</li>
-        <li>Upgraded to Apache Camel 2.21.1</li>
       </ul>
     ]]>
   </change-notes>
