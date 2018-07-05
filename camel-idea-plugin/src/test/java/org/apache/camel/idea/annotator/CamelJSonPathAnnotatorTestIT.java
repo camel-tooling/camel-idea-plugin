@@ -40,7 +40,7 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
  */
 public class CamelJSonPathAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
-    public static final String CAMEL_JSONPATH_MAVEN_ARTIFACT = "org.apache.camel:camel-jsonpath:2.21.0";
+    public static final String CAMEL_JSONPATH_MAVEN_ARTIFACT = "org.apache.camel:camel-jsonpath:2.22.0";
 
     public CamelJSonPathAnnotatorTestIT() {
         setIgnoreCamelCoreLib(true);
@@ -57,9 +57,9 @@ public class CamelJSonPathAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
                 String name = file.getName();
                 // special for camel JARs
                 if (name.contains("camel-core")) {
-                    name = "org.apache.camel:camel-core:2.21.0";
+                    name = "org.apache.camel:camel-core:2.22.0";
                 } else if (name.contains("camel-jsonpath")) {
-                    name = "org.apache.camel:camel-jsonpath:2.21.0";
+                    name = "org.apache.camel:camel-jsonpath:2.22.0";
                 } else {
                     // need to fix the name
                     if (name.endsWith(".jar")) {
