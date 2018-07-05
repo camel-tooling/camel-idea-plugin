@@ -34,6 +34,7 @@
       <ul>
         <li>Upgrade to IntelliJ 2018.1.4</li>
         <li>Bug fixes</li>
+        <li>Upgraded to Apache Camel 2.22.0</li>
       </ul>
       v0.5.3
       <ul>
