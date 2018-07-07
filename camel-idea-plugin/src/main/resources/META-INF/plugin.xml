@@ -98,7 +98,7 @@
     <!-- allow code completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.completion.contributor.CamelJavaReferenceContributor"/>
     <completion.contributor language="XML" implementationClass="org.apache.camel.idea.completion.contributor.CamelXmlReferenceContributor"/>
-    <completion.contributor language="any" implementationClass="org.apache.camel.idea.completion.contributor.CamelPropertiesOrYamlFileReferenceContributor"/>
+    <completion.contributor language="any" implementationClass="org.apache.camel.idea.completion.contributor.CamelPropertiesOrYamlFileReferenceContributor" order="before javaClassReference"/>
 
     <!-- puts the Camel icon in the gutter for each line that starts a Camel route -->
     <codeInsight.lineMarkerProvider language="JAVA" implementationClass="org.apache.camel.idea.gutter.CamelRouteLineMarkerProvider"/>
