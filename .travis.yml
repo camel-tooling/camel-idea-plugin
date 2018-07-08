@@ -8,8 +8,8 @@ cache:
     - $HOME/.m2
 before_install:
     -  "mkdir idea"
-    -  "./download-unpack-intellij.sh 2018.1.4 idea idea-IC-181.5087.20 $HOME/.m2"
-    -  "./install-intellij-libs.sh 2018.1.4 idea $HOME/.m2"
+    -  "./download-unpack-intellij.sh 2018.1.5 idea idea-IC-181.5281.24 $HOME/.m2"
+    -  "./install-intellij-libs.sh 2018.1.5 idea $HOME/.m2"
 after_failure:
       - cat ./camel-idea-plugin/camel-idea-plugin/target/failsafe-reports/*.txt
       - cat ./camel-idea-plugin/camel-idea-plugin/target/surefire-reports/*.txt
