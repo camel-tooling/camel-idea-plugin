@@ -189,7 +189,7 @@ public final class CamelIdeaUtils implements Disposable {
     }
 
     public boolean isAnnotatedWithHandler(PsiMethod psiMethod) {
-        return  Arrays.stream(psiMethod.getAnnotations()).anyMatch(a -> a.getQualifiedName().equals("org.apache.camel.Handler"));
+        return  Arrays.stream(psiMethod.getAnnotations()).anyMatch(a -> "org.apache.camel.Handler".equals(a.getQualifiedName()));
     }
 
     public boolean isExtendingRouteBuild(PsiClass clazz) {
