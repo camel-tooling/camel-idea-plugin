@@ -32,6 +32,7 @@
   <change-notes><![CDATA[
       v0.5.5
       <ul>
+        <li>Upgrade to IntelliJ 2018.1.6</li>
         <li>Upgrade to IntelliJ 2018.1.5</li>
         <li>Bug fixes</li>
       </ul>

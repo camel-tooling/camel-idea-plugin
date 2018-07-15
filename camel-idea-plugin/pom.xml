@@ -34,7 +34,7 @@
   </description>
 
   <properties>
-    <idea.version>2018.1.5</idea.version>
+    <idea.version>2018.1.6</idea.version>
     <idea.platform.prefix>-Didea.platform.prefix=Idea</idea.platform.prefix>
     <ij.plugin>true</ij.plugin>
     <argLine>
@@ -57,7 +57,7 @@
     <profile>
       <id>ultimate</id>
       <properties>
-        <idea.version>2018.1.5</idea.version>
+        <idea.version>2018.1.6</idea.version>
         <!-- PLEASE DON'T DELETE THIS EMPTY TAG. IT'S NECESSARY TO KEEP THIS EMPTY TAG FOR IDEA ULTIMATE! -->
         <idea.platform.prefix></idea.platform.prefix>
       </properties>
