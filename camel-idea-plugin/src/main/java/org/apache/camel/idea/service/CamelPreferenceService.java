@@ -16,14 +16,11 @@
  */
 package org.apache.camel.idea.service;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import javax.swing.*;
+import javax.swing.Icon;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
@@ -32,7 +29,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Transient;
-import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -62,9 +58,6 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     private static String[] defaultExcludeFilePattern = {
         "**/log4j.properties", "**/log4j2.properties", "**/logging.properties"};
 
-    private volatile Icon currentCustomIcon;
-    private volatile String currentCustomIconPath;
-
     private boolean realTimeEndpointValidation = true;
     private boolean realTimeSimpleValidation = true;
     private boolean realTimeJSonPathValidation = true;
@@ -76,7 +69,6 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     private boolean showCamelIconInGutter = true;
     @Transient
     private String chosenCamelIcon = "Camel Icon";
-    private String customIconFilePath;
     private List<String> ignorePropertyList = new ArrayList<>();
     private List<String> excludePropertyFiles = new ArrayList<>();
 
@@ -154,14 +146,6 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
         this.chosenCamelIcon = chosenCamelIcon;
     }
 
-    public String getCustomIconFilePath() {
-        return customIconFilePath;
-    }
-
-    public void setCustomIconFilePath(String customIconFilePath) {
-        this.customIconFilePath = customIconFilePath;
-    }
-
     public List<String> getIgnorePropertyList() {
         if (ignorePropertyList.isEmpty()) {
             ignorePropertyList = new ArrayList<>(Arrays.asList(defaultIgnoreProperties));
@@ -194,35 +178,6 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
         } else if (chosenCamelIcon.equals("Camel Badge Icon")) {
             return CAMEL_BADGE_ICON;
         }
-
-        if (StringUtils.isNotEmpty(customIconFilePath)) {
-
-            // use cached current icon
-            if (customIconFilePath.equals(currentCustomIconPath)) {
-                return currentCustomIcon;
-            }
-
-            Icon icon = IconLoader.findIcon(customIconFilePath);
-            if (icon == null) {
-                File file = new File(customIconFilePath);
-                if (file.exists() && file.isFile()) {
-                    try {
-                        URL url = new URL("file:" + file.getAbsolutePath());
-                        icon = IconLoader.findIcon(url, true);
-                    } catch (MalformedURLException e) {
-                        LOG.warn("Error loading custom icon", e);
-                    }
-                }
-            }
-
-            if (icon != null) {
-                // cache current icon
-                currentCustomIcon = icon;
-                currentCustomIconPath = customIconFilePath;
-                return currentCustomIcon;
-            }
-        }
-
         return CAMEL_ICON;
     }
 
@@ -261,21 +216,17 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
             && scanThirdPartyComponents == that.scanThirdPartyComponents
             && scanThirdPartyLegacyComponents == that.scanThirdPartyLegacyComponents
             && showCamelIconInGutter == that.showCamelIconInGutter
-            && Objects.equals(currentCustomIcon, that.currentCustomIcon)
-            && Objects.equals(currentCustomIconPath, that.currentCustomIconPath)
             && Objects.equals(chosenCamelIcon, that.chosenCamelIcon)
-            && Objects.equals(customIconFilePath, that.customIconFilePath)
             && Objects.equals(ignorePropertyList, that.ignorePropertyList)
             && Objects.equals(excludePropertyFiles, that.excludePropertyFiles);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(currentCustomIcon, currentCustomIconPath,
-            realTimeEndpointValidation, realTimeSimpleValidation, realTimeJSonPathValidation,
+        return Objects.hash(realTimeEndpointValidation, realTimeSimpleValidation, realTimeJSonPathValidation,
             downloadCatalog, scanThirdPartyComponents,
             scanThirdPartyLegacyComponents, showCamelIconInGutter,
-            chosenCamelIcon, customIconFilePath, ignorePropertyList, excludePropertyFiles);
+            chosenCamelIcon, ignorePropertyList, excludePropertyFiles);
     }
 
     public boolean isRealTimeBeanMethodValidationCheckBox() {

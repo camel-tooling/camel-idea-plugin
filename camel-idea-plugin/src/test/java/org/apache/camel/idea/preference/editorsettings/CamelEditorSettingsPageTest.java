@@ -24,7 +24,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.swing.*;
-import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.components.JBCheckBox;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
@@ -92,59 +91,11 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
         JComboBox<String> comboBox = editorSettingsPage.getCamelIconsComboBox();
         assertNotNull(comboBox.getSelectedItem());
         assertEquals("Camel Icon", comboBox.getSelectedItem());
-        assertEquals(4, comboBox.getItemCount());
+        assertEquals(3, comboBox.getItemCount());
         assertEquals("Camel Icon", comboBox.getItemAt(0));
         assertEquals("Camel Animal Icon", comboBox.getItemAt(1));
         assertEquals("Camel Badge Icon", comboBox.getItemAt(2));
-        assertEquals("Custom Icon", comboBox.getItemAt(3));
         assertEquals(0, comboBox.getSelectedIndex());
-    }
-
-    public void testCustomIconButtonShouldNotBeEnabledByDefault() {
-        TextFieldWithBrowseButton button = editorSettingsPage.getCustomIconButton();
-        assertEquals(false, button.isEnabled());
-    }
-
-    public void testCustomIconButtonShouldBeEnabledWhenSelectingCustomCamelIcon() {
-        TextFieldWithBrowseButton button = editorSettingsPage.getCustomIconButton();
-        JComboBox<String> comboBox = editorSettingsPage.getCamelIconsComboBox();
-        assertNotNull(comboBox.getSelectedItem());
-        assertEquals("Camel Icon", comboBox.getSelectedItem());
-        assertEquals(false, button.isEnabled());
-        comboBox.setSelectedIndex(3);
-        assertEquals(3, comboBox.getSelectedIndex());
-        assertNotNull(comboBox.getSelectedItem());
-        assertEquals("Custom Icon", comboBox.getSelectedItem().toString());
-        assertEquals(true, button.isEnabled());
-    }
-
-    public void testCustomIconButtonShouldBeEnabledWhenSelectedItemIsCustomIconOnly() {
-        TextFieldWithBrowseButton button = editorSettingsPage.getCustomIconButton();
-        JComboBox<String> comboBox = editorSettingsPage.getCamelIconsComboBox();
-
-        assertNotNull(comboBox.getSelectedItem());
-        assertEquals("Camel Icon", comboBox.getSelectedItem().toString());
-        assertEquals(false, button.isEnabled());
-
-        comboBox.setSelectedIndex(1);
-        assertNotNull(comboBox.getSelectedItem());
-        assertEquals("Camel Animal Icon", comboBox.getSelectedItem().toString());
-        assertEquals(false, button.isEnabled());
-
-        comboBox.setSelectedIndex(2);
-        assertNotNull(comboBox.getSelectedItem());
-        assertEquals("Camel Badge Icon", comboBox.getSelectedItem().toString());
-        assertEquals(false, button.isEnabled());
-
-        comboBox.setSelectedIndex(3);
-        assertNotNull(comboBox.getSelectedItem());
-        assertEquals("Custom Icon", comboBox.getSelectedItem().toString());
-        assertEquals(true, button.isEnabled());
-
-        comboBox.setSelectedIndex(1);
-        assertNotNull(comboBox.getSelectedItem());
-        assertEquals("Camel Animal Icon", comboBox.getSelectedItem().toString());
-        assertEquals(false, button.isEnabled());
     }
 
     public void testShouldDownloadCatalogCheckBox() {
@@ -182,16 +133,4 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
         assertNotNull(comboBox.getSelectedItem());
         assertEquals("Camel Icon", comboBox.getSelectedItem().toString());
     }
-
-    public void testResetCustomIconButton() {
-        TextFieldWithBrowseButton button = editorSettingsPage.getCustomIconButton();
-        JComboBox<String> comboBox = editorSettingsPage.getCamelIconsComboBox();
-
-        comboBox.setSelectedIndex(1);
-        assertEquals(false, button.isEnabled());
-        editorSettingsPage.reset();
-        assertNotNull(comboBox.getSelectedItem());
-        assertEquals("Camel Icon", comboBox.getSelectedItem().toString());
-    }
-
 }

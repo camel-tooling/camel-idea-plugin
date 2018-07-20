@@ -100,7 +100,6 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         service.setExcludePropertyFiles(expectedExcludedProperties);
         service.setRealTimeEndpointValidation(true);
         service.setScanThirdPartyLegacyComponents(true);
-        service.setCustomIconFilePath("");
         service.setDownloadCatalog(true);
         service.setHighlightCustomOptions(true);
 
