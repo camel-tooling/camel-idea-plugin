@@ -23,7 +23,7 @@ The plugin includes:
 - Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)
 - Attempts to use same version as camel-core dependency from the loaded project (requires Camel 2.16.1 or newer and may require download over internet)
 - Inspection (analyze code) to validate Camel endpoints in Java, XML
-- Camel icon in gutter can be customized by choosing one of the two provided icons
+- Camel icon in gutter can be customized by choosing one of the three provided icons
 - Supports loading camel-catalog from third party Maven repositories define in the project Maven pom.xml file 
 - Supports Maven, Gradle, and SBT based projects
 
