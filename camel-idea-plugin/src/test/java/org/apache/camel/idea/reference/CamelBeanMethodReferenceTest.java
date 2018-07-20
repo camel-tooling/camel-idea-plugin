@@ -22,7 +22,6 @@ import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.ResolveResult;
 import com.intellij.usageView.UsageInfo;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
-import org.apache.camel.idea.refereance.CamelBeanMethodReference;
 
 
 import static org.hamcrest.MatcherAssert.assertThat;
