@@ -52,13 +52,7 @@ public final class CamelSmartCompletionEndpointOptions {
                                                                                    Map<String, String> existing, boolean xmlMode, PsiElement element, Editor editor) {
         List<LookupElement> answer = new ArrayList<>();
 
-        boolean consumerOnly = getCamelIdeaUtils().isConsumerEndpoint(element);
-        boolean producerOnly = getCamelIdeaUtils().isProducerEndpoint(element);
-
-        String concatQuery = query[0];
-        String suffix = query[1];
         String queryAtPosition = query[2];
-
         if (xmlMode) {
             queryAtPosition = queryAtPosition.replace("&amp;", "&");
         }
@@ -74,10 +68,12 @@ public final class CamelSmartCompletionEndpointOptions {
                 String name = option.getName();
 
                 // if we are consumer only, then any option that has producer in the label should be skipped (as its only for producer)
+                boolean consumerOnly = getCamelIdeaUtils().isConsumerEndpoint(element);
                 if (consumerOnly && option.getLabel().contains("producer")) {
                     continue;
                 }
                 // if we are producer only, then any option that has consume in the label should be skipped (as its only for consumer)
+                boolean producerOnly = getCamelIdeaUtils().isProducerEndpoint(element);
                 if (producerOnly && option.getLabel().contains("consumer")) {
                     continue;
                 }
@@ -91,6 +87,7 @@ public final class CamelSmartCompletionEndpointOptions {
 
                     // the lookup should prepare for the new option
                     String lookup;
+                    String concatQuery = query[0];
                     if (!concatQuery.contains("?")) {
                         // none existing options so we need to start with a ? mark
                         lookup = queryAtPosition + "?" + key;
@@ -106,6 +103,7 @@ public final class CamelSmartCompletionEndpointOptions {
                         lookup = lookup.replace("&", "&amp;");
                     }
                     LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+                    String suffix = query[1];
                     builder = addInsertHandler(editor, builder, suffix);
                     // only show the option in the UI
                     builder = builder.withPresentableText(name);
