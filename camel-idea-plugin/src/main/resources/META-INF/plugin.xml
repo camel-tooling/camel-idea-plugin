@@ -146,8 +146,8 @@
     <applicationConfigurable parentId="camel" id="camel.misc" groupId="language" displayName="Miscellaneous" instance="org.apache.camel.idea.preference.editorsettings.CamelEditorSettingsPage"/>
     <applicationConfigurable parentId="camel" id="camel.properties" groupId="language" displayName="Ignore &amp; Exclude Properties" instance="org.apache.camel.idea.preference.properties.CamelIgnoreAndExcludePage"/>
 
-    <psi.referenceContributor implementation="org.apache.camel.idea.refereance.CamelBeanReferenceContributor"/>
-    <renameHandler implementation="org.apache.camel.idea.refereance.CamelBeanReferenceRenameHandler"/>
+    <psi.referenceContributor implementation="org.apache.camel.idea.reference.CamelBeanReferenceContributor"/>
+    <renameHandler implementation="org.apache.camel.idea.reference.CamelBeanReferenceRenameHandler"/>
   </extensions>
 
 </idea-plugin>
