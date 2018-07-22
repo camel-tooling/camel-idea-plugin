@@ -31,6 +31,7 @@ import com.intellij.psi.PsiLiteral;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
@@ -188,17 +189,20 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         final PsiElement beanPsiElement = getBeanPsiElement(element);
         if (beanPsiElement != null) {
             PsiClass psiClass = null;
-            final PsiElement resolveElement = beanPsiElement.getReference().resolve();
-            if (resolveElement instanceof PsiClass) {
-                psiClass = (PsiClass) resolveElement;
-            } else if (resolveElement instanceof PsiField) {
-                final PsiType psiType = PsiUtil.getTypeByPsiElement(resolveElement);
-                if (psiType == null) {
-                    return null;
+            PsiReference reference = beanPsiElement.getReference();
+            if (reference != null) {
+                final PsiElement resolveElement = reference.resolve();
+                if (resolveElement instanceof PsiClass) {
+                    psiClass = (PsiClass) resolveElement;
+                } else if (resolveElement instanceof PsiField) {
+                    final PsiType psiType = PsiUtil.getTypeByPsiElement(resolveElement);
+                    if (psiType == null) {
+                        return null;
+                    }
+                    psiClass = ((PsiClassReferenceType) psiType).resolve();
                 }
-                psiClass = ((PsiClassReferenceType) psiType).resolve();
+                return psiClass;
             }
-            return psiClass;
         }
         return null;
     }
