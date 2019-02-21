@@ -72,8 +72,6 @@ public class CamelService implements Disposable {
 
     private static final Logger LOG = Logger.getInstance(CamelService.class);
 
-    private static final String MISSING_JSON_SCHEMA_LINK = "https://github.com/camel-idea-plugin/camel-idea-plugin/tree/master/custom-components/beverage-component";
-
     private static final int MIN_MAJOR_VERSION = 2;
     private static final int MIN_MINOR_VERSION = 16;
 
@@ -386,8 +384,7 @@ public class CamelService implements Disposable {
         if (!missingJSonSchemas.isEmpty()) {
             String components = missingJSonSchemas.stream().collect(Collectors.joining(","));
             String message = "The following Camel components with artifactId [" + components
-                    + "] does not include component JSon schema metadata which is required for the Camel IDEA plugin to support these components."
-                    + "\nSee more details at: " + MISSING_JSON_SCHEMA_LINK;
+                    + "] does not include component JSon schema metadata which is required for the Camel IDEA plugin to support these components.";
 
             Icon icon = getCamelPreferenceService().getCamelIcon();
             camelMissingJSonSchemaNotification = CAMEL_NOTIFICATION_GROUP.createNotification(message, NotificationType.WARNING).setImportant(true).setIcon(icon);
