@@ -191,7 +191,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>lz4-1.3.0</artifactId>
+      <artifactId>lz4-java-1.3</artifactId>
       <version>${idea.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -244,13 +244,13 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>kotlin-stdlib</artifactId>
+      <artifactId>kotlin-runtime</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>picocontainer-1.2</artifactId>
+      <artifactId>picocontainer</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -280,7 +280,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>httpclient-4.5.6</artifactId>
+      <artifactId>httpclient-4.5.2</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency><dependency>
@@ -303,43 +303,13 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>netty-codec-4.1.30.Final</artifactId>
+      <artifactId>netty-all-4.1.13.Final</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>netty-codec-http-4.1.30.Final</artifactId>
-      <version>${idea.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>netty-common-4.1.30.Final</artifactId>
-      <version>${idea.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>netty-handler-4.1.30.Final</artifactId>
-      <version>${idea.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>netty-resolver-4.1.30.Final</artifactId>
-      <version>${idea.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>netty-transport-4.1.30.Final</artifactId>
-      <version>${idea.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>common-image-3.3.2</artifactId>
+      <artifactId>common-image-3.2.1</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -351,7 +321,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>streamex-0.6.7</artifactId>
+      <artifactId>streamex-0.6.5</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -363,7 +333,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>guava-25.1-jre</artifactId>
+      <artifactId>guava-21.0</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -375,7 +345,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>automaton-1.12-1</artifactId>
+      <artifactId>automaton</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -397,12 +367,12 @@
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
-<!--    <dependency>
+    <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>snappy-in-java-0.5.1</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
-    </dependency> -->
+    </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
       <artifactId>nanoxml-2.2.3</artifactId>
@@ -411,25 +381,25 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>jing-20030619</artifactId>
+      <artifactId>jing</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>proxy-vole-1.0.6</artifactId>
+      <artifactId>proxy-vole-1.0.3</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>protobuf-java-3.4.0</artifactId>
+      <artifactId>protobuf-java-3.0.0</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>asm-all-7.0</artifactId>
+      <artifactId>asm-all</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
