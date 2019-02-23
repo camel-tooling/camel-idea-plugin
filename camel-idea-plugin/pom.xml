@@ -34,7 +34,7 @@
   </description>
 
   <properties>
-    <idea.version>2018.1.6</idea.version>
+    <idea.version>2018.3.4</idea.version>
     <idea.platform.prefix>-Didea.platform.prefix=Idea</idea.platform.prefix>
     <ij.plugin>true</ij.plugin>
     <argLine>
@@ -49,6 +49,7 @@
       -Didea.config.path="${project.build.directory}/test-config"
       -Didea.test.group=ALL_EXCLUDE_DEFINED
       -Didea.load.plugins.id=org.apache.camel
+      -Djava.awt.headless=true
       ${idea.platform.prefix}
     </argLine>
   </properties>
@@ -191,7 +192,25 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>lz4-java-1.3</artifactId>
+      <artifactId>lz4-1.3.0</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>batik-all-1.10</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>xml-apis-ext-1.3.04</artifactId>
+      <version>${idea.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>xmlgraphics-commons-2.3</artifactId>
       <version>${idea.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -244,13 +263,13 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>kotlin-runtime</artifactId>
+      <artifactId>kotlin-stdlib</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>picocontainer</artifactId>
+      <artifactId>picocontainer-1.2</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -280,7 +299,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>httpclient-4.5.2</artifactId>
+      <artifactId>httpclient-4.5.6</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency><dependency>
@@ -303,13 +322,31 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>netty-all-4.1.13.Final</artifactId>
+      <artifactId>netty-common-4.1.30.Final</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>common-image-3.2.1</artifactId>
+      <artifactId>netty-transport-4.1.30.Final</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>intellij-test-discovery-agent-1.0.495</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>java-compatibility-1.0.1</artifactId>
+      <version>${idea.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.intellij</groupId>
+      <artifactId>common-image-3.3.2</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -321,7 +358,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>streamex-0.6.5</artifactId>
+      <artifactId>streamex-0.6.7</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -333,7 +370,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>guava-21.0</artifactId>
+      <artifactId>guava-25.1-jre</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -345,7 +382,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>automaton</artifactId>
+      <artifactId>automaton-1.12-1</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -369,37 +406,31 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>snappy-in-java-0.5.1</artifactId>
-      <version>${idea.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.intellij</groupId>
       <artifactId>nanoxml-2.2.3</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>jing</artifactId>
+      <artifactId>jing-20030619</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>proxy-vole-1.0.3</artifactId>
+      <artifactId>proxy-vole-1.0.6</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>protobuf-java-3.0.0</artifactId>
+      <artifactId>protobuf-java-3.4.0</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>asm-all</artifactId>
+      <artifactId>asm-all-7.0</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
@@ -453,6 +484,7 @@
       <version>${hamcrest.version}</version>
       <scope>test</scope>
     </dependency>
+
     <!-- TODO: delete me -->
     <dependency>
       <groupId>org.apache.camel</groupId>
