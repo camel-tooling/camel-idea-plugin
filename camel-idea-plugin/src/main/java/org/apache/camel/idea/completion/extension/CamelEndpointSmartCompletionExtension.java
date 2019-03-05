@@ -24,6 +24,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.catalog.CamelCatalog;
@@ -142,8 +143,10 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
                 // suggest a list of options for query parameters
                 answer = addSmartCompletionSuggestionsQueryParameters(query, componentModel, existing, xmlMode, element, parameters.getEditor());
             } else {
-                // suggest a list of options for context-path
-                answer = addSmartCompletionSuggestionsContextPath(queryAtPosition, componentModel, existing, xmlMode, element);
+                if (!resultSet.isStopped()) {
+                    // suggest a list of options for context-path
+                    answer = addSmartCompletionSuggestionsContextPath(queryAtPosition, componentModel, existing, xmlMode, element);
+                }
             }
         }
         // are there any results then add them

@@ -73,7 +73,7 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
     }
 
     @Nullable
-    @Override
+    @Override //TODO: why? it is exact copy of the parent implementation
     public PsiElement resolve() {
         ResolveResult[] resolveResults = multiResolve(false);
         return resolveResults.length == 1 ? resolveResults[0].getElement() : null;

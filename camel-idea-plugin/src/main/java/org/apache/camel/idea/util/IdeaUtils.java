@@ -30,6 +30,7 @@ import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiAnnotation;
@@ -260,12 +261,32 @@ public final class IdeaUtils implements Disposable {
         // java method call
         PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
         if (call != null) {
-            return doIsFromJavaMethod(call, fromRouteBuilder, methods);
+            return isFromJavaMethod(call, fromRouteBuilder, methods);
         }
         return false;
     }
 
-    private boolean doIsFromJavaMethod(PsiMethodCallExpression call, boolean fromRouteBuilder, String... methods) {
+    /**
+     * Returns the first parent of the given element which matches the given condition.
+     *
+     * @param element element from which the search starts
+     * @param strict if true, element itself cannot be returned if it matches the condition
+     * @param matchCondition condition which the parent must match to be returned
+     * @param stopCondition condition which stops the search, causing the method to return null
+     */
+    public PsiElement findFirstParent(@Nullable PsiElement element,
+                                      boolean strict,
+                                      Condition<? super PsiElement> matchCondition,
+                                      Condition<? super PsiElement> stopCondition) {
+        PsiElement parent = PsiTreeUtil.findFirstParent(element, strict, e -> stopCondition.value(e) || matchCondition.value(e));
+        if (parent != null && matchCondition.value(parent)) {
+            return parent;
+        } else {
+            return null;
+        }
+    }
+
+    public boolean isFromJavaMethod(PsiMethodCallExpression call, boolean fromRouteBuilder, String... methods) {
         PsiMethod method = call.resolveMethod();
         if (method != null) {
             PsiClass containingClass = method.getContainingClass();

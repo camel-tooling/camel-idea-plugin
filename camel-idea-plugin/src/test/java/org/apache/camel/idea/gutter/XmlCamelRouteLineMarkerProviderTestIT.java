@@ -40,7 +40,7 @@ public class XmlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsight
         List<GutterMark> gutters = myFixture.findAllGutters();
         assertNotNull(gutters);
 
-        assertEquals("Should contain 2 Camel gutters", 3, gutters.size());
+        assertEquals("Does not contain the expected amount of Camel gutters", 3, gutters.size());
 
         Icon defaultIcon = ServiceManager.getService(CamelPreferenceService.class).getCamelIcon();
         gutters.forEach(gutterMark -> {

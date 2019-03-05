@@ -16,24 +16,33 @@
  */
 package org.apache.camel.idea.service.extension.camel;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiLiteral;
 import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
+import com.intellij.psi.search.searches.ClassInheritorsSearch;
+import com.intellij.psi.util.ClassUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
 import org.apache.camel.idea.extension.CamelIdeaUtilsExtension;
@@ -43,10 +52,27 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public boolean isCamelRouteStart(PsiElement element) {
-        if (getIdeaUtils().isFromJavaMethodCall(element, true, ROUTE_START)) {
+        return getIdeaUtils().isFromJavaMethodCall(element, true, ROUTE_START);
+    }
+
+    @Override
+    public boolean isCamelRouteStartExpression(PsiElement element) {
+        PsiElement routeStartParent = getIdeaUtils().findFirstParent(element, false,
+            this::isCamelRouteStart, e -> e instanceof PsiFile);
+        return routeStartParent != null;
+    }
+
+    @Override
+    public boolean isInsideCamelRoute(PsiElement element, boolean excludeRouteStart) {
+        PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+        if (call == null) {
+            return false;
+        }
+        if (!excludeRouteStart && getIdeaUtils().isFromJavaMethod(call, true, ROUTE_START)) {
             return true;
         }
-        return false;
+        Collection<PsiMethodCallExpression> chainedCalls = PsiTreeUtil.findChildrenOfType(call, PsiMethodCallExpression.class);
+        return chainedCalls.stream().anyMatch(c -> getIdeaUtils().isFromJavaMethod(c, true, ROUTE_START));
     }
 
     @Override
@@ -223,6 +249,41 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     @Override
     public boolean isExtensionEnabled() {
         return true;
+    }
+
+    @Override
+    public List<PsiElement> findEndpointUsages(Module module, Condition<String> uriCondition) {
+        return findEndpoints(module, uriCondition, e -> !isCamelRouteStart(e));
+    }
+
+    @Override
+    public List<PsiElement> findEndpointDeclarations(Module module, Condition<String> uriCondition) {
+        return findEndpoints(module, uriCondition, e -> isCamelRouteStart(e));
+    }
+
+    private List<PsiElement> findEndpoints(Module module, Condition<String> uriCondition, Condition<PsiLiteral> elementCondition) {
+        PsiManager manager = PsiManager.getInstance(module.getProject());
+        //TODO: use IdeaUtils.ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME somehow
+        PsiClass routeBuilderClass = ClassUtil.findPsiClass(manager, "org.apache.camel.builder.RouteBuilder");
+
+        List<PsiElement> results = new ArrayList<>();
+        if (routeBuilderClass != null) {
+            Collection<PsiClass> routeBuilders = ClassInheritorsSearch.search(routeBuilderClass, module.getModuleScope(), true)
+                .findAll();
+            for (PsiClass routeBuilder : routeBuilders) {
+                Collection<PsiLiteralExpression> literals = PsiTreeUtil.findChildrenOfType(routeBuilder, PsiLiteralExpression.class);
+                for (PsiLiteralExpression literal : literals) {
+                    Object val = literal.getValue();
+                    if (val instanceof String) {
+                        String endpointUri = (String) val;
+                        if (uriCondition.value(endpointUri) && elementCondition.value(literal)) {
+                            results.add(literal);
+                        }
+                    }
+                }
+            }
+        }
+        return results;
     }
 
     private IdeaUtils getIdeaUtils() {

@@ -1,0 +1,23 @@
+<camelContext xmlns="http://camel.apache.org/schema/blueprint">
+
+  <route>
+    <from uri="direct:abc?param1=xxx"/>
+    <to uri="direct:xxx"/>
+  </route>
+
+  <route>
+    <from uri="direct:def"/>
+    <to uri="direct:yyy"/>
+  </route>
+
+  <route>
+    <from uri="direct:test"/>
+    <to uri="direct:<caret>"/>
+  </route>
+
+  <route>
+    <from uri="file:inbox"/>
+    <log message="xxx"/>
+  </route>
+
+</camelContext>

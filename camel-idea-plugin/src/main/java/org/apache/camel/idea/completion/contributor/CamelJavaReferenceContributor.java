@@ -23,6 +23,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaToken;
 import com.intellij.util.ProcessingContext;
+import org.apache.camel.idea.completion.extension.CamelEndpointNameCompletionExtension;
 import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionExtension;
 import org.apache.camel.idea.completion.extension.CamelJavaBeanReferenceSmartCompletion;
 import org.apache.camel.idea.util.CamelIdeaUtils;
@@ -36,6 +37,7 @@ import static org.apache.camel.idea.completion.extension.CamelJavaBeanReferenceS
 public class CamelJavaReferenceContributor extends CamelContributor {
 
     public CamelJavaReferenceContributor() {
+        addCompletionExtension(new CamelEndpointNameCompletionExtension(false));
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
         extend(CompletionType.BASIC, psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("java"))),
                 new EndpointCompletion(getCamelCompletionExtensions())
