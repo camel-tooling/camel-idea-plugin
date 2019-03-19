@@ -42,6 +42,27 @@ lengths, if/try depths, etc...
     <module name="Translation"/>
 
     <!--<module name="StrictDuplicateCode"/>-->
+    
+    <!-- Header checks -->
+    <!--
+         The values for `header-*` are inserted at build time by Maven
+         from the corresponding `header-*.txt` files. We need to do
+         this instead of using `headerFile` property as Maven
+         Checkstyle plugin has support for one `headerLocation`
+         property. This also might help IDEs not to search for header
+         files.
+    -->
+    <module name="Header">
+        <!-- the `header-java` is replaced during build -->
+        <property name="header" value="${header-java}"/>
+        <property name="fileExtensions" value="java,groovy,scala"/>
+    </module>
+
+    <module name="Header">
+        <!-- the `header-properties` is replaced during build -->
+        <property name="header" value="${header-properties}"/>
+        <property name="fileExtensions" value="properties"/>
+    </module>
    
     <module name="RegexpHeader">
         <!-- the `header-xml` is replaced during build -->
