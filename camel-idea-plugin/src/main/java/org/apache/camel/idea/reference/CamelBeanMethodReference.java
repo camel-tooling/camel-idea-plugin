@@ -19,7 +19,6 @@ package org.apache.camel.idea.reference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.ElementManipulators;
@@ -35,7 +34,6 @@ import org.apache.camel.idea.util.JavaMethodUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-
 /**
  * A reference between the Camel DSL bean ref method ".bean(MyClass.class,"myMethod") and the {@link PsiMethod}
  */
@@ -50,7 +48,7 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
      * @param element - The Camel bean method element
      * @param psiClass - The Class the method referer to exist in
      * @param methodName - The name of the method it referer from
-     * @param textRange
+     * @param textRange - the text range
      */
     CamelBeanMethodReference(PsiElement element, PsiClass psiClass, String methodName, TextRange textRange) {
         super(element, textRange);

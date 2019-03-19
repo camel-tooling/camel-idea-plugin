@@ -19,7 +19,6 @@ package org.apache.camel.idea.completion.extension;
 import java.util.Collection;
 import java.util.List;
 import static java.util.stream.Collectors.toList;
-
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -36,8 +35,6 @@ import com.intellij.util.ProcessingContext;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.JavaMethodUtils;
 import org.jetbrains.annotations.NotNull;
-
-
 
 /**
  * Camel Java bean reference smart completion for lookup bean methods.

@@ -17,7 +17,6 @@
 package org.apache.camel.idea.service.extension.idea;
 
 import java.util.Optional;
-
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.extensions.PluginId;
@@ -28,6 +27,7 @@ import org.apache.camel.idea.extension.IdeaUtilsExtension;
 import org.jetbrains.annotations.NotNull;
 
 public class YamlIdeaUtils implements IdeaUtilsExtension {
+
     @Override
     public Optional<String> extractTextFromElement(PsiElement element, boolean concatString, boolean stripWhitespace) {
         // maybe its yaml

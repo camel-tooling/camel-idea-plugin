@@ -16,14 +16,12 @@
  */
 package org.apache.camel.idea.util;
 
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import com.intellij.lang.jvm.JvmModifier;
 import com.intellij.openapi.Disposable;
 import com.intellij.psi.PsiClass;
@@ -32,7 +30,6 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiParameter;
 
 public class JavaMethodUtils implements Disposable {
-
 
     /**
      * Return all method names for the specific class and it's super classes, except
@@ -128,6 +125,6 @@ public class JavaMethodUtils implements Disposable {
 
     @Override
     public void dispose() {
-
+        // noop
     }
 }

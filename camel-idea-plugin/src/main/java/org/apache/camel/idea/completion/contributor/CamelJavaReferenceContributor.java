@@ -27,7 +27,6 @@ import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionEx
 import org.apache.camel.idea.completion.extension.CamelJavaBeanReferenceSmartCompletion;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.NotNull;
-
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 import static org.apache.camel.idea.completion.extension.CamelJavaBeanReferenceSmartCompletion.BEAN_CLASS_KEY;
 

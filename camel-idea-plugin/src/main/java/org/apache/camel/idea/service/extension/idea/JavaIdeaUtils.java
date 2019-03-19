@@ -17,7 +17,6 @@
 package org.apache.camel.idea.service.extension.idea;
 
 import java.util.*;
-
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
@@ -28,10 +27,10 @@ import com.intellij.psi.util.PsiTreeUtil;
 import org.apache.camel.idea.extension.IdeaUtilsExtension;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
 import static com.intellij.xml.CommonXmlStrings.QUOT;
 
 public class JavaIdeaUtils implements IdeaUtilsExtension {
+
     @Override
     public Optional<String> extractTextFromElement(PsiElement element, boolean concatString, boolean stripWhitespace) {
         if (element instanceof PsiLiteralExpression) {
