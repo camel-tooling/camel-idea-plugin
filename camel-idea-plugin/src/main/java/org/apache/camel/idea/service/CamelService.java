@@ -36,12 +36,10 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.stream.Collectors;
 import javax.swing.*;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationType;
@@ -58,7 +56,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.jetbrains.annotations.NotNull;
-
 import static org.apache.camel.catalog.CatalogHelper.loadText;
 import static org.apache.camel.idea.service.XmlUtils.getChildNodeByTagName;
 import static org.apache.camel.idea.service.XmlUtils.loadDocument;

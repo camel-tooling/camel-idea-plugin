@@ -17,7 +17,6 @@
 package org.apache.camel.idea.service.extension.camel;
 
 import java.util.Arrays;
-
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;

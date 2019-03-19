@@ -18,7 +18,6 @@ package org.apache.camel.idea.preference.annotator;
 
 import java.awt.*;
 import javax.swing.*;
-
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.SearchableConfigurable;

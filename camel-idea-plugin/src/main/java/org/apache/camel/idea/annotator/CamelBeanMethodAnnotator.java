@@ -18,7 +18,6 @@ package org.apache.camel.idea.annotator;
 
 import java.util.List;
 import static java.util.stream.Collectors.toList;
-
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.jvm.JvmModifier;

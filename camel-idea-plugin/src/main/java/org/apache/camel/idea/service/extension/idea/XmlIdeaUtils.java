@@ -28,8 +28,6 @@ import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.idea.extension.IdeaUtilsExtension;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-
 import static com.intellij.xml.CommonXmlStrings.QUOT;
 
 public class XmlIdeaUtils implements IdeaUtilsExtension {
