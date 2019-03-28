@@ -18,7 +18,6 @@ package org.apache.camel.idea.reference.endpoint.direct;
 
 import java.util.Objects;
 import javax.swing.Icon;
-
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
