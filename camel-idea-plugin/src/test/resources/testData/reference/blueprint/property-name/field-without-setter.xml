@@ -1,0 +1,5 @@
+<blueprint xmlns='http://www.osgi.org/xmlns/blueprint/v1.0.0'>
+  <bean id='myBean' class='testData.reference.blueprint.TestClass1'>
+    <property name="<caret>fieldWithoutSetter" value="xxx"/>
+  </bean>
+</blueprint>

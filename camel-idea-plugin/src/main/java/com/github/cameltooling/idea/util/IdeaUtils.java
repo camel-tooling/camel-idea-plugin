@@ -30,25 +30,32 @@ import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiConstructorCall;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiPolyadicExpression;
+import com.intellij.psi.PsiType;
 import com.intellij.psi.TokenType;
+import com.intellij.psi.impl.source.resolve.reference.impl.providers.JavaClassReference;
 import com.intellij.psi.impl.source.tree.JavaDocElementType;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.java.IJavaDocElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
+import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -70,8 +77,11 @@ public final class IdeaUtils implements Disposable {
     private IdeaUtils() {
         enabledExtensions = Arrays.stream(IdeaUtilsExtension.EP_NAME.getExtensions())
             .filter(IdeaUtilsExtension::isExtensionEnabled)
-            .filter(e -> e.isExtensionEnabled())
             .collect(Collectors.toList());
+    }
+
+    public static IdeaUtils getService() {
+        return ServiceManager.getService(IdeaUtils.class);
     }
 
     /**
@@ -447,6 +457,99 @@ public final class IdeaUtils implements Disposable {
             return true;
         }
         return false;
+    }
+
+    public Optional<XmlAttribute> findAttribute(XmlTag tag, String localName) {
+        return Arrays.stream(tag.getAttributes())
+            .filter(a -> a.getLocalName().equals(localName))
+            .findAny();
+    }
+
+    public Optional<XmlAttributeValue> findAttributeValue(XmlTag tag, String localName) {
+        return findAttribute(tag, localName)
+            .map(XmlAttribute::getValueElement);
+    }
+
+    public Optional<PsiMethod> findSetterMethod(PsiClass psiClass, String propertyName) {
+        String setterMethodName = getSetterMethodName(propertyName);
+        return Arrays.stream(psiClass.getAllMethods())
+            .filter(m -> m.getName().equals(setterMethodName))
+            .filter(m -> PsiType.VOID.equals(m.getReturnType()))
+            .filter(m -> m.getParameters().length == 1)
+            .findAny();
+    }
+
+    public List<PsiMethod> findSetterMethods(PsiClass psiClass) {
+        return findSetterMethods(psiClass, m -> {
+            String name = m.getName();
+            return name.startsWith("set")
+                && name.length() > 3
+                && (Character.isUpperCase(name.charAt(3)) || Character.isUpperCase(name.charAt(4)));
+        });
+    }
+
+    private List<PsiMethod> findSetterMethods(PsiClass psiClass, Predicate<PsiMethod> methodPredicate) {
+        return Arrays.stream(psiClass.getAllMethods())
+            .filter(methodPredicate)
+            .filter(m -> PsiType.VOID.equals(m.getReturnType()))
+            .filter(m -> m.getParameters().length == 1)
+            .collect(Collectors.toList());
+    }
+
+    private String getSetterMethodName(String propertyName) {
+        String setterSuffix = propertyName;
+        boolean shiftFirstChar = true;
+        if (propertyName.length() > 1) {
+            boolean firstCharUppercase = Character.isUpperCase(propertyName.charAt(0));
+            boolean secondCharUppercase = Character.isUpperCase(propertyName.charAt(1));
+
+            if (!firstCharUppercase && secondCharUppercase) {
+                shiftFirstChar = false;
+            }
+        }
+        if (shiftFirstChar) {
+            setterSuffix = setterSuffix.substring(0, 1).toUpperCase() + setterSuffix.substring(1);
+        }
+        return "set" + setterSuffix;
+    }
+
+    public PsiClass resolveJavaClassReference(JavaClassReference javaClassReference) {
+        return (PsiClass) Optional.ofNullable(javaClassReference.resolve())
+            .filter(ref -> ref instanceof PsiClass).orElse(null);
+    }
+
+    public Optional<JavaClassReference> findClassReference(PsiElement element) {
+        List<JavaClassReference> references = Arrays.stream(element.getReferences())
+            .filter(r -> r instanceof JavaClassReference)
+            .map(r -> (JavaClassReference) r)
+            .collect(Collectors.toList());
+        if (!references.isEmpty()) {
+            return Optional.of(references.get(references.size() - 1));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public TextRange getUnquotedRange(PsiElement element) {
+        TextRange originalRange = element.getTextRange();
+        if (StringUtil.isQuotedString(element.getText())) {
+            return TextRange.create(originalRange.getStartOffset() + 1, originalRange.getEndOffset() - 1);
+        } else {
+            return originalRange;
+        }
+    }
+
+    public PsiType findAnnotatedElementType(PsiAnnotation annotation) {
+        PsiField field = PsiTreeUtil.getParentOfType(annotation, PsiField.class);
+        if (field != null) {
+            return field.getType();
+        } else {
+            PsiMethod method = PsiTreeUtil.getParentOfType(annotation, PsiMethod.class);
+            if (method != null && method.getParameterList().getParametersCount() == 1) {
+                return method.getParameterList().getParameters()[0].getType();
+            }
+            return null;
+        }
     }
 
     @Override

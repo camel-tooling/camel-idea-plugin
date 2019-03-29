@@ -14,35 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.reference.endpoint.direct;
+package com.github.cameltooling.idea.reference.blueprint;
 
-import com.github.cameltooling.idea.reference.FakeCamelPsiElement;
-import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
-import com.intellij.psi.PsiElement;
+import com.intellij.patterns.PlatformPatterns;
+import com.intellij.psi.PsiReferenceContributor;
+import com.intellij.psi.PsiReferenceRegistrar;
+import com.intellij.psi.xml.XmlAttributeValue;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
- * A fake psi element for direct endpoint references.
+ * Reference contributor for blueprint files.
  */
-public class DirectEndpointPsiElement extends FakeCamelPsiElement {
-
-    private final CamelEndpoint endpoint;
-
-    public DirectEndpointPsiElement(@NotNull PsiElement element, @NotNull CamelEndpoint endpoint) {
-        super(element);
-        this.endpoint = endpoint;
-    }
+public class BlueprintReferenceContributor extends PsiReferenceContributor {
 
     @Override
-    public String getName() {
-        return endpoint.getName();
-    }
-
-    @Nullable
-    @Override
-    public String getTypeName() {
-        return "direct endpoint";
+    public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
+        registrar.registerReferenceProvider(PlatformPatterns.psiElement(XmlAttributeValue.class), new BlueprintJavaClassReferenceProvider());
+        registrar.registerReferenceProvider(PlatformPatterns.psiElement(XmlAttributeValue.class), new BeanReferenceProvider());
+        registrar.registerReferenceProvider(PlatformPatterns.psiElement(XmlAttributeValue.class), new BlueprintPropertyNameReferenceProvider());
     }
 
 }

@@ -14,35 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.reference.endpoint.direct;
+import org.apache.camel.BeanInject;
 
-import com.github.cameltooling.idea.reference.FakeCamelPsiElement;
-import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
-import com.intellij.psi.PsiElement;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+public class TestClass1 {
 
-/**
- * A fake psi element for direct endpoint references.
- */
-public class DirectEndpointPsiElement extends FakeCamelPsiElement {
+    @BeanInject("<caret>testClass2Bean")
+    private TestClass2 field1;
 
-    private final CamelEndpoint endpoint;
+    private TestClass2 field2;
+    private TestClass2 field3;
+    private TestClass3 field4;
 
-    public DirectEndpointPsiElement(@NotNull PsiElement element, @NotNull CamelEndpoint endpoint) {
-        super(element);
-        this.endpoint = endpoint;
+    @BeanInject
+    public TestClass1(TestClass2 field3) {
+        this.field3 = field3;
     }
 
-    @Override
-    public String getName() {
-        return endpoint.getName();
+    @BeanInject
+    public void setField2(TestClass2 field2) {
+        this.field2 = field2;
     }
 
-    @Nullable
-    @Override
-    public String getTypeName() {
-        return "direct endpoint";
+    @BeanInject
+    public void setField4(TestClass3 field4) {
+        this.field4 = field4;
     }
 
 }

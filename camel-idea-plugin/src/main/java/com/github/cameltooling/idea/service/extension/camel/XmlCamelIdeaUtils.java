@@ -19,9 +19,14 @@ package com.github.cameltooling.idea.service.extension.camel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
+import com.github.cameltooling.idea.reference.blueprint.BeanReference;
+import com.github.cameltooling.idea.reference.blueprint.PropertyNameReference;
+import com.github.cameltooling.idea.reference.blueprint.model.ReferenceableBeanId;
+import com.github.cameltooling.idea.reference.blueprint.model.ReferencedClass;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.ide.highlighter.XmlFileType;
@@ -31,8 +36,13 @@ import com.intellij.openapi.roots.ModuleFileIndex;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiReference;
+import com.intellij.psi.PsiType;
+import com.intellij.psi.impl.source.resolve.reference.impl.providers.JavaClassReference;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
@@ -42,8 +52,75 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlToken;
 import com.intellij.xml.util.XmlUtil;
+import org.jetbrains.annotations.NotNull;
 
 public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
+
+    @Override
+    public boolean isBeanDeclaration(PsiElement element) {
+        if (element instanceof XmlTag) {
+            XmlTag tag = (XmlTag) element;
+            return isBlueprintNamespace(tag.getNamespace()) && tag.getLocalName().equals("bean");
+        }
+        return false;
+    }
+
+    private boolean isBlueprintNamespace(String namespace) {
+        return namespace.contains(OSGI_BLUEPRINT_NAMESPACE);
+    }
+
+    @Override
+    public ReferenceableBeanId findReferenceableBeanId(@NotNull Module module, @NotNull String id) {
+        List<ReferenceableBeanId> results = findReferenceableIds(module, id::equals, true);
+        if (results.isEmpty()) {
+            return null;
+        } else {
+            return results.get(0);
+        }
+    }
+
+    @Override
+    public List<ReferenceableBeanId> findReferenceableBeanIds(@NotNull Module module, @NotNull Predicate<String> idCondition) {
+        return findReferenceableIds(module, idCondition, false);
+    }
+
+    private List<ReferenceableBeanId> findReferenceableIds(@NotNull Module module, Predicate<String> idCondition, boolean stopOnMatch) {
+        List<ReferenceableBeanId> results = new ArrayList<>();
+        iterateXmlNodesInsideXmlDocuments(module, XmlTag.class, tag -> Optional.of(tag)
+            .filter(this::isPartOfCamelContext)
+            .map(contextTag -> findAttributeValue(contextTag, "id").orElse(null))
+            .filter(id -> idCondition.test(id.getValue()))
+            .map(id -> createReferenceableId(tag, id))
+            .map(ref -> {
+                results.add(ref);
+                return !stopOnMatch;
+            })
+            .orElse(true));
+        return results;
+    }
+
+    private Optional<XmlAttributeValue> findAttributeValue(XmlTag tag, String localName) {
+        return IdeaUtils.getService().findAttributeValue(tag, localName);
+    }
+
+    private ReferenceableBeanId createReferenceableId(@NotNull XmlTag tag, @NotNull XmlAttributeValue idValue) {
+        ReferencedClass referencedClass = findAttributeValue(tag, "class")
+            .map(this::findReferencedClass)
+            .orElse(null);
+        return new ReferenceableBeanId(idValue, idValue.getValue(), referencedClass);
+    }
+
+    private ReferencedClass findReferencedClass(XmlAttributeValue element) {
+        return IdeaUtils.getService().findClassReference(element)
+            .map(ref -> new ReferencedClass(element.getValue(), ref))
+            .orElse(null);
+    }
+
+    @Override
+    public boolean isPartOfCamelContext(PsiElement element) {
+        XmlTag tag = PsiTreeUtil.getParentOfType(element, XmlTag.class, false);
+        return tag != null && isAcceptedNamespace(tag.getNamespace());
+    }
 
     @Override
     public boolean isCamelRouteStart(PsiElement element) {
@@ -97,7 +174,7 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
 
     @Override
     public List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition) {
-        return findEndpoints(module, uriCondition, e -> isCamelRouteStart(e));
+        return findEndpoints(module, uriCondition, this::isCamelRouteStart);
     }
 
     private List<PsiElement> findEndpoints(Module module, Predicate<String> uriCondition, Predicate<XmlTag> tagCondition) {
@@ -107,16 +184,11 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
             .and(e -> uriCondition.test(e.getValue()));
 
         List<PsiElement> endpointDeclarations = new ArrayList<>();
-        iterateXmlDocuments(module, document -> {
-            XmlTag root = document.getRootTag();
-            if (root == null) {
-                return;
+        iterateXmlNodesInsideXmlDocuments(module, XmlAttributeValue.class, value -> {
+            if (endpointMatcher.test(value)) {
+                endpointDeclarations.add(value);
             }
-            iterateXmlNodes(root, XmlAttributeValue.class, e -> {
-                if (endpointMatcher.test(e)) {
-                    endpointDeclarations.add(e);
-                }
-            });
+            return true;
         });
         return endpointDeclarations;
     }
@@ -138,6 +210,16 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
         } else {
             return false;
         }
+    }
+
+    private <T extends PsiElement> void iterateXmlNodesInsideXmlDocuments(Module module, Class<T> nodeClass, Predicate<T> nodeProcessor) {
+        iterateXmlDocuments(module, document -> {
+            XmlTag root = document.getRootTag();
+            if (root == null) {
+                return;
+            }
+            iterateXmlNodes(root, nodeClass, nodeProcessor);
+        });
     }
 
     private void iterateXmlDocuments(Module module, Consumer<XmlDocument> xmlFileConsumer) {
@@ -163,10 +245,10 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
     }
 
     @SuppressWarnings("unchecked")
-    private <T> void iterateXmlNodes(XmlTag root, Class<T> nodeClass, Consumer<T> nodeConsumer) {
+    private <T> void iterateXmlNodes(XmlTag root, Class<T> nodeClass, Predicate<T> nodeProcessor) {
         XmlUtil.processXmlElementChildren(root, element -> {
             if (nodeClass.isAssignableFrom(element.getClass())) {
-                nodeConsumer.accept((T) element);
+                return nodeProcessor.test((T) element);
             }
             return true;
         }, true);
@@ -279,6 +361,34 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
     public PsiElement getPsiElementForCamelBeanMethod(PsiElement element) {
         return null;
     }
+
+    @Override
+    public PsiType findExpectedBeanTypeAt(PsiElement element) {
+        return Optional.ofNullable(PsiTreeUtil.getParentOfType(element, XmlAttributeValue.class, false))
+                .filter(e -> Arrays.stream(e.getReferences()).anyMatch(ref -> ref instanceof BeanReference))
+                .map(e -> PsiTreeUtil.getParentOfType(e, XmlTag.class))
+                .map(this::findPropertyNameReference)
+                .map(PropertyNameReference::resolve)
+                .map(target -> {
+                    if (target instanceof PsiField) {
+                        return ((PsiField) target).getType();
+                    } else if (target instanceof PsiMethod) {
+                        return ((PsiMethod) target).getParameterList().getParameters()[0].getType();
+                    } else {
+                        return null;
+                    }
+                })
+                .orElse(null);
+    }
+
+    private PropertyNameReference findPropertyNameReference(XmlTag propertyTag) {
+        return IdeaUtils.getService().findAttributeValue(propertyTag, "name")
+                .map(a -> {
+                    PsiReference ref = a.getReference();
+                    return ref instanceof PropertyNameReference ? (PropertyNameReference) ref : null;
+                }).orElse(null);
+    }
+
 
     @Override
     public boolean isPlaceForEndpointUri(PsiElement location) {

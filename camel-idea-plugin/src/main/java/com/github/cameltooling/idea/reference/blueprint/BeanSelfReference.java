@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.reference.endpoint.direct;
+package com.github.cameltooling.idea.reference.blueprint;
 
-import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.ElementManipulator;
 import com.intellij.psi.ElementManipulators;
@@ -27,28 +26,26 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * This is a reference from direct endpoint start to itself - necessary for find usages functionality
- *
- * @author Rastislav Papp (rastislav.papp@gmail.com)
+ * Reference from bean id to itself - necessary for find usages functionality
  */
-public class DirectEndpointStartSelfReference extends PsiReferenceBase<PsiElement> {
+public class BeanSelfReference extends PsiReferenceBase<PsiElement> {
 
-    private final CamelEndpoint endpoint;
+    private final String id;
 
-    public DirectEndpointStartSelfReference(@NotNull PsiElement element, CamelEndpoint endpoint) {
-        super(element, TextRange.from(1, endpoint.getUri().length()));
-        this.endpoint = endpoint;
+    public BeanSelfReference(@NotNull PsiElement element, String id) {
+        super(element, TextRange.from(1, id.length()));
+        this.id = id;
     }
 
     @Nullable
     @Override
     public PsiElement resolve() {
-        return new DirectEndpointPsiElement(getElement(), endpoint);
+        return new ReferenceableIdPsiElement(getElement(), id);
     }
 
     @Override
     public PsiElement handleElementRename(@NotNull String newElementName) throws IncorrectOperationException {
         ElementManipulator<PsiElement> manipulator = ElementManipulators.getManipulator(myElement);
-        return manipulator.handleContentChange(myElement, endpoint.getNameTextRange().shiftRight(1), newElementName);
+        return manipulator.handleContentChange(myElement, TextRange.from(1, id.length()), newElementName);
     }
 }

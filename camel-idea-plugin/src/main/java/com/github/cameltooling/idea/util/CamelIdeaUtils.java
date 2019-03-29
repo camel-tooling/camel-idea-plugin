@@ -19,17 +19,26 @@ package com.github.cameltooling.idea.util;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
+import com.github.cameltooling.idea.reference.blueprint.BeanReference;
+import com.github.cameltooling.idea.reference.blueprint.model.ReferenceableBeanId;
+import com.github.cameltooling.idea.reference.blueprint.model.ReferencedClass;
 import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiReference;
+import com.intellij.psi.PsiType;
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -40,18 +49,103 @@ import org.jetbrains.annotations.NotNull;
 public final class CamelIdeaUtils implements Disposable {
 
     public static final String[] CAMEL_FILE_EXTENSIONS = {"java", "xml"};
+    public static final String BEAN_INJECT_ANNOTATION = "org.apache.camel.BeanInject";
 
     private final List<CamelIdeaUtilsExtension> enabledExtensions;
 
     private CamelIdeaUtils() {
         enabledExtensions = Arrays.stream(CamelIdeaUtilsExtension.EP_NAME.getExtensions())
             .filter(CamelIdeaUtilsExtension::isExtensionEnabled)
-            .filter(e -> e.isExtensionEnabled())
             .collect(Collectors.toList());
     }
 
     public static CamelIdeaUtils getService() {
         return ServiceManager.getService(CamelIdeaUtils.class);
+    }
+
+    public boolean isBeanDeclaration(@NotNull PsiElement element) {
+        return enabledExtensions.stream().anyMatch(e -> e.isBeanDeclaration(element));
+    }
+
+    public boolean isPartOfCamelContext(@NotNull PsiElement element) {
+        return enabledExtensions.stream().anyMatch(e -> e.isPartOfCamelContext(element));
+    }
+
+    public Optional<ReferenceableBeanId> findReferenceableBeanId(Module module, String id) {
+        return enabledExtensions.stream()
+            .map(e -> e.findReferenceableBeanId(module, id))
+            .filter(Objects::nonNull)
+            .findAny();
+    }
+
+    public List<ReferenceableBeanId> findReferenceableBeanIds(Module module, Predicate<String> idCondition) {
+        return enabledExtensions.stream()
+            .map(e -> e.findReferenceableBeanIds(module, idCondition))
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
+    }
+
+    public List<ReferenceableBeanId> findReferenceableBeanIdsByType(Module module, PsiType expectedBeanType) {
+        return findReferenceableBeanIdsByType(module, id -> true, expectedBeanType);
+    }
+
+    public List<ReferenceableBeanId> findReferenceableBeanIdsByType(Module module,
+                                                                    Predicate<String> idCondition,
+                                                                    PsiType expectedBeanType) {
+        PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(module.getProject());
+        return findReferenceableBeanIds(module, idCondition).stream()
+                .filter(ref -> {
+                    PsiClass psiClass = resolveToPsiClass(ref);
+                    if (psiClass != null) {
+                        PsiClassType beanType = elementFactory.createType(psiClass);
+                        return expectedBeanType.isAssignableFrom(beanType);
+                    }
+                    return false;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public Optional<PsiClass> findReferencedBeanClass(PsiElement element) {
+        return findBeanReference(element)
+            .map(this::resolveToPsiClass);
+    }
+
+    private PsiClass resolveToPsiClass(ReferenceableBeanId ref) {
+        return (PsiClass) Optional.of(ref)
+                .map(ReferenceableBeanId::getReferencedClass)
+                .map(ReferencedClass::getReference)
+                .map(PsiReference::resolve)
+                .filter(e -> e instanceof PsiClass)
+                .orElse(null);
+    }
+
+    private Optional<ReferenceableBeanId> findBeanReference(PsiElement element) {
+        PsiReference[] references = element.getReferences();
+        return Arrays.stream(references)
+            .filter(r -> r instanceof BeanReference)
+            .map(r -> ((BeanReference) r).findReferenceableBeanId().orElse(null))
+            .filter(Objects::nonNull)
+            .findAny();
+    }
+
+    public Optional<PsiType> findExpectedBeanTypeAt(PsiElement location) {
+        return enabledExtensions.stream()
+                .map(e -> e.findExpectedBeanTypeAt(location))
+                .filter(Objects::nonNull)
+                .findAny();
+    }
+
+    public PsiClass getPropertyBeanClass(XmlTag propertyTag) {
+        XmlTag beanTag = propertyTag.getParentTag();
+        if (beanTag != null && CamelIdeaUtils.getService().isBeanDeclaration(beanTag)) {
+            IdeaUtils ideaUtils = IdeaUtils.getService();
+            return ideaUtils.findAttributeValue(beanTag, "class")
+                .map(ideaUtils::findClassReference)
+                .map(Optional::get)
+                .map(ideaUtils::resolveJavaClassReference)
+                .orElse(null);
+        }
+        return null;
     }
 
     /**

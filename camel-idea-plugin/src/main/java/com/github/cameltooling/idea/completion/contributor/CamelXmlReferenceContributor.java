@@ -16,6 +16,8 @@
  */
 package com.github.cameltooling.idea.completion.contributor;
 
+import com.github.cameltooling.idea.completion.extension.BeanReferenceCompletionExtension;
+import com.github.cameltooling.idea.completion.extension.BlueprintPropertyNameCompletionExtension;
 import com.github.cameltooling.idea.completion.extension.CamelEndpointNameCompletionExtension;
 import com.github.cameltooling.idea.completion.extension.CamelEndpointSmartCompletionExtension;
 import com.intellij.codeInsight.completion.CompletionType;
@@ -28,7 +30,9 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
 public class CamelXmlReferenceContributor extends CamelContributor {
 
     public CamelXmlReferenceContributor() {
-        addCompletionExtension(new CamelEndpointNameCompletionExtension(true));
+        addCompletionExtension(new BeanReferenceCompletionExtension());
+        addCompletionExtension(new BlueprintPropertyNameCompletionExtension());
+        addCompletionExtension(new CamelEndpointNameCompletionExtension());
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(true));
         extend(CompletionType.BASIC,
                 psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("xml"))),

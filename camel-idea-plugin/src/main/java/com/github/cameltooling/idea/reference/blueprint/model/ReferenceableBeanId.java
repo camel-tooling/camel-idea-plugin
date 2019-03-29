@@ -14,35 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.reference.endpoint.direct;
+package com.github.cameltooling.idea.reference.blueprint.model;
 
-import com.github.cameltooling.idea.reference.FakeCamelPsiElement;
-import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * A fake psi element for direct endpoint references.
+ * Represents an id of a bean, which can be referenced from other places. Mainly <bean id="[THIS]">
  */
-public class DirectEndpointPsiElement extends FakeCamelPsiElement {
+public class ReferenceableBeanId {
 
-    private final CamelEndpoint endpoint;
+    private final PsiElement element;
+    private final String id;
+    private final ReferencedClass referencedClass;
 
-    public DirectEndpointPsiElement(@NotNull PsiElement element, @NotNull CamelEndpoint endpoint) {
-        super(element);
-        this.endpoint = endpoint;
+    public ReferenceableBeanId(@NotNull PsiElement element, @NotNull String id, @Nullable ReferencedClass referencedClass) {
+        this.element = element;
+        this.id = id;
+        this.referencedClass = referencedClass;
     }
 
-    @Override
-    public String getName() {
-        return endpoint.getName();
+    @NotNull
+    public PsiElement getElement() {
+        return element;
+    }
+
+    @NotNull
+    public String getId() {
+        return id;
     }
 
     @Nullable
-    @Override
-    public String getTypeName() {
-        return "direct endpoint";
+    public ReferencedClass getReferencedClass() {
+        return referencedClass;
     }
 
 }

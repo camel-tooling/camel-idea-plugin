@@ -61,12 +61,6 @@ public class DirectEndpointReference extends PsiPolyVariantReferenceBase<PsiElem
             .collect(Collectors.toList());
     }
 
-    @NotNull
-    @Override
-    public String getCanonicalText() {
-        return getValue();
-    }
-
     @Override
     public PsiElement handleElementRename(@NotNull String newElementName) throws IncorrectOperationException {
         ElementManipulator<PsiElement> manipulator = ElementManipulators.getManipulator(myElement);

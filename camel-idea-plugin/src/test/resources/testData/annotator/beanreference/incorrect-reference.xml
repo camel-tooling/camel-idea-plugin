@@ -1,0 +1,9 @@
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
+
+    <bean id="myBean" class="TestClass1">
+        <property name="field" ref="<caret>testBean"/>
+    </bean>
+
+    <bean id="testBean" class="TestClass1"/>
+
+</blueprint>

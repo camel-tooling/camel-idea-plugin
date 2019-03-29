@@ -14,35 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.reference.endpoint.direct;
+package com.github.cameltooling.idea.reference.blueprint;
 
-import com.github.cameltooling.idea.reference.FakeCamelPsiElement;
-import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
+import com.github.cameltooling.idea.util.IdeaUtils;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiReferenceBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * A fake psi element for direct endpoint references.
+ * Reference from bean property name to its backing field or setter method in the given bean
  */
-public class DirectEndpointPsiElement extends FakeCamelPsiElement {
+public class PropertyNameReference extends PsiReferenceBase<PsiElement> {
 
-    private final CamelEndpoint endpoint;
+    private final PsiClass beanClass;
+    private final String propertyName;
 
-    public DirectEndpointPsiElement(@NotNull PsiElement element, @NotNull CamelEndpoint endpoint) {
+    public PropertyNameReference(@NotNull PsiElement element, String propertyName, PsiClass beanClass) {
         super(element);
-        this.endpoint = endpoint;
-    }
-
-    @Override
-    public String getName() {
-        return endpoint.getName();
+        this.beanClass = beanClass;
+        this.propertyName = propertyName;
     }
 
     @Nullable
     @Override
-    public String getTypeName() {
-        return "direct endpoint";
+    public PsiElement resolve() {
+        IdeaUtils ideaUtils = IdeaUtils.getService();
+        return ideaUtils.findSetterMethod(beanClass, propertyName).orElse(null);
     }
 
 }

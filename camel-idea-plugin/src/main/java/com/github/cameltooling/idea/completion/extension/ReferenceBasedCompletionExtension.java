@@ -14,35 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.reference.endpoint.direct;
+package com.github.cameltooling.idea.completion.extension;
 
-import com.github.cameltooling.idea.reference.FakeCamelPsiElement;
-import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
+import java.util.Arrays;
+import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiReference;
+import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
- * A fake psi element for direct endpoint references.
+ * Code completion extension which is valid only on an element which has a reference of the given type
  */
-public class DirectEndpointPsiElement extends FakeCamelPsiElement {
+public abstract class ReferenceBasedCompletionExtension<T extends PsiReference> extends SimpleCompletionExtension {
 
-    private final CamelEndpoint endpoint;
+    private final Class<T> referenceClass;
 
-    public DirectEndpointPsiElement(@NotNull PsiElement element, @NotNull CamelEndpoint endpoint) {
-        super(element);
-        this.endpoint = endpoint;
+    public ReferenceBasedCompletionExtension(Class<T> referenceClass) {
+        this.referenceClass = referenceClass;
     }
 
     @Override
-    public String getName() {
-        return endpoint.getName();
-    }
-
-    @Nullable
-    @Override
-    public String getTypeName() {
-        return "direct endpoint";
+    public boolean isValid(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull String query) {
+        PsiElement element = parameters.getPosition().getParent();
+        return Arrays.stream(element.getReferences()).anyMatch(r -> referenceClass.isAssignableFrom(r.getClass()));
     }
 
 }

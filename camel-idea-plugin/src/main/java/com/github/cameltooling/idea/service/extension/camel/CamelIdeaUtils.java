@@ -29,11 +29,12 @@ abstract class CamelIdeaUtils {
     protected static final String[] PRODUCER_ENDPOINT = new String[]{"to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel"};
     protected static final String[] STRING_FORMAT_ENDPOINT = new String[]{"fromF", "toF", "format"};
 
+    protected static final String OSGI_BLUEPRINT_NAMESPACE = "http://www.osgi.org/xmlns/blueprint";
     protected static final String[] ACCEPTED_NAMESPACES = new String[]{
         "http://camel.apache.org/schema/spring",
         "http://camel.apache.org/schema/blueprint",
         "http://www.springframework.org/schema/beans",
-        "http://www.osgi.org/xmlns/blueprint"
+        OSGI_BLUEPRINT_NAMESPACE
     };
 
     /**
