@@ -17,13 +17,11 @@
 package org.apache.camel.idea.extension;
 
 import java.util.List;
+import java.util.function.Predicate;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiLiteralExpression;
-import org.apache.camel.idea.reference.endpoint.CamelEndpoint;
 
 /**
  * Extension point for CamelIdeaUtils for handling specific plugin language elements
@@ -101,7 +99,7 @@ public interface CamelIdeaUtilsExtension {
      */
     PsiElement getBeanPsiElement(PsiElement element);
 
-    List<PsiElement> findEndpointUsages(Module module, Condition<String> uriCondition);
-    List<PsiElement> findEndpointDeclarations(Module module, Condition<String> uriCondition);
+    List<PsiElement> findEndpointUsages(Module module, Predicate<String> uriCondition);
+    List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition);
 
 }

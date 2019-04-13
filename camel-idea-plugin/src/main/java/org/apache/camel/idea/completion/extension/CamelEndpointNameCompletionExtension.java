@@ -36,7 +36,9 @@ import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
-
+/**
+ * Extension for supporting camel code completion for camel endpoint names (only for direct endpoints so far).
+ */
 public class CamelEndpointNameCompletionExtension implements CamelCompletionExtension {
 
     private final boolean xmlMode;

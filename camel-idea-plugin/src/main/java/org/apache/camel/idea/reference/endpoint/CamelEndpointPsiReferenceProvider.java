@@ -19,10 +19,15 @@ package org.apache.camel.idea.reference.endpoint;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralValue;
 import com.intellij.psi.PsiReference;
+import com.intellij.psi.PsiReferenceProvider;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.idea.reference.CamelPsiReferenceProvider;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 
+/**
+ * A parent class for {@link PsiReferenceProvider}s which should provide references from usages of camel endpoints to
+ * their declarations.
+ */
 public abstract class CamelEndpointPsiReferenceProvider extends CamelPsiReferenceProvider {
 
     @Override
@@ -51,12 +56,9 @@ public abstract class CamelEndpointPsiReferenceProvider extends CamelPsiReferenc
             Object value = valueElement.getValue();
             if (value instanceof String) {
                 return (String) value;
-            } else {
-                return null;
             }
-        } else {
-            return null;
         }
+        return null;
     }
 
 }

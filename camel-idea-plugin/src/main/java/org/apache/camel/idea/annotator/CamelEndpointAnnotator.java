@@ -119,17 +119,17 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
             return;
         }
         if (CamelEndpoint.isDirectEndpoint(camelQuery)) { //only direct endpoints have references (for now)
-            DirectEndpointReference endpointReference = Arrays.stream(element.getReferences())
+            Arrays.stream(element.getReferences())
                 .filter(r -> r instanceof DirectEndpointReference)
                 .map(r -> (DirectEndpointReference) r)
-                .findAny().orElse(null);
-            if (endpointReference != null) {
-                ResolveResult[] targets = endpointReference.multiResolve(false);
-                if (targets.length == 0) {
-                    TextRange range = endpointReference.getRangeInElement().shiftRight(element.getTextRange().getStartOffset());
-                    holder.createErrorAnnotation(range, "Cannot find endpoint declaration: " + endpointReference.getCanonicalText());
-                }
-            }
+                .findAny()
+                .ifPresent(endpointReference -> {
+                    ResolveResult[] targets = endpointReference.multiResolve(false);
+                    if (targets.length == 0) {
+                        TextRange range = endpointReference.getRangeInElement().shiftRight(element.getTextRange().getStartOffset());
+                        holder.createErrorAnnotation(range, "Cannot find endpoint declaration: " + endpointReference.getCanonicalText());
+                    }
+                });
         }
     }
 

@@ -24,6 +24,9 @@ import com.intellij.util.ProcessingContext;
 import org.apache.camel.idea.service.CamelService;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * A parent class for {@link PsiReferenceProvider}s which should provide references only when camel support is active.
+ */
 public abstract class CamelPsiReferenceProvider extends PsiReferenceProvider {
 
     @NotNull

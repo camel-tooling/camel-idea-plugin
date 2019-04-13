@@ -27,6 +27,13 @@ import org.apache.camel.idea.service.CamelPreferenceService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * A fake psi element which wraps a real psi element (a camel direct endpoint declaration) and is used as a target
+ * when resolving references to direct endpoints.
+ *
+ * Main purpose is to provide the ability to show a custom type name using {@link DirectEndpointPsiElement#getTypeName()}
+ * method - this is shown in multiple places - for example when using the Refactor -> Rename functionality.
+ */
 public class DirectEndpointPsiElement extends RenameableFakePsiElement {
 
     private final CamelEndpoint endpoint;
@@ -93,9 +100,8 @@ public class DirectEndpointPsiElement extends RenameableFakePsiElement {
         PsiFile file = getContainingFile();
         if (file != null) {
             return file.getName();
-        } else {
-            return null;
         }
+        return null;
     }
 
     @Override

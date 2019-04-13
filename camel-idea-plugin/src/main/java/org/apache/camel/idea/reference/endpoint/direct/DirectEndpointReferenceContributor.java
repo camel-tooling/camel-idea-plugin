@@ -28,6 +28,10 @@ import org.apache.camel.idea.reference.endpoint.CamelEndpointPsiReferenceProvide
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Create a reference from the usage of a direct endpoint (e.g. <to uri="direct:abc"/>)
+ * to its declaration (e.g. <from uri="direct:abc"/>).
+ */
 public class DirectEndpointReferenceContributor extends PsiReferenceContributor {
 
     public static final String DIRECT_ENDPOINT_PREFIX = "direct:";

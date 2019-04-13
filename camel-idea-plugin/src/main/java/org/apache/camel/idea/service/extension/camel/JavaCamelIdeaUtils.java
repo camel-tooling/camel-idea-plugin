@@ -20,9 +20,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -252,16 +252,16 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     }
 
     @Override
-    public List<PsiElement> findEndpointUsages(Module module, Condition<String> uriCondition) {
+    public List<PsiElement> findEndpointUsages(Module module, Predicate<String> uriCondition) {
         return findEndpoints(module, uriCondition, e -> !isCamelRouteStart(e));
     }
 
     @Override
-    public List<PsiElement> findEndpointDeclarations(Module module, Condition<String> uriCondition) {
+    public List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition) {
         return findEndpoints(module, uriCondition, e -> isCamelRouteStart(e));
     }
 
-    private List<PsiElement> findEndpoints(Module module, Condition<String> uriCondition, Condition<PsiLiteral> elementCondition) {
+    private List<PsiElement> findEndpoints(Module module, Predicate<String> uriCondition, Predicate<PsiLiteral> elementCondition) {
         PsiManager manager = PsiManager.getInstance(module.getProject());
         //TODO: use IdeaUtils.ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME somehow
         PsiClass routeBuilderClass = ClassUtil.findPsiClass(manager, "org.apache.camel.builder.RouteBuilder");
@@ -276,7 +276,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                     Object val = literal.getValue();
                     if (val instanceof String) {
                         String endpointUri = (String) val;
-                        if (uriCondition.value(endpointUri) && elementCondition.value(literal)) {
+                        if (uriCondition.test(endpointUri) && elementCondition.test(literal)) {
                             results.add(literal);
                         }
                     }

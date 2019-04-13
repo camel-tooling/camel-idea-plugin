@@ -18,8 +18,12 @@ package org.apache.camel.idea.reference.endpoint;
 
 import java.util.Arrays;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Represents a camel endpoint and provides support methods for working with the parts of its uri.
+ */
 public class CamelEndpoint {
 
     private static final String DIRECT_ENDPOINT_PREFIX = "direct:";
@@ -32,16 +36,8 @@ public class CamelEndpoint {
     private String query;
 
     public CamelEndpoint(String uri) {
-        this.uri = removeQuotes(uri);
+        this.uri = StringUtil.unquoteString(uri);
         processUri();
-    }
-
-    private String removeQuotes(String uri) {
-        if (uri.length() >= 2 && uri.startsWith("\"") && uri.endsWith("\"")) {
-            return uri.substring(1, uri.length() - 1);
-        } else {
-            return uri;
-        }
     }
 
     public static boolean isDirectEndpoint(String uri) {
@@ -60,13 +56,9 @@ public class CamelEndpoint {
 
         prefix = Arrays.stream(KNOWN_PREFIXES)
             .filter(p -> baseUri.startsWith(p))
-            .findAny().orElse(null);
-
-        if (prefix != null) {
-            name = baseUri.substring(prefix.length());
-        } else {
-            name = baseUri;
-        }
+            .findAny()
+            .map(p -> baseUri.substring(p.length()))
+            .orElse(baseUri);
     }
 
     public String getUri() {
@@ -93,9 +85,8 @@ public class CamelEndpoint {
         if (endpointUri != null) {
             CamelEndpoint other = new CamelEndpoint(endpointUri);
             return baseUri.equals(other.baseUri);
-        } else {
-            return false;
         }
+        return false;
     }
 
     public TextRange getNameTextRange() {

@@ -19,11 +19,11 @@ package org.apache.camel.idea.util;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
@@ -209,7 +209,7 @@ public final class CamelIdeaUtils implements Disposable {
         return findEndpointUsages(module, endpoint::baseUriMatches);
     }
 
-    public List<PsiElement> findEndpointUsages(Module module, Condition<String> uriCondition) {
+    public List<PsiElement> findEndpointUsages(Module module, Predicate<String> uriCondition) {
         return enabledExtensions.stream()
             .map(e -> e.findEndpointUsages(module, uriCondition))
             .flatMap(List::stream)
@@ -220,7 +220,7 @@ public final class CamelIdeaUtils implements Disposable {
         return findEndpointDeclarations(module, endpoint::baseUriMatches);
     }
 
-    public List<PsiElement> findEndpointDeclarations(Module module, Condition<String> uriCondition) {
+    public List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition) {
         return enabledExtensions.stream()
             .map(e -> e.findEndpointDeclarations(module, uriCondition))
             .flatMap(List::stream)

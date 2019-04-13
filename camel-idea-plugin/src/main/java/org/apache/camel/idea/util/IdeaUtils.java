@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.lang.java.JavaLanguage;
@@ -30,7 +31,6 @@ import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiAnnotation;
@@ -276,10 +276,10 @@ public final class IdeaUtils implements Disposable {
      */
     public PsiElement findFirstParent(@Nullable PsiElement element,
                                       boolean strict,
-                                      Condition<? super PsiElement> matchCondition,
-                                      Condition<? super PsiElement> stopCondition) {
-        PsiElement parent = PsiTreeUtil.findFirstParent(element, strict, e -> stopCondition.value(e) || matchCondition.value(e));
-        if (parent != null && matchCondition.value(parent)) {
+                                      Predicate<? super PsiElement> matchCondition,
+                                      Predicate<? super PsiElement> stopCondition) {
+        PsiElement parent = PsiTreeUtil.findFirstParent(element, strict, e -> stopCondition.test(e) || matchCondition.test(e));
+        if (parent != null && matchCondition.test(parent)) {
             return parent;
         } else {
             return null;

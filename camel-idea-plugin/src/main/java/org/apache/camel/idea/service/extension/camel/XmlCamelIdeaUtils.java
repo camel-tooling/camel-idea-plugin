@@ -20,12 +20,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModuleFileIndex;
 import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -61,15 +61,12 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
 
     @Override
     public boolean isCamelRouteStartExpression(PsiElement element) {
-        if (element instanceof XmlToken
+        boolean textualXmlToken = element instanceof XmlToken
             && !element.getText().equals("<")
             && !element.getText().equals("</")
             && !element.getText().equals(">")
-            && !element.getText().equals("/>")) {
-            return isCamelRouteStart(element);
-        } else {
-            return false;
-        }
+            && !element.getText().equals("/>");
+        return textualXmlToken && isCamelRouteStart(element);
     }
 
     private boolean isCamelRouteStartTag(XmlTag tag) {
@@ -79,9 +76,8 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
             //TODO: unsure about this, <rest> cannot be a child of <routes> according to blueprint xsd, see issue #475
             return "routes".equals(parentTag.getLocalName()) && "rest".equals(name)
                 || "route".equals(parentTag.getLocalName()) && "from".equals(name);
-        } else {
-            return false;
         }
+        return false;
     }
 
     @Override
@@ -89,44 +85,50 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
         XmlTag tag = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (tag == null || (excludeRouteStart && isCamelRouteStartTag(tag))) {
             return false;
-        } else {
-            PsiElement routeTag = getIdeaUtils().findFirstParent(tag, false, this::isCamelRouteTag, e -> e instanceof PsiFile);
-            return routeTag != null;
         }
+        PsiElement routeTag = getIdeaUtils().findFirstParent(tag, false, this::isCamelRouteTag, e -> e instanceof PsiFile);
+        return routeTag != null;
     }
 
     @Override
-    public List<PsiElement> findEndpointUsages(Module module, Condition<String> uriCondition) {
+    public List<PsiElement> findEndpointUsages(Module module, Predicate<String> uriCondition) {
         return findEndpoints(module, uriCondition, e -> !isCamelRouteStart(e));
     }
 
     @Override
-    public List<PsiElement> findEndpointDeclarations(Module module, Condition<String> uriCondition) {
+    public List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition) {
         return findEndpoints(module, uriCondition, e -> isCamelRouteStart(e));
     }
 
-    private List<PsiElement> findEndpoints(Module module, Condition<String> uriCondition, Condition<XmlTag> elementCondition) {
+    private List<PsiElement> findEndpoints(Module module, Predicate<String> uriCondition, Predicate<XmlTag> tagCondition) {
+        Predicate<XmlAttributeValue> endpointMatcher =
+            ((Predicate<XmlAttributeValue>)this::isEndpointUriValue)
+            .and(e -> parentTagMatches(e, tagCondition))
+            .and(e -> uriCondition.test(e.getValue()));
+
         List<PsiElement> endpointDeclarations = new ArrayList<>();
         iterateXmlDocuments(module, document -> {
             XmlTag root = document.getRootTag();
             if (root == null) {
                 return;
             }
-            XmlUtil.processXmlElementChildren(root, e -> {
-                if (e instanceof XmlAttributeValue) {
-                    XmlAttributeValue value = (XmlAttributeValue) e;
-                    XmlAttribute attribute = PsiTreeUtil.getParentOfType(value, XmlAttribute.class);
-                    XmlTag tag = PsiTreeUtil.getParentOfType(e, XmlTag.class);
-                    if (attribute != null && attribute.getLocalName().equals("uri")
-                        && uriCondition.value(value.getValue())
-                        && tag != null && elementCondition.value(tag)) {
-                        endpointDeclarations.add(e);
-                    }
+            iterateXmlNodes(root, XmlAttributeValue.class, e -> {
+                if (endpointMatcher.test(e)) {
+                    endpointDeclarations.add(e);
                 }
-                return true;
-            }, true);
+            });
         });
         return endpointDeclarations;
+    }
+
+    private boolean parentTagMatches(PsiElement element, Predicate<XmlTag> parentTagCondition) {
+        XmlTag tag = PsiTreeUtil.getParentOfType(element, XmlTag.class);
+        return tag != null && parentTagCondition.test(tag);
+    }
+
+    private boolean isEndpointUriValue(XmlAttributeValue endpointUriValue) {
+        XmlAttribute attribute = PsiTreeUtil.getParentOfType(endpointUriValue, XmlAttribute.class);
+        return attribute != null && attribute.getLocalName().equals("uri");
     }
 
     private boolean isCamelRouteTag(PsiElement element) {
@@ -158,6 +160,16 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
             }
             return true;
         });
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> void iterateXmlNodes(XmlTag root, Class<T> nodeClass, Consumer<T> nodeConsumer) {
+        XmlUtil.processXmlElementChildren(root, element -> {
+            if (nodeClass.isAssignableFrom(element.getClass())) {
+                nodeConsumer.accept((T) element);
+            }
+            return true;
+        }, true);
     }
 
     @Override

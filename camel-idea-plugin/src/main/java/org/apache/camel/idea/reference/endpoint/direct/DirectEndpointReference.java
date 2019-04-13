@@ -17,8 +17,8 @@
 package org.apache.camel.idea.reference.endpoint.direct;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.ElementManipulator;
@@ -32,6 +32,9 @@ import org.apache.camel.idea.reference.endpoint.CamelEndpoint;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * A reference from usage of a direct endpoint (e.g. <to uri="direct:abc"/>) to its declaration (e.g. <from uri="direct:abc"/>)
+ */
 public class DirectEndpointReference extends PsiPolyVariantReferenceBase<PsiElement> {
 
     private final CamelEndpoint endpoint;
@@ -44,16 +47,18 @@ public class DirectEndpointReference extends PsiPolyVariantReferenceBase<PsiElem
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        final Module module = ModuleUtilCore.findModuleForPsiElement(myElement);
-        if (module != null) {
-            List<PsiElement> endpointDeclarations = CamelIdeaUtils.getService().findEndpointDeclarations(module, endpoint);
-            return PsiElementResolveResult.createResults(
-                endpointDeclarations.stream()
-                    .map(e -> new DirectEndpointPsiElement(e, endpoint))
-                    .collect(Collectors.toList()));
-        } else {
-            return ResolveResult.EMPTY_ARRAY;
-        }
+        return Optional.ofNullable(ModuleUtilCore.findModuleForPsiElement(myElement))
+            .map(module -> CamelIdeaUtils.getService().findEndpointDeclarations(module, endpoint))
+            .map(this::wrapAsDirectEndpointPsiElements)
+            .map(PsiElementResolveResult::createResults)
+            .orElse(ResolveResult.EMPTY_ARRAY);
+    }
+
+    @NotNull
+    private List<DirectEndpointPsiElement> wrapAsDirectEndpointPsiElements(List<PsiElement> endpointDeclarations) {
+        return endpointDeclarations.stream()
+            .map(e -> new DirectEndpointPsiElement(e, endpoint))
+            .collect(Collectors.toList());
     }
 
     @NotNull
