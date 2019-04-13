@@ -64,6 +64,9 @@ public class CamelEndpointNameCompletionExtension implements CamelCompletionExte
         PsiElement element = parameters.getPosition();
 
         Module module = ModuleUtilCore.findModuleForPsiElement(element);
+        if (module == null) {
+            return;
+        }
         CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
         if (camelIdeaUtils.isInsideCamelRoute(element, true) && camelIdeaUtils.isProducerEndpoint(element)) {
             results.addAll(getDirectEndpointSuggestions(module));
