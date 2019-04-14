@@ -120,6 +120,13 @@ public class CamelDirectEndpointReferenceTest extends CamelLightCodeInsightFixtu
         PsiElement element = getParentElementAtCaret();
         ResolveResult[] results = resolveDirectReference(element);
         assertEquals(2, results.length);
+        for (ResolveResult result : results) {
+            PsiElement target = result.getElement();
+            assertNotNull(target);
+            assertEquals(DirectEndpointPsiElement.class, target.getClass());
+            DirectEndpointPsiElement directTarget = (DirectEndpointPsiElement) target;
+            assertEquals("abc", directTarget.getName());
+        }
     }
 
     private ResolveResult[] resolveDirectReference(PsiElement element) {

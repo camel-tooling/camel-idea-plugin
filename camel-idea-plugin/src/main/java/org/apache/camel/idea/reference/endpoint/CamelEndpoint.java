@@ -56,9 +56,9 @@ public class CamelEndpoint {
 
         prefix = Arrays.stream(KNOWN_PREFIXES)
             .filter(p -> baseUri.startsWith(p))
-            .findAny()
-            .map(p -> baseUri.substring(p.length()))
-            .orElse(baseUri);
+            .findAny().orElse(null);
+
+        name = prefix == null ? baseUri : baseUri.substring(prefix.length());
     }
 
     public String getUri() {
