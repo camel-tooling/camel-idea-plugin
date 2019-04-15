@@ -23,6 +23,7 @@ import java.util.Objects;
 import javax.swing.Icon;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.PersistentStateComponent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
@@ -73,6 +74,10 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     private List<String> excludePropertyFiles = new ArrayList<>();
 
     private CamelPreferenceService() { }
+
+    public static CamelPreferenceService getService() {
+        return ServiceManager.getService(CamelPreferenceService.class);
+    }
 
     public boolean isRealTimeEndpointValidation() {
         return realTimeEndpointValidation;

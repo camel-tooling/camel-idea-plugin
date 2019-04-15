@@ -238,40 +238,38 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         LOG.debug("Finding Camel routes which is calling me: " + startElement);
 
         List<PsiElement> psiElements = new ArrayList<>();
-        String route = findRouteFromElement(startElement).replace("\"", "");
+        String rawRoute = findRouteFromElement(startElement);
 
-        if (route == null || route.isEmpty()) {
-            return psiElements;
+        if (rawRoute != null && !rawRoute.isEmpty()) {
+            final String route = rawRoute.replace("\"", "");
+            PsiSearchHelper helper = PsiSearchHelper.SERVICE.getInstance(startElement.getProject());
+            //get the component name and search only using that
+            String componentName = route.split(":")[0];
+
+            helper.processElementsWithWord((psiElement, offsetInElement) -> {
+                LOG.debug("processElementsWithWord: " + psiElement + " with offset: " + offsetInElement);
+                if (psiElement instanceof XmlToken) {
+                    PsiElement xmlElement = findXMLElement(route, (XmlToken) psiElement);
+                    if (xmlElement != null) {
+                        psiElements.add(xmlElement);
+                    }
+                } else if (psiElement instanceof PsiIdentifier) {
+                    PsiElement javaElement = findJavaElement(route, psiElement);
+                    if (javaElement != null) {
+                        psiElements.add(javaElement);
+                    } else {
+                        // use alternative lookup for identifier
+                        resolvedIdentifier(psiElement).ifPresent(psiElements::add);
+                    }
+                } else if (psiElement instanceof PsiJavaToken) {
+                    PsiElement javaElement = findJavaElement(route, psiElement);
+                    if (javaElement != null) {
+                        psiElements.add(javaElement);
+                    }
+                }
+                return true;
+            }, new CamelRouteSearchScope(), componentName, UsageSearchContext.ANY, false);
         }
-
-        PsiSearchHelper helper = PsiSearchHelper.SERVICE.getInstance(startElement.getProject());
-        //get the component name and search only using that
-        String componentName = route.split(":")[0];
-
-        helper.processElementsWithWord((psiElement, offsetInElement) -> {
-            LOG.debug("processElementsWithWord: " + psiElement + " with offset: " + offsetInElement);
-            if (psiElement instanceof XmlToken) {
-                PsiElement xmlElement = findXMLElement(route, (XmlToken) psiElement);
-                if (xmlElement != null) {
-                    psiElements.add(xmlElement);
-                }
-            } else if (psiElement instanceof PsiIdentifier) {
-                PsiElement javaElement = findJavaElement(route, psiElement);
-                if (javaElement != null) {
-                    psiElements.add(javaElement);
-                } else {
-                    // use alternative lookup for identifier
-                    resolvedIdentifier(psiElement).ifPresent(psiElements::add);
-                }
-            } else if (psiElement instanceof PsiJavaToken) {
-                PsiElement javaElement = findJavaElement(route, psiElement);
-                if (javaElement != null) {
-                    psiElements.add(javaElement);
-                }
-            }
-            return true;
-        }, new CamelRouteSearchScope(), componentName, UsageSearchContext.ANY, false);
-
         return psiElements;
     }
 

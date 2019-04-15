@@ -146,6 +146,7 @@
     <applicationConfigurable parentId="camel" id="camel.properties" groupId="language" displayName="Ignore &amp; Exclude Properties" instance="org.apache.camel.idea.preference.properties.CamelIgnoreAndExcludePage"/>
 
     <psi.referenceContributor implementation="org.apache.camel.idea.reference.CamelBeanReferenceContributor"/>
+    <psi.referenceContributor implementation="org.apache.camel.idea.reference.endpoint.direct.DirectEndpointReferenceContributor"/>
     <renameHandler implementation="org.apache.camel.idea.reference.CamelBeanReferenceRenameHandler"/>
   </extensions>
 

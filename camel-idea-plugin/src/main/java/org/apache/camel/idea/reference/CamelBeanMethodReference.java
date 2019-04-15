@@ -72,13 +72,6 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
         return results.toArray(new ResolveResult[results.size()]);
     }
 
-    @Nullable
-    @Override
-    public PsiElement resolve() {
-        ResolveResult[] resolveResults = multiResolve(false);
-        return resolveResults.length == 1 ? resolveResults[0].getElement() : null;
-    }
-
     @NotNull
     @Override
     public Object[] getVariants() {

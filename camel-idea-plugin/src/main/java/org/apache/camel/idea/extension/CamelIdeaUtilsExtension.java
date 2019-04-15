@@ -16,7 +16,10 @@
  */
 package org.apache.camel.idea.extension;
 
+import java.util.List;
+import java.util.function.Predicate;
 import com.intellij.openapi.extensions.ExtensionPointName;
+import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 
@@ -31,6 +34,9 @@ public interface CamelIdeaUtilsExtension {
      * Is the given element from the start of a Camel route, eg <tt>from</tt>, ot &lt;from&gt;.
      */
     boolean isCamelRouteStart(PsiElement element);
+    boolean isCamelRouteStartExpression(PsiElement element);
+
+    boolean isInsideCamelRoute(PsiElement element, boolean excludeRouteStart);
 
     /**
      * Is the given element a language of a Camel route
@@ -92,5 +98,8 @@ public interface CamelIdeaUtilsExtension {
      * @return the bean {@link PsiElement} for the specified element
      */
     PsiElement getBeanPsiElement(PsiElement element);
+
+    List<PsiElement> findEndpointUsages(Module module, Predicate<String> uriCondition);
+    List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition);
 
 }

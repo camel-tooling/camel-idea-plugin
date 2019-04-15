@@ -21,14 +21,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import com.intellij.lang.jvm.JvmModifier;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
-import com.intellij.psi.util.PsiTreeUtil;
 import org.apache.camel.idea.extension.CamelIdeaUtilsExtension;
+import org.apache.camel.idea.reference.endpoint.CamelEndpoint;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -49,6 +50,10 @@ public final class CamelIdeaUtils implements Disposable {
             .collect(Collectors.toList());
     }
 
+    public static CamelIdeaUtils getService() {
+        return ServiceManager.getService(CamelIdeaUtils.class);
+    }
+
     /**
      * Is the given element from the start of a Camel route, eg <tt>from</tt>, ot &lt;from&gt;.
      */
@@ -62,10 +67,13 @@ public final class CamelIdeaUtils implements Disposable {
      * otherwise delegates to {@link CamelIdeaUtils#isCamelRouteStart(PsiElement)}.
      */
     public boolean isCamelRouteStartExpression(PsiElement element) {
-        if (PsiTreeUtil.findFirstParent(element, true, psiElement -> isCamelRouteStart(psiElement)) != null) {
-            return true;
-        }
-        return isCamelRouteStart(element);
+        return enabledExtensions.stream()
+            .anyMatch(extension -> extension.isCamelRouteStartExpression(element));
+    }
+
+    public boolean isInsideCamelRoute(PsiElement element, boolean excludeRouteStart) {
+        return enabledExtensions.stream()
+            .anyMatch(extension -> extension.isInsideCamelRoute(element, excludeRouteStart));
     }
 
     /**
@@ -195,6 +203,32 @@ public final class CamelIdeaUtils implements Disposable {
         final PsiClass[] interfaces = clazz.getSupers();
         return Arrays.stream(interfaces)
             .anyMatch(c -> "org.apache.camel.RoutesBuilder".equals(c.getQualifiedName()));
+    }
+
+    public List<PsiElement> findEndpointUsages(Module module, CamelEndpoint endpoint) {
+        return findEndpointUsages(module, endpoint::baseUriMatches);
+    }
+
+    public List<PsiElement> findEndpointUsages(Module module, Predicate<String> uriCondition) {
+        return enabledExtensions.stream()
+            .map(e -> e.findEndpointUsages(module, uriCondition))
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
+    }
+
+    public List<PsiElement> findEndpointDeclarations(Module module, CamelEndpoint endpoint) {
+        return findEndpointDeclarations(module, endpoint::baseUriMatches);
+    }
+
+    public List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition) {
+        return enabledExtensions.stream()
+            .map(e -> e.findEndpointDeclarations(module, uriCondition))
+            .flatMap(List::stream)
+            .collect(Collectors.toList());
+    }
+
+    private IdeaUtils getIdeaUtils() {
+        return ServiceManager.getService(IdeaUtils.class);
     }
 
     @Override

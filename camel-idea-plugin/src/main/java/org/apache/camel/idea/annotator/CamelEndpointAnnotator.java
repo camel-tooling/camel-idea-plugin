@@ -24,10 +24,15 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiPolyVariantReference;
+import com.intellij.psi.PsiReference;
+import com.intellij.psi.ResolveResult;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.EndpointValidationResult;
+import org.apache.camel.idea.reference.endpoint.CamelEndpoint;
+import org.apache.camel.idea.reference.endpoint.direct.DirectEndpointReference;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.QueryUtils;
@@ -85,6 +90,10 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
             boolean consumerOnly = getCamelIdeaUtils().isConsumerEndpoint(element);
             boolean producerOnly = getCamelIdeaUtils().isProducerEndpoint(element);
 
+            if (producerOnly) {
+                validateEndpointReference(element, camelQuery, holder);
+            }
+
             try {
                 CamelPreferenceService preference = getCamelPreferenceService();
 
@@ -102,6 +111,25 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
             } catch (Throwable e) {
                 LOG.warn("Error validating Camel endpoint: " + uri, e);
             }
+        }
+    }
+
+    private void validateEndpointReference(PsiElement element, String camelQuery, AnnotationHolder holder) {
+        if (!getIdeaUtils().isJavaLanguage(element)) { //no need, unresolvable references in XML are already highlighted
+            return;
+        }
+        if (CamelEndpoint.isDirectEndpoint(camelQuery)) { //only direct endpoints have references (for now)
+            Arrays.stream(element.getReferences())
+                .filter(r -> r instanceof DirectEndpointReference)
+                .map(r -> (DirectEndpointReference) r)
+                .findAny()
+                .ifPresent(endpointReference -> {
+                    ResolveResult[] targets = endpointReference.multiResolve(false);
+                    if (targets.length == 0) {
+                        TextRange range = endpointReference.getRangeInElement().shiftRight(element.getTextRange().getStartOffset());
+                        holder.createErrorAnnotation(range, "Cannot find endpoint declaration: " + endpointReference.getCanonicalText());
+                    }
+                });
         }
     }
 

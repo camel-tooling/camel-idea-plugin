@@ -44,13 +44,10 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
         final PsiElementPattern.Capture<PsiLiteralExpression> pattern = PlatformPatterns.psiElement(PsiLiteralExpression.class)
             .withParent(PsiExpressionList.class);
-        registrar.registerReferenceProvider(pattern, new PsiReferenceProvider() {
+        registrar.registerReferenceProvider(pattern, new CamelPsiReferenceProvider() {
             @NotNull
             @Override
-            public PsiReference[] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
-                if (!ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
-                    return PsiReference.EMPTY_ARRAY;
-                }
+            public PsiReference[] getCamelReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
                 return createCamelBeanMethodReference(element);
             }
         });
