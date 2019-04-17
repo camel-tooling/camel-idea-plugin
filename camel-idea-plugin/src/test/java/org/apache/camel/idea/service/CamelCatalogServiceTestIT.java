@@ -34,7 +34,7 @@ public class CamelCatalogServiceTestIT extends CamelLightCodeInsightFixtureTestC
         super.setUp();
         ApplicationManager
             .getApplication()
-            .invokeLater(() -> ApplicationManager.getApplication().runReadAction(() -> ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(false)));
+            .executeOnPooledThread(() -> ApplicationManager.getApplication().runReadAction(() -> ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(false)));
 
     }
 
