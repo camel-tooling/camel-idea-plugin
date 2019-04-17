@@ -18,10 +18,14 @@ package org.apache.camel.idea.inspection;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
@@ -32,6 +36,7 @@ import com.intellij.util.ui.UIUtil;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 public class CamelInspectJavaSimpleTestIT extends InspectionTestCase {
+    private ArrayList<Library> libraries = new ArrayList<>();
 
     public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.22.0";
 
@@ -46,6 +51,7 @@ public class CamelInspectJavaSimpleTestIT extends InspectionTestCase {
             final Library.ModifiableModel libraryModifiableModel = library.getModifiableModel();
             libraryModifiableModel.addRoot(virtualFile, OrderRootType.CLASSES);
             libraryModifiableModel.commit();
+            libraries.add(library);
             ModuleRootModificationUtil.addDependency(myModule, library);
         });
         UIUtil.dispatchAllInvocationEvents();
@@ -54,6 +60,21 @@ public class CamelInspectJavaSimpleTestIT extends InspectionTestCase {
     private File[] getMavenArtifacts(String... mavenAritfiact) throws IOException {
         File[] libs = Maven.resolver().loadPomFromFile("pom.xml").resolve(mavenAritfiact).withoutTransitivity().asFile();
         return libs;
+    }
+
+    protected void tearDown() throws Exception {
+        libraries.forEach(library -> removeLibrary(library));
+        super.tearDown();
+    }
+
+    void removeLibrary(Library library) {
+        WriteCommandAction.runWriteCommandAction(null, ()-> {
+            LibraryTable table = ProjectLibraryTable.getInstance(getProject());
+            LibraryTable.ModifiableModel model = table.getModifiableModel();
+            model.removeLibrary(library);
+            model.commit();
+
+        });
     }
 
     @Override
@@ -66,7 +87,7 @@ public class CamelInspectJavaSimpleTestIT extends InspectionTestCase {
         CamelInspection inspection = new CamelInspection(true);
 
         // must be called fooroute as inspectionsimplejava fails for some odd reason
-        doTest("testData/fooroute/", new LocalInspectionToolWrapper(inspection), "java 1.8");
+        doTest("testData/fooroute/", new LocalInspectionToolWrapper(inspection));
     }
 
 }
