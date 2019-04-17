@@ -1,7 +1,7 @@
 language: JAVA
 script: mvn install
 jdk:
-  - oraclejdk8
+  - openjdk8
 cache:
     directories:
     - .autoconf
