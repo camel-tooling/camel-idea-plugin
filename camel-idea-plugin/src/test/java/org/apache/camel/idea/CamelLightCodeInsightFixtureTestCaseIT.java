@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.testFramework.PsiTestUtil;
@@ -57,7 +58,9 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         }
         disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelCatalogService.class));
         disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelService.class));
-        ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(true);
+        ApplicationManager
+            .getApplication()
+            .invokeLater(() -> ApplicationManager.getApplication().runReadAction(() -> ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(true)));
     }
 
     @Override

@@ -17,6 +17,7 @@
 package org.apache.camel.idea.service;
 
 import com.intellij.codeInsight.completion.CompletionType;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
@@ -31,7 +32,10 @@ public class CamelCatalogServiceTestIT extends CamelLightCodeInsightFixtureTestC
     protected void setUp() throws Exception {
         setIgnoreCamelCoreLib(true);
         super.setUp();
-        ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(false);
+        ApplicationManager
+            .getApplication()
+            .invokeLater(() -> ApplicationManager.getApplication().runReadAction(() -> ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(false)));
+
     }
 
     public void testNoCatalogInstance() {
