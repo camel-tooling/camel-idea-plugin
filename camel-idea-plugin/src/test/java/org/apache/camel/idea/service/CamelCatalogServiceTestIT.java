@@ -32,13 +32,10 @@ public class CamelCatalogServiceTestIT extends CamelLightCodeInsightFixtureTestC
     protected void setUp() throws Exception {
         setIgnoreCamelCoreLib(true);
         super.setUp();
-        ApplicationManager
-            .getApplication()
-            .executeOnPooledThread(() -> ApplicationManager.getApplication().runReadAction(() -> ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(false)));
-
     }
 
     public void testNoCatalogInstance() {
+        ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(false);
         myFixture.configureByFiles("CompleteJavaEndpointConsumerTestData.java", "CompleteYmlPropertyTestData.java",
              "CompleteJavaPropertyTestData.properties", "CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
         myFixture.complete(CompletionType.BASIC, 1);
@@ -46,7 +43,6 @@ public class CamelCatalogServiceTestIT extends CamelLightCodeInsightFixtureTestC
     }
 
     public void testCatalogInstance() {
-        ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(true);
         myFixture.configureByFiles("CompleteJavaEndpointConsumerTestData.java", "CompleteYmlPropertyTestData.java",
             "CompleteJavaPropertyTestData.properties", "CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
         myFixture.complete(CompletionType.BASIC, 1);

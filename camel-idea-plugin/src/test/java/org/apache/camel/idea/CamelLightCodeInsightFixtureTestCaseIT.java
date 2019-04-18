@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.testFramework.PsiTestUtil;
@@ -29,6 +28,9 @@ import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
+import org.apache.camel.idea.util.CamelIdeaUtils;
+import org.apache.camel.idea.util.IdeaUtils;
+import org.apache.camel.idea.util.JavaMethodUtils;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 /**
@@ -58,9 +60,11 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         }
         disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelCatalogService.class));
         disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelService.class));
-        ApplicationManager
-            .getApplication()
-            .executeOnPooledThread(() -> ApplicationManager.getApplication().runReadAction(() -> ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(true)));
+        disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelPreferenceService.class));
+        disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelIdeaUtils.class));
+        disposeOnTearDown(ServiceManager.getService(myModule.getProject(), IdeaUtils.class));
+        disposeOnTearDown(ServiceManager.getService(myModule.getProject(), JavaMethodUtils.class));
+        ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(true);
     }
 
     @Override
