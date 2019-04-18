@@ -16,11 +16,7 @@
  */
 package org.apache.camel.idea;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.testFramework.PsiTestUtil;
@@ -28,7 +24,15 @@ import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import org.apache.camel.idea.service.CamelCatalogService;
 import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
+import org.apache.camel.idea.util.CamelIdeaUtils;
+import org.apache.camel.idea.util.IdeaUtils;
+import org.apache.camel.idea.util.JavaMethodUtils;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Super class for Camel Plugin Testing. If you are testing plug-in code with LightCodeInsightFixtureTestCase
@@ -55,8 +59,17 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         if (!ignoreCamelCoreLib) {
             PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myModule, "Maven: " + CAMEL_CORE_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
         }
-        disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelCatalogService.class));
-        disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelService.class));
+        ApplicationManager
+            .getApplication()
+            .executeOnPooledThread(() -> ApplicationManager.getApplication().runReadAction(() -> {
+                disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelCatalogService.class));
+                disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelService.class));
+                disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelPreferenceService.class));
+                disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelIdeaUtils.class));
+                disposeOnTearDown(ServiceManager.getService(myModule.getProject(), IdeaUtils.class));
+                disposeOnTearDown(ServiceManager.getService(myModule.getProject(), JavaMethodUtils.class));
+            }));
+
         ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(true);
     }
 
