@@ -117,6 +117,14 @@ public final class CamelIdeaUtils implements Disposable {
     }
 
     /**
+     * Could an endpoint uri be present at this location?
+     */
+    public boolean isPlaceForEndpointUri(PsiElement element) {
+        return enabledExtensions.stream()
+            .anyMatch(extension -> extension.isPlaceForEndpointUri(element));
+    }
+
+    /**
      * Is the given element from a method call named <tt>fromF</tt> or <tt>toF</tt>, or <tt>String.format</tt> which supports the
      * {@link String#format(String, Object...)} syntax and therefore we need special handling.
      */

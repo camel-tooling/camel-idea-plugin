@@ -286,6 +286,13 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         return results;
     }
 
+    @Override
+    public boolean isPlaceForEndpointUri(PsiElement location) {
+        PsiLiteralExpression expression = PsiTreeUtil.getParentOfType(location, PsiLiteralExpression.class, false);
+        return expression != null
+            && isInsideCamelRoute(expression, false);
+    }
+
     private IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);
     }

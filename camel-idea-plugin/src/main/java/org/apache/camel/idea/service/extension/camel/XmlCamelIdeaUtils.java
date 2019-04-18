@@ -280,6 +280,18 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
         return null;
     }
 
+    @Override
+    public boolean isPlaceForEndpointUri(PsiElement location) {
+        XmlAttributeValue value = PsiTreeUtil.getParentOfType(location, XmlAttributeValue.class, false);
+        if (value == null) {
+            return false;
+        }
+        XmlAttribute attr = PsiTreeUtil.getParentOfType(location, XmlAttribute.class);
+        if (attr == null) {
+            return false;
+        }
+        return attr.getLocalName().equals("uri") && isInsideCamelRoute(location, false);
+    }
 
     @Override
     public boolean isExtensionEnabled() {
