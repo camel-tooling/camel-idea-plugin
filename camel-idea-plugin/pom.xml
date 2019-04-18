@@ -79,7 +79,7 @@
         </dependency>
         <dependency>
           <groupId>com.intellij</groupId>
-          <artifactId>jsch-0.1.54</artifactId>
+          <artifactId>jsch-0.1.55</artifactId>
           <version>${idea.version}</version>
           <scope>test</scope>
         </dependency>
@@ -435,7 +435,7 @@
     </dependency>
     <dependency>
       <groupId>com.intellij</groupId>
-      <artifactId>asm-all-7.0</artifactId>
+      <artifactId>asm-all-7.0.1</artifactId>
       <version>${idea.version}</version>
       <scope>test</scope>
     </dependency>
