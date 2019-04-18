@@ -73,8 +73,7 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
         return "src/test/resources/testData/documentation/";
     }
 
-    // Some cache issue so it test against old version, we might want to re-think this test case")
-   /* public void testJavaClassQuickNavigateInfo() throws Exception {
+    public void testJavaClassQuickNavigateInfo() throws Exception {
         myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestWithCursorBeforeCamelComponent());
 
         PsiClass psiClass = getTestClass();
@@ -83,9 +82,8 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
 
         String docInfo = new CamelDocumentationProvider().getQuickNavigateInfo(psiClass, referenceElement.getElement());
         assertNotNull(docInfo);
-        String s = exampleHtmlFileText(getTestName(true));
         assertEquals(exampleHtmlFileText(getTestName(true)), docInfo);
-    }*/
+    }
 
     public void testGetUrlFor() {
         assertNull(new CamelDocumentationProvider().getUrlFor(null, null));
