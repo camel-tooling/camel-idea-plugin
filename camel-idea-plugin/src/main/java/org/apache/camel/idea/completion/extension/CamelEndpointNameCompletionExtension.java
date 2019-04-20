@@ -16,7 +16,6 @@
  */
 package org.apache.camel.idea.completion.extension;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -29,6 +28,7 @@ import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiLiteralValue;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.idea.reference.endpoint.CamelEndpoint;
@@ -59,7 +59,6 @@ public class CamelEndpointNameCompletionExtension implements CamelCompletionExte
         }
 
         String prefixValue = query[2];
-        List<LookupElement> results = new ArrayList<>();
 
         PsiElement element = parameters.getPosition();
 
@@ -67,10 +66,8 @@ public class CamelEndpointNameCompletionExtension implements CamelCompletionExte
         if (module == null) {
             return;
         }
-        CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
-        if (camelIdeaUtils.isInsideCamelRoute(element, true) && camelIdeaUtils.isProducerEndpoint(element)) {
-            results.addAll(getDirectEndpointSuggestions(module));
-        }
+
+        List<LookupElement> results = getDirectEndpointSuggestions(module);
 
         if (!results.isEmpty()) {
             resultSet.withPrefixMatcher(prefixValue).addAllElements(results);
@@ -100,7 +97,10 @@ public class CamelEndpointNameCompletionExtension implements CamelCompletionExte
 
     @Override
     public boolean isValid(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, String[] query) {
-        return true;
+        CamelIdeaUtils service = CamelIdeaUtils.getService();
+        PsiElement element = parameters.getPosition();
+        return service.isPlaceForEndpointUri(element)
+            && service.isProducerEndpoint(element);
     }
 
 }

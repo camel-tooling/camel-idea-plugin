@@ -17,20 +17,52 @@ public class CamelEndpointNameCompletionExtensionIT extends CamelLightCodeInsigh
 
     public void testDirectEndpointNameCompletionInJava() {
         myFixture.configureByFiles("CompleteDirectEndpointNameTestData.java");
-        doTestDirectEndpointNameCompletion();
+        doTestCompletion();
     }
 
     public void testDirectEndpointNameCompletionInXml() {
         myFixture.configureByFiles("CompleteDirectEndpointNameTestData.xml");
         myFixture.complete(CompletionType.BASIC);
+        doTestCompletion();
     }
 
-    private void doTestDirectEndpointNameCompletion() {
+    public void testDirectEndpointNameCompletionInJavaAtInvalidPlace() {
+        myFixture.configureByFiles("CompleteDirectEndpointNameAtInvalidPlace.java");
+        doTestCompletionAtInvalidPlace();
+    }
+
+    public void testDirectEndpointNameCompletionInXmlAtInvalidPlace() {
+        myFixture.configureByFiles("CompleteDirectEndpointNameAtInvalidPlace.xml");
+        doTestCompletionAtInvalidPlace();
+    }
+
+    public void testDirectEndpointNameCompletionInNonUriAttribute() {
+        myFixture.configureByFiles("CompleteDirectEndpointNameInNonUriAttribute.xml");
+        doTestCompletionAtInvalidPlace();
+    }
+
+    public void testDirectEndpointNameCompletionInRouteStart() {
+        myFixture.configureByFiles("CompleteDirectEndpointNameInRouteStart.xml");
+        doTestCompletionAtInvalidPlace();
+    }
+
+    private void doTestCompletion() {
         myFixture.complete(CompletionType.BASIC);
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
         assertEquals(3, strings.size());
         assertContainsElements(strings, "direct:abc", "direct:def", "direct:test");
+    }
+
+    private void doTestCompletionAtInvalidPlace() {
+        myFixture.complete(CompletionType.BASIC);
+        List<String> strings = myFixture.getLookupElementStrings();
+        if (strings != null) {
+            assertFalse(strings.contains("direct:abc"));
+            assertFalse(strings.contains("direct:def"));
+            assertFalse(strings.contains("direct:test"));
+            assertFalse(strings.contains("file:inbox"));
+        }
     }
 
 }
