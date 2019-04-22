@@ -48,11 +48,11 @@ public class CamelJavaBeanReferenceSmartCompletion extends CompletionProvider<Co
 
     public static final String BEAN_CLASS_KEY = "beanClassKey";
 
+
     @Override
     protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
-        final PsiElement element = completionParameters.getPosition();
-        final PsiClass psiClass = (PsiClass) processingContext.get(BEAN_CLASS_KEY);
-
+            final PsiElement element = completionParameters.getPosition();
+        final PsiClass psiClass = getCamelIdeaUtils().getBean(element);
 
         Collection<PsiMethod> methods = getJavaMethodUtils().getMethods(psiClass);
 

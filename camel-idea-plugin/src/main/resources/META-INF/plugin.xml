@@ -92,6 +92,7 @@
     <applicationService serviceImplementation="org.apache.camel.idea.util.CamelIdeaUtils"/>
     <applicationService serviceImplementation="org.apache.camel.idea.service.CamelPreferenceService"/>
     <applicationService serviceImplementation="org.apache.camel.idea.util.JavaMethodUtils"/>
+    <applicationService serviceImplementation="org.apache.camel.idea.util.JavaClassUtils"/>
 
     <!-- allow code completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="org.apache.camel.idea.completion.contributor.CamelJavaReferenceContributor"/>

@@ -30,6 +30,7 @@ import org.apache.camel.idea.service.CamelPreferenceService;
 import org.apache.camel.idea.service.CamelService;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.apache.camel.idea.util.IdeaUtils;
+import org.apache.camel.idea.util.JavaClassUtils;
 import org.apache.camel.idea.util.JavaMethodUtils;
 import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -60,29 +61,24 @@ public class CamelBeanMethodAnnotator implements Annotator {
             return;
         }
 
-        final PsiElement beanClassElement = getCamelIdeaUtils().getBeanPsiElement(element);
-        if (beanClassElement == null) {
-            return;
-        }
 
         PsiClass psiClass = getCamelIdeaUtils().getBean(element);
+
         if (psiClass == null) {
             return;
         }
 
         String errorMessage;
+        final String beanName = getJavaClassUtils().getBeanName(psiClass);
         final String methodNameWithParameters = StringUtils.stripDoubleQuotes(element.getText());
         final String methodName = StringUtils.stripDoubleQuotes(getJavaMethodUtils().getMethodNameWithOutParameters(element));
 
-        final List<PsiMethod> matchMethods = getJavaMethodUtils().getBeanMethods(getJavaMethodUtils().getMethods(psiClass))
-            .stream()
-            .peek(method -> {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(String.format("element %s = %s method in bean %s", methodName, StringUtils.stripDoubleQuotes(method.getName()), psiClass.getQualifiedName()));
-                }
-            })
-            .filter(method -> StringUtils.stripDoubleQuotes(method.getName()).equals(methodName))
-            .collect(toList());
+        if (methodName.equals(beanName)) {
+            //We don't want to check psiClass elements it self
+            return;
+        }
+
+        final List<PsiMethod> matchMethods = getMatchingMethods(psiClass, methodName);
 
         if (matchMethods.isEmpty()) {
             errorMessage = matchMethods.isEmpty() ? String.format(METHOD_CAN_NOT_RESOLVED, methodNameWithParameters, psiClass.getQualifiedName()) : null;
@@ -114,6 +110,15 @@ public class CamelBeanMethodAnnotator implements Annotator {
 
     }
 
+    @NotNull
+    public List<PsiMethod> getMatchingMethods(PsiClass psiClass, String methodName) {
+        return getJavaMethodUtils().getBeanMethods(getJavaMethodUtils().getMethods(psiClass))
+                .stream()
+                .peek(method -> LOG.debug("element %s = %s method in bean %s", methodName, StringUtils.stripDoubleQuotes(method.getName()), psiClass.getQualifiedName()))
+                .filter(method -> StringUtils.stripDoubleQuotes(method.getName()).equals(methodName))
+                .collect(toList());
+    }
+
     private CamelIdeaUtils getCamelIdeaUtils() {
         return ServiceManager.getService(CamelIdeaUtils.class);
     }
@@ -124,5 +129,9 @@ public class CamelBeanMethodAnnotator implements Annotator {
 
     private IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);
+    }
+
+    private JavaClassUtils getJavaClassUtils() {
+        return ServiceManager.getService(JavaClassUtils.class);
     }
 }

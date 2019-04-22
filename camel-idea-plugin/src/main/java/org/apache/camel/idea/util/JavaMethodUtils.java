@@ -19,6 +19,7 @@ package org.apache.camel.idea.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,6 +42,16 @@ public class JavaMethodUtils implements Disposable {
             .filter(p -> !Object.class.getName().equals(p.getContainingClass().getQualifiedName()))
             .filter(p -> !Class.class.getName().equals(p.getContainingClass().getQualifiedName()))
             .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * Return all method names for the specific class and it's super classes, except
+     * Object and Class
+     */
+    public Optional<PsiMethod> getHandleMethod(PsiClass psiClass) {
+        return Stream.of(psiClass.getAllMethods())
+            .filter(p -> p.hasAnnotation("org.apache.camel.Handler"))
+            .findFirst();
     }
 
     /**
@@ -111,6 +122,7 @@ public class JavaMethodUtils implements Disposable {
     public String getMethodNameWithOutParameters(PsiElement methodLiteral) {
         return getMethodNameWithOutParameters(methodLiteral.getText());
     }
+
     /**
      * Return only the method name in free text from an {@link String}
      * @param completeMethodWithParmText - The text representation of the method name and it's parameters

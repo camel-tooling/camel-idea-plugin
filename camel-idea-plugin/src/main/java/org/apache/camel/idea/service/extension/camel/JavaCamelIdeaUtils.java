@@ -20,7 +20,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
+
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiAnnotation;
@@ -28,7 +30,6 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
-import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
@@ -37,16 +38,13 @@ import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceExpression;
-import com.intellij.psi.PsiType;
-import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.util.ClassUtil;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.util.PsiUtil;
 import org.apache.camel.idea.extension.CamelIdeaUtilsExtension;
 import org.apache.camel.idea.util.IdeaUtils;
+import org.apache.camel.idea.util.JavaClassUtils;
 
 public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
 
@@ -213,23 +211,26 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     public PsiClass getBeanClass(PsiElement element) {
         final PsiElement beanPsiElement = getBeanPsiElement(element);
         if (beanPsiElement != null) {
-            PsiClass psiClass = null;
-            PsiReference reference = beanPsiElement.getReference();
-            if (reference != null) {
-                final PsiElement resolveElement = reference.resolve();
-                if (resolveElement instanceof PsiClass) {
-                    psiClass = (PsiClass) resolveElement;
-                } else if (resolveElement instanceof PsiField) {
-                    final PsiType psiType = PsiUtil.getTypeByPsiElement(resolveElement);
-                    if (psiType == null) {
-                        return null;
-                    }
-                    psiClass = ((PsiClassReferenceType) psiType).resolve();
-                }
+            if (beanPsiElement instanceof PsiClass) {
+                return (PsiClass) beanPsiElement;
+            }
+
+            PsiJavaCodeReferenceElement referenceElement = PsiTreeUtil.findChildOfType(beanPsiElement, PsiJavaCodeReferenceElement.class);
+            final PsiClass psiClass = getJavaClassUtils().resolveClassReference(referenceElement);
+
+            if (psiClass != null) {
                 return psiClass;
             }
+
+            return searchForMatchingBeanClasses(element, beanPsiElement).orElse(null);
         }
         return null;
+    }
+
+    private Optional<PsiClass> searchForMatchingBeanClasses(PsiElement element, PsiElement beanPsiElement) {
+        return getJavaClassUtils().findBeanClassByName(beanPsiElement, "org.springframework.stereotype.Component").map(Optional::of)
+            .orElseGet(() -> getJavaClassUtils().findBeanClassByName(beanPsiElement, "org.springframework.stereotype.Service")).map(Optional::of)
+            .orElseGet(() -> getJavaClassUtils().findBeanClassByName(beanPsiElement, "org.springframework.stereotype.Repository"));
     }
 
     @Override
@@ -239,7 +240,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             if (expressionList != null) {
                 final PsiIdentifier identifier = PsiTreeUtil.getChildOfType(expressionList.getPrevSibling(), PsiIdentifier.class);
                 if (identifier != null && identifier.getNextSibling() == null && ("method".equals(identifier.getText()) || "bean".equals(identifier.getText()))) {
-                    return PsiTreeUtil.findChildOfType(expressionList, PsiJavaCodeReferenceElement.class);
+                   return expressionList;
                 }
             }
         }
@@ -288,5 +289,9 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     private IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);
+    }
+
+    private JavaClassUtils getJavaClassUtils() {
+        return ServiceManager.getService(JavaClassUtils.class);
     }
 }
