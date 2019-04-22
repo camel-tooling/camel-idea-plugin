@@ -39,7 +39,7 @@ public abstract class CamelEndpointPsiReferenceProvider extends CamelPsiReferenc
         if (!isEndpoint(endpointUri)) {
             return PsiReference.EMPTY_ARRAY;
         }
-        if (!CamelIdeaUtils.getService().isInsideCamelRoute(element, false)) {
+        if (!CamelIdeaUtils.getService().isPlaceForEndpointUri(element)) {
             return PsiReference.EMPTY_ARRAY;
         }
         return getEndpointReferencesByElement(endpointUri, element, context);

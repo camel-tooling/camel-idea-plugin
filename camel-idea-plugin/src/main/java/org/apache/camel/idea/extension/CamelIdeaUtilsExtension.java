@@ -102,4 +102,9 @@ public interface CamelIdeaUtilsExtension {
     List<PsiElement> findEndpointUsages(Module module, Predicate<String> uriCondition);
     List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition);
 
+    /**
+     * Could an endpoint uri be present at this location?
+     */
+    boolean isPlaceForEndpointUri(PsiElement location);
+
 }
