@@ -34,6 +34,7 @@ import org.jetbrains.annotations.NotNull;
 
 import static com.intellij.patterns.PsiJavaPatterns.psiLiteral;
 import static com.intellij.patterns.PsiJavaPatterns.psiMethod;
+import static com.intellij.patterns.StandardPatterns.or;
 
 /**
  * Create a link between the Camel DSL {@Code bean(MyClass.class,"myMethod")} and the specific method
@@ -42,19 +43,27 @@ import static com.intellij.patterns.PsiJavaPatterns.psiMethod;
 public class CamelBeanReferenceContributor extends PsiReferenceContributor {
 
     public static final PsiJavaElementPattern.Capture<PsiLiteral> BEAN_CLASS_METHOD_PATTERN = psiLiteral().methodCallParameter(
-        psiMethod()
-            .withName("bean")
-            .withParameters("java.lang.Class", "java.lang.String")
+        psiMethod().withName("bean").withParameters("java.lang.Class", "java.lang.String")
+    );
+
+    public static final PsiJavaElementPattern.Capture<PsiLiteral> METHOD_CLASS_METHOD_PATTERN = psiLiteral().methodCallParameter(
+        psiMethod().withName("method").withParameters("java.lang.Class", "java.lang.String")
     );
 
     public static final PsiJavaElementPattern.Capture<PsiLiteral> BEAN_OBJECT_STRING_PATTERN = psiLiteral().methodCallParameter(
-        psiMethod()
-            .withName("bean")
-            .withParameters("java.lang.Object", "java.lang.String")
+        psiMethod().withName("bean").withParameters("java.lang.Object", "java.lang.String")
+    );
+
+    public static final PsiJavaElementPattern.Capture<PsiLiteral> METHOD_STRING_STRING_PATTERN = psiLiteral().methodCallParameter(
+        psiMethod().withName("method").withParameters("java.lang.String", "java.lang.String")
+    );
+
+    public static final PsiJavaElementPattern.Capture<PsiLiteral> METHOD_OBJECT_STRING_PATTERN = psiLiteral().methodCallParameter(
+        psiMethod().withName("method").withParameters("java.lang.Object", "java.lang.String")
     );
 
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
-        registrar.registerReferenceProvider(BEAN_CLASS_METHOD_PATTERN, new CamelPsiReferenceProvider() {
+        registrar.registerReferenceProvider(or(BEAN_CLASS_METHOD_PATTERN, METHOD_CLASS_METHOD_PATTERN), new CamelPsiReferenceProvider() {
             @NotNull
             @Override
             public PsiReference[] getCamelReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
@@ -62,11 +71,11 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
             }
         });
 
-        registrar.registerReferenceProvider(BEAN_OBJECT_STRING_PATTERN, new CamelPsiReferenceProvider() {
+        registrar.registerReferenceProvider(or(BEAN_OBJECT_STRING_PATTERN, METHOD_STRING_STRING_PATTERN, METHOD_OBJECT_STRING_PATTERN), new CamelPsiReferenceProvider() {
             @NotNull
             @Override
             public PsiReference[] getCamelReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
-                return createCamelDefaultBeanMethodReference(element);
+                return createSpringBeanMethodReference(element);
             }
         });
     }
@@ -79,7 +88,6 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
 
         PsiClass psiClass = getCamelIdeaUtils().getBean(element);
         if (psiClass != null) {
-            //final PsiLiteral beanNameElement = PsiTreeUtil.findChildOfType(PsiTreeUtil.getParentOfType(beanClassElement, PsiExpressionList.class), PsiLiteral.class);
             String methodName = StringUtils.stripDoubleQuotes(element.getText());
             if (!methodName.isEmpty()) {
                 return new PsiReference[] {new CamelBeanMethodReference(element, psiClass, methodName, new TextRange(1, methodName.length() + 1))};
@@ -88,7 +96,7 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
         return PsiReference.EMPTY_ARRAY;
     }
 
-    private PsiReference[] createCamelDefaultBeanMethodReference(@NotNull PsiElement element) {
+    private PsiReference[] createSpringBeanMethodReference(@NotNull PsiElement element) {
 
         if (element.getText().contains("IntellijIdeaRulezzz")) {
             return PsiReference.EMPTY_ARRAY;
@@ -106,9 +114,7 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
             return PsiReference.EMPTY_ARRAY;
         }
 
-        return getJavaMethodUtils().getHandleMethod(psiClass)
-            .map(psiMethod -> new PsiReference[] {new CamelBeanMethodReference(element, psiClass, methodName, new TextRange(1, methodName.length() + 1))})
-            .orElse(PsiReference.EMPTY_ARRAY);
+        return  new PsiReference[] {new CamelBeanMethodReference(element, psiClass, methodName, new TextRange(1, methodName.length() + 1))};
 
     }
 

@@ -16,6 +16,7 @@
  */
 import testData.CompleteJavaBeanSuperClassTestData;
 
+
 public class CompleteJavaBeanTestData extends CompleteJavaBeanSuperClassTestData {
 
     public void letsDoThis() {}

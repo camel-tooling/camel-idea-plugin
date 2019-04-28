@@ -18,6 +18,7 @@ package org.apache.camel.idea.util;
 
 import java.beans.Introspector;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 
 import com.intellij.lang.jvm.annotation.JvmAnnotationAttribute;
@@ -42,12 +43,11 @@ import org.jetbrains.annotations.NotNull;
 public class JavaClassUtils implements Disposable {
 
     public String getBeanName(PsiClass clazz) {
-        final PsiAnnotation annotation = clazz.getAnnotation("org.springframework.stereotype.Component");
-        if (annotation != null) {
-            final JvmAnnotationAttribute componentAnnotation = annotation.findAttribute("value");
-            return componentAnnotation != null ? StringUtils.stripDoubleQuotes(componentAnnotation.getAttributeValue().getSourceElement().getText()) :  Introspector.decapitalize(clazz.getText());
-        }
-        return Introspector.decapitalize(clazz.getText());
+        final String beanName = getBeanName(clazz, "org.springframework.stereotype.Component")
+            .orElseGet(() -> getBeanName(clazz, "org.springframework.stereotype.Service")
+                .orElseGet(() -> getBeanName(clazz, "org.springframework.stereotype.Repository")
+                    .orElse(Introspector.decapitalize(clazz.getText()))));
+        return beanName;
     }
 
     public Optional<PsiClass> findBeanClassByName(PsiElement element, String annotation) {
@@ -58,17 +58,20 @@ public class JavaClassUtils implements Disposable {
                     .map(c ->c.findAttribute("value"))
                     .map(c -> c.getAttributeValue().getSourceElement().getText())
                     .map(beanName -> StringUtils.stripDoubleQuotes(beanName).equals(elementName))
-                    .orElseGet(() -> Introspector.decapitalize(psiClass.getName()).equalsIgnoreCase(StringUtils.stripDoubleQuotes(element.getText())))
+                    .orElseGet(() -> Introspector.decapitalize(psiClass.getName()).equalsIgnoreCase(StringUtils.stripDoubleQuotes(elementName)))
 
-            ).findFirst();
+            )
+            .findFirst();
     }
 
     @NotNull
-    public Collection<PsiClass> getClassesAnnotatedWith(PsiElement element, String annotation) {
-        //search for component, service annotations
+    private Collection<PsiClass> getClassesAnnotatedWith(PsiElement element, String annotation) {
         PsiClass stepClass = JavaPsiFacade.getInstance(element.getProject()).findClass(annotation, ProjectScope.getLibrariesScope(element.getProject()));
-        final Query<PsiClass> psiMethods = AnnotatedElementsSearch.searchPsiClasses(stepClass, GlobalSearchScope.allScope(element.getProject()));
-        return psiMethods.findAll();
+        if (stepClass != null) {
+            final Query<PsiClass> psiMethods = AnnotatedElementsSearch.searchPsiClasses(stepClass, GlobalSearchScope.allScope(element.getProject()));
+            return psiMethods.findAll();
+        }
+        return Collections.emptyList();
     }
 
     /**
@@ -93,6 +96,22 @@ public class JavaClassUtils implements Disposable {
             }
         }
         return null;
+    }
+
+    /**
+     * Return the bean name for the {@link PsiClass} and the specific bean annotation
+     * @param clazz - class to return bean name for
+     * @param annotationFqn - the lookup FQN string for the annotation
+     * @return the bean name
+     */
+    private Optional<String> getBeanName(PsiClass clazz, String annotationFqn) {
+        String returnName = null;
+        final PsiAnnotation annotation = clazz.getAnnotation(annotationFqn);
+        if (annotation != null) {
+            final JvmAnnotationAttribute componentAnnotation = annotation.findAttribute("value");
+            returnName = componentAnnotation != null ? StringUtils.stripDoubleQuotes(componentAnnotation.getAttributeValue().getSourceElement().getText()) : Introspector.decapitalize(clazz.getName());
+        }
+        return Optional.ofNullable(returnName);
     }
 
     @Override

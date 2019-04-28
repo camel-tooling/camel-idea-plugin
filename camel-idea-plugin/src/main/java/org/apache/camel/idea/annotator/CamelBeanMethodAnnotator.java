@@ -51,7 +51,8 @@ public class CamelBeanMethodAnnotator implements Annotator {
             // skip whitespace noise
             && !getIdeaUtils().isWhiteSpace(element)
             // skip java doc noise
-            && !getIdeaUtils().isJavaDoc(element);
+            && !getIdeaUtils().isJavaDoc(element)
+            && getCamelIdeaUtils().getBeanPsiElement(element) != null;
         return valid;
     }
 
@@ -60,7 +61,6 @@ public class CamelBeanMethodAnnotator implements Annotator {
         if (!isEnabled(element)) {
             return;
         }
-
 
         PsiClass psiClass = getCamelIdeaUtils().getBean(element);
 

@@ -54,19 +54,21 @@ public class CamelJavaBeanReferenceSmartCompletion extends CompletionProvider<Co
             final PsiElement element = completionParameters.getPosition();
         final PsiClass psiClass = getCamelIdeaUtils().getBean(element);
 
-        Collection<PsiMethod> methods = getJavaMethodUtils().getMethods(psiClass);
+        if (psiClass != null) {
+            Collection<PsiMethod> methods = getJavaMethodUtils().getMethods(psiClass);
 
-        List<LookupElement> answer = getJavaMethodUtils().getBeanAccessibleMethods(methods)
-            .stream()
-            .map(method -> buildLookupElement(method, getJavaMethodUtils().getPresentableMethodWithParameters(method)))
-            .collect(toList());
+            List<LookupElement> answer = getJavaMethodUtils().getBeanAccessibleMethods(methods)
+                .stream()
+                .map(method -> buildLookupElement(method, getJavaMethodUtils().getPresentableMethodWithParameters(method)))
+                .collect(toList());
 
-        // are there any results then add them
-        if (!answer.isEmpty()) {
-            String hackVal = element.getText();
-            hackVal = hackVal.substring(1, hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED));
-            completionResultSet.withPrefixMatcher(hackVal).addAllElements(answer);
-            completionResultSet.stopHere();
+            // are there any results then add them
+            if (!answer.isEmpty()) {
+                String hackVal = element.getText();
+                hackVal = hackVal.substring(1, hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED));
+                completionResultSet.withPrefixMatcher(hackVal).addAllElements(answer);
+                completionResultSet.stopHere();
+            }
         }
     }
 
