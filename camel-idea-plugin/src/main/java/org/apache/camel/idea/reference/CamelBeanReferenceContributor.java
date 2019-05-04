@@ -31,7 +31,6 @@ import org.apache.camel.idea.util.JavaClassUtils;
 import org.apache.camel.idea.util.JavaMethodUtils;
 import org.apache.camel.idea.util.StringUtils;
 import org.jetbrains.annotations.NotNull;
-
 import static com.intellij.patterns.PsiJavaPatterns.psiLiteral;
 import static com.intellij.patterns.PsiJavaPatterns.psiMethod;
 import static com.intellij.patterns.StandardPatterns.or;
@@ -104,7 +103,7 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
 
         PsiClass psiClass = getCamelIdeaUtils().getBean(element);
         if (psiClass == null) {
-           return PsiReference.EMPTY_ARRAY;
+            return PsiReference.EMPTY_ARRAY;
         }
 
         final String beanName = getJavaClassUtils().getBeanName(psiClass);
@@ -114,7 +113,7 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
             return PsiReference.EMPTY_ARRAY;
         }
 
-        return  new PsiReference[] {new CamelBeanMethodReference(element, psiClass, methodName, new TextRange(1, methodName.length() + 1))};
+        return new PsiReference[] {new CamelBeanMethodReference(element, psiClass, methodName, new TextRange(1, methodName.length() + 1))};
 
     }
 

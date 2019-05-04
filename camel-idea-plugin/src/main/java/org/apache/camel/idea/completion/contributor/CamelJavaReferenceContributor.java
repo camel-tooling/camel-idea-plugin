@@ -27,8 +27,8 @@ import org.apache.camel.idea.completion.extension.CamelEndpointSmartCompletionEx
 import org.apache.camel.idea.completion.extension.CamelJavaBeanReferenceSmartCompletion;
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.NotNull;
-
 import static com.intellij.patterns.PlatformPatterns.psiElement;
+
 
 /**
  * Plugin to hook into the IDEA Java language, to setup Camel smart completion for editing Java source code.

@@ -20,7 +20,6 @@ import java.beans.Introspector;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
-
 import com.intellij.lang.jvm.annotation.JvmAnnotationAttribute;
 import com.intellij.openapi.Disposable;
 import com.intellij.psi.JavaPsiFacade;

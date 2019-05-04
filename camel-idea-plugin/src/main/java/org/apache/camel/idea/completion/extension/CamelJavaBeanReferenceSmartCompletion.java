@@ -51,7 +51,7 @@ public class CamelJavaBeanReferenceSmartCompletion extends CompletionProvider<Co
 
     @Override
     protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
-            final PsiElement element = completionParameters.getPosition();
+        final PsiElement element = completionParameters.getPosition();
         final PsiClass psiClass = getCamelIdeaUtils().getBean(element);
 
         if (psiClass != null) {
