@@ -16,9 +16,13 @@
  */
 package org.apache.camel.idea.completion;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import com.intellij.codeInsight.completion.CompletionType;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.testFramework.PsiTestUtil;
 import org.apache.camel.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.hamcrest.Matchers;
 
@@ -28,6 +32,18 @@ import static org.junit.Assert.assertThat;
  * Testing smart completion with Camel Java DSL and specific the bean smart completion
  */
 public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
+
+    private static final String SPRING_CONTEXT_MAVEN_ARTIFACT = "org.springframework:spring-context:5.1.6.RELEASE";
+
+    private static File[] springMavenArtifacts;
+
+    static {
+        try {
+            springMavenArtifacts = getMavenArtifacts(SPRING_CONTEXT_MAVEN_ARTIFACT);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     protected String getTestDataPath() {
@@ -114,6 +130,12 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
             + "   private void thisIsVeryPrivate() {}\n"
             + "}";
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myModule, "Maven: " + SPRING_CONTEXT_MAVEN_ARTIFACT, springMavenArtifacts[0].getParent(), springMavenArtifacts[0].getName());
+    }
+
     public void testJavaBeanTestDataCompletionWithIncorrectBeanRef() {
         myFixture.configureByText("CompleteJavaBeanTestData.java", CAMEL_ROUTE_WITH_INCORRECT_BEAN_REF);
         myFixture.complete(CompletionType.BASIC, 1);
@@ -191,5 +213,37 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
         assertEquals("There is many options", 0, strings.size());
     }
 
+    /**
+     * Test if code completion works inside bean with a spring component bean reference
+     */
+    public void testJavaBeanTestDataCompletionWithWithSpringComponentRef() {
+        myFixture.configureByFiles("CompleteJavaSpringComponentBeanRouteTestData.java", "CompleteJavaSpringComponentBeanTestData.java");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertThat(strings, Matchers.hasItems("myFirstSpringBean", "anotherBeanMethod"));
+        assertEquals("There is many options", 2, strings.size());
+    }
+
+    /**
+     * Test if code completion works inside bean with a spring service bean reference
+     */
+    public void testJavaBeanTestDataCompletionWithWithSpringServiceRef() {
+        myFixture.configureByFiles("CompleteJavaSpringServiceBeanRouteTestData.java", "CompleteJavaSpringServiceBeanTestData.java");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertThat(strings, Matchers.hasItems("myServiceSpringBeanMethod", "anotherBeanMethod"));
+        assertEquals("There is many options", 2, strings.size());
+    }
+
+    /**
+     * Test if code completion works inside bean with a spring repository bean reference
+     */
+    public void testJavaBeanTestDataCompletionWithWithSpringRepositoryRef() {
+        myFixture.configureByFiles("CompleteJavaSpringRepositoryBeanRouteTestData.java", "CompleteJavaSpringRepositoryBeanTestData.java");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertThat(strings, Matchers.hasItems("myRepositorySpringBeanMethod", "anotherBeanMethod"));
+        assertEquals("There is many options", 2, strings.size());
+    }
 
 }

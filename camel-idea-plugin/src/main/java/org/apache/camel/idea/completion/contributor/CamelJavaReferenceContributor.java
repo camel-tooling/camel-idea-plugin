@@ -19,7 +19,6 @@ package org.apache.camel.idea.completion.contributor;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.patterns.PatternCondition;
-import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaToken;
 import com.intellij.util.ProcessingContext;
@@ -29,7 +28,7 @@ import org.apache.camel.idea.completion.extension.CamelJavaBeanReferenceSmartCom
 import org.apache.camel.idea.util.CamelIdeaUtils;
 import org.jetbrains.annotations.NotNull;
 import static com.intellij.patterns.PlatformPatterns.psiElement;
-import static org.apache.camel.idea.completion.extension.CamelJavaBeanReferenceSmartCompletion.BEAN_CLASS_KEY;
+
 
 /**
  * Plugin to hook into the IDEA Java language, to setup Camel smart completion for editing Java source code.
@@ -45,11 +44,7 @@ public class CamelJavaReferenceContributor extends CamelContributor {
         extend(CompletionType.BASIC, psiElement(PsiJavaToken.class).with(new PatternCondition<PsiJavaToken>("CamelJavaBeanReferenceSmartCompletion") {
             @Override
             public boolean accepts(@NotNull PsiJavaToken psiJavaToken, ProcessingContext processingContext) {
-                final PsiClass beanClass = getCamelIdeaUtils().getBean(psiJavaToken);
-                if (beanClass != null) {
-                    processingContext.put(BEAN_CLASS_KEY, beanClass);
-                }
-                return beanClass != null;
+                return getCamelIdeaUtils().getBeanPsiElement(psiJavaToken) != null;
             }
         }), new CamelJavaBeanReferenceSmartCompletion());
     }

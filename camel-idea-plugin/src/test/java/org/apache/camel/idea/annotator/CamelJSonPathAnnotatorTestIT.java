@@ -93,7 +93,7 @@ public class CamelJSonPathAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         }
     }
 
-    private File[] getMavenArtifacts(String... mavenAritfiact) throws IOException {
+    protected static File[] getMavenArtifacts(String... mavenAritfiact) throws IOException {
         File[] libs = Maven.resolver().loadPomFromFile("pom.xml").resolve(mavenAritfiact).withTransitivity().asFile();
         return libs;
     }

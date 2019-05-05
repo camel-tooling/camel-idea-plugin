@@ -20,15 +20,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
-import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
@@ -37,16 +38,14 @@ import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceExpression;
-import com.intellij.psi.PsiType;
-import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.util.ClassUtil;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.util.PsiUtil;
 import org.apache.camel.idea.extension.CamelIdeaUtilsExtension;
 import org.apache.camel.idea.util.IdeaUtils;
+import org.apache.camel.idea.util.JavaClassUtils;
+import org.apache.camel.idea.util.StringUtils;
 
 public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
 
@@ -211,35 +210,42 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public PsiClass getBeanClass(PsiElement element) {
-        final PsiElement beanPsiElement = getBeanPsiElement(element);
+        final PsiElement beanPsiElement = getPsiElementForCamelBeanMethod(element);
         if (beanPsiElement != null) {
-            PsiClass psiClass = null;
-            PsiReference reference = beanPsiElement.getReference();
-            if (reference != null) {
-                final PsiElement resolveElement = reference.resolve();
-                if (resolveElement instanceof PsiClass) {
-                    psiClass = (PsiClass) resolveElement;
-                } else if (resolveElement instanceof PsiField) {
-                    final PsiType psiType = PsiUtil.getTypeByPsiElement(resolveElement);
-                    if (psiType == null) {
-                        return null;
-                    }
-                    psiClass = ((PsiClassReferenceType) psiType).resolve();
-                }
+            if (beanPsiElement instanceof PsiClass) {
+                return (PsiClass) beanPsiElement;
+            }
+
+            PsiJavaCodeReferenceElement referenceElement = PsiTreeUtil.findChildOfType(beanPsiElement, PsiJavaCodeReferenceElement.class);
+            final PsiClass psiClass = getJavaClassUtils().resolveClassReference(referenceElement);
+
+            if (psiClass != null) {
                 return psiClass;
             }
+
+            final String beanName = StringUtils.stripDoubleQuotes(beanPsiElement.getText().substring(1, beanPsiElement.getText().indexOf("\"", 2)));
+            return searchForMatchingBeanClass(beanName, beanPsiElement.getProject()).orElse(null);
         }
         return null;
     }
 
+    /**
+     * @return the {@link PsiClass} for the matching bean name by looking for classes annotated with spring Component, Service or Repository
+     */
+    private Optional<PsiClass> searchForMatchingBeanClass(String beanName, Project project) {
+        return getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Component", project).map(Optional::of)
+            .orElseGet(() -> getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Service", project)).map(Optional::of)
+            .orElseGet(() -> getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Repository", project));
+    }
+
     @Override
-    public PsiElement getBeanPsiElement(PsiElement element) {
+    public PsiElement getPsiElementForCamelBeanMethod(PsiElement element) {
         if (element instanceof PsiLiteral || element.getParent() instanceof PsiLiteralExpression) {
             final PsiExpressionList expressionList = PsiTreeUtil.getParentOfType(element, PsiExpressionList.class);
             if (expressionList != null) {
                 final PsiIdentifier identifier = PsiTreeUtil.getChildOfType(expressionList.getPrevSibling(), PsiIdentifier.class);
-                if (identifier != null && identifier.getNextSibling() == null && ("method".equals(identifier.getText()) || "bean".equals(identifier.getText()))) {
-                    return PsiTreeUtil.findChildOfType(expressionList, PsiJavaCodeReferenceElement.class);
+                if (identifier != null && identifier.getNextSibling() == null && ("method" .equals(identifier.getText()) || "bean" .equals(identifier.getText()))) {
+                    return expressionList;
                 }
             }
         }
@@ -295,5 +301,9 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     private IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);
+    }
+
+    private JavaClassUtils getJavaClassUtils() {
+        return ServiceManager.getService(JavaClassUtils.class);
     }
 }

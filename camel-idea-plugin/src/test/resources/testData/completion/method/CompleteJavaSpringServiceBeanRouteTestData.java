@@ -14,17 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import testData.CompleteJavaBeanSuperClassTestData;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.main.Main;
+import testData.CompleteJavaSpringServiceBeanTestData;
 
+public final class CompleteJavaSpringServiceBeanRouteTestData extends RouteBuilder {
 
-public class CompleteJavaBeanTestData extends CompleteJavaBeanSuperClassTestData {
+    @Override
+    public void configure() {
+        from("file:inbox")
+            .bean("myServiceBean", "<caret>")
+            .to("log:out");
 
-    public void letsDoThis() {}
-    public void another<caret>BeanMethod() {}
-    public void mySuperAbstractMethod() {}
-    public void myOverLoadedBean() {}
-    public void myOverLoadedBean(String name) {}
-
-    private void thisIsVeryPrivate() {}
-
+        //use for testing find usage from bean method to Camel bean DSL
+        from("file:inbox2")
+            .bean("myServiceBean", "anotherBeanMethod")
+            .to("log:out2");
+    }
 }

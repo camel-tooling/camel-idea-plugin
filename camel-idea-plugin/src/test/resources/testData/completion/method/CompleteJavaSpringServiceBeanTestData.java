@@ -1,3 +1,6 @@
+package testData;
+import org.springframework.stereotype.Service;
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,17 +17,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import testData.CompleteJavaBeanSuperClassTestData;
 
+@Service(value = "myServiceBean")
+public class CompleteJavaSpringServiceBeanTestData {
 
-public class CompleteJavaBeanTestData extends CompleteJavaBeanSuperClassTestData {
-
-    public void letsDoThis() {}
+    public void myServiceSpringBeanMethod() {}
     public void another<caret>BeanMethod() {}
-    public void mySuperAbstractMethod() {}
-    public void myOverLoadedBean() {}
-    public void myOverLoadedBean(String name) {}
 
     private void thisIsVeryPrivate() {}
-
 }

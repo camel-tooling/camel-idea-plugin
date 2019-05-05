@@ -1,3 +1,4 @@
+package testData;
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,17 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import testData.CompleteJavaBeanSuperClassTestData;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.main.Main;
+import testData.CompleteJavaSpringServiceBeanTestData;
 
+public final class CompleteJavaSpringRepositoryBeanRouteTestData extends RouteBuilder {
 
-public class CompleteJavaBeanTestData extends CompleteJavaBeanSuperClassTestData {
-
-    public void letsDoThis() {}
-    public void another<caret>BeanMethod() {}
-    public void mySuperAbstractMethod() {}
-    public void myOverLoadedBean() {}
-    public void myOverLoadedBean(String name) {}
-
-    private void thisIsVeryPrivate() {}
-
+    @Override
+    public void configure() {
+        from("file:inbox")
+            .bean("myRepositoryBean", "<caret>")
+            .to("log:out");
+        //use for testing find usage from bean method to Camel bean DSL
+        from("file:inbox2")
+            .bean("myRepositoryBean", "anotherBeanMethod")
+            .to("log:out2");
+    }
 }

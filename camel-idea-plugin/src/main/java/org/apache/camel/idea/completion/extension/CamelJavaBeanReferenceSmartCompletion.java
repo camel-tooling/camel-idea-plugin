@@ -46,27 +46,26 @@ import org.jetbrains.annotations.NotNull;
  */
 public class CamelJavaBeanReferenceSmartCompletion extends CompletionProvider<CompletionParameters> {
 
-    public static final String BEAN_CLASS_KEY = "beanClassKey";
-
     @Override
     protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
         final PsiElement element = completionParameters.getPosition();
-        final PsiClass psiClass = (PsiClass) processingContext.get(BEAN_CLASS_KEY);
+        final PsiClass psiClass = getCamelIdeaUtils().getBean(element);
 
+        if (psiClass != null) {
+            Collection<PsiMethod> methods = getJavaMethodUtils().getMethods(psiClass);
 
-        Collection<PsiMethod> methods = getJavaMethodUtils().getMethods(psiClass);
+            List<LookupElement> answer = getJavaMethodUtils().getBeanAccessibleMethods(methods)
+                .stream()
+                .map(method -> buildLookupElement(method, getJavaMethodUtils().getPresentableMethodWithParameters(method)))
+                .collect(toList());
 
-        List<LookupElement> answer = getJavaMethodUtils().getBeanAccessibleMethods(methods)
-            .stream()
-            .map(method -> buildLookupElement(method, getJavaMethodUtils().getPresentableMethodWithParameters(method)))
-            .collect(toList());
-
-        // are there any results then add them
-        if (!answer.isEmpty()) {
-            String hackVal = element.getText();
-            hackVal = hackVal.substring(1, hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED));
-            completionResultSet.withPrefixMatcher(hackVal).addAllElements(answer);
-            completionResultSet.stopHere();
+            // are there any results then add them
+            if (!answer.isEmpty()) {
+                String hackVal = element.getText();
+                hackVal = hackVal.substring(1, hackVal.indexOf(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED));
+                completionResultSet.withPrefixMatcher(hackVal).addAllElements(answer);
+                completionResultSet.stopHere();
+            }
         }
     }
 

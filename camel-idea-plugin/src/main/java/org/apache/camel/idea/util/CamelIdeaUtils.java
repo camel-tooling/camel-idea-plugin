@@ -189,6 +189,9 @@ public final class CamelIdeaUtils implements Disposable {
             .anyMatch(extension -> extension.acceptForAnnotatorOrInspection(element));
     }
 
+    /**
+     * @return Resolve the bean {@link PsiClass} from the specified element or return null
+     */
     public PsiClass getBean(PsiElement element) {
         return enabledExtensions.stream()
             .map(c -> c.getBeanClass(element))
@@ -196,9 +199,12 @@ public final class CamelIdeaUtils implements Disposable {
             .findFirst().orElse(null);
     }
 
+    /**
+     * @return the bean {@link PsiElement} for the specified element
+     */
     public PsiElement getBeanPsiElement(PsiElement element) {
         return enabledExtensions.stream()
-            .map(c -> c.getBeanPsiElement(element))
+            .map(c -> c.getPsiElementForCamelBeanMethod(element))
             .filter(Objects::nonNull)
             .findFirst().orElse(null);
     }

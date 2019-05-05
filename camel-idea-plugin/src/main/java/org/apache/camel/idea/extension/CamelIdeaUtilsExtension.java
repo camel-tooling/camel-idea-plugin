@@ -90,14 +90,14 @@ public interface CamelIdeaUtilsExtension {
     boolean isExtensionEnabled();
 
     /**
-     * @return Resolve the {@link PsiClass} from the specified element or return null
+     * @return Resolve the bean {@link PsiClass} from the specified element or return null
      */
     PsiClass getBeanClass(PsiElement element);
 
     /**
-     * @return the bean {@link PsiElement} for the specified element
+     * @return the Camel Bean method {@link PsiElement} for the specified element. eg {@code from(..).bean(MyClass.class, "myMethod")}
      */
-    PsiElement getBeanPsiElement(PsiElement element);
+    PsiElement getPsiElementForCamelBeanMethod(PsiElement element);
 
     List<PsiElement> findEndpointUsages(Module module, Predicate<String> uriCondition);
     List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition);
