@@ -58,7 +58,7 @@ public class CamelInspectJavaSimpleTestIT extends InspectionTestCase {
     }
 
     private File[] getMavenArtifacts(String... mavenAritfiact) throws IOException {
-        File[] libs = Maven.resolver().loadPomFromFile("pom.xml").resolve(mavenAritfiact).withoutTransitivity().asFile();
+        File[] libs = Maven.resolver().resolve(mavenAritfiact).withoutTransitivity().asFile();
         return libs;
     }
 

@@ -22,18 +22,9 @@
 -->
 <suppressions>
     <suppress checks=".*"
-              files=".+[\\\/]generated[\\\/].+\.java"
-    />
-    <suppress checks=".*"
-              files=".+[\\\/]build[\\\/]src[\\\/].+\.java"
-    />
-    <suppress checks=".*"
               files=".+[\\\/]test[\\\/]resources[\\\/]testData[\\\/].+\.java"
     />
     <suppress checks=".*"
-              files=".+[\\\/]target[\\\/].+\.java"
-    />
-    <suppress checks=".*"
-              files=".+[\\\/]contrib[\\\/].+\.java"
+              files=".+[\\\/]test[\\\/].+\.java"
     />
 </suppressions>

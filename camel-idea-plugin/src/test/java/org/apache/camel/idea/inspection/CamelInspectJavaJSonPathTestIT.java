@@ -82,7 +82,7 @@ public class CamelInspectJavaJSonPathTestIT extends InspectionTestCase {
     }
 
     private File[] getMavenArtifacts(String... mavenAritfiact) throws IOException {
-        File[] libs = Maven.resolver().loadPomFromFile("pom.xml").resolve(mavenAritfiact).withTransitivity().asFile();
+        File[] libs = Maven.resolver().resolve(mavenAritfiact).withTransitivity().asFile();
         return libs;
     }
 

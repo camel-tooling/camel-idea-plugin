@@ -1,0 +1,63 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+apply plugin: 'java'
+apply plugin: 'org.jetbrains.intellij'
+
+intellij {
+    version = '2019.1.1'
+    downloadSources = true
+    type = project.hasProperty('intellij_type') ? project.intellij_type : 'IC'
+    plugins = ['java-i18n', 'properties', 'yaml']
+}
+
+publishPlugin {
+    username project.hasProperty('intellij_upload_user') ? project.intellij_upload_user : 'none'
+    password project.hasProperty('intellij_upload_password') ? project.intellij_upload_password : 'none'
+}
+
+println "building with intellij type : ${intellij.type}"
+
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+        maven {
+            url 'https://dl.bintray.com/jetbrains/intellij-plugin-service'
+        }
+
+    }
+    dependencies {
+        classpath "org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.5.0-SNAPSHOT"
+    }
+}
+
+
+dependencies {
+    compile 'org.apache.camel:camel-catalog:2.23.2'
+    compile 'org.apache.camel:camel-catalog-maven:2.23.2'
+    testCompile 'org.apache.camel:camel-core:2.23.2'
+    testCompile 'org.jboss.shrinkwrap:shrinkwrap-depchain:1.2.6'
+    testCompile 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-depchain:2.2.2'
+    testCompile 'org.hamcrest:hamcrest-all:1.3'
+    testCompile 'org.springframework:spring-context:5.1.6.RELEASE'
+    testCompile 'org.apache.camel:camel-jsonpath:2.23.2'
+}
+
+description = 'Apache Camel IDE :: IDEA Plugin'

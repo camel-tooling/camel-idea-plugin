@@ -14,15 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package testData;
-import org.springframework.stereotype.Component;
 
-@Component(value = "myComponentBean")
-public class CompleteJavaSpringComponentBeanTestData {
+allprojects {
+    apply plugin: 'checkstyle'
 
-    public void myFirstSpringBean() {}
-    public void another<caret>BeanMethod() {}
+    checkstyle {
+        toolVersion = '8.18'
+        configDir = file("$rootProject.projectDir/config/checkstyle")
+    }
+    
+    group = 'org.apache.camel'
+    version = '0.5.7-SNAPSHOT'
+}
 
-    private void thisIsVeryPrivate() {}
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
 
+    repositories {
+        mavenLocal()
+        maven {
+            url = 'http://repo.maven.apache.org/maven2'
+        }
+    }
+
+    sourceCompatibility = '1.8'
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from(components.java)
+            }
+        }
+    }
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
 }

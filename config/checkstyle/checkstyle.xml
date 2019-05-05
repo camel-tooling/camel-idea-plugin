@@ -67,10 +67,14 @@ lengths, if/try depths, etc...
 		<property name="maximum" value="0"/>
 	</module>
 	 -->
+    <!-- module name="SuppressionCommentFilter"/ -->
+    <module name="SuppressionFilter">
+        <property name="file" value="${config_loc}/suppressions.xml"/>
+    </module>
 
     <module name="TreeWalker">
 
-        <!-- module name="SuppressionCommentFilter"/ -->
+
 
         <!-- Checks for Javadoc comments.                     -->
         <!-- See http://checkstyle.sf.net/config_javadoc.html -->

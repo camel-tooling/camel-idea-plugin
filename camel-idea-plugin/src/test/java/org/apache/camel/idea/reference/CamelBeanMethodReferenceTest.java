@@ -18,6 +18,7 @@ package org.apache.camel.idea.reference;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.PsiPolyVariantReference;
 import com.intellij.psi.ResolveResult;
 import com.intellij.testFramework.PsiTestUtil;
 import com.intellij.usageView.UsageInfo;
@@ -78,7 +79,7 @@ public class CamelBeanMethodReferenceTest extends CamelLightCodeInsightFixtureTe
     public void testCamelNoMethodReference() {
         myFixture.configureByFiles("CompleteJavaBeanRoute4TestData.java");
         PsiElement element = myFixture.getFile().findElementAt(myFixture.getCaretOffset()).getParent();
-        assertEquals(0, element.getReferences().length);
+        assertEquals(0, ((PsiPolyVariantReference) element.getReferences()[0]).multiResolve(false).length);
     }
 
     public void testFindUsageFromMethodToBeanDSL() {

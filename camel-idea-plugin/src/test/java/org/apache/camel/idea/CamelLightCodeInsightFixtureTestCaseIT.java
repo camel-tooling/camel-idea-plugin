@@ -88,7 +88,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
      * @throws IOException
      */
     protected static File[] getMavenArtifacts(String... mavneAritfiact) throws IOException {
-        File[] libs = Maven.resolver().loadPomFromFile("pom.xml")
+        File[] libs = Maven.resolver()
             .resolve(mavneAritfiact)
             .withoutTransitivity().asFile();
 
