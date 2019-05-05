@@ -1,5 +1,5 @@
 language: JAVA
-script: ./gradlew build check --scan -s
+script: ./gradlew build check -i -s
 jdk:
   - openjdk8
 cache:

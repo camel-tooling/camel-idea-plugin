@@ -47,13 +47,6 @@ subprojects {
             }
         }
     }
-
-    test {
-        testLogging {
-            events "failed"
-            exceptionFormat "short"
-        }
-    }
     
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
