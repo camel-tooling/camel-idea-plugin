@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Optional;
 import com.intellij.lang.jvm.annotation.JvmAnnotationAttribute;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
@@ -41,6 +42,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class JavaClassUtils implements Disposable {
 
+    /**
+     * @return the bean name of the {@link PsiClass} by check if the class is annotated with Component, Service, Repository or defaulting
+     * to class name decapitalized
+     */
     public String getBeanName(PsiClass clazz) {
         final String beanName = getBeanName(clazz, "org.springframework.stereotype.Component")
             .orElseGet(() -> getBeanName(clazz, "org.springframework.stereotype.Service")
@@ -49,25 +54,37 @@ public class JavaClassUtils implements Disposable {
         return beanName;
     }
 
-    public Optional<PsiClass> findBeanClassByName(PsiElement element, String annotation) {
-        final String elementName = StringUtils.stripDoubleQuotes(element.getText().substring(1, element.getText().indexOf("\"", 2)));
-        return getClassesAnnotatedWith(element, annotation).stream()
+    /**
+     * Searching for the specific bean name and annotation to find the it's {@link PsiClass}
+     * @param beanName - Name of the bean to search for.
+     * @param annotation - Type of bean annotation to filter on.
+     * @param project - Project reference to narrow the search inside.
+     * @return the {@link PsiClass} matching the bean name and annotation.
+     */
+    public Optional<PsiClass> findBeanClassByName(String beanName, String annotation, Project project) {
+        return getClassesAnnotatedWith(project, annotation).stream()
             .filter(psiClass ->
                 Optional.ofNullable(psiClass.getAnnotation(annotation))
                     .map(c ->c.findAttribute("value"))
                     .map(c -> c.getAttributeValue().getSourceElement().getText())
-                    .map(beanName -> StringUtils.stripDoubleQuotes(beanName).equals(elementName))
-                    .orElseGet(() -> Introspector.decapitalize(psiClass.getName()).equalsIgnoreCase(StringUtils.stripDoubleQuotes(elementName)))
+                    .map(b -> StringUtils.stripDoubleQuotes(b).equals(beanName))
+                    .orElseGet(() -> Introspector.decapitalize(psiClass.getName()).equalsIgnoreCase(StringUtils.stripDoubleQuotes(beanName)))
 
             )
             .findFirst();
     }
 
+    /**
+     * Return a list of {@link PsiClass}s annotated with the specified annotation
+     * @param project - Project reference to narrow the search inside.
+     * @param annotation - the full qualify annotation name to search for
+     * @return a list of classes annotated with the specified annotation.
+     */
     @NotNull
-    private Collection<PsiClass> getClassesAnnotatedWith(PsiElement element, String annotation) {
-        PsiClass stepClass = JavaPsiFacade.getInstance(element.getProject()).findClass(annotation, ProjectScope.getLibrariesScope(element.getProject()));
+    private Collection<PsiClass> getClassesAnnotatedWith(Project project, String annotation) {
+        PsiClass stepClass = JavaPsiFacade.getInstance(project).findClass(annotation, ProjectScope.getLibrariesScope(project));
         if (stepClass != null) {
-            final Query<PsiClass> psiMethods = AnnotatedElementsSearch.searchPsiClasses(stepClass, GlobalSearchScope.allScope(element.getProject()));
+            final Query<PsiClass> psiMethods = AnnotatedElementsSearch.searchPsiClasses(stepClass, GlobalSearchScope.allScope(project));
             return psiMethods.findAll();
         }
         return Collections.emptyList();

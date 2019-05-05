@@ -204,7 +204,7 @@ public final class CamelIdeaUtils implements Disposable {
      */
     public PsiElement getBeanPsiElement(PsiElement element) {
         return enabledExtensions.stream()
-            .map(c -> c.getBeanPsiElement(element))
+            .map(c -> c.getPsiElementForCamelBeanMethod(element))
             .filter(Objects::nonNull)
             .findFirst().orElse(null);
     }

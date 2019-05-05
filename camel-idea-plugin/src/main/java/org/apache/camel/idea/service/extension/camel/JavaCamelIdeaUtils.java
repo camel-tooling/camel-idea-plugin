@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -44,6 +45,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import org.apache.camel.idea.extension.CamelIdeaUtilsExtension;
 import org.apache.camel.idea.util.IdeaUtils;
 import org.apache.camel.idea.util.JavaClassUtils;
+import org.apache.camel.idea.util.StringUtils;
 
 public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
 
@@ -208,7 +210,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public PsiClass getBeanClass(PsiElement element) {
-        final PsiElement beanPsiElement = getBeanPsiElement(element);
+        final PsiElement beanPsiElement = getPsiElementForCamelBeanMethod(element);
         if (beanPsiElement != null) {
             if (beanPsiElement instanceof PsiClass) {
                 return (PsiClass) beanPsiElement;
@@ -221,19 +223,23 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                 return psiClass;
             }
 
-            return searchForMatchingBeanClasses(element, beanPsiElement).orElse(null);
+            final String beanName = StringUtils.stripDoubleQuotes(beanPsiElement.getText().substring(1, beanPsiElement.getText().indexOf("\"", 2)));
+            return searchForMatchingBeanClass(beanName, beanPsiElement.getProject()).orElse(null);
         }
         return null;
     }
 
-    private Optional<PsiClass> searchForMatchingBeanClasses(PsiElement element, PsiElement beanPsiElement) {
-        return getJavaClassUtils().findBeanClassByName(beanPsiElement, "org.springframework.stereotype.Component").map(Optional::of)
-            .orElseGet(() -> getJavaClassUtils().findBeanClassByName(beanPsiElement, "org.springframework.stereotype.Service")).map(Optional::of)
-            .orElseGet(() -> getJavaClassUtils().findBeanClassByName(beanPsiElement, "org.springframework.stereotype.Repository"));
+    /**
+     * @return the {@link PsiClass} for the matching bean name by looking for classes annotated with spring Component, Service or Repository
+     */
+    private Optional<PsiClass> searchForMatchingBeanClass(String beanName, Project project) {
+        return getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Component", project).map(Optional::of)
+            .orElseGet(() -> getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Service", project)).map(Optional::of)
+            .orElseGet(() -> getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Repository", project));
     }
 
     @Override
-    public PsiElement getBeanPsiElement(PsiElement element) {
+    public PsiElement getPsiElementForCamelBeanMethod(PsiElement element) {
         if (element instanceof PsiLiteral || element.getParent() instanceof PsiLiteralExpression) {
             final PsiExpressionList expressionList = PsiTreeUtil.getParentOfType(element, PsiExpressionList.class);
             if (expressionList != null) {

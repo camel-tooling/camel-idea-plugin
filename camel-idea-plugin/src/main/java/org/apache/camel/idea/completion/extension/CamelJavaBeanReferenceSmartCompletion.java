@@ -46,9 +46,6 @@ import org.jetbrains.annotations.NotNull;
  */
 public class CamelJavaBeanReferenceSmartCompletion extends CompletionProvider<CompletionParameters> {
 
-    public static final String BEAN_CLASS_KEY = "beanClassKey";
-
-
     @Override
     protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
         final PsiElement element = completionParameters.getPosition();

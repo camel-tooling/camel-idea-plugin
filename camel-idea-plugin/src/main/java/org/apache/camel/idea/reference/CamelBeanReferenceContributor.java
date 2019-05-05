@@ -109,7 +109,7 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
         final String beanName = getJavaClassUtils().getBeanName(psiClass);
         final String methodName = StringUtils.stripDoubleQuotes(element.getText());
 
-        if (methodName.equals(beanName)) {
+        if (methodName.equals(beanName) || methodName.isEmpty()) {
             return PsiReference.EMPTY_ARRAY;
         }
 

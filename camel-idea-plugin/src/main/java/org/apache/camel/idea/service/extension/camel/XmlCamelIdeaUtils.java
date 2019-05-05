@@ -276,7 +276,7 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
     }
 
     @Override
-    public PsiElement getBeanPsiElement(PsiElement element) {
+    public PsiElement getPsiElementForCamelBeanMethod(PsiElement element) {
         return null;
     }
 
