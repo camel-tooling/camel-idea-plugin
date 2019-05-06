@@ -14,41 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.github.cameltooling.idea.inspection;
 
-allprojects {
-    apply plugin: 'checkstyle'
+import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
+import com.intellij.testFramework.InspectionTestCase;
 
-    checkstyle {
-        toolVersion = '8.18'
-        configDir = file("$rootProject.projectDir/config/checkstyle")
-    }
-    
-    group = 'com.github.camel-tooling'
-    version = '0.5.7-SNAPSHOT'
-}
+public class CamelInspectJavaEndpointTestIT extends InspectionTestCase {
 
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven-publish'
-
-    repositories {
-        mavenLocal()
-        maven {
-            url = 'http://repo.maven.apache.org/maven2'
-        }
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/resources/";
     }
 
-    sourceCompatibility = '1.8'
+    public void testEndpointInspection() {
+        // force Camel enabled so the inspection test can run
+        CamelInspection inspection = new CamelInspection(true);
 
-    publishing {
-        publications {
-            maven(MavenPublication) {
-                from(components.java)
-            }
-        }
+        doTest("testData/inspectionjava/", new LocalInspectionToolWrapper(inspection));
     }
-    
-    tasks.withType(JavaCompile) {
-        options.encoding = 'UTF-8'
-    }
+
 }

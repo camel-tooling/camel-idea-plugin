@@ -127,7 +127,7 @@ start the plugin again.
 
 ### Running the unit test
 
-Running the IntelliJ unit test from maven with the community version
+Running the IntelliJ unit test from gradle with the community version
 
 > gradle test
 

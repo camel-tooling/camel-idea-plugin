@@ -14,41 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.github.cameltooling.idea.service;
 
-allprojects {
-    apply plugin: 'checkstyle'
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
-    checkstyle {
-        toolVersion = '8.18'
-        configDir = file("$rootProject.projectDir/config/checkstyle")
-    }
-    
-    group = 'com.github.camel-tooling'
-    version = '0.5.7-SNAPSHOT'
-}
+class XmlErrorHandler implements ErrorHandler {
 
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven-publish'
-
-    repositories {
-        mavenLocal()
-        maven {
-            url = 'http://repo.maven.apache.org/maven2'
-        }
+    XmlErrorHandler() {
     }
 
-    sourceCompatibility = '1.8'
-
-    publishing {
-        publications {
-            maven(MavenPublication) {
-                from(components.java)
-            }
-        }
+    @Override
+    public void warning(SAXParseException exception) throws SAXException {
+        throw new SAXException(saxMsg(exception));
     }
-    
-    tasks.withType(JavaCompile) {
-        options.encoding = 'UTF-8'
+
+    @Override
+    public void error(SAXParseException exception) throws SAXException {
+        throw new SAXException(saxMsg(exception));
+    }
+
+    @Override
+    public void fatalError(SAXParseException exception) throws SAXException {
+        throw new SAXException(saxMsg(exception));
+    }
+
+    private String saxMsg(SAXParseException e) {
+        return "Line: " + e.getLineNumber() + ", Column: " + e.getColumnNumber() + ", Error: " + e.getMessage();
     }
 }

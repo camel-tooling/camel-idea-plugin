@@ -14,41 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.github.cameltooling.idea.rename;
 
-allprojects {
-    apply plugin: 'checkstyle'
+import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 
-    checkstyle {
-        toolVersion = '8.18'
-        configDir = file("$rootProject.projectDir/config/checkstyle")
-    }
-    
-    group = 'com.github.camel-tooling'
-    version = '0.5.7-SNAPSHOT'
-}
-
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven-publish'
-
-    repositories {
-        mavenLocal()
-        maven {
-            url = 'http://repo.maven.apache.org/maven2'
-        }
+public class RenameCamelBeanMethodRefTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
+    @Override
+    protected String getTestDataPath() {
+        return "src/test/resources/testData/rename";
     }
 
-    sourceCompatibility = '1.8'
+    public void testCamelBeanMethodRefRename() {
+        myFixture.configureByFiles("RenameCamelBeanMethodRefTestData.java", "RenameCompleteJavaBeanTestData.java");
+        myFixture.renameElementAtCaretUsingHandler("letNotDoThis");
+        myFixture.checkResultByFile("RenameCamelBeanMethodRefResultTestData.java");
+    }
 
-    publishing {
-        publications {
-            maven(MavenPublication) {
-                from(components.java)
-            }
-        }
-    }
-    
-    tasks.withType(JavaCompile) {
-        options.encoding = 'UTF-8'
-    }
 }
