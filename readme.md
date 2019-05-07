@@ -85,47 +85,17 @@ Jetbrains are not very good at documenting their APIs with neither javadoc, or d
 However with some trial and run you can find out bit by bit.
 
 
-#### Importing project as maven project
+#### Importing project as gradle project
 
-Importing the project into IntelliJ as plug-in project requires a few steps before it possible.
+Importing the project into IntelliJ as plug-in only require you choose ìmport from external model` and select gradle
 
-First you need to install the "IntelliJ plugin development with Maven" in your IDEA
 
- > - Open Preferences -> Plugins
- > - Browse for plug-ins and search "IntelliJ plugin development with Maven"
- > - Install the plug-in by right click and press "Download and Install"
- > - Restart the IDE
- 
-Second you need to install the IntelliJ libraries into your local maven repository. The first parameter
-is the version of the IDEA you have installed locally, second is the locations of the IDEA.
-If you have installed IDEA in a different location than shown in the sample below, then make sure to use the correct path.
-
-Currently we use IDEA 2018.1.6 as the version and therefore you should download and use that version.
-An alternative is to change the version in `camel-idea-plugin/pom.xml` file to use a different version but its not recommended.
-
-Linux or Mac users:
-
- > - Execute the script file `./install-intellij-libs.sh 2018.1.6 /Applications/IntelliJ\ IDEA\ CE.app/Contents $HOME/.m2` 
-  
-Windows:
-
- > - Execute the script file `./install-intellij-libs.bat 2018.1.6 "C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2018.5"`
-
-Next step you need to update the pom.xml file with the right IntelliJ version number
-
- > - Open the pom.xml file
- > - Modify the property idea.version with the version number you have installed.
- > - Run "mvn install" or "mvn install -P ultimate" for running the Ultimate version of IDEA
-
-Last step you need to import the project as maven project.
-
-> Important : if you are using the Ultimate version you need to enable the maven profile "ultimate" when importing the
-project. Otherwise running the test will not work from IDEA
+> Important : if you are using the Ultimate version you can set a gradle property in your gradle.properties `intellij_type=IU`
 
 > - Open your IDEA
 > - Create a new project from existing source
 > - Select the "camel-idea-plugin" location
-> - Import project from external module and select Maven
+> - Import project from external module and select Gradle
 > - Press next until you hit the page "Please select the project SDK"
 > - Press the "+" and add new "IntelliJ Platform Plugin project"
 > - Press next and finish
@@ -145,9 +115,11 @@ The plugin is tested with `IDEA 2016.2` or newer, but if you want to try with a 
 
 ### Running and debugging the plugin from source
 
-After completing all steps and if everything is setup correctly, then you can launch the plugin by 
-add a plugin run/debug configuration. To do that, go to Run → Edit Configurations…​ and add Plugin configuration.
-                                                                  
+After completing all steps and if everything is setup correctly, then you can launch the plugin by running the
+gradle task `runIde` and for building and running test run the gradle task `build`
+
+![gradle task](https://github.com/camel-tooling/camel-idea-plugin/blob/master/img/camel-idea-plugin-gradle.png)
+
 You can also launch the plugin in debug mode where you can put breakpoints in the source code.
 This is very handy to debug the code and find issues. However for code changes you need to stop and
 start the plugin again.
@@ -155,29 +127,9 @@ start the plugin again.
 
 ### Running the unit test
 
-Running the IntelliJ unit test from maven with the community version
+Running the IntelliJ unit test from gradle with the community version
 
-> mvn verify
-
-Running the IntelliJ unit test from maven with the Ultimate version
-
-> mvn verify -P ultimate
-
-Running the test from IDEA community requires to add following settings to the run configuration VM options.
-
-> -ea
-  -Xbootclasspath/p:../out/classes/production/boot
-  -XX:+HeapDumpOnOutOfMemoryError
-  -Xmx256m
-  -XX:MaxPermSize=320m
-  -Didea.system.path=target/test-system
-  -Didea.home.path=target/
-  -Didea.config.path=target/test-config
-  -Didea.test.group=ALL_EXCLUDE_DEFINED
-  
-
-> For the Ultimate version no VM options is necessary
-
+> gradle test
 
 ### Contributing / Hacking on the code
 

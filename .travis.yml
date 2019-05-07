@@ -1,15 +1,10 @@
 language: JAVA
-script: mvn install
+script: ./gradlew build check -i -s
 jdk:
   - openjdk8
 cache:
     directories:
     - .autoconf
     - $HOME/.m2
-before_install:
-    -  "mkdir idea"
-    -  "./download-unpack-intellij.sh 2019.1 idea idea-IC-191.6183.87 $HOME/.m2"
-    -  "./install-intellij-libs.sh 2019.1.0 idea $HOME/.m2"
-after_failure:
-      - cat ./camel-idea-plugin/camel-idea-plugin/target/failsafe-reports/*.txt
-      - cat ./camel-idea-plugin/camel-idea-plugin/target/surefire-reports/*.txt
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
