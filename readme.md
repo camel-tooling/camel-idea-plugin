@@ -118,7 +118,7 @@ The plugin is tested with `IDEA 2016.2` or newer, but if you want to try with a 
 After completing all steps and if everything is setup correctly, then you can launch the plugin by running the
 gradle task `runIde` and for building and running test run the gradle task `build`
 
-![gradle task](https://github.com/camel-tooling/camel-idea-plugin/blob/master/img/camel-idea-plugin-gradle.png)
+![gradle task](https://github.com/camel-tooling/camel-idea-plugin/blob/master/img/setup/camel-idea-plugin-gradle.png)
 
 You can also launch the plugin in debug mode where you can put breakpoints in the source code.
 This is very handy to debug the code and find issues. However for code changes you need to stop and
