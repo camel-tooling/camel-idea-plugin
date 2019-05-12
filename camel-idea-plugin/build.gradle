@@ -19,7 +19,7 @@ apply plugin: 'java'
 apply plugin: 'org.jetbrains.intellij'
 
 intellij {
-    version = '2019.1.1'
+    version = 'IC-2019.1.2'
     downloadSources = true
     type = project.hasProperty('intellij_type') ? project.intellij_type : 'IC'
     plugins = ['java-i18n', 'properties', 'yaml']
@@ -31,23 +31,6 @@ publishPlugin {
 }
 
 println "building with intellij type : ${intellij.type}"
-
-buildscript {
-    repositories {
-        mavenCentral()
-        maven {
-            url "https://oss.sonatype.org/content/repositories/snapshots/"
-        }
-        maven {
-            url 'https://dl.bintray.com/jetbrains/intellij-plugin-service'
-        }
-
-    }
-    dependencies {
-        classpath "org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.5.0-SNAPSHOT"
-    }
-}
-
 
 dependencies {
     compile 'org.apache.camel:camel-catalog:2.23.2'
