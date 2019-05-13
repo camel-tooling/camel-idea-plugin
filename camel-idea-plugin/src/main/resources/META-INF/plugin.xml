@@ -32,6 +32,8 @@
   <change-notes><![CDATA[
       v0.5.7
       <ul>
+        <li>Upgraded to to Apache Camel 2.24.0</li>
+        <li>Upgraded to Intellij idea 2019.1.2</li>
         <li>Add support Spring bean code completion and find usage</li>
         <li>Add support for code completion with direct routes and find usage. Contributed by rastislavpapp</li>
         <li>Bug fixes</li>

@@ -33,9 +33,10 @@ publishPlugin {
 println "building with intellij type : ${intellij.type}"
 
 dependencies {
-    compile 'org.apache.camel:camel-catalog:2.23.2'
-    compile 'org.apache.camel:camel-catalog-maven:2.23.2'
-    testCompile 'org.apache.camel:camel-core:2.23.2'
+    def camelVersion = '2.24.0'
+    compile "org.apache.camel:camel-catalog:${camelVersion}"
+    compile "org.apache.camel:camel-catalog-maven:${camelVersion}"
+    testCompile "org.apache.camel:camel-core:${camelVersion}"
     testCompile 'org.jboss.shrinkwrap:shrinkwrap-depchain:1.2.6'
     testCompile 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-depchain:2.2.2'
     testCompile 'org.hamcrest:hamcrest-all:1.3'
