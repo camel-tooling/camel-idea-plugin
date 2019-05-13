@@ -26,8 +26,7 @@ intellij {
 }
 
 publishPlugin {
-    username project.hasProperty('intellij_upload_user') ? project.intellij_upload_user : 'none'
-    password project.hasProperty('intellij_upload_password') ? project.intellij_upload_password : 'none'
+    token project.hasProperty('intellij_token') ? project.intellij_token : 'none'
 }
 
 println "building with intellij type : ${intellij.type}"
