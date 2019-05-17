@@ -56,7 +56,7 @@ public class CamelIgnoreAndExcludePageTest extends CamelLightCodeInsightFixtureT
                     lines.stream().map(String::trim).collect(Collectors.toList());
             int indexOfApplicationConfigurable = trimmedStrings.indexOf("<applicationConfigurable parentId=\"camel\" id=\"camel.properties\" "
                     + "groupId=\"language\" displayName=\"Ignore &amp; Exclude Properties\" "
-                    + "instance=\"CamelIgnoreAndExcludePage\"/>");
+                    + "instance=\"com.github.cameltooling.idea.preference.properties.CamelIgnoreAndExcludePage\"/>");
             assertTrue(indexOfApplicationConfigurable > 0);
         } catch (IOException e) {
             e.printStackTrace();

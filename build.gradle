@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 
-plugins {
-    id "org.jetbrains.intellij" version "0.4.8"
-}
-
 allprojects {
     apply plugin: 'checkstyle'
 
@@ -28,7 +24,7 @@ allprojects {
     }
     
     group = 'com.github.camel-tooling'
-    version = '0.5.8'
+    version = '0.5.9'
 }
 
 subprojects {

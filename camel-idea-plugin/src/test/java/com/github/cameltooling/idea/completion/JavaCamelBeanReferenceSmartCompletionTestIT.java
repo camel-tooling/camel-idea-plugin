@@ -216,7 +216,7 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
      * Test if code completion works inside bean with a spring component bean reference
      */
     public void testJavaBeanTestDataCompletionWithWithSpringComponentRef() {
-        myFixture.configureByFiles("CompleteJavaSpringComponentBeanRouteTestData.java", "CompleteJavaSpringComponentBeanTestData.java");
+        myFixture.configureByFiles("CompleteJavaSpringComponentBeanRouteTestData.java", "CompleteJavaSpringComponentBeanTestData.java", "CompleteJavaBeanMethodPropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, Matchers.hasItems("myFirstSpringBean", "anotherBeanMethod"));
