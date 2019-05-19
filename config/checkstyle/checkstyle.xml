@@ -115,10 +115,10 @@ lengths, if/try depths, etc...
         <!-- When you javadoc {@link } an import is added that checkstyle thinks is unused import.
         <module name="UnusedImports"/>
         -->
-        <module name="ImportOrder">
+        <!-- module name="ImportOrder">
             <property name="groups" value="java,javax,org.w3c,org.xml,junit"/>
             <property name="ordered" value="true"/>
-        </module>
+        </module -->
         <!--
         <module name="ImportControl">
             <property name="file" value="etc/import-control.xml"/>
