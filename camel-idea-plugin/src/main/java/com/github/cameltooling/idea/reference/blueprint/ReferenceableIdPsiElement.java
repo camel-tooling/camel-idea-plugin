@@ -41,6 +41,6 @@ public class ReferenceableIdPsiElement extends FakeCamelPsiElement {
     @Nullable
     @Override
     public String getTypeName() {
-        return "bean";
+        return "Bean";
     }
 }
