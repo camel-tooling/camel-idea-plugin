@@ -25,7 +25,6 @@ import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
@@ -58,12 +57,12 @@ public class BeanReferenceTypeAnnotator extends AbstractCamelAnnotator {
 
     @Override
     boolean accept(PsiElement element) {
-        if (super.accept(element)) {
-            return true;
+        if (!super.accept(element)) {
+            return false;
         }
 
         if (element != null) {
-            return isBeanInjectReference(element) || isBeanPropertyReference(element);
+            return isBeanReference(element) || isBeanPropertyReference(element);
         }
         return false;
     }
@@ -88,9 +87,8 @@ public class BeanReferenceTypeAnnotator extends AbstractCamelAnnotator {
         return type.isAssignableFrom(valueType);
     }
 
-    private boolean isBeanInjectReference(PsiElement element) {
-        return Arrays.stream(element.getReferences()).anyMatch(ref -> ref instanceof BeanReference)
-                && PsiTreeUtil.getParentOfType(element, PsiAnnotation.class) != null;
+    private boolean isBeanReference(PsiElement element) {
+        return Arrays.stream(element.getReferences()).anyMatch(ref -> ref instanceof BeanReference);
     }
 
     private boolean isBeanPropertyReference(PsiElement element) {

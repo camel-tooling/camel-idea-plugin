@@ -16,6 +16,7 @@
  */
 
 import org.apache.camel.BeanInject;
+import org.apache.camel.EndpointInject;
 
 public class TestClass1 {
 
@@ -23,6 +24,8 @@ public class TestClass1 {
     private TestClass2 t1;
     @BeanInject("testClass2Bean")
     private TestClass2 t2;
+    @EndpointInject(uri = "someEndpoint")
+    private Endpoint endpoint;
 
     private TestClass2 field;
 

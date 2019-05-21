@@ -54,6 +54,7 @@ public class BeanReferenceTypeAnnotatorIT extends CamelLightCodeInsightFixtureTe
         assertEquals("Bean must be of 'TestClass2' type", testClass1BeanErrors.get(0).getDescription());
 
         assertEmpty(highlights.stream().filter(h -> h.getText().equals("testClass2Bean")).collect(Collectors.toList()));
+        assertEmpty(highlights.stream().filter(h -> h.getText().equals("someEndpoint")).collect(Collectors.toList()));
     }
 
     @NotNull
