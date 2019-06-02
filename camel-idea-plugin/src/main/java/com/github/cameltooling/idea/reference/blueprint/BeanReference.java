@@ -18,6 +18,7 @@ package com.github.cameltooling.idea.reference.blueprint;
 
 import java.util.Optional;
 import com.github.cameltooling.idea.reference.blueprint.model.ReferenceableBeanId;
+import com.github.cameltooling.idea.util.BeanUtils;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
@@ -56,7 +57,7 @@ public class BeanReference extends PsiReferenceBase<PsiElement> {
     public Optional<ReferenceableBeanId> findReferenceableBeanId() {
         final Module module = ModuleUtilCore.findModuleForPsiElement(getElement());
         if (module != null) {
-            return CamelIdeaUtils.getService().findReferenceableBeanId(module, id);
+            return BeanUtils.getService().findReferenceableBeanId(module, id);
         } else {
             return Optional.empty();
         }

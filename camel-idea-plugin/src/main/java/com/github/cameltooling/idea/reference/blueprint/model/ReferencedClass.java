@@ -17,6 +17,8 @@
 package com.github.cameltooling.idea.reference.blueprint.model;
 
 import com.intellij.psi.impl.source.resolve.reference.impl.providers.JavaClassReference;
+import com.intellij.psi.util.ClassUtil;
+import com.intellij.rt.coverage.util.ClassNameUtil;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -44,13 +46,7 @@ public class ReferencedClass {
 
     @NotNull
     public String getClassSimpleName() {
-        String className = getClassName();
-        int dotIndex = className.lastIndexOf(".");
-        if (dotIndex >= 0 && dotIndex < className.length() - 1) {
-            return className.substring(dotIndex + 1);
-        } else {
-            return className;
-        }
+        return ClassUtil.extractClassName(className);
     }
 
 }

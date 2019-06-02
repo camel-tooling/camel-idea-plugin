@@ -105,6 +105,7 @@
     <applicationService serviceImplementation="com.github.cameltooling.idea.service.CamelPreferenceService"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.JavaMethodUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.JavaClassUtils"/>
+    <applicationService serviceImplementation="com.github.cameltooling.idea.util.BeanUtils"/>
 
     <!-- allow code completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelJavaReferenceContributor" order="first"/>

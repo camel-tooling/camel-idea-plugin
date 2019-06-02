@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import com.github.cameltooling.idea.reference.blueprint.BeanReference;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
-import com.github.cameltooling.idea.util.CamelIdeaUtils;
+import com.github.cameltooling.idea.util.BeanUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.openapi.util.TextRange;
@@ -69,16 +69,17 @@ public class BeanReferenceTypeAnnotator extends AbstractCamelAnnotator {
 
     @Override
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
-        PsiClass beanClass = CamelIdeaUtils.getService().findReferencedBeanClass(element).orElse(null);
+        PsiClass beanClass = BeanUtils.getService().findReferencedBeanClass(element).orElse(null);
         TextRange elementRange = IdeaUtils.getService().getUnquotedRange(element);
-        CamelIdeaUtils.getService().findExpectedBeanTypeAt(element).ifPresent(expectedType -> {
+        PsiType expectedType = BeanUtils.getService().findExpectedBeanTypeAt(element);
+        if (expectedType != null) {
             if (beanClass == null) {
                 holder.createWeakWarningAnnotation(elementRange, "Unable to determine type of the referenced bean.");
             } else if (!isAssignableFrom(expectedType, beanClass)) {
                 holder.createErrorAnnotation(elementRange, "Bean must be of '"
                     + expectedType.getCanonicalText() + "' type");
             }
-        });
+        }
     }
 
     private boolean isAssignableFrom(PsiType type, PsiClass value) {
@@ -98,7 +99,7 @@ public class BeanReferenceTypeAnnotator extends AbstractCamelAnnotator {
     }
 
     private boolean isCamelXmlAttributeValue(PsiElement element) {
-        return element instanceof XmlAttributeValue && CamelIdeaUtils.getService().isPartOfCamelContext(element);
+        return element instanceof XmlAttributeValue && BeanUtils.getService().isPartOfBeanContainer(element);
     }
 
 }

@@ -35,9 +35,9 @@ public class BeanReferenceProvider extends BlueprintAttributeValueReferenceProvi
                                                     ProcessingContext context) {
         String beanId = attribute.getValue();
         if (beanId != null && beanId.length() > 0) {
-            if (attribute.getLocalName().equals("ref")) {
+            if ("ref".equals(attribute.getLocalName())) {
                 return new PsiReference[] {new BeanReference(value, beanId)};
-            } else if (attribute.getLocalName().equals("id")) {
+            } else if ("id".equals(attribute.getLocalName())) {
                 return new PsiReference[] {new BeanSelfReference(value, beanId)};
             }
         }

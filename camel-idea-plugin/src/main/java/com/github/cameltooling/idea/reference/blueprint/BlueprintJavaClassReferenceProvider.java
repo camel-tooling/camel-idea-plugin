@@ -16,12 +16,11 @@
  */
 package com.github.cameltooling.idea.reference.blueprint;
 
-import com.github.cameltooling.idea.util.CamelIdeaUtils;
+import com.github.cameltooling.idea.util.BeanUtils;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.impl.source.resolve.reference.impl.providers.JavaClassReferenceProvider;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
-import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
@@ -51,7 +50,7 @@ public class BlueprintJavaClassReferenceProvider extends BlueprintAttributeValue
     }
 
     private boolean isBeanClassAttribute(XmlAttribute attribute) {
-        return CamelIdeaUtils.getService().isBeanDeclaration(attribute.getParent()) && attribute.getLocalName().equals("class");
+        return BeanUtils.getService().isBeanDeclaration(attribute.getParent()) && attribute.getLocalName().equals("class");
     }
 
 }

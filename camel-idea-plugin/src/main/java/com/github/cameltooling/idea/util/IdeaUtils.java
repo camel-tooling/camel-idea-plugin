@@ -23,14 +23,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import com.github.cameltooling.idea.extension.IdeaUtilsExtension;
 import com.intellij.codeInsight.completion.CompletionUtil;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.roots.ModuleFileIndex;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.TextRange;
@@ -43,20 +48,23 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiPolyadicExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.TokenType;
-import com.intellij.psi.impl.source.resolve.reference.impl.providers.JavaClassReference;
 import com.intellij.psi.impl.source.tree.JavaDocElementType;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.java.IJavaDocElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.xml.util.XmlUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import static com.intellij.xml.CommonXmlStrings.QUOT;
@@ -362,6 +370,36 @@ public final class IdeaUtils implements Disposable {
         return hasParentXmlTag(xml, parentTag) && isFromFileType(xml, methods);
     }
 
+    public void iterateXmlDocumentRoots(Module module, Consumer<XmlTag> rootTag) {
+        final GlobalSearchScope moduleScope = module.getModuleScope(true);
+        final GlobalSearchScope xmlFiles = GlobalSearchScope.getScopeRestrictedByFileTypes(moduleScope, XmlFileType.INSTANCE);
+
+        ModuleFileIndex fileIndex = ModuleRootManager.getInstance(module).getFileIndex();
+        fileIndex.iterateContent(f -> {
+            if (xmlFiles.contains(f)) {
+                PsiFile file = PsiManager.getInstance(module.getProject()).findFile(f);
+                if (file instanceof XmlFile) {
+                    XmlFile xmlFile = (XmlFile) file;
+                    XmlTag root = xmlFile.getRootTag();
+                    if (root != null) {
+                        rootTag.accept(xmlFile.getRootTag());
+                    }
+                }
+            }
+            return true;
+        });
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> void iterateXmlNodes(XmlTag root, Class<T> nodeClass, Predicate<T> nodeProcessor) {
+        XmlUtil.processXmlElementChildren(root, element -> {
+            if (nodeClass.isAssignableFrom(element.getClass())) {
+                return nodeProcessor.test((T) element);
+            }
+            return true;
+        }, true);
+    }
+
     /**
      * Code from com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl#getInnerText()
      */
@@ -468,66 +506,6 @@ public final class IdeaUtils implements Disposable {
     public Optional<XmlAttributeValue> findAttributeValue(XmlTag tag, String localName) {
         return findAttribute(tag, localName)
             .map(XmlAttribute::getValueElement);
-    }
-
-    public Optional<PsiMethod> findSetterMethod(PsiClass psiClass, String propertyName) {
-        String setterMethodName = getSetterMethodName(propertyName);
-        return Arrays.stream(psiClass.getAllMethods())
-            .filter(m -> m.getName().equals(setterMethodName))
-            .filter(m -> PsiType.VOID.equals(m.getReturnType()))
-            .filter(m -> m.getParameters().length == 1)
-            .findAny();
-    }
-
-    public List<PsiMethod> findSetterMethods(PsiClass psiClass) {
-        return findSetterMethods(psiClass, m -> {
-            String name = m.getName();
-            return name.startsWith("set")
-                && name.length() > 3
-                && (Character.isUpperCase(name.charAt(3)) || Character.isUpperCase(name.charAt(4)));
-        });
-    }
-
-    private List<PsiMethod> findSetterMethods(PsiClass psiClass, Predicate<PsiMethod> methodPredicate) {
-        return Arrays.stream(psiClass.getAllMethods())
-            .filter(methodPredicate)
-            .filter(m -> PsiType.VOID.equals(m.getReturnType()))
-            .filter(m -> m.getParameters().length == 1)
-            .collect(Collectors.toList());
-    }
-
-    private String getSetterMethodName(String propertyName) {
-        String setterSuffix = propertyName;
-        boolean shiftFirstChar = true;
-        if (propertyName.length() > 1) {
-            boolean firstCharUppercase = Character.isUpperCase(propertyName.charAt(0));
-            boolean secondCharUppercase = Character.isUpperCase(propertyName.charAt(1));
-
-            if (!firstCharUppercase && secondCharUppercase) {
-                shiftFirstChar = false;
-            }
-        }
-        if (shiftFirstChar) {
-            setterSuffix = setterSuffix.substring(0, 1).toUpperCase() + setterSuffix.substring(1);
-        }
-        return "set" + setterSuffix;
-    }
-
-    public PsiClass resolveJavaClassReference(JavaClassReference javaClassReference) {
-        return (PsiClass) Optional.ofNullable(javaClassReference.resolve())
-            .filter(ref -> ref instanceof PsiClass).orElse(null);
-    }
-
-    public Optional<JavaClassReference> findClassReference(PsiElement element) {
-        List<JavaClassReference> references = Arrays.stream(element.getReferences())
-            .filter(r -> r instanceof JavaClassReference)
-            .map(r -> (JavaClassReference) r)
-            .collect(Collectors.toList());
-        if (!references.isEmpty()) {
-            return Optional.of(references.get(references.size() - 1));
-        } else {
-            return Optional.empty();
-        }
     }
 
     public TextRange getUnquotedRange(PsiElement element) {

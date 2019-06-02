@@ -20,14 +20,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.github.cameltooling.idea.reference.blueprint.PropertyNameReference;
-import com.github.cameltooling.idea.util.CamelIdeaUtils;
-import com.github.cameltooling.idea.util.IdeaUtils;
+import com.github.cameltooling.idea.util.BeanUtils;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiParameter;
+import com.intellij.psi.util.PropertyUtilBase;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
@@ -46,14 +46,13 @@ public class BlueprintPropertyNameCompletionExtension extends ReferenceBasedComp
                                               @NotNull String query) {
         XmlTag tag = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (tag != null) {
-            CamelIdeaUtils service = CamelIdeaUtils.getService();
-            PsiClass beanClass = service.getPropertyBeanClass(tag);
+            PsiClass beanClass = BeanUtils.getService().getPropertyBeanClass(tag);
             if (beanClass != null) {
-                return IdeaUtils.getService().findSetterMethods(beanClass).stream()
-                    .filter(method -> method.getName().toLowerCase().startsWith("set" + query.toLowerCase()))
-                    .map(method -> {
-                        String methodName = method.getName();
-                        String propertyName = getPropertyName(methodName);
+                return PropertyUtilBase.getAllProperties(beanClass, true, false).entrySet().stream()
+                    .filter(entry -> entry.getKey().startsWith(query.toLowerCase()))
+                    .map(entry -> {
+                        String propertyName = entry.getKey();
+                        PsiMethod method = entry.getValue();
                         return createLookupElementBuilder(propertyName, method)
                             .withTypeText(getPropertyTypeName(method))
                             .withTailText("")
@@ -69,20 +68,6 @@ public class BlueprintPropertyNameCompletionExtension extends ReferenceBasedComp
             }
         }
         return Collections.emptyList();
-    }
-
-    @NotNull
-    private String getPropertyName(String methodName) {
-        String methodSuffix = methodName.substring(3);
-        if (methodSuffix.length() > 1) {
-            if (Character.isUpperCase(methodSuffix.charAt(0)) && Character.isUpperCase(methodSuffix.charAt(1))) {
-                return methodSuffix;
-            } else {
-                return methodSuffix.substring(0, 1).toLowerCase() + methodSuffix.substring(1);
-            }
-        } else {
-            return methodSuffix.toLowerCase();
-        }
     }
 
     @NotNull

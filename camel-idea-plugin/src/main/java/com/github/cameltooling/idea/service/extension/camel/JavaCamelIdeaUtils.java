@@ -19,14 +19,10 @@ package com.github.cameltooling.idea.service.extension.camel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
-import com.github.cameltooling.idea.reference.blueprint.BeanReference;
-import com.github.cameltooling.idea.reference.blueprint.PropertyNameReference;
-import com.github.cameltooling.idea.reference.blueprint.model.ReferenceableBeanId;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.JavaClassUtils;
 import com.github.cameltooling.idea.util.StringUtils;
@@ -38,7 +34,6 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
-import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
@@ -52,30 +47,8 @@ import com.intellij.psi.PsiType;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.util.ClassUtil;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlTag;
-import org.jetbrains.annotations.NotNull;
 
 public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
-
-    @Override
-    public boolean isBeanDeclaration(PsiElement element) {
-        return false;
-    }
-
-    @Override
-    public ReferenceableBeanId findReferenceableBeanId(@NotNull Module module, @NotNull String beanId) {
-        return null;
-    }
-
-    @Override
-    public List<ReferenceableBeanId> findReferenceableBeanIds(@NotNull Module module, @NotNull Predicate<String> beanId) {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public boolean isPartOfCamelContext(PsiElement element) {
-        return false;
-    }
 
     @Override
     public boolean isCamelRouteStart(PsiElement element) {
@@ -293,15 +266,6 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     @Override
     public List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition) {
         return findEndpoints(module, uriCondition, e -> isCamelRouteStart(e));
-    }
-
-    @Override
-    public PsiType findExpectedBeanTypeAt(PsiElement element) {
-        PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
-        if (annotation != null) {
-            return IdeaUtils.getService().findAnnotatedElementType(annotation);
-        }
-        return null;
     }
 
     private List<PsiElement> findEndpoints(Module module, Predicate<String> uriCondition, Predicate<PsiLiteral> elementCondition) {

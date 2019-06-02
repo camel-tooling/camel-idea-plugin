@@ -26,6 +26,7 @@ import javax.swing.Icon;
 import com.github.cameltooling.idea.reference.blueprint.BeanReference;
 import com.github.cameltooling.idea.reference.blueprint.model.ReferenceableBeanId;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
+import com.github.cameltooling.idea.util.BeanUtils;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
@@ -82,7 +83,7 @@ public class BeanInjectLineMarkerProvider extends RelatedItemLineMarkerProvider 
                     protected Collection<? extends PsiElement> compute() {
                         PsiType beanType = IdeaUtils.getService().findAnnotatedElementType(beanInjectAnnotation);
                         if (beanType != null) {
-                            List<ReferenceableBeanId> beans = CamelIdeaUtils.getService().findReferenceableBeanIdsByType(module, beanType);
+                            List<ReferenceableBeanId> beans = BeanUtils.getService().findReferenceableBeanIdsByType(module, beanType);
                             return beans.stream()
                                     .map(ReferenceableBeanId::getElement)
                                     .collect(Collectors.toList());

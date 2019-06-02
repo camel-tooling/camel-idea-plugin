@@ -17,15 +17,11 @@
 package com.github.cameltooling.idea.extension;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
-import com.github.cameltooling.idea.reference.blueprint.model.ReferenceableBeanId;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiType;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Extension point for CamelIdeaUtils for handling specific plugin language elements
@@ -33,23 +29,6 @@ import org.jetbrains.annotations.NotNull;
 public interface CamelIdeaUtilsExtension {
 
     ExtensionPointName<CamelIdeaUtilsExtension> EP_NAME = ExtensionPointName.create("org.apache.camel.CamelIdeaUtilsSupport");
-
-    /**
-     * Checks whether this element represents a declaration of a bean, e.g. a <bean> xml tag
-     */
-    boolean isBeanDeclaration(PsiElement element);
-
-    /**
-     * Finds {@link ReferenceableBeanId} for the given beanId.
-     */
-    ReferenceableBeanId findReferenceableBeanId(@NotNull Module module, @NotNull String beanId);
-
-    /**
-     * Finds {@link ReferenceableBeanId} that has an id that matches the given predicate
-     */
-    List<ReferenceableBeanId> findReferenceableBeanIds(@NotNull Module module, @NotNull Predicate<String> beanIdCondition);
-
-    boolean isPartOfCamelContext(PsiElement element);
 
     /**
      * Is the given element from the start of a Camel route, eg <tt>from</tt>, ot &lt;from&gt;.
@@ -122,12 +101,6 @@ public interface CamelIdeaUtilsExtension {
 
     List<PsiElement> findEndpointUsages(Module module, Predicate<String> uriCondition);
     List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition);
-
-    /**
-     * If element at this location specifies a reference to a bean (e.g. a BeanInject annotation, bean property reference,
-     * etc.), returns the expected type of that bean
-     */
-    PsiType findExpectedBeanTypeAt(PsiElement location);
 
     /**
      * Could an endpoint uri be present at this location?

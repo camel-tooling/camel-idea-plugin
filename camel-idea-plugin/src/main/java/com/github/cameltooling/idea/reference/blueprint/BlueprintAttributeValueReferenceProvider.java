@@ -17,7 +17,7 @@
 package com.github.cameltooling.idea.reference.blueprint;
 
 import com.github.cameltooling.idea.reference.CamelPsiReferenceProvider;
-import com.github.cameltooling.idea.util.CamelIdeaUtils;
+import com.github.cameltooling.idea.util.BeanUtils;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -39,7 +39,7 @@ public abstract class BlueprintAttributeValueReferenceProvider extends CamelPsiR
             if (attribute != null) {
                 XmlTag tag = attribute.getParent();
                 XmlAttributeValue value = attribute.getValueElement();
-                if (tag != null && value != null && CamelIdeaUtils.getService().isPartOfCamelContext(tag)) {
+                if (tag != null && value != null && BeanUtils.getService().isPartOfBeanContainer(tag)) {
                     return getAttributeReferences(attribute, value, context);
                 }
             }

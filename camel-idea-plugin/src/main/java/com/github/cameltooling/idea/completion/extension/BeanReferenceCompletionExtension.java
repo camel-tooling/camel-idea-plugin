@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import com.github.cameltooling.idea.reference.blueprint.BeanReference;
 import com.github.cameltooling.idea.reference.blueprint.model.ReferenceableBeanId;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
-import com.github.cameltooling.idea.util.CamelIdeaUtils;
+import com.github.cameltooling.idea.util.BeanUtils;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.module.Module;
@@ -61,9 +61,9 @@ public class BeanReferenceCompletionExtension extends ReferenceBasedCompletionEx
 
         Predicate<String> beanIdPredicate = b -> b.startsWith(query);
         if (expectedType != null) {
-            return CamelIdeaUtils.getService().findReferenceableBeanIdsByType(module, beanIdPredicate, expectedType);
+            return BeanUtils.getService().findReferenceableBeanIdsByType(module, beanIdPredicate, expectedType);
         } else {
-            return CamelIdeaUtils.getService().findReferenceableBeanIds(module, beanIdPredicate);
+            return BeanUtils.getService().findReferenceableBeanIds(module, beanIdPredicate);
         }
     }
 
@@ -71,7 +71,7 @@ public class BeanReferenceCompletionExtension extends ReferenceBasedCompletionEx
         if (!CamelPreferenceService.getService().isRealTimeIdReferenceTypeValidation()) {
             return null;
         }
-        return CamelIdeaUtils.getService().findExpectedBeanTypeAt(element).orElse(null);
+        return BeanUtils.getService().findExpectedBeanTypeAt(element);
     }
 
 }

@@ -16,7 +16,7 @@
  */
 package com.github.cameltooling.idea.reference.blueprint;
 
-import com.github.cameltooling.idea.util.CamelIdeaUtils;
+import com.github.cameltooling.idea.util.BeanUtils;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.xml.XmlAttribute;
@@ -33,7 +33,7 @@ public class BlueprintPropertyNameReferenceProvider extends BlueprintAttributeVa
     protected PsiReference[] getAttributeReferences(@NotNull XmlAttribute attribute, @NotNull XmlAttributeValue value,
                                                     ProcessingContext context) {
         if (isPropertyName(attribute, value)) {
-            PsiClass beanClass = CamelIdeaUtils.getService().getPropertyBeanClass(attribute.getParent());
+            PsiClass beanClass = BeanUtils.getService().getPropertyBeanClass(attribute.getParent());
             if (beanClass != null) {
                 return new PsiReference[] {new PropertyNameReference(value, value.getValue(), beanClass)};
             }

@@ -16,10 +16,10 @@
  */
 package com.github.cameltooling.idea.reference.blueprint;
 
-import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReferenceBase;
+import com.intellij.psi.util.PropertyUtilBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,8 +40,7 @@ public class PropertyNameReference extends PsiReferenceBase<PsiElement> {
     @Nullable
     @Override
     public PsiElement resolve() {
-        IdeaUtils ideaUtils = IdeaUtils.getService();
-        return ideaUtils.findSetterMethod(beanClass, propertyName).orElse(null);
+        return PropertyUtilBase.findPropertySetter(beanClass, propertyName, false, true);
     }
 
 }
