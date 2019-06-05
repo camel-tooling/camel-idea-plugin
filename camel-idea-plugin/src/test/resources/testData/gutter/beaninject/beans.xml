@@ -1,0 +1,7 @@
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" >
+
+    <bean id="testClass1Bean" class="TestClass1"/>
+    <bean id="testClass2Bean" class="TestClass2"/>
+    <bean id="testClass2Bean2" class="TestClass2"/>
+
+</blueprint>

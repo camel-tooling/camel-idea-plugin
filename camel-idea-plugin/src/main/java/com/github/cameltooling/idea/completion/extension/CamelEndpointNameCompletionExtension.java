@@ -19,62 +19,24 @@ package com.github.cameltooling.idea.completion.extension;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
-import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
-import com.intellij.codeInsight.completion.CompletionResultSet;
-import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
-import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * Extension for supporting camel code completion for camel endpoint names (only for direct endpoints so far).
+ * Code completion for camel endpoint names (only for direct endpoints so far).
  */
-public class CamelEndpointNameCompletionExtension implements CamelCompletionExtension {
-
-    private final boolean xmlMode;
-
-    public CamelEndpointNameCompletionExtension(boolean xmlMode) {
-        this.xmlMode = xmlMode;
-    }
+public class CamelEndpointNameCompletionExtension extends SimpleCompletionExtension {
 
     @Override
-    public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet, @NotNull String[] query) {
-        String concatQuery = query[0];
-        String suffix = query[1];
-        String queryAtPosition = query[2];
-
-        if (queryAtPosition.contains("?")) {
-            //do not add completions when inside endpoint query params
-            return;
-        }
-
-        String prefixValue = query[2];
-
-        PsiElement element = parameters.getPosition();
-
+    protected List<LookupElement> findResults(@NotNull PsiElement element, @NotNull String query) {
         Module module = ModuleUtilCore.findModuleForPsiElement(element);
-        if (module == null) {
-            return;
-        }
-
-        List<LookupElement> results = getDirectEndpointSuggestions(module);
-
-        if (!results.isEmpty()) {
-            resultSet.withPrefixMatcher(prefixValue).addAllElements(results);
-            resultSet.stopHere();
-        }
-    }
-
-    private List<LookupElement> getDirectEndpointSuggestions(Module module) {
         List<PsiElement> endpointDeclarations = CamelIdeaUtils.getService().findEndpointDeclarations(module, e -> true);
         return endpointDeclarations.stream()
             .map(this::createLookupElement)
@@ -82,22 +44,19 @@ public class CamelEndpointNameCompletionExtension implements CamelCompletionExte
     }
 
     @NotNull
-    private LookupElement createLookupElement(PsiElement e) {
-        PsiFile parentFile = e.getContainingFile();
-        PsiClass parentClass = PsiTreeUtil.getParentOfType(e, PsiClass.class);
-
-        CamelEndpoint endpoint = new CamelEndpoint(e.getText());
-        return LookupElementBuilder.create(endpoint.getBaseUri())
-            .withPresentableText(endpoint.getBaseUri())
-            .withTypeText(parentClass == null ? parentFile.getName() : parentClass.getName())
-            .withIcon(CamelPreferenceService.getService().getCamelIcon())
-            .withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE);
+    private LookupElement createLookupElement(PsiElement endpointElement) {
+        CamelEndpoint endpoint = new CamelEndpoint(endpointElement.getText());
+        return createLookupElement(endpoint.getBaseUri(), endpointElement);
     }
 
     @Override
-    public boolean isValid(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, String[] query) {
-        CamelIdeaUtils service = CamelIdeaUtils.getService();
+    public boolean isValid(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull String query) {
+        if (query.contains("?")) {
+            //do not add completions when inside endpoint query params
+            return false;
+        }
         PsiElement element = parameters.getPosition();
+        CamelIdeaUtils service = CamelIdeaUtils.getService();
         return service.isPlaceForEndpointUri(element)
             && service.isProducerEndpoint(element);
     }

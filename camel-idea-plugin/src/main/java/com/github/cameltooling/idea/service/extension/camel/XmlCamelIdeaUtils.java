@@ -19,29 +19,22 @@ package com.github.cameltooling.idea.service.extension.camel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
+
+import com.github.cameltooling.idea.Constants;
 import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
-import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.roots.ModuleFileIndex;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
-import com.intellij.psi.xml.XmlDocument;
-import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlToken;
-import com.intellij.xml.util.XmlUtil;
 
 public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
 
@@ -97,7 +90,7 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
 
     @Override
     public List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition) {
-        return findEndpoints(module, uriCondition, e -> isCamelRouteStart(e));
+        return findEndpoints(module, uriCondition, this::isCamelRouteStart);
     }
 
     private List<PsiElement> findEndpoints(Module module, Predicate<String> uriCondition, Predicate<XmlTag> tagCondition) {
@@ -107,16 +100,15 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
             .and(e -> uriCondition.test(e.getValue()));
 
         List<PsiElement> endpointDeclarations = new ArrayList<>();
-        iterateXmlDocuments(module, document -> {
-            XmlTag root = document.getRootTag();
-            if (root == null) {
-                return;
+        IdeaUtils.getService().iterateXmlDocumentRoots(module, root -> {
+            if (isAcceptedNamespace(root.getNamespace())) {
+                IdeaUtils.getService().iterateXmlNodes(root, XmlAttributeValue.class, value -> {
+                    if (endpointMatcher.test(value)) {
+                        endpointDeclarations.add(value);
+                    }
+                    return true;
+                });
             }
-            iterateXmlNodes(root, XmlAttributeValue.class, e -> {
-                if (endpointMatcher.test(e)) {
-                    endpointDeclarations.add(e);
-                }
-            });
         });
         return endpointDeclarations;
     }
@@ -138,38 +130,6 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
         } else {
             return false;
         }
-    }
-
-    private void iterateXmlDocuments(Module module, Consumer<XmlDocument> xmlFileConsumer) {
-        final GlobalSearchScope moduleScope = module.getModuleScope(true);
-        final GlobalSearchScope xmlFiles = GlobalSearchScope.getScopeRestrictedByFileTypes(moduleScope, XmlFileType.INSTANCE);
-
-        ModuleFileIndex fileIndex = ModuleRootManager.getInstance(module).getFileIndex();
-        fileIndex.iterateContent(f -> {
-            if (xmlFiles.contains(f)) {
-                PsiFile file = PsiManager.getInstance(module.getProject()).findFile(f);
-                if (file instanceof XmlFile) {
-                    XmlFile xmlFile = (XmlFile) file;
-                    XmlTag root = xmlFile.getRootTag();
-                    if (root != null) {
-                        if (isAcceptedNamespace(root.getNamespace())) {
-                            xmlFileConsumer.accept(xmlFile.getDocument());
-                        }
-                    }
-                }
-            }
-            return true;
-        });
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> void iterateXmlNodes(XmlTag root, Class<T> nodeClass, Consumer<T> nodeConsumer) {
-        XmlUtil.processXmlElementChildren(root, element -> {
-            if (nodeClass.isAssignableFrom(element.getClass())) {
-                nodeConsumer.accept((T) element);
-            }
-            return true;
-        }, true);
     }
 
     @Override
@@ -254,7 +214,7 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
     }
 
     private boolean isAcceptedNamespace(String ns) {
-        return Arrays.stream(ACCEPTED_NAMESPACES).anyMatch(ns::contains);
+        return Arrays.stream(Constants.ACCEPTED_NAMESPACES).anyMatch(ns::contains);
     }
 
     @Override

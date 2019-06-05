@@ -19,17 +19,26 @@ package com.github.cameltooling.idea.util;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
+import com.github.cameltooling.idea.reference.blueprint.BeanReference;
+import com.github.cameltooling.idea.reference.blueprint.model.ReferenceableBeanId;
+import com.github.cameltooling.idea.reference.blueprint.model.ReferencedClass;
 import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiReference;
+import com.intellij.psi.PsiType;
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -40,13 +49,13 @@ import org.jetbrains.annotations.NotNull;
 public final class CamelIdeaUtils implements Disposable {
 
     public static final String[] CAMEL_FILE_EXTENSIONS = {"java", "xml"};
+    public static final String BEAN_INJECT_ANNOTATION = "org.apache.camel.BeanInject";
 
     private final List<CamelIdeaUtilsExtension> enabledExtensions;
 
     private CamelIdeaUtils() {
         enabledExtensions = Arrays.stream(CamelIdeaUtilsExtension.EP_NAME.getExtensions())
             .filter(CamelIdeaUtilsExtension::isExtensionEnabled)
-            .filter(e -> e.isExtensionEnabled())
             .collect(Collectors.toList());
     }
 

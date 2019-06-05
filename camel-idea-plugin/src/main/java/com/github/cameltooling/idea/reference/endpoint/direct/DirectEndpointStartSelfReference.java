@@ -46,12 +46,6 @@ public class DirectEndpointStartSelfReference extends PsiReferenceBase<PsiElemen
         return new DirectEndpointPsiElement(getElement(), endpoint);
     }
 
-    @NotNull
-    @Override
-    public String getCanonicalText() {
-        return getValue();
-    }
-
     @Override
     public PsiElement handleElementRename(@NotNull String newElementName) throws IncorrectOperationException {
         ElementManipulator<PsiElement> manipulator = ElementManipulators.getManipulator(myElement);

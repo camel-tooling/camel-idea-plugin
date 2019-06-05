@@ -16,32 +16,21 @@
  */
 package com.github.cameltooling.idea.reference.endpoint.direct;
 
-import java.util.Objects;
-import javax.swing.Icon;
+import com.github.cameltooling.idea.reference.FakeCamelPsiElement;
 import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
-import com.github.cameltooling.idea.service.CamelPreferenceService;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.impl.RenameableFakePsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * A fake psi element which wraps a real psi element (a camel direct endpoint declaration) and is used as a target
- * when resolving references to direct endpoints.
- *
- * Main purpose is to provide the ability to show a custom type name using {@link DirectEndpointPsiElement#getTypeName()}
- * method - this is shown in multiple places - for example when using the Refactor -> Rename functionality.
+ * A fake psi element for direct endpoint references.
  */
-public class DirectEndpointPsiElement extends RenameableFakePsiElement {
+public class DirectEndpointPsiElement extends FakeCamelPsiElement {
 
     private final CamelEndpoint endpoint;
-    private final PsiElement element;
 
     public DirectEndpointPsiElement(@NotNull PsiElement element, @NotNull CamelEndpoint endpoint) {
-        super(null);
-        this.element = element;
+        super(element);
         this.endpoint = endpoint;
     }
 
@@ -50,75 +39,10 @@ public class DirectEndpointPsiElement extends RenameableFakePsiElement {
         return endpoint.getName();
     }
 
-    @Override
-    public boolean isWritable() {
-        return false;
-    }
-
     @Nullable
     @Override
     public String getTypeName() {
         return "direct endpoint";
-    }
-
-    @NotNull
-    @Override
-    public PsiElement getNavigationElement() {
-        return element.getNavigationElement();
-    }
-
-    @Nullable
-    @Override
-    public Icon getIcon() {
-        return CamelPreferenceService.getService().getCamelIcon();
-    }
-
-    @Override
-    public boolean isValid() {
-        return element.isValid();
-    }
-
-    @Override
-    public PsiElement getContext() {
-        return element.getNavigationElement();
-    }
-
-    @Override
-    public PsiFile getContainingFile() {
-        return element.getNavigationElement().getContainingFile();
-    }
-
-    @NotNull
-    @Override
-    public Project getProject() {
-        return element.getProject();
-    }
-
-    @Nullable
-    @Override
-    public String getLocationString() {
-        PsiFile file = getContainingFile();
-        if (file != null) {
-            return file.getName();
-        }
-        return null;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        DirectEndpointPsiElement that = (DirectEndpointPsiElement) o;
-        return Objects.equals(element, that.element);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(element);
     }
 
 }

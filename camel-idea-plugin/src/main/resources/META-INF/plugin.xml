@@ -105,6 +105,7 @@
     <applicationService serviceImplementation="com.github.cameltooling.idea.service.CamelPreferenceService"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.JavaMethodUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.JavaClassUtils"/>
+    <applicationService serviceImplementation="com.github.cameltooling.idea.util.BeanUtils"/>
 
     <!-- allow code completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelJavaReferenceContributor" order="first"/>
@@ -113,6 +114,7 @@
 
     <!-- puts the Camel icon in the gutter for each line that starts a Camel route -->
     <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.github.cameltooling.idea.gutter.CamelRouteLineMarkerProvider"/>
+    <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.github.cameltooling.idea.gutter.BeanInjectLineMarkerProvider"/>
     <codeInsight.lineMarkerProvider language="XML" implementationClass="com.github.cameltooling.idea.gutter.CamelRouteLineMarkerProvider"/>
 
     <!-- code completion of Camel property placeholders, eg {{foo}} style -->
@@ -145,7 +147,9 @@
     <!-- annotator to validate jsonpath language -->
     <annotator language="JAVA" implementationClass="com.github.cameltooling.idea.annotator.CamelJSonPathAnnotator"/>
     <annotator language="XML" implementationClass="com.github.cameltooling.idea.annotator.CamelJSonPathAnnotator"/>
-
+    <!-- annotator to validate bean references by type -->
+    <annotator language="JAVA" implementationClass="com.github.cameltooling.idea.annotator.BeanReferenceTypeAnnotator"/>
+    <annotator language="XML" implementationClass="com.github.cameltooling.idea.annotator.BeanReferenceTypeAnnotator"/>
     <!-- annotator to validate bean method calls language -->
     <annotator language="JAVA" implementationClass="com.github.cameltooling.idea.annotator.CamelBeanMethodAnnotator"/>
 
@@ -160,6 +164,8 @@
 
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.CamelBeanReferenceContributor"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.endpoint.direct.DirectEndpointReferenceContributor"/>
+    <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.blueprint.BlueprintReferenceContributor"/>
+    <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.CamelBeanInjectReferenceContributor"/>
     <renameHandler implementation="com.github.cameltooling.idea.reference.CamelBeanReferenceRenameHandler"/>
   </extensions>
 

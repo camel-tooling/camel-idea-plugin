@@ -23,33 +23,48 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import com.github.cameltooling.idea.extension.IdeaUtilsExtension;
 import com.intellij.codeInsight.completion.CompletionUtil;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.roots.ModuleFileIndex;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiConstructorCall;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiPolyadicExpression;
+import com.intellij.psi.PsiType;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.impl.source.tree.JavaDocElementType;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.java.IJavaDocElementType;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
+import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.xml.util.XmlUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import static com.intellij.xml.CommonXmlStrings.QUOT;
@@ -70,8 +85,11 @@ public final class IdeaUtils implements Disposable {
     private IdeaUtils() {
         enabledExtensions = Arrays.stream(IdeaUtilsExtension.EP_NAME.getExtensions())
             .filter(IdeaUtilsExtension::isExtensionEnabled)
-            .filter(e -> e.isExtensionEnabled())
             .collect(Collectors.toList());
+    }
+
+    public static IdeaUtils getService() {
+        return ServiceManager.getService(IdeaUtils.class);
     }
 
     /**
@@ -352,6 +370,36 @@ public final class IdeaUtils implements Disposable {
         return hasParentXmlTag(xml, parentTag) && isFromFileType(xml, methods);
     }
 
+    public void iterateXmlDocumentRoots(Module module, Consumer<XmlTag> rootTag) {
+        final GlobalSearchScope moduleScope = module.getModuleScope(true);
+        final GlobalSearchScope xmlFiles = GlobalSearchScope.getScopeRestrictedByFileTypes(moduleScope, XmlFileType.INSTANCE);
+
+        ModuleFileIndex fileIndex = ModuleRootManager.getInstance(module).getFileIndex();
+        fileIndex.iterateContent(f -> {
+            if (xmlFiles.contains(f)) {
+                PsiFile file = PsiManager.getInstance(module.getProject()).findFile(f);
+                if (file instanceof XmlFile) {
+                    XmlFile xmlFile = (XmlFile) file;
+                    XmlTag root = xmlFile.getRootTag();
+                    if (root != null) {
+                        rootTag.accept(xmlFile.getRootTag());
+                    }
+                }
+            }
+            return true;
+        });
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> void iterateXmlNodes(XmlTag root, Class<T> nodeClass, Predicate<T> nodeProcessor) {
+        XmlUtil.processXmlElementChildren(root, element -> {
+            if (nodeClass.isAssignableFrom(element.getClass())) {
+                return nodeProcessor.test((T) element);
+            }
+            return true;
+        }, true);
+    }
+
     /**
      * Code from com.intellij.psi.impl.source.tree.java.PsiLiteralExpressionImpl#getInnerText()
      */
@@ -447,6 +495,39 @@ public final class IdeaUtils implements Disposable {
             return true;
         }
         return false;
+    }
+
+    public Optional<XmlAttribute> findAttribute(XmlTag tag, String localName) {
+        return Arrays.stream(tag.getAttributes())
+            .filter(a -> a.getLocalName().equals(localName))
+            .findAny();
+    }
+
+    public Optional<XmlAttributeValue> findAttributeValue(XmlTag tag, String localName) {
+        return findAttribute(tag, localName)
+            .map(XmlAttribute::getValueElement);
+    }
+
+    public TextRange getUnquotedRange(PsiElement element) {
+        TextRange originalRange = element.getTextRange();
+        if (StringUtil.isQuotedString(element.getText())) {
+            return TextRange.create(originalRange.getStartOffset() + 1, originalRange.getEndOffset() - 1);
+        } else {
+            return originalRange;
+        }
+    }
+
+    public PsiType findAnnotatedElementType(PsiAnnotation annotation) {
+        PsiField field = PsiTreeUtil.getParentOfType(annotation, PsiField.class);
+        if (field != null) {
+            return field.getType();
+        } else {
+            PsiMethod method = PsiTreeUtil.getParentOfType(annotation, PsiMethod.class);
+            if (method != null && method.getParameterList().getParametersCount() == 1) {
+                return method.getParameterList().getParameters()[0].getType();
+            }
+            return null;
+        }
     }
 
     @Override
