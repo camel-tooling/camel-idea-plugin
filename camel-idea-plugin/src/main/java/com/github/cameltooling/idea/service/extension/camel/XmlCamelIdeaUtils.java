@@ -33,6 +33,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlToken;
 
@@ -242,6 +243,10 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
 
     @Override
     public boolean isPlaceForEndpointUri(PsiElement location) {
+        XmlFile file = PsiTreeUtil.getParentOfType(location, XmlFile.class);
+        if (file == null || file.getRootTag() == null || !isAcceptedNamespace(file.getRootTag().getNamespace())) {
+            return false;
+        }
         XmlAttributeValue value = PsiTreeUtil.getParentOfType(location, XmlAttributeValue.class, false);
         if (value == null) {
             return false;

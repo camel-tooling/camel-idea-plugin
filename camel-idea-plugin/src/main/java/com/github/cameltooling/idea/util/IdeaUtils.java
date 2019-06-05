@@ -371,7 +371,7 @@ public final class IdeaUtils implements Disposable {
     }
 
     public void iterateXmlDocumentRoots(Module module, Consumer<XmlTag> rootTag) {
-        final GlobalSearchScope moduleScope = module.getModuleScope(true);
+        final GlobalSearchScope moduleScope = module.getModuleContentScope();
         final GlobalSearchScope xmlFiles = GlobalSearchScope.getScopeRestrictedByFileTypes(moduleScope, XmlFileType.INSTANCE);
 
         ModuleFileIndex fileIndex = ModuleRootManager.getInstance(module).getFileIndex();
