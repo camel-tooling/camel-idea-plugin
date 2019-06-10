@@ -245,4 +245,14 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
         assertEquals("There is many options", 2, strings.size());
     }
 
+    /**
+     * Test if code completion works with inside the bean dsl with an empty string.
+     */
+    public void testJavaBeanTestDataCompletionWithEmptyBeanRef() {
+        myFixture.configureByFiles("CompleteJavaBeanRoute10TestData.java", "CompleteJavaSpringRepositoryBeanTestData.java");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals("There is many options", 2, strings.size());
+    }
+
 }

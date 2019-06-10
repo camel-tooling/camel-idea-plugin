@@ -50,7 +50,7 @@ public class CamelBeanMethodReferenceTest extends CamelLightCodeInsightFixtureTe
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myModule, "Maven: " + SPRING_CONTEXT_MAVEN_ARTIFACT, springMavenArtifacts[0].getParent(), springMavenArtifacts[0].getName());
+        PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myFixture.getModule(), "Maven: " + SPRING_CONTEXT_MAVEN_ARTIFACT, springMavenArtifacts[0].getParent(), springMavenArtifacts[0].getName());
     }
 
     @Override
@@ -139,6 +139,25 @@ public class CamelBeanMethodReferenceTest extends CamelLightCodeInsightFixtureTe
         final PsiElement referenceElement = usageInfo.getElement();
         assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
         assertEquals("(beanTestData, \"myOverLoadedBean\")", referenceElement.getParent().getText());
+    }
+
+
+    /**
+     * Test if resolve the reference to the bean method when using a static String as bean reference name
+     */
+    public void testFindUsageFromWithStaticBeanNameToBeanDSL() {
+        myFixture.configureByFiles("CompleteJavaBeanRoute9TestData.java", "CompleteJavaSpringServiceBeanTestData.java", "CompleteJavaBeanSuperClassTestData.java", "CompleteJavaBeanMethodPropertyTestData.properties");
+        PsiElement element = myFixture.getFile().findElementAt(myFixture.getCaretOffset()).getParent();
+        assertEquals("\"letsDoThis\"",  element.getText());
+    }
+
+    /**
+     * Test if resolve the reference to the bean repository method when using a static String as bean reference name
+     */
+    public void testFindUsageFromWithStaticRepositoryNameToBeanDSL() {
+        myFixture.configureByFiles("CompleteJavaBeanRoute11TestData.java", "CompleteJavaSpringRepositoryBeanTestData.java","CompleteJavaBeanMethodPropertyTestData.properties");
+        PsiElement element = myFixture.getFile().findElementAt(myFixture.getCaretOffset()).getParent();
+        assertEquals("\"myRepositorySpringBeanMethod\"",  element.getText());
     }
 
     /**
