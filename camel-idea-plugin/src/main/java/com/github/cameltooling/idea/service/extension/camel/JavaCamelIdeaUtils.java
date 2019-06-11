@@ -223,7 +223,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             PsiJavaCodeReferenceElement referenceElement = PsiTreeUtil.findChildOfType(beanPsiElement, PsiJavaCodeReferenceElement.class);
             final PsiClass psiClass = getJavaClassUtils().resolveClassReference(referenceElement);
 
-            if (psiClass != null && ! JAVA_LANG_STRING.equals(psiClass.getQualifiedName())) {
+            if (psiClass != null && !JAVA_LANG_STRING.equals(psiClass.getQualifiedName())) {
                 return psiClass;
             }
 
@@ -231,7 +231,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             if (referenceElement instanceof PsiReferenceExpression) {
                 beanName = getStaticBeanName(referenceElement, beanName);
             } else {
-                final String[] beanParameters = beanPsiElement.getText().replace("(","").replace(")","").split(",");
+                final String[] beanParameters = beanPsiElement.getText().replace("(", "").replace(")", "").split(",");
                 if (beanParameters.length > 0) {
                     beanName = StringUtils.stripDoubleQuotes(beanParameters[0]);
                 }
