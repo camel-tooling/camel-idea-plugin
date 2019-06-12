@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 @Service(value = "myServiceBean")
 public class CompleteJavaSpringServiceBeanTestData {
 
+    static public String JAVA_TEST_BEAN = "myServiceBean";
+
     public void myServiceSpringBeanMethod() {}
     public void another<caret>BeanMethod() {}
 

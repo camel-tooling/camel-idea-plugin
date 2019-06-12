@@ -16,14 +16,6 @@
  */
 package com.github.cameltooling.idea.util;
 
-import java.beans.Introspector;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import com.intellij.lang.jvm.annotation.JvmAnnotationAttribute;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
@@ -34,17 +26,28 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
+import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.impl.source.resolve.reference.impl.providers.JavaClassReference;
+import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.ProjectScope;
 import com.intellij.psi.search.searches.AnnotatedElementsSearch;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
 import com.intellij.util.Query;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.beans.Introspector;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 public class JavaClassUtils implements Disposable {
@@ -73,16 +76,32 @@ public class JavaClassUtils implements Disposable {
      * @return the {@link PsiClass} matching the bean name and annotation.
      */
     public Optional<PsiClass> findBeanClassByName(String beanName, String annotation, Project project) {
-        return getClassesAnnotatedWith(project, annotation).stream()
-            .filter(psiClass ->
-                Optional.ofNullable(psiClass.getAnnotation(annotation))
-                    .map(c ->c.findAttribute("value"))
-                    .map(c -> c.getAttributeValue().getSourceElement().getText())
-                    .map(b -> StringUtils.stripDoubleQuotes(b).equals(beanName))
-                    .orElseGet(() -> Introspector.decapitalize(psiClass.getName()).equalsIgnoreCase(StringUtils.stripDoubleQuotes(beanName)))
+        for (PsiClass psiClass : getClassesAnnotatedWith(project, annotation)) {
+            final PsiAnnotation classAnnotation = psiClass.getAnnotation(annotation);
+            final JvmAnnotationAttribute attribute = classAnnotation.findAttribute("value");
+            if (attribute != null) {
+                final PsiElement sourceElement = attribute.getAttributeValue().getSourceElement();
+                if (sourceElement instanceof PsiReferenceExpressionImpl) {
+                    final PsiField psiField = (PsiField) sourceElement.getReference().resolve();
+                    String staticBeanName = StringUtils.stripDoubleQuotes(PsiTreeUtil.getChildOfAnyType(psiField, PsiLiteralExpression.class).getText());
+                    if (beanName.equals(staticBeanName)) {
+                        return Optional.of(psiClass);
+                    }
+                } else {
+                    final String value = sourceElement.getText();
+                    if (beanName.equals(StringUtils.stripDoubleQuotes(value))) {
+                        return Optional.of(psiClass);
+                    }
 
-            )
-            .findFirst();
+                }
+            } else {
+                if (Introspector.decapitalize(psiClass.getName()).equalsIgnoreCase(StringUtils.stripDoubleQuotes(beanName))) {
+                    return Optional.of(psiClass);
+                }
+            }
+        }
+
+        return Optional.empty();
     }
 
     /**

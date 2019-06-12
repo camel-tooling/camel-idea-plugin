@@ -14,18 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package testData;
-import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.main.Main;
+import testData.CompleteJavaSpringServiceBeanTestData;
 
-@Repository(value = CompleteJavaSpringRepositoryBeanTestData.JAVA_REPOSITORY_TEST_BEAN)
-public class CompleteJavaSpringRepositoryBeanTestData {
+/**
+ * Test route for testing code completion with empty bean name as reference
+ */
+public final class CompleteJavaBeanRoute10TestData extends RouteBuilder {
 
-    static public String JAVA_REPOSITORY_TEST_BEAN = "myRepositoryBean";
+    private CompleteJavaSpringServiceBeanTestData beanTestData;
 
-    public void myRepositorySpringBeanMethod() {}
-    public void another<caret>BeanMethod() {}
-
-    private void thisIsVeryPrivate() {}
-
+    @Override
+    public void configure() {
+        from("file:inbox")
+            .bean("<caret>)
+            .to("log:out");
+    }
 }
