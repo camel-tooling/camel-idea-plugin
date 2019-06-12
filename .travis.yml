@@ -8,3 +8,6 @@ cache:
     - $HOME/.m2
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
+env:
+  global:
+    - JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
