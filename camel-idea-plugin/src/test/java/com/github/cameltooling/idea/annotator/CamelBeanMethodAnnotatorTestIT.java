@@ -17,9 +17,11 @@
 package com.github.cameltooling.idea.annotator;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
+import com.intellij.lang.annotation.HighlightSeverity;
 
 
 /**
@@ -44,20 +46,24 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
         myFixture.checkHighlighting(false, false, true, true);
 
         List<HighlightInfo> list = myFixture.doHighlighting();
-        assertEquals(3, list.stream().filter(i -> i.getSeverity().getName().equals("ERROR")).count());
+        verifyHighlight(list, "\"thisIsVeryPrivate\"", "'thisIsVeryPrivate' has private access in bean 'testData.annotator.method.AnnotatorJavaBeanTestData'", HighlightSeverity.ERROR);
+        verifyHighlight(list, "\"methodDoesNotExist\"", "Can not resolve method 'methodDoesNotExist' in bean 'testData.annotator.method.AnnotatorJavaBeanTestData'", HighlightSeverity.ERROR);
+        verifyHighlight(list, "(AnnotatorJavaBeanTestData.class, \"letsDoThis\")", "Cannot resolve method 'bean(java.lang.Class, java.lang.String)'", HighlightSeverity.ERROR);
     }
 
     /**
      * Test if the annotator mark the bean call "thisIsVeryPrivate","methodDoesNotExist" as errors
-     * TODO fharms, find out why it starting to fail after upgrading to 2019.1.3
      */
-   /* public void testAnnotatorJavaBeanWithAbstractMethod() {
+    public void testAnnotatorJavaBeanWithAbstractMethod() {
         myFixture.configureByFiles("AnnotatorJavaBeanRoute2TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
         myFixture.checkHighlighting(false, false, true, true);
 
         List<HighlightInfo> list = myFixture.doHighlighting();
-        assertEquals(3, list.stream().filter(i -> i.getSeverity().getName().equals("ERROR")).count());
-    }*/
+
+        verifyHighlight(list, "\"letsDoThis\"", "Can not resolve method 'letsDoThis' in bean 'testData.annotator.method.AnnotatorJavaBeanSuperClassTestData'", HighlightSeverity.ERROR);
+        verifyHighlight(list, "(beanTestData, \"mySuperAbstractMethod\")", "Cannot resolve method 'bean(testData.annotator.method.AnnotatorJavaBeanSuperClassTestData, java.lang.String)'", HighlightSeverity.ERROR);
+        verifyHighlight(list, "\"thisIsVeryPrivate\"", "Can not resolve method 'thisIsVeryPrivate' in bean 'testData.annotator.method.AnnotatorJavaBeanSuperClassTestData'", HighlightSeverity.ERROR);
+    }
 
     /**
      * Test if the annotator mark the bean call "myOverLoadedBean" as errors because it's Ambiguous. This test also test if the scenario where one of the
@@ -68,7 +74,9 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
         myFixture.checkHighlighting(false, false, true, true);
 
         List<HighlightInfo> list = myFixture.doHighlighting();
-        assertEquals(3, list.stream().filter(i -> i.getSeverity().getName().equals("ERROR")).count());
+        verifyHighlight(list, "(beanTestData, \"myOverLoadedBean2\")", "Cannot resolve method 'bean(testData.annotator.method.AnnotatorJavaBeanTestData, java.lang.String)'", HighlightSeverity.ERROR);
+        verifyHighlight(list, "(beanTestData, \"myOverLoadedBean(${body})\")", "Cannot resolve method 'bean(testData.annotator.method.AnnotatorJavaBeanTestData, java.lang.String)'", HighlightSeverity.ERROR);
+        verifyHighlight(list, "\"myOverLoadedBean\"", "Ambiguous matches 'myOverLoadedBean' in bean 'testData.annotator.method.AnnotatorJavaBeanTestData'", HighlightSeverity.ERROR);
     }
 
     /**
@@ -79,7 +87,7 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
         myFixture.checkHighlighting(false, false, true, true);
 
         List<HighlightInfo> list = myFixture.doHighlighting();
-        assertEquals(1, list.stream().filter(i -> i.getSeverity().getName().equals("ERROR")).count());
+        verifyHighlight(list, "(beanTestData, \"myOverLoadedBean3\")", "Cannot resolve method 'bean(testData.annotator.method.AnnotatorJavaBeanTestData, java.lang.String)'", HighlightSeverity.ERROR);
     }
 
     /**
@@ -90,7 +98,14 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
         myFixture.checkHighlighting(false, false, true, true);
 
         List<HighlightInfo> list = myFixture.doHighlighting();
-        assertEquals(1, list.stream().filter(i -> i.getSeverity().getName().equals("ERROR")).count());
+        verifyHighlight(list, "(beanTestData, \"myOverLoadedBean(${body})\")", "Cannot resolve method 'bean(testData.annotator.method.AnnotatorJavaBeanTestData, java.lang.String)'", HighlightSeverity.ERROR);
+    }
+
+    private void verifyHighlight(List<HighlightInfo> list, String actualText, String actualErrorDescription, HighlightSeverity actualServerity) {
+        final Optional<HighlightInfo> error1 = list.stream().filter(highlightInfo -> highlightInfo.getText().equals(actualText)).findFirst();
+        assertTrue(String.format("Expect to find the %s in the list of highlight", actualText), error1.isPresent());
+        assertEquals(error1.get().getDescription(), actualErrorDescription);
+        assertEquals(error1.get().getSeverity(), actualServerity);
     }
 
 
