@@ -43,7 +43,7 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
      */
     public void testAnnotatorJavaBeanWithPrivateAndNoneExistingMethod() {
         myFixture.configureByFiles("AnnotatorJavaBeanRoute1TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
-        myFixture.checkHighlighting(false, false, true, true);
+        myFixture.checkHighlighting(false, false, false, true);
 
         List<HighlightInfo> list = myFixture.doHighlighting();
         verifyHighlight(list, "\"thisIsVeryPrivate\"", "'thisIsVeryPrivate' has private access in bean 'testData.annotator.method.AnnotatorJavaBeanTestData'", HighlightSeverity.ERROR);
@@ -56,7 +56,7 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
      */
     public void testAnnotatorJavaBeanWithAbstractMethod() {
         myFixture.configureByFiles("AnnotatorJavaBeanRoute2TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
-        myFixture.checkHighlighting(false, false, true, true);
+        myFixture.checkHighlighting(false, false, false, true);
 
         List<HighlightInfo> list = myFixture.doHighlighting();
 
@@ -71,7 +71,7 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
      */
     public void testAnnotatorJavaBeanAmbiguousMatch() {
         myFixture.configureByFiles("AnnotatorJavaBeanRoute3TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
-        myFixture.checkHighlighting(false, false, true, true);
+        myFixture.checkHighlighting(false, false, false, true);
 
         List<HighlightInfo> list = myFixture.doHighlighting();
         verifyHighlight(list, "(beanTestData, \"myOverLoadedBean2\")", "Cannot resolve method 'bean(testData.annotator.method.AnnotatorJavaBeanTestData, java.lang.String)'", HighlightSeverity.ERROR);
@@ -84,7 +84,7 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
      */
     public void testAnnotatorJavaBeanWithHandlerAnnotation() {
         myFixture.configureByFiles("AnnotatorJavaBeanRoute4TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
-        myFixture.checkHighlighting(false, false, true, true);
+        myFixture.checkHighlighting(false, false, false, true);
 
         List<HighlightInfo> list = myFixture.doHighlighting();
         verifyHighlight(list, "(beanTestData, \"myOverLoadedBean3\")", "Cannot resolve method 'bean(testData.annotator.method.AnnotatorJavaBeanTestData, java.lang.String)'", HighlightSeverity.ERROR);
@@ -95,7 +95,7 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
      */
     public void testAnnotatorJavaBeanAmbiguousMatchWithParameter() {
         myFixture.configureByFiles("AnnotatorJavaBeanRoute5TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
-        myFixture.checkHighlighting(false, false, true, true);
+        myFixture.checkHighlighting(false, false, false, true);
 
         List<HighlightInfo> list = myFixture.doHighlighting();
         verifyHighlight(list, "(beanTestData, \"myOverLoadedBean(${body})\")", "Cannot resolve method 'bean(testData.annotator.method.AnnotatorJavaBeanTestData, java.lang.String)'", HighlightSeverity.ERROR);
