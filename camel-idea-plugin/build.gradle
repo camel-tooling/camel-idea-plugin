@@ -27,10 +27,12 @@ intellij {
     downloadSources = true
     type = project.hasProperty('intellij_type') ? project.intellij_type : 'IC'
     plugins = ['java-i18n', 'properties', 'yaml']
+    sandboxDirectory project.rootDir.canonicalPath + "/.sandbox"
 }
 
 publishPlugin {
-    token project.hasProperty('intellij_token') ? project.intellij_token : 'none'
+    def authenticationToken = "$System.env.intellij_token"
+    token authenticationToken
 }
 
 println "building with intellij type : ${intellij.type}"
