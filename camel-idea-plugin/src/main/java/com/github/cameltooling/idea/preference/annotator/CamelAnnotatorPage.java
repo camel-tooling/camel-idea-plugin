@@ -40,6 +40,8 @@ public class CamelAnnotatorPage implements SearchableConfigurable, Configurable.
     private JBCheckBox realTimeJSonPathValidationCatalogCheckBox;
     private JBCheckBox realTimeIdReferenceTypeValidationCheckBox;
     private JBCheckBox realTimeBeanMethodValidationCheckBox;
+    private JPanel result;
+    private JPanel jPanel;
 
     CamelAnnotatorPage() {
     }
@@ -55,18 +57,18 @@ public class CamelAnnotatorPage implements SearchableConfigurable, Configurable.
         realTimeBeanMethodValidationCheckBox = new JBCheckBox("Real time validation of call bean method in editor");
 
         // use mig layout which is like a spread-sheet with 2 columns, which we can span if we only have one element
-        JPanel panel = new JPanel(new MigLayout("fillx,wrap 2", "[left]rel[grow,fill]"));
-        panel.setOpaque(false);
+        jPanel = new JPanel(new MigLayout("fillx,wrap 2", "[left]rel[grow,fill]"));
+        jPanel.setOpaque(false);
 
-        panel.add(realTimeEndpointValidationCatalogCheckBox, "span 2");
-        panel.add(highlightCustomOptionsCheckBox, "span 2");
-        panel.add(realTimeSimpleValidationCatalogCheckBox, "span 2");
-        panel.add(realTimeJSonPathValidationCatalogCheckBox, "span 2");
-        panel.add(realTimeIdReferenceTypeValidationCheckBox, "span 2");
-        panel.add(realTimeBeanMethodValidationCheckBox, "span 2");
+        jPanel.add(realTimeEndpointValidationCatalogCheckBox, "span 2");
+        jPanel.add(highlightCustomOptionsCheckBox, "span 2");
+        jPanel.add(realTimeSimpleValidationCatalogCheckBox, "span 2");
+        jPanel.add(realTimeJSonPathValidationCatalogCheckBox, "span 2");
+        jPanel.add(realTimeIdReferenceTypeValidationCheckBox, "span 2");
+        jPanel.add(realTimeBeanMethodValidationCheckBox, "span 2");
 
-        JPanel result = new JPanel(new BorderLayout());
-        result.add(panel, BorderLayout.NORTH);
+        result = new JPanel(new BorderLayout());
+        result.add(jPanel, BorderLayout.NORTH);
         reset();
         return result;
     }
@@ -101,6 +103,21 @@ public class CamelAnnotatorPage implements SearchableConfigurable, Configurable.
         realTimeJSonPathValidationCatalogCheckBox.setSelected(getCamelPreferenceService().isRealTimeJSonPathValidation());
         realTimeIdReferenceTypeValidationCheckBox.setSelected(getCamelPreferenceService().isRealTimeIdReferenceTypeValidation());
         realTimeBeanMethodValidationCheckBox.setSelected(getCamelPreferenceService().isRealTimeBeanMethodValidationCheckBox());
+    }
+
+    @Override
+    public void disposeUIResources() {
+        realTimeEndpointValidationCatalogCheckBox = null;
+        highlightCustomOptionsCheckBox = null;
+        realTimeSimpleValidationCatalogCheckBox = null;
+        realTimeJSonPathValidationCatalogCheckBox = null;
+        realTimeIdReferenceTypeValidationCheckBox = null;
+        realTimeBeanMethodValidationCheckBox = null;
+
+        jPanel.removeAll();
+        jPanel = null;
+        result.removeAll();
+        result = null;
     }
 
     @Nls

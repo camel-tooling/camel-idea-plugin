@@ -28,7 +28,6 @@ intellij {
     type = project.hasProperty('intellij_type') ? project.intellij_type : 'IC'
     plugins = ['java-i18n', 'properties', 'yaml']
     sandboxDirectory project.rootDir.canonicalPath + "/.sandbox"
-    updateSinceUntilBuild = false
 }
 
 publishPlugin {

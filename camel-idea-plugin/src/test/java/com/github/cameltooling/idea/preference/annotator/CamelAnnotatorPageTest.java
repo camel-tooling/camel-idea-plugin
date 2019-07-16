@@ -43,8 +43,8 @@ public class CamelAnnotatorPageTest extends CamelLightCodeInsightFixtureTestCase
     @Override
     public void tearDown() throws Exception {
         super.tearDown();
+        annotatorPage.disposeUIResources();
         annotatorPage = null;
-        super.initCamelPreferencesService();
     }
 
     public void testPluginXmlShouldContainAnnotatorPreferencesPage() {
