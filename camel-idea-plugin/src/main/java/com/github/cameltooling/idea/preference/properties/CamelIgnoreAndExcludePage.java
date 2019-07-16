@@ -41,6 +41,7 @@ class CamelIgnoreAndExcludePage extends BaseConfigurable implements SearchableCo
 
     private List<String> myIgnoredProperties;
     private AddEditRemovePanel<String> ignorePropertyFilePanel;
+    private JPanel result;
 
     CamelIgnoreAndExcludePage() {
     }
@@ -60,7 +61,7 @@ class CamelIgnoreAndExcludePage extends BaseConfigurable implements SearchableCo
     @Nullable
     @Override
     public JComponent createComponent() {
-        JPanel result = new JPanel(new BorderLayout());
+        result = new JPanel(new BorderLayout());
         JPanel propertyTablePanel = new JPanel(new VerticalLayout(1));
         propertyTablePanel.add(createIgnorePropertiesFilesTable());
         propertyTablePanel.add(createExcludePropertiesFilesTable());
@@ -88,6 +89,8 @@ class CamelIgnoreAndExcludePage extends BaseConfigurable implements SearchableCo
 
     @Override
     public void disposeUIResources() {
+        result.setEnabled(false);
+        result = null;
         ignorePropertyFilePanel = null;
         excludePropertyFilePanel = null;
     }

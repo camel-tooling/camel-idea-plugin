@@ -11,3 +11,5 @@ workspace/**
 test-system/**
 buildingtools/build/**
 /gradle.properties
+/.sandbox/
+**/build/
