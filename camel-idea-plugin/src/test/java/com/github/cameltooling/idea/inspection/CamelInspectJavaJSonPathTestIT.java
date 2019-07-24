@@ -16,103 +16,28 @@
  */
 package com.github.cameltooling.idea.inspection;
 
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.roots.ModuleRootModificationUtil;
-import com.intellij.openapi.roots.OrderRootType;
-import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
-import com.intellij.openapi.roots.libraries.Library;
-import com.intellij.openapi.roots.libraries.LibraryTable;
-import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.testFramework.InspectionTestCase;
-import com.intellij.util.ui.UIUtil;
+import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
+import com.intellij.testFramework.PsiTestUtil;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 
-public class CamelInspectJavaJSonPathTestIT extends InspectionTestCase {
-
-    private ArrayList<Library> libraries = new ArrayList<>();
-
+public class CamelInspectJavaJSonPathTestIT extends CamelInspectionTestHelper {
     public static final String CAMEL_JSONPATH_MAVEN_ARTIFACT = "org.apache.camel:camel-jsonpath:2.22.0";
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        File[] mavenArtifacts = getMavenArtifacts(CAMEL_JSONPATH_MAVEN_ARTIFACT);
-        for (File file : mavenArtifacts) {
-            final VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
-            final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myModule.getProject());
-            ApplicationManager.getApplication().runWriteAction(() -> {
-                String name = file.getName();
-                // special for camel JARs
-                if (name.contains("camel-core")) {
-                    name = "org.apache.camel:camel-core:2.22.0";
-                } else if (name.contains("camel-jsonpath")) {
-                    name = "org.apache.camel:camel-jsonpath:2.22.0";
-                } else {
-                    // need to fix the name
-                    if (name.endsWith(".jar")) {
-                        name = name.substring(0, name.length() - 4);
-                    }
-                    int lastDash = name.lastIndexOf('-');
-                    name = name.substring(0, lastDash) + ":" + name.substring(lastDash + 1);
-                    // add bogus groupid
-                    name = "com.foo:" + name;
-                }
-
-                Library library = projectLibraryTable.createLibrary("maven: " + name);
-                final Library.ModifiableModel libraryModifiableModel = library.getModifiableModel();
-                libraryModifiableModel.addRoot(virtualFile, OrderRootType.CLASSES);
-                libraryModifiableModel.commit();
-                libraries.add(library);
-                ModuleRootModificationUtil.addDependency(myModule, library);
-            });
-        }
-        UIUtil.dispatchAllInvocationEvents();
+        File[] mavenArtifacts = Maven.resolver().resolve(CAMEL_JSONPATH_MAVEN_ARTIFACT).withTransitivity().asFile();
+        PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myFixture.getModule(), "Maven: " + CAMEL_JSONPATH_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
     }
-
-    protected void tearDown() throws Exception {
-        libraries.forEach(library -> removeLibrary(library));
-        super.tearDown();
-    }
-
-    private File[] getMavenArtifacts(String... mavenAritfiact) throws IOException {
-        File[] libs = Maven.resolver().resolve(mavenAritfiact).withTransitivity().asFile();
-        return libs;
-    }
-
-    void removeLibrary(Library library) {
-        WriteCommandAction.runWriteCommandAction(null, ()-> {
-            LibraryTable table = ProjectLibraryTable.getInstance(getProject());
-            LibraryTable.ModifiableModel model = table.getModifiableModel();
-            model.removeLibrary(library);
-            model.commit();
-
-        });
-    }
-
-    @Override
-    protected String getTestDataPath() {
-        return "src/test/resources/";
-    }
-
-    /*
-    For some reason this is not working when running from maven, but working fine from IDEA after upgrading to IDEA 2019.1
-    Disable this for now because I have tested manual in the editor and it's working fine, will ask if @avsclaus might have some ideas how to fix this.
-    */
 
     public void testJSonPathInspection() {
-        assertTrue(true);
-//        // force Camel enabled so the inspection test can run
-//        CamelInspection inspection = new CamelInspection(true);
-//
-//        // must be called fooroute as inspectionsimplejava fails for some odd reason
-//        doTest("testData/barroute/", new LocalInspectionToolWrapper(inspection));
-    }
 
+        // force Camel enabled so the inspection test can run
+        CamelInspection inspection = new CamelInspection(true);
+
+        // must be called fooroute as inspectionsimplejava fails for some odd reason
+        doTest("testData/barroute/", new LocalInspectionToolWrapper(inspection));
+    }
 }

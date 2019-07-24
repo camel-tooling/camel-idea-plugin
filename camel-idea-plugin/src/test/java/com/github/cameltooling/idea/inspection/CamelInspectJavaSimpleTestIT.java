@@ -16,65 +16,23 @@
  */
 package com.github.cameltooling.idea.inspection;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.roots.ModuleRootModificationUtil;
-import com.intellij.openapi.roots.OrderRootType;
-import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
-import com.intellij.openapi.roots.libraries.Library;
-import com.intellij.openapi.roots.libraries.LibraryTable;
-import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.InspectionTestCase;
-import com.intellij.util.ui.UIUtil;
+import com.intellij.testFramework.PsiTestUtil;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.junit.Ignore;
 
+import java.io.File;
+
+@Ignore
 public class CamelInspectJavaSimpleTestIT extends InspectionTestCase {
-    private ArrayList<Library> libraries = new ArrayList<>();
-
     public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.22.0";
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        File[] mavenArtifacts = getMavenArtifacts(CAMEL_CORE_MAVEN_ARTIFACT);
-        VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(mavenArtifacts[0]);
-        final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myModule.getProject());
-        ApplicationManager.getApplication().runWriteAction(() -> {
-            Library library = projectLibraryTable.createLibrary("Maven: " + CAMEL_CORE_MAVEN_ARTIFACT);
-            final Library.ModifiableModel libraryModifiableModel = library.getModifiableModel();
-            libraryModifiableModel.addRoot(virtualFile, OrderRootType.CLASSES);
-            libraryModifiableModel.commit();
-            libraries.add(library);
-            ModuleRootModificationUtil.addDependency(myModule, library);
-        });
-        UIUtil.dispatchAllInvocationEvents();
-    }
-
-    private File[] getMavenArtifacts(String... mavenAritfiact) throws IOException {
-        File[] libs = Maven.resolver().resolve(mavenAritfiact).withoutTransitivity().asFile();
-        return libs;
-    }
-
-    protected void tearDown() throws Exception {
-        libraries.forEach(library -> removeLibrary(library));
-        super.tearDown();
-    }
-
-    void removeLibrary(Library library) {
-        WriteCommandAction.runWriteCommandAction(null, ()-> {
-            LibraryTable table = ProjectLibraryTable.getInstance(getProject());
-            LibraryTable.ModifiableModel model = table.getModifiableModel();
-            model.removeLibrary(library);
-            model.commit();
-
-        });
+        File[] mavenArtifacts =  Maven.resolver().resolve(CAMEL_CORE_MAVEN_ARTIFACT).withoutTransitivity().asFile();
+        PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myFixture.getModule(), "Maven: " + CAMEL_CORE_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
     }
 
     @Override
