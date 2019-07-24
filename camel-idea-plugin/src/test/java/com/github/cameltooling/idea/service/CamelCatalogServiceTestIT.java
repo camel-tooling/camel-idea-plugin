@@ -33,21 +33,13 @@ public class CamelCatalogServiceTestIT extends CamelLightCodeInsightFixtureTestC
         super.setUp();
     }
 
-    /*
-      After upgrading to IDEA 2019.1 new constraints is added or changed on how test cases are behaving,
-      and for some reason I suspect another test case does not clean up it's state and the CamelCatalogService is instantiated.
-      Running the test case locally from IDEA and Maven works fine, but Travis CI fails the test.
-
-      One of the things I observed was Travis runs test cases in a different order.
-     */
-
-//    public void testNoCatalogInstance() {
-//        ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(false);
-//        myFixture.configureByFiles("CompleteJavaEndpointConsumerTestData.java", "CompleteYmlPropertyTestData.java",
-//             "CompleteJavaPropertyTestData.properties", "CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
-//        myFixture.complete(CompletionType.BASIC, 1);
-//        assertEquals(false, ServiceManager.getService(myModule.getProject(), CamelCatalogService.class).isInstantiated());
-//    }
+    public void testNoCatalogInstance() {
+        ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(false);
+        myFixture.configureByFiles("CompleteJavaEndpointConsumerTestData.java", "CompleteYmlPropertyTestData.java",
+            "CompleteJavaPropertyTestData.properties", "CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
+        myFixture.complete(CompletionType.BASIC, 1);
+        assertEquals(false, ServiceManager.getService(myModule.getProject(), CamelCatalogService.class).isInstantiated());
+    }
 
     public void testCatalogInstance() {
         myFixture.configureByFiles("CompleteJavaEndpointConsumerTestData.java", "CompleteYmlPropertyTestData.java",

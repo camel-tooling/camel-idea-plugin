@@ -21,13 +21,24 @@ import com.github.cameltooling.idea.service.CamelService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.projectRoots.JavaSdk;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.roots.ContentEntry;
+import com.intellij.openapi.roots.LanguageLevelModuleExtension;
+import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.pom.java.LanguageLevel;
 import com.intellij.psi.PsiElement;
+import com.intellij.testFramework.LightProjectDescriptor;
 import com.intellij.testFramework.PsiTestUtil;
+import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.JavaMethodUtils;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jps.model.java.JpsJavaSdkType;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +50,7 @@ import java.util.List;
  * you should extend this class to make sure it is setup as expected and clean up on tearDown
  */
 public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeInsightFixtureTestCase {
-
+    private static final String BUILD_MOCK_JDK_DIRECTORY = "build/mockJDK-";
     private static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.24.0";
 
     private static File[] mavenArtifacts;
@@ -57,7 +68,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
     protected void setUp() throws Exception {
         super.setUp();
         if (!ignoreCamelCoreLib) {
-            PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myModule, "Maven: " + CAMEL_CORE_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
+            PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myFixture.getModule(), "Maven: " + CAMEL_CORE_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
         }
         ApplicationManager
             .getApplication()
@@ -123,5 +134,23 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         service.setScanThirdPartyComponents(true);
         service.setRealTimeSimpleValidation(true);
         service.setChosenCamelIcon("Camel Icon");
+    }
+
+    @NotNull
+    @Override
+    protected LightProjectDescriptor getProjectDescriptor() {
+        LanguageLevel languageLevel = LanguageLevel.JDK_1_8;
+        return new DefaultLightProjectDescriptor() {
+            @Override
+            public Sdk getSdk() {
+                String compilerOption = JpsJavaSdkType.complianceOption(languageLevel.toJavaVersion());
+                return JavaSdk.getInstance().createJdk( "java " + compilerOption, BUILD_MOCK_JDK_DIRECTORY + compilerOption, false );
+            }
+
+            @Override
+            public void configureModule(@NotNull Module module, @NotNull ModifiableRootModel model, @NotNull ContentEntry contentEntry) {
+                model.getModuleExtension( LanguageLevelModuleExtension.class ).setLanguageLevel( languageLevel );
+            }
+        };
     }
 }
