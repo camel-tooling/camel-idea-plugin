@@ -106,9 +106,9 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
             endIdx = text.indexOf(" ", startIdx) - 1;
         }
         //calc the end index for highlighted word
-        endIdx = endIdx < 0 ? (range.getEndOffset() - 1) : (range.getStartOffset() + endIdx) + 1;
+        endIdx = endIdx < 0 ? range.getEndOffset() : (range.getStartOffset() + endIdx) + 1;
 
-        if (endIdx <= startIdx) {
+        if (endIdx < startIdx) {
             endIdx = range.getEndOffset();
         }
         range = TextRange.create(range.getStartOffset() + result.getIndex(), endIdx);

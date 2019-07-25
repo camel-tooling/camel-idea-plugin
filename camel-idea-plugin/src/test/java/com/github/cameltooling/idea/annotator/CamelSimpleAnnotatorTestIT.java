@@ -135,7 +135,7 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
             + "            from(\"netty-http:http://localhost/cdi?matchOnUriPrefix=true&nettySharedHttpServer=#httpServer\")\n"
             + "            .id(\"http-route-cdi\")\n"
             + "            .transform()\n"
-            + "            .simple(\"Response from Camel CDI on route${routeId} using thread: ${threadNam<error descr=\"expected symbol functionEnd but was eol\">e</error>\");"
+            + "            .simple(\"Response from Camel CDI on route${routeId} using thread: ${threadNam<error descr=\"expected symbol functionEnd but was eol\">e\"</error>);"
             + "        }\n"
             + "    }";
     }
@@ -147,7 +147,7 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
             + "            from(\"netty-http:http://localhost/cdi?matchOnUriPrefix=true&nettySharedHttpServer=#httpServer\")\n"
             + "            .id(\"http-route-cdi\")\n"
             + "            .transform()\n"
-            + "            .simple(\"Response from Camel CDI on route${routeId} using thread: ${threadNam<error descr=\"expected symbol functionEnd but was eol\">e</error>\");"
+            + "            .simple(\"Response from Camel CDI on route${routeId} using thread: ${threadNam<error descr=\"expected symbol functionEnd but was eol\">e\"</error>);"
             + "        }\n"
             + "    }";
     }
