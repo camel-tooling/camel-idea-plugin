@@ -24,7 +24,6 @@ import com.intellij.lang.annotation.HighlightSeverity;
 
 /**
  * Test Camel URI validation and the expected value is highlighted
- * TODO : Still need to find out how we can make a positive test without it complaining about it can't find SDK classes
  *
  * TIP : Writing highlighting test can be tricky because if the highlight is one character off
  * it will fail, but the error messaged might still be correct. In this case it's likely the TextRange
@@ -78,10 +77,15 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         myFixture.checkHighlighting(false, false, true, true);
     }
 
+    public void testExpectedSymbolFunctionEndButWasEOL() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaExpectedSymbolFunctionEndTestData());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
     public void testAnnotatorUnknownOptionWithConsumerAnnotationValidation() {
-        assertTrue("Ignored until we fix the issue with running the test with SDK", true);
-        //myFixture.configureByText("AnnotatorTestData.java", getJavaUnknownOptionsConsumerAnnotationTestData());
-        //myFixture.checkHighlighting(false, false, true, true);
+        //assertTrue("Ignored until we fix the issue with running the test with SDK", true);
+        myFixture.configureByText("AnnotatorTestData.java", getJavaUnknownOptionsConsumerAnnotationTestData());
+        myFixture.checkHighlighting(false, false, true, true);
     }
 
     public void testXmlAnnotatorInvalidBooleanPropertyValidation() {
@@ -246,8 +250,9 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
 
     private String getJavaUnknownOptionsConsumerAnnotationTestData() {
         return "import org.apache.camel.builder.RouteBuilder;\n"
-            + "public class MyRouteBuilder extends RouteBuilder {\n"
-            + "         @Consumer(file:test?allowNullBody=true&<error descr=\"Unknown option\">foo</error>=bar);"
+            + "import org.apache.camel.Consume;\n"
+            + "public class MyPojoConsumer {\n"
+            + "         @Consumer(uri = \"file:test?allowNullBody=true&<error descr=\"Unknown option\">foo</error>=bar\");"
             + "         public void onCheese(String name) {}"
             + "    }";
     }
@@ -258,6 +263,17 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
             + "        public void configure() throws Exception {\n"
             + "            from(\"timer:trigger?bridgeErrorHandler=false\")\n"
             + "                .to(\"file:test?allowNullBody=<error descr=\"Invalid boolean value: FISH\">FISH</error>\")\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getJavaExpectedSymbolFunctionEndTestData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"direct:start\")\n"
+            + "                  .setHeader(Exchange.HTTP_URI, simple(\"{{api.url}}/customer/${header<error descr=\"expected symbol functionEnd but was eol\">.\"</error>))\n"
+            + "                  .to(\"mock:result\");\n"
             + "        }\n"
             + "    }";
     }
