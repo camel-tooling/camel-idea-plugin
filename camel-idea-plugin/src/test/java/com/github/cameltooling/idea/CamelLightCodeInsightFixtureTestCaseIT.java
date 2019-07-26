@@ -51,7 +51,7 @@ import java.util.List;
  */
 public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeInsightFixtureTestCase {
     private static final String BUILD_MOCK_JDK_DIRECTORY = "build/mockJDK-";
-    private static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.24.0";
+    private static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.24.1";
 
     private static File[] mavenArtifacts;
     private boolean ignoreCamelCoreLib;
