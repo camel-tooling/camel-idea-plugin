@@ -17,8 +17,11 @@
 package com.github.cameltooling.idea;
 
 import com.github.cameltooling.idea.service.CamelCatalogService;
+import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
+import com.github.cameltooling.idea.util.IdeaUtils;
+import com.github.cameltooling.idea.util.JavaMethodUtils;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
@@ -32,10 +35,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.testFramework.LightProjectDescriptor;
 import com.intellij.testFramework.PsiTestUtil;
 import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor;
-import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
-import com.github.cameltooling.idea.service.CamelPreferenceService;
-import com.github.cameltooling.idea.util.IdeaUtils;
-import com.github.cameltooling.idea.util.JavaMethodUtils;
+import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.java.JpsJavaSdkType;
@@ -49,7 +49,7 @@ import java.util.List;
  * Super class for Camel Plugin Testing. If you are testing plug-in code with LightCodeInsightFixtureTestCase
  * you should extend this class to make sure it is setup as expected and clean up on tearDown
  */
-public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeInsightFixtureTestCase {
+public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCodeInsightFixtureTestCase {
     private static final String BUILD_MOCK_JDK_DIRECTORY = "build/mockJDK-";
     private static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.24.1";
 
@@ -73,15 +73,15 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightCodeIn
         ApplicationManager
             .getApplication()
             .executeOnPooledThread(() -> ApplicationManager.getApplication().runReadAction(() -> {
-                disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelCatalogService.class));
-                disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelService.class));
-                disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelPreferenceService.class));
-                disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelIdeaUtils.class));
-                disposeOnTearDown(ServiceManager.getService(myModule.getProject(), IdeaUtils.class));
-                disposeOnTearDown(ServiceManager.getService(myModule.getProject(), JavaMethodUtils.class));
+                disposeOnTearDown(ServiceManager.getService(getModule().getProject(), CamelCatalogService.class));
+                disposeOnTearDown(ServiceManager.getService(getModule().getProject(), CamelService.class));
+                disposeOnTearDown(ServiceManager.getService(getModule().getProject(), CamelPreferenceService.class));
+                disposeOnTearDown(ServiceManager.getService(getModule().getProject(), CamelIdeaUtils.class));
+                disposeOnTearDown(ServiceManager.getService(getModule().getProject(), IdeaUtils.class));
+                disposeOnTearDown(ServiceManager.getService(getModule().getProject(), JavaMethodUtils.class));
             }));
 
-        ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(true);
+        ServiceManager.getService(getModule().getProject(), CamelService.class).setCamelPresent(true);
     }
 
     @Override

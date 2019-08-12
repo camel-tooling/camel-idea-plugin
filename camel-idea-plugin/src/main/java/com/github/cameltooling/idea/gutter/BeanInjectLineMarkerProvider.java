@@ -37,8 +37,10 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiAnnotationMemberValue;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiIdentifier;
+import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -109,9 +111,9 @@ public class BeanInjectLineMarkerProvider extends RelatedItemLineMarkerProvider 
     private BeanReference getBeanReference(PsiAnnotation beanInjectAnnotation) {
         return beanInjectAnnotation.getAttributes().stream()
                 .filter(a -> a.getAttributeName().equals("value"))
-                .filter(a -> a.getAttributeValue() != null && a.getAttributeValue().getSourceElement() != null)
-                .map(a -> a.getAttributeValue().getSourceElement())
-                .map(e -> Arrays.stream(e.getReferences()))
+                .filter(a -> a.getAttributeValue() != null && a.getAttributeValue() instanceof PsiAnnotationMemberValue)
+                .map(a -> a.getAttributeValue())
+                .map(e -> Arrays.stream(((PsiReferenceExpression)e).getReferences()))
                 .flatMap(Function.identity())
                 .filter(r -> r instanceof BeanReference)
                 .map(r -> (BeanReference) r)

@@ -132,7 +132,7 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myModule, "Maven: " + SPRING_CONTEXT_MAVEN_ARTIFACT, springMavenArtifacts[0].getParent(), springMavenArtifacts[0].getName());
+        PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), getModule(), "Maven: " + SPRING_CONTEXT_MAVEN_ARTIFACT, springMavenArtifacts[0].getParent(), springMavenArtifacts[0].getName());
     }
 
     public void testJavaBeanTestDataCompletionWithIncorrectBeanRef() {
