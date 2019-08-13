@@ -74,7 +74,7 @@ public class BeanInjectLineMarkerProviderTest extends CamelLightCodeInsightFixtu
 
     private void validateBeanInjectWithValue(RelatedItemLineMarkerInfo<? extends PsiElement> marker) {
         List<String> targetBeanNames = getTargetBeanNames(marker);
-        assertEquals(2, targetBeanNames.size());
+        assertEquals(1, targetBeanNames.size());
         assertEquals("testClass2Bean", targetBeanNames.get(0));
     }
 

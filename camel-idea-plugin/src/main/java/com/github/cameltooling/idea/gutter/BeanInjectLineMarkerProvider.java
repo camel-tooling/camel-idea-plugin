@@ -20,8 +20,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.Icon;
 import com.github.cameltooling.idea.reference.blueprint.BeanReference;
 import com.github.cameltooling.idea.reference.blueprint.model.ReferenceableBeanId;
@@ -40,6 +42,7 @@ import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiAnnotationMemberValue;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiIdentifier;
+import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -109,15 +112,13 @@ public class BeanInjectLineMarkerProvider extends RelatedItemLineMarkerProvider 
     }
 
     private BeanReference getBeanReference(PsiAnnotation beanInjectAnnotation) {
-        return beanInjectAnnotation.getAttributes().stream()
-                .filter(a -> a.getAttributeName().equals("value"))
-                .filter(a -> a.getAttributeValue() != null && a.getAttributeValue() instanceof PsiAnnotationMemberValue)
-                .map(a -> a.getAttributeValue())
-                .map(e -> Arrays.stream(((PsiReferenceExpression)e).getReferences()))
-                .flatMap(Function.identity())
+        return Optional.ofNullable(beanInjectAnnotation.findAttributeValue("value"))
+                .map(v -> Arrays.stream(v.getReferences()))
+                .orElse(Stream.empty())
                 .filter(r -> r instanceof BeanReference)
                 .map(r -> (BeanReference) r)
-                .findAny().orElse(null);
+                .findFirst()
+                .orElse(null);
     }
 
     private PsiAnnotation getBeanInjectAnnotation(PsiElement element) {
