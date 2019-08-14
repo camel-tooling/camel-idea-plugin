@@ -30,7 +30,7 @@ intellij {
 }
 
 publishPlugin {
-    def authenticationToken = "$System.env.intellij_token"
+    def authenticationToken = "$System.env.INTELLIJ_TOKEN"
     token authenticationToken
 }
 
