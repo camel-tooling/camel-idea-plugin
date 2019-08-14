@@ -34,18 +34,18 @@ public class CamelCatalogServiceTestIT extends CamelLightCodeInsightFixtureTestC
     }
 
     public void testNoCatalogInstance() {
-        ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(false);
+        ServiceManager.getService(getModule().getProject(), CamelService.class).setCamelPresent(false);
         myFixture.configureByFiles("CompleteJavaEndpointConsumerTestData.java", "CompleteYmlPropertyTestData.java",
             "CompleteJavaPropertyTestData.properties", "CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
         myFixture.complete(CompletionType.BASIC, 1);
-        assertEquals(false, ServiceManager.getService(myModule.getProject(), CamelCatalogService.class).isInstantiated());
+        assertEquals(false, ServiceManager.getService(getModule().getProject(), CamelCatalogService.class).isInstantiated());
     }
 
     public void testCatalogInstance() {
         myFixture.configureByFiles("CompleteJavaEndpointConsumerTestData.java", "CompleteYmlPropertyTestData.java",
             "CompleteJavaPropertyTestData.properties", "CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
         myFixture.complete(CompletionType.BASIC, 1);
-        assertEquals(true, ServiceManager.getService(myModule.getProject(), CamelCatalogService.class).isInstantiated());
+        assertEquals(true, ServiceManager.getService(getModule().getProject(), CamelCatalogService.class).isInstantiated());
     }
 
 }

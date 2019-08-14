@@ -24,16 +24,16 @@ import com.intellij.testFramework.exceptionCases.AbstractExceptionCase;
 public class CamelServiceTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
     
     public void testScanForCamelProjectShouldSupportDependenciesWithoutVersion() throws Throwable {
-        CamelService service = ServiceManager.getService(myModule.getProject(), CamelService.class);
+        CamelService service = ServiceManager.getService(getModule().getProject(), CamelService.class);
         assertNoException(ArrayIndexOutOfBoundsExceptionCase.check(
-            () -> PsiTestUtil.addProjectLibrary(myModule, "gradle::mylib:"))
+            () -> PsiTestUtil.addProjectLibrary(getModule(), "gradle::mylib:"))
         );
         assertTrue(service.isCamelPresent());
         assertNoException(ArrayIndexOutOfBoundsExceptionCase.check(
-            () -> PsiTestUtil.addProjectLibrary(myModule, "gradle:mygroup:myartifactId:"))
+            () -> PsiTestUtil.addProjectLibrary(getModule(), "gradle:mygroup:myartifactId:"))
         );
         assertNoException(ArrayIndexOutOfBoundsExceptionCase.check(
-            () -> PsiTestUtil.addProjectLibrary(myModule, "mygroup:myartifactId:"))
+            () -> PsiTestUtil.addProjectLibrary(getModule(), "mygroup:myartifactId:"))
         );
     }
 

@@ -158,7 +158,7 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
             Library.ModifiableModel libraryModifiableModel = library.getModifiableModel();
             libraryModifiableModel.addRoot(camelSpringVirtualFile, OrderRootType.CLASSES);
             libraryModifiableModel.commit();
-            ModuleRootModificationUtil.addDependency(myModule, library);
+            ModuleRootModificationUtil.addDependency(getModule(), library);
             return library;
         });
     }

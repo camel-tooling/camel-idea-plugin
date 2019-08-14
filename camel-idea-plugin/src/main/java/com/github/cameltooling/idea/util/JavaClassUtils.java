@@ -22,6 +22,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiAnnotationMemberValue;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiField;
@@ -69,7 +70,7 @@ public class JavaClassUtils implements Disposable {
     }
 
     /**
-     * Searching for the specific bean name and annotation to find the it's {@link PsiClass}
+     * Searching for the specific bean name and annotation to find it's {@link PsiClass}
      * @param beanName - Name of the bean to search for.
      * @param annotation - Type of bean annotation to filter on.
      * @param project - Project reference to narrow the search inside.
@@ -78,17 +79,17 @@ public class JavaClassUtils implements Disposable {
     public Optional<PsiClass> findBeanClassByName(String beanName, String annotation, Project project) {
         for (PsiClass psiClass : getClassesAnnotatedWith(project, annotation)) {
             final PsiAnnotation classAnnotation = psiClass.getAnnotation(annotation);
-            final JvmAnnotationAttribute attribute = classAnnotation.findAttribute("value");
+            PsiAnnotationMemberValue attribute = classAnnotation.findAttributeValue("value");
             if (attribute != null) {
-                final PsiElement sourceElement = attribute.getAttributeValue().getSourceElement();
-                if (sourceElement instanceof PsiReferenceExpressionImpl) {
-                    final PsiField psiField = (PsiField) sourceElement.getReference().resolve();
+                if (attribute instanceof PsiReferenceExpressionImpl) {
+                    //if the attribute value is field reference eg @bean(value = MyClass.BEAN_NAME)
+                    final PsiField psiField = (PsiField) attribute.getReference().resolve();
                     String staticBeanName = StringUtils.stripDoubleQuotes(PsiTreeUtil.getChildOfAnyType(psiField, PsiLiteralExpression.class).getText());
                     if (beanName.equals(staticBeanName)) {
                         return Optional.of(psiClass);
                     }
                 } else {
-                    final String value = sourceElement.getText();
+                    final String value = attribute.getText();
                     if (beanName.equals(StringUtils.stripDoubleQuotes(value))) {
                         return Optional.of(psiClass);
                     }
@@ -171,8 +172,8 @@ public class JavaClassUtils implements Disposable {
         String returnName = null;
         final PsiAnnotation annotation = clazz.getAnnotation(annotationFqn);
         if (annotation != null) {
-            final JvmAnnotationAttribute componentAnnotation = annotation.findAttribute("value");
-            returnName = componentAnnotation != null ? StringUtils.stripDoubleQuotes(componentAnnotation.getAttributeValue().getSourceElement().getText()) : Introspector.decapitalize(clazz.getName());
+            final PsiAnnotationMemberValue componentAnnotation = annotation.findAttributeValue("value");
+            returnName = componentAnnotation != null ? StringUtils.stripDoubleQuotes(componentAnnotation.getText()) : Introspector.decapitalize(clazz.getName());
         }
         return Optional.ofNullable(returnName);
     }

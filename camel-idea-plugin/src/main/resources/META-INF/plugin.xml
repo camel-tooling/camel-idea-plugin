@@ -30,6 +30,10 @@
     ]]></description>
 
   <change-notes><![CDATA[
+       v0.6.1
+      <ul>
+        <li>Upgrade to Intellij 2019.2</li>
+      </ul>
       v0.6.0
       <ul>
         <li>Bug fixes</li>
@@ -56,10 +60,6 @@
         <li>Upgraded to Intellij idea 2018.3.5</li>
         <li>Upgraded to Apache Camel 2.23.2</li>
       </ul>
-      v0.5.6
-      <ul>
-        <li>Upgraded to Apache Camel 2.23.0</li>
-      </ul>
     ]]>
   </change-notes>
 
@@ -68,7 +68,6 @@
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
-  <depends>com.intellij.modules.java</depends>
   <depends>com.intellij.modules.xml</depends>
 
   <!-- depend on the properties plugin -->

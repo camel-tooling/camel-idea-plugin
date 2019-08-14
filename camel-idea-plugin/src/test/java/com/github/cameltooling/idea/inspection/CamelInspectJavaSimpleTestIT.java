@@ -17,15 +17,14 @@
 package com.github.cameltooling.idea.inspection;
 
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
-import com.intellij.testFramework.InspectionTestCase;
+import com.intellij.testFramework.JavaInspectionTestCase;
 import com.intellij.testFramework.PsiTestUtil;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-import org.junit.Ignore;
 
 import java.io.File;
 
-@Ignore
-public class CamelInspectJavaSimpleTestIT extends InspectionTestCase {
+
+public class CamelInspectJavaSimpleTestIT extends JavaInspectionTestCase {
     public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.22.0";
 
     @Override

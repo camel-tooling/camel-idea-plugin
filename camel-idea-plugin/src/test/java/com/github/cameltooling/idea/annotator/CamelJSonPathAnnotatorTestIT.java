@@ -52,7 +52,7 @@ public class CamelJSonPathAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         File[] mavenArtifacts = getMavenArtifacts(CAMEL_JSONPATH_MAVEN_ARTIFACT);
         for (File file : mavenArtifacts) {
             final VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
-            final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myModule.getProject());
+            final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(getModule().getProject());
             ApplicationManager.getApplication().runWriteAction(() -> {
                 String name = file.getName();
                 // special for camel JARs
@@ -75,13 +75,13 @@ public class CamelJSonPathAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
                 final Library.ModifiableModel libraryModifiableModel = library.getModifiableModel();
                 libraryModifiableModel.addRoot(virtualFile, OrderRootType.CLASSES);
                 libraryModifiableModel.commit();
-                ModuleRootModificationUtil.addDependency(myModule, library);
+                ModuleRootModificationUtil.addDependency(getModule(), library);
             });
         }
 
-        disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelCatalogService.class));
-        disposeOnTearDown(ServiceManager.getService(myModule.getProject(), CamelService.class));
-        ServiceManager.getService(myModule.getProject(), CamelService.class).setCamelPresent(true);
+        disposeOnTearDown(ServiceManager.getService(getModule().getProject(), CamelCatalogService.class));
+        disposeOnTearDown(ServiceManager.getService(getModule().getProject(), CamelService.class));
+        ServiceManager.getService(getModule().getProject(), CamelService.class).setCamelPresent(true);
     }
 
     @Override
