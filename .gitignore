@@ -13,3 +13,5 @@ buildingtools/build/**
 /gradle.properties
 /.sandbox/
 **/build/
+**/out/
+/.gradle/*
