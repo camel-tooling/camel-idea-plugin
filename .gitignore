@@ -10,7 +10,6 @@ workspace/**
 /camel-idea-plugin.iml
 test-system/**
 buildingtools/build/**
-/gradle.properties
 /.sandbox/
 **/build/
 **/out/
