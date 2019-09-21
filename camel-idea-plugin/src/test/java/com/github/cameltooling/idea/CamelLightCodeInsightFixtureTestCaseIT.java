@@ -41,9 +41,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.java.JpsJavaSdkType;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Super class for Camel Plugin Testing. If you are testing plug-in code with LightCodeInsightFixtureTestCase
@@ -51,18 +53,29 @@ import java.util.List;
  */
 public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCodeInsightFixtureTestCase {
     private static final String BUILD_MOCK_JDK_DIRECTORY = "build/mockJDK-";
-    private static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.24.1";
 
     private static File[] mavenArtifacts;
     private boolean ignoreCamelCoreLib;
 
+    protected static String CAMEL_VERSION;
+    protected static String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:%s";
+
+
     static {
         try {
+            final String projectRoot = System.getProperty("user.dir").substring(0, System.getProperty("user.dir").lastIndexOf('/'));
+
+            Properties gradleProperties = new Properties();
+            gradleProperties.load(new FileInputStream(projectRoot +"/gradle.properties"));
+            CAMEL_VERSION = gradleProperties.getProperty("camelVersion");
+            CAMEL_CORE_MAVEN_ARTIFACT = String.format(CAMEL_CORE_MAVEN_ARTIFACT, CAMEL_VERSION);
+
             mavenArtifacts = getMavenArtifacts(CAMEL_CORE_MAVEN_ARTIFACT);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 
     @Override
     protected void setUp() throws Exception {

@@ -129,7 +129,8 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
 
     private String exampleHtmlFileText(String name) throws IOException {
         final File htmlPath = new File(getTestDataPath() + name + ".html");
-        return StringUtil.convertLineSeparators(FileUtil.loadFile(htmlPath).trim(), "");
+        final String hmltDoc = StringUtil.convertLineSeparators(FileUtil.loadFile(htmlPath).trim(), "");
+        return String.format(hmltDoc, CAMEL_VERSION);
     }
 
     private String readExpectedFile() {

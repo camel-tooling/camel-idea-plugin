@@ -37,7 +37,6 @@ publishPlugin {
 println "building with intellij type : ${intellij.type}"
 
 dependencies {
-    def camelVersion = '2.24.1'
     compile "org.apache.camel:camel-catalog:${camelVersion}"
     compile "org.apache.camel:camel-catalog-maven:${camelVersion}"
     testCompile "org.apache.camel:camel-core:${camelVersion}"
