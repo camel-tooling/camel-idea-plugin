@@ -67,8 +67,6 @@ If you want to change the default preferences open the `Preferences...` menu, se
 
 The Camel IDEA plugin currently requires IDEA 2016.2 or newer. If you are using a older version of IDEA and still want to try the plugin, follow the guide [here](#runningwithpreviousversion)
 
-The current plugin uses `since-build 162`
-
 IDEA provides more information about their SDK versions here: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
 
 
