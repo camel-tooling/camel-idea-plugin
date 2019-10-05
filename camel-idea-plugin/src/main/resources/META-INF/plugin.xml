@@ -32,6 +32,7 @@
   <change-notes><![CDATA[
       v0.6.2
       <ul>
+        <li>Upgrade to Intellij 2019.2.3</li>
         <li>Upgraded to Apache Camel 2.24.2</li>
         <li>Upgrade to Intellij 2019.2.2</li>
       </ul>
