@@ -30,6 +30,10 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      v0.6.3
+      <ul>
+        <li></li>
+      </ul>  
       v0.6.2
       <ul>
         <li>Upgrade to Intellij 2019.2.3</li>
@@ -54,17 +58,6 @@
       v0.5.8
       <ul>
         <li>No changes. Only version bump</li>
-      </ul>
-      v0.5.7
-      <ul>
-        <li>Upgraded to to Apache Camel 2.24.0</li>
-        <li>Upgraded to Intellij idea 2019.1.2</li>
-        <li>Add support Spring bean code completion and find usage</li>
-        <li>Add support for code completion with direct routes and find usage. Contributed by rastislavpapp</li>
-        <li>Bug fixes</li>
-        <li>Upgraded to Intellij idea 2019.1</li>
-        <li>Upgraded to Intellij idea 2018.3.5</li>
-        <li>Upgraded to Apache Camel 2.23.2</li>
       </ul>
     ]]>
   </change-notes>
