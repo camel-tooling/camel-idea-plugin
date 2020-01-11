@@ -30,6 +30,10 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      v0.6.4
+      <ul>
+        <li>bug fixes</li>
+      </ul>
       v0.6.3
       <ul>
         <li>Upgrade to Intellij 2019.3.1</li>
@@ -55,10 +59,6 @@
       v0.5.9
       <ul>
         <li>Bug fixes</li>
-      </ul>
-      v0.5.8
-      <ul>
-        <li>No changes. Only version bump</li>
       </ul>
     ]]>
   </change-notes>
