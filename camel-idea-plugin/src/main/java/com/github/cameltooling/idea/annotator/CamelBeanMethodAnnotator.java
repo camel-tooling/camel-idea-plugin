@@ -33,6 +33,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifier;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -86,7 +87,7 @@ public class CamelBeanMethodAnnotator implements Annotator {
             errorMessage = matchMethods.isEmpty() ? String.format(METHOD_CAN_NOT_RESOLVED, methodNameWithParameters, psiClass.getQualifiedName()) : null;
         } else {
             final long privateMethods = matchMethods.stream()
-                .filter(method -> getJavaMethodUtils().isMatchOneOfModifierType(method, JvmModifier.PRIVATE))
+                .filter(method -> getJavaMethodUtils().isMatchOneOfModifierType(method, PsiModifier.PRIVATE))
                 .count();
 
             final boolean isAnnotatedWithHandler = matchMethods.stream().anyMatch(psiMethod -> getCamelIdeaUtils().isAnnotatedWithHandler(psiMethod));

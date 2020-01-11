@@ -28,6 +28,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiParameter;
 
 public class JavaMethodUtils implements Disposable {
@@ -86,9 +87,10 @@ public class JavaMethodUtils implements Disposable {
      * @param type - to match on.
      * @return true if the method is match one og the jvm modifier
      */
-    public boolean isMatchOneOfModifierType(PsiMethod method, JvmModifier... type) {
-        return Arrays.stream(method.getModifiers())
-            .anyMatch(m -> Arrays.stream(type).anyMatch(Predicate.isEqual(m)));
+    public boolean isMatchOneOfModifierType(PsiMethod method, String... type) {
+        return Stream
+            .of(type)
+            .anyMatch(m -> method.getModifierList().hasModifierProperty(m));
     }
 
     /**
@@ -98,7 +100,7 @@ public class JavaMethodUtils implements Disposable {
      */
     public Collection<PsiMethod> getBeanAccessibleMethods(Collection<PsiMethod> methods) {
         return methods.stream()
-            .filter(method -> !isMatchOneOfModifierType(method, JvmModifier.PRIVATE, JvmModifier.ABSTRACT))
+            .filter(method -> !isMatchOneOfModifierType(method, PsiModifier.PRIVATE, PsiModifier.ABSTRACT))
             .filter(method -> !method.isConstructor())
             .collect(Collectors.toList());
     }
