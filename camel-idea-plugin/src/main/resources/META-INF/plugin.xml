@@ -32,8 +32,9 @@
   <change-notes><![CDATA[
       v0.6.3
       <ul>
+        <li>Upgrade to Intellij 2019.3.1</li>
         <li>Upgrade to Intellij 2019.2.4</li>
-      </ul>  
+      </ul>
       v0.6.2
       <ul>
         <li>Upgrade to Intellij 2019.2.3</li>

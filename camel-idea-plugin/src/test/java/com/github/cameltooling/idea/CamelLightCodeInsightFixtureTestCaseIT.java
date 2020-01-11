@@ -76,7 +76,6 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
         }
     }
 
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -88,10 +87,10 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
             .executeOnPooledThread(() -> ApplicationManager.getApplication().runReadAction(() -> {
                 disposeOnTearDown(ServiceManager.getService(getModule().getProject(), CamelCatalogService.class));
                 disposeOnTearDown(ServiceManager.getService(getModule().getProject(), CamelService.class));
-                disposeOnTearDown(ServiceManager.getService(getModule().getProject(), CamelPreferenceService.class));
-                disposeOnTearDown(ServiceManager.getService(getModule().getProject(), CamelIdeaUtils.class));
-                disposeOnTearDown(ServiceManager.getService(getModule().getProject(), IdeaUtils.class));
-                disposeOnTearDown(ServiceManager.getService(getModule().getProject(), JavaMethodUtils.class));
+                disposeOnTearDown(ServiceManager.getService(CamelPreferenceService.class));
+                disposeOnTearDown(ServiceManager.getService(CamelIdeaUtils.class));
+                disposeOnTearDown(ServiceManager.getService(IdeaUtils.class));
+                disposeOnTearDown(ServiceManager.getService(JavaMethodUtils.class));
             }));
 
         ServiceManager.getService(getModule().getProject(), CamelService.class).setCamelPresent(true);
