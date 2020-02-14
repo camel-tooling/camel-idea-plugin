@@ -23,7 +23,7 @@ apply plugin: 'java'
 apply plugin: 'org.jetbrains.intellij'
 
 intellij {
-    version = '2019.3.1'
+    version = '2019.3'
     downloadSources = true
     type = project.hasProperty('intellij_type') ? project.intellij_type : 'IC'
     plugins = ['java', 'java-i18n', 'properties', 'yaml']
