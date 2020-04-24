@@ -16,9 +16,6 @@
  */
 package com.github.cameltooling.idea.completion.endpoint;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import com.github.cameltooling.idea.model.ComponentModel;
 import com.github.cameltooling.idea.model.EndpointOptionModel;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
@@ -37,6 +34,10 @@ import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Smart completion for editing a Camel endpoint uri, to show a list of possible endpoint options which can be added.
  * For example editing <tt>jms:queue?_CURSOR_HERE_</tt>. Which presents the user
@@ -48,46 +49,56 @@ public final class CamelSmartCompletionEndpointOptions {
         // static class
     }
 
-    public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(String[] query, ComponentModel component,
-                                                                                   Map<String, String> existing, boolean xmlMode, PsiElement element, Editor editor) {
-        List<LookupElement> answer = new ArrayList<>();
+    public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(final String[] query,
+                                                                                   final ComponentModel component,
+                                                                                   final Map<String, String> existing,
+                                                                                   final boolean xmlMode,
+                                                                                   final PsiElement element,
+                                                                                   final Editor editor) {
+        final List<LookupElement> answer = new ArrayList<>();
 
         String queryAtPosition = query[2];
         if (xmlMode) {
             queryAtPosition = queryAtPosition.replace("&amp;", "&");
         }
 
-        List<EndpointOptionModel> options = component.getEndpointOptions();
+        final List<EndpointOptionModel> options = component.getEndpointOptions();
         // sort the options A..Z which is easier to users to understand
-        options.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
+        options.sort((o1, o2) -> o1
+                .getName()
+                .compareToIgnoreCase(o2.getName()));
         queryAtPosition = removeUnknownOption(queryAtPosition, existing, element);
 
-        for (EndpointOptionModel option : options) {
+        for (final EndpointOptionModel option : options) {
 
             if ("parameter".equals(option.getKind())) {
-                String name = option.getName();
+                final String name = option.getName();
 
                 // if we are consumer only, then any option that has producer in the label should be skipped (as its only for producer)
-                boolean consumerOnly = getCamelIdeaUtils().isConsumerEndpoint(element);
-                if (consumerOnly && option.getLabel().contains("producer")) {
+                final boolean consumerOnly = getCamelIdeaUtils().isConsumerEndpoint(element);
+                if (consumerOnly && option
+                        .getLabel()
+                        .contains("producer")) {
                     continue;
                 }
                 // if we are producer only, then any option that has consume in the label should be skipped (as its only for consumer)
-                boolean producerOnly = getCamelIdeaUtils().isProducerEndpoint(element);
+                final boolean producerOnly = getCamelIdeaUtils().isProducerEndpoint(element);
                 if (producerOnly && option.getLabel().contains("consumer")) {
                     continue;
                 }
 
                 // only add if not already used (or if the option is multi valued then it can have many)
-                String old = existing != null ? existing.get(name) : "";
+                final String old = existing != null ? existing.get(name) : "";
                 if ("true".equals(option.getMultiValue()) || existing == null || old == null || old.isEmpty()) {
 
                     // no tail for prefix, otherwise use = to setup for value
-                    String key = option.getPrefix().isEmpty() ? name : option.getPrefix();
+                    final String key = option
+                            .getPrefix()
+                            .isEmpty() ? name : option.getPrefix();
 
                     // the lookup should prepare for the new option
                     String lookup;
-                    String concatQuery = query[0];
+                    final String concatQuery = query[0];
                     if (!concatQuery.contains("?")) {
                         // none existing options so we need to start with a ? mark
                         lookup = queryAtPosition + "?" + key;
@@ -103,12 +114,14 @@ public final class CamelSmartCompletionEndpointOptions {
                         lookup = lookup.replace("&", "&amp;");
                     }
                     LookupElementBuilder builder = LookupElementBuilder.create(lookup);
-                    String suffix = query[1];
+                    final String suffix = query[1];
                     builder = addInsertHandler(editor, builder, suffix);
                     // only show the option in the UI
                     builder = builder.withPresentableText(name);
                     // we don't want to highlight the advanced options which should be more seldom in use
-                    boolean advanced = option.getGroup().contains("advanced");
+                    final boolean advanced = option
+                            .getGroup()
+                            .contains("advanced");
                     builder = builder.withBoldness(!advanced);
                     if (!option.getJavaType().isEmpty()) {
                         builder = builder.withTypeText(option.getJavaType(), true);
@@ -123,7 +136,7 @@ public final class CamelSmartCompletionEndpointOptions {
                     } else if ("true".equals(option.getSecret())) {
                         builder = builder.withIcon(AllIcons.Nodes.SecurityRole);
                     } else if ("true".equals(option.getMultiValue())) {
-                        builder = builder.withIcon(AllIcons.Nodes.ExpandNode);
+                        builder = builder.withIcon(AllIcons.General.ArrowRight);
                     } else if (!option.getEnums().isEmpty()) {
                         builder = builder.withIcon(AllIcons.Nodes.Enum);
                     } else if ("object".equals(option.getType())) {
@@ -139,10 +152,12 @@ public final class CamelSmartCompletionEndpointOptions {
     }
 
 
-
-    public static List<LookupElement> addSmartCompletionSuggestionsContextPath(String val, ComponentModel component,
-                                                                               Map<String, String> existing, boolean xmlMode, PsiElement psiElement) {
-        List<LookupElement> answer = new ArrayList<>();
+    public static List<LookupElement> addSmartCompletionSuggestionsContextPath(String val,
+                                                                               final ComponentModel component,
+                                                                               final Map<String, String> existing,
+                                                                               final boolean xmlMode,
+                                                                               final PsiElement psiElement) {
+        final List<LookupElement> answer = new ArrayList<>();
 
         // show the syntax as the only choice for now
         LookupElementBuilder builder = LookupElementBuilder.create(val);
@@ -150,10 +165,10 @@ public final class CamelSmartCompletionEndpointOptions {
         builder = builder.withBoldness(true);
         builder = builder.withPresentableText(component.getSyntax());
 
-        LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE);
+        final LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE);
         answer.add(element);
         val = removeUnknownEnum(val, psiElement);
-        List<LookupElement> old = addSmartCompletionContextPathEnumSuggestions(val, component, existing);
+        final List<LookupElement> old = addSmartCompletionContextPathEnumSuggestions(val, component, existing);
         if (!old.isEmpty()) {
             answer.addAll(old);
         }
@@ -161,31 +176,42 @@ public final class CamelSmartCompletionEndpointOptions {
         return answer;
     }
 
-    private static List<LookupElement> addSmartCompletionContextPathEnumSuggestions(String val, ComponentModel component,
-                                                                                    Map<String, String> existing) {
-        List<LookupElement> answer = new ArrayList<>();
+    private static List<LookupElement> addSmartCompletionContextPathEnumSuggestions(final String val,
+                                                                                    final ComponentModel component,
+                                                                                    final Map<String, String> existing) {
+        final List<LookupElement> answer = new ArrayList<>();
 
         double priority = 100.0d;
 
         // lets help the suggestion list if we are editing the context-path and only have 1 enum type option
         // and the option has not been in use yet, then we can populate the list with the enum values.
 
-        long enums = component.getEndpointOptions().stream().filter(o -> "path".equals(o.getKind()) && !o.getEnums().isEmpty()).count();
+        final long enums = component
+                .getEndpointOptions()
+                .stream()
+                .filter(o -> "path".equals(o.getKind()) && !o
+                        .getEnums()
+                        .isEmpty())
+                .count();
         if (enums == 1) {
-            for (EndpointOptionModel option : component.getEndpointOptions()) {
+            for (final EndpointOptionModel option : component.getEndpointOptions()) {
 
                 // only add support for enum in the context-path smart completion
-                if ("path".equals(option.getKind()) && !option.getEnums().isEmpty()) {
-                    String name = option.getName();
+                if ("path".equals(option.getKind()) && !option
+                        .getEnums()
+                        .isEmpty()) {
+                    final String name = option.getName();
                     // only add if not already used
-                    String old = existing != null ? existing.get(name) : "";
+                    final String old = existing != null ? existing.get(name) : "";
                     if (existing == null || old == null || old.isEmpty()) {
 
                         // add all enum as choices
-                        for (String choice : option.getEnums().split(",")) {
+                        for (final String choice : option
+                                .getEnums()
+                                .split(",")) {
 
-                            String key = choice;
-                            String lookup = val + key;
+                            final String key = choice;
+                            final String lookup = val + key;
 
                             LookupElementBuilder builder = LookupElementBuilder.create(lookup);
                             // only show the option in the UI
@@ -221,9 +247,10 @@ public final class CamelSmartCompletionEndpointOptions {
      * Remove unknown option at the cursor location from the query string
      * from("timer:trigger?repeatCount=10&del<caret>")
      */
-    private static String removeUnknownOption(String val, Map<String, String> existing, PsiElement element) {
+    private static String removeUnknownOption(String val, final Map<String, String> existing,
+                                              final PsiElement element) {
 
-        String[] strToRemove = getIdeaUtils().getQueryParameterAtCursorPosition(element);
+        final String[] strToRemove = getIdeaUtils().getQueryParameterAtCursorPosition(element);
         //to compare the string against known options we need to strip it from equal sign
         String searchStr = strToRemove[0];
         if (!searchStr.isEmpty() && !searchStr.endsWith("&") && existing != null) {
@@ -243,9 +270,9 @@ public final class CamelSmartCompletionEndpointOptions {
      * Remove unknown option at the cursor location from the query string
      * from("jms:qu<caret>")
      */
-    private static String removeUnknownEnum(String val, PsiElement element) {
+    private static String removeUnknownEnum(String val, final PsiElement element) {
 
-        String[] strToRemove = getIdeaUtils().getQueryParameterAtCursorPosition(element);
+        final String[] strToRemove = getIdeaUtils().getQueryParameterAtCursorPosition(element);
         //to compare the string against known options we need to strip it from equal sign
         strToRemove[0] = strToRemove[0].replace(":", "");
         if (!strToRemove[0].isEmpty()) {
@@ -258,7 +285,8 @@ public final class CamelSmartCompletionEndpointOptions {
      * We need special logic to determine when it should insert "=" at the end of the options
      */
     @NotNull
-    private static LookupElementBuilder addInsertHandler(final Editor editor, final LookupElementBuilder builder, String suffix) {
+    private static LookupElementBuilder addInsertHandler(final Editor editor, final LookupElementBuilder builder,
+                                                         final String suffix) {
         return builder.withInsertHandler((context, item) -> {
             // enforce using replace select char as we want to replace any existing option
             if (context.getCompletionChar() == Lookup.NORMAL_SELECT_CHAR) {
@@ -267,21 +295,24 @@ public final class CamelSmartCompletionEndpointOptions {
                     //if it's a property file the PsiElement does not start and end with an quot
                     endSelectOffBy = 1;
                 }
-                final char text = context.getDocument().getCharsSequence().charAt(context.getSelectionEndOffset() - endSelectOffBy);
+                final char text = context
+                        .getDocument()
+                        .getCharsSequence()
+                        .charAt(context.getSelectionEndOffset() - endSelectOffBy);
                 if (text != '=') {
                     EditorModificationUtil.insertStringAtCaret(editor, "=");
                 }
             } else if (context.getCompletionChar() == Lookup.REPLACE_SELECT_CHAR) {
                 // we still want to keep the suffix because they are other options
                 String value = suffix;
-                int pos = value.indexOf("&");
+                final int pos = value.indexOf("&");
                 if (pos > -1) {
                     // strip out first part of suffix until next option
                     value = value.substring(pos);
                 }
                 EditorModificationUtil.insertStringAtCaret(editor, "=" + value);
                 // and move cursor back again
-                int offset = -1 * value.length();
+                final int offset = -1 * value.length();
                 EditorModificationUtil.moveCaretRelatively(editor, offset);
             }
 
