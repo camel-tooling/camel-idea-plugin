@@ -77,6 +77,8 @@
   <!-- depend on the yml plugin -->
   <depends>org.jetbrains.plugins.yaml</depends>
 
+  <depends>com.intellij.java</depends>
+
   <extensions defaultExtensionNs="org.apache.camel">
     <IdeaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.idea.JavaIdeaUtils" />
     <IdeaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.idea.XmlIdeaUtils" />
