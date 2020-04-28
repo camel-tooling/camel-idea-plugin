@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel IDEA Plugin</name>
-  <version>0.6.4</version>
+  <version>0.6.5</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -32,6 +32,10 @@
   <change-notes><![CDATA[
       v0.6.4
       <ul>
+        <li>bug fixes</li>
+      </ul>
+      v0.6.4
+      <ul>
         <li>Upgrade to IntelliJ IDEA 2020.1</li>
         <li>bug fixes</li>
       </ul>
@@ -56,10 +60,6 @@
         <li>Upgrade to Intellij 2019.1.3</li>
         <li>Add support for using static string name as bean reference</li>
         <li>Upgraded to Apache Camel 2.24.1</li>
-      </ul>
-      v0.5.9
-      <ul>
-        <li>Bug fixes</li>
       </ul>
     ]]>
   </change-notes>

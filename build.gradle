@@ -24,7 +24,7 @@ allprojects {
     }
     
     group = 'com.github.camel-tooling'
-    version = '0.6.4-SNAPSHOT'
+    version = '0.6.5-SNAPSHOT'
 }
 
 subprojects {
