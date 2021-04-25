@@ -37,7 +37,6 @@ import com.intellij.psi.tree.IElementType;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.EndpointValidationResult;
 import org.apache.camel.catalog.LanguageValidationResult;
-import org.apache.camel.catalog.SimpleValidationResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import static com.github.cameltooling.idea.util.StringUtils.isEmpty;
@@ -126,14 +125,14 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
             // need to use the classloader that can load classes from the camel-core
             ClassLoader loader = camelService.getCamelCoreClassloader();
             if (loader != null) {
-                SimpleValidationResult result;
+                LanguageValidationResult result;
                 boolean predicate = getCamelIdeaUtils().isCamelExpressionUsedAsPredicate(element, "simple");
                 if (predicate) {
                     LOG.debug("Inspecting simple predicate: " + text);
-                    result = catalogService.validateSimplePredicate(loader, text);
+                    result = catalogService.validateLanguageExpression(loader, "simple", text);
                 } else {
                     LOG.debug("Inspecting simple expression: " + text);
-                    result = catalogService.validateSimpleExpression(loader, text);
+                    result = catalogService.validateLanguageExpression(loader, "simple", text);
                 }
                 if (!result.isSuccess()) {
                     // favor the short error message

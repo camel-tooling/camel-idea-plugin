@@ -61,6 +61,7 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
         psiMethod().withName("method").withParameters("java.lang.Object", "java.lang.String")
     );
 
+    @Override
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
         registrar.registerReferenceProvider(or(BEAN_CLASS_METHOD_PATTERN, METHOD_CLASS_METHOD_PATTERN), new CamelPsiReferenceProvider() {
             @NotNull

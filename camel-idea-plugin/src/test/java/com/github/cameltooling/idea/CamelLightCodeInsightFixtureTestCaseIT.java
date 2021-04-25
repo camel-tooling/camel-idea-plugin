@@ -16,6 +16,13 @@
  */
 package com.github.cameltooling.idea;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
 import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
@@ -39,13 +46,6 @@ import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.java.JpsJavaSdkType;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * Super class for Camel Plugin Testing. If you are testing plug-in code with LightCodeInsightFixtureTestCase
@@ -151,7 +151,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
     @NotNull
     @Override
     protected LightProjectDescriptor getProjectDescriptor() {
-        LanguageLevel languageLevel = LanguageLevel.JDK_1_8;
+        LanguageLevel languageLevel = LanguageLevel.JDK_11;
         return new DefaultLightProjectDescriptor() {
             @Override
             public Sdk getSdk() {

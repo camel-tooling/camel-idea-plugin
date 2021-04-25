@@ -70,7 +70,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
 
     @Override
     protected void collectNavigationMarkers(@NotNull PsiElement element,
-                                            Collection<? super RelatedItemLineMarkerInfo> result) {
+                                            @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
         //TODO: remove this when IdeaUtils.isFromJavaMethodCall will be fixed
         if (isJavaTokenLiteralExpression(element)
             || isXmlTokenLiteralExpression(element)

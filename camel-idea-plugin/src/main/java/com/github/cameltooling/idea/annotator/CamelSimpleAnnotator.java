@@ -28,7 +28,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlAttributeValue;
 import org.apache.camel.catalog.CamelCatalog;
-import org.apache.camel.catalog.SimpleValidationResult;
+import org.apache.camel.catalog.LanguageValidationResult;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -60,14 +60,14 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                 // need to use the classloader that can load classes from the camel-core
                 ClassLoader loader = camelService.getCamelCoreClassloader();
                 if (loader != null) {
-                    SimpleValidationResult result;
+                    LanguageValidationResult result;
                     predicate = getCamelIdeaUtils().isCamelExpressionUsedAsPredicate(element, "simple");
                     if (predicate) {
                         LOG.debug("Validate simple predicate: " + text);
-                        result = catalogService.validateSimplePredicate(loader, text);
+                        result = catalogService.validateLanguageExpression(loader, "simple", text);
                     } else {
                         LOG.debug("Validate simple expression: " + text);
-                        result = catalogService.validateSimpleExpression(loader, text);
+                        result = catalogService.validateLanguageExpression(loader, "simple", text);
                     }
                     if (!result.isSuccess()) {
                         String error = result.getShortError();
@@ -89,7 +89,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
      * Adjust the text range according to the type of ${@link PsiElement}
      * @return a new text range
      */
-    private TextRange getAdjustedTextRange(@NotNull PsiElement element, TextRange range, String text, SimpleValidationResult result) {
+    private TextRange getAdjustedTextRange(@NotNull PsiElement element, TextRange range, String text, LanguageValidationResult result) {
         if (element instanceof XmlAttributeValue) {
             // we can use the xml range as-is
             range = ((XmlAttributeValue) element).getValueTextRange();

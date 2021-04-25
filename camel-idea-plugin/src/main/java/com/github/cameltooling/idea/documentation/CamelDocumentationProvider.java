@@ -54,7 +54,9 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlToken;
 import com.intellij.psi.xml.XmlTokenType;
 import org.apache.camel.catalog.CamelCatalog;
-import org.apache.camel.catalog.JSonSchemaHelper;
+import org.apache.camel.util.json.DeserializationException;
+import org.apache.camel.util.json.JsonObject;
+import org.apache.camel.util.json.Jsoner;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import static com.github.cameltooling.idea.util.StringUtils.asComponentName;
@@ -423,24 +425,21 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
         StringBuilder options = new StringBuilder();
         if (existing != null && !existing.isEmpty()) {
-            List<Map<String, String>> lines = JSonSchemaHelper.parseJsonSchema("properties", json, true);
+            JsonObject jsonObject;
+            try {
+                 jsonObject = (JsonObject) Jsoner.deserialize(json);
+            } catch (DeserializationException e) {
+                throw new RuntimeException(e);
+            }
+            Map<String, JsonObject> properties = jsonObject.getMap("properties");
 
             for (Map.Entry<String, String> entry : existing.entrySet()) {
                 String name = entry.getKey();
                 String value = entry.getValue();
-
-                Map<String, String> row;
-
-                // is it a multi valued option then we need to find the option name to use for lookup
-                String option = JSonSchemaHelper.getPropertyNameFromNameWithPrefix(lines, name);
-                if (option != null && JSonSchemaHelper.isPropertyMultiValue(lines, option)) {
-                    row = JSonSchemaHelper.getRow(lines, option);
-                } else {
-                    row = JSonSchemaHelper.getRow(lines, name);
-                }
+                JsonObject row = properties.get(name);
 
                 if (row != null) {
-                    String kind = row.get("kind");
+                    String kind = row.getString("kind");
 
                     String line;
                     if ("path".equals(kind)) {
@@ -451,7 +450,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                     options.append("<br/>");
                     options.append("<b>").append(line).append("</b>");
 
-                    String summary = row.get("description");
+                    String summary = row.getString("description");
                     // the text looks a bit weird when using single /
                     summary = summary.replace('/', ' ');
                     options.append(wrapText(summary, wrapLength)).append("<br/>");

@@ -30,6 +30,11 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      v.0.6.5
+      <ul>
+        <li>Upgrade to Intellij 2021.1</li>
+        <li>Upgrade to Camel 3</li>
+      </ul>
       v0.6.4
       <ul>
         <li>bug fixes</li>
@@ -65,7 +70,7 @@
   </change-notes>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="182.2371.4"/>
+<!--  <idea-version since-build="203.7148.57" />-->
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->

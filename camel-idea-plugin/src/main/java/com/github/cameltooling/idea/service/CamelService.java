@@ -58,7 +58,7 @@ import org.apache.camel.catalog.CamelCatalog;
 import org.jetbrains.annotations.NotNull;
 import static com.github.cameltooling.idea.service.XmlUtils.getChildNodeByTagName;
 import static com.github.cameltooling.idea.service.XmlUtils.loadDocument;
-import static org.apache.camel.catalog.CatalogHelper.loadText;
+import static org.apache.camel.catalog.impl.CatalogHelper.loadText;
 
 /**
  * Service access for Camel libraries
