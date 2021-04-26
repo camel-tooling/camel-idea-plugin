@@ -30,7 +30,7 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.0.6.5
+      v.0.7.0
       <ul>
         <li>Upgrade to Intellij 2021.1</li>
         <li>Upgrade to Camel 3</li>
