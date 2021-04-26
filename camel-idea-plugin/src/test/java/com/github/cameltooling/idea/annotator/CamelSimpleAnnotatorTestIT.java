@@ -17,6 +17,7 @@
 package com.github.cameltooling.idea.annotator;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import org.junit.Ignore;
 
 /**
  * Test Camel simple validation and the expected value is highlighted
@@ -60,6 +61,7 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
         myFixture.checkHighlighting(false, false, true, true);
     }
 
+    @Ignore
     public void testAnnotatorCamelPredicateValidation() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaWithCamelPredicate());
         myFixture.checkHighlighting(false, false, false, true);

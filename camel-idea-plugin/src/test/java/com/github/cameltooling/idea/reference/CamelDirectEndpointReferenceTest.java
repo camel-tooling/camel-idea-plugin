@@ -7,6 +7,7 @@ import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import com.github.cameltooling.idea.reference.endpoint.direct.DirectEndpointPsiElement;
 import org.intellij.lang.annotations.Language;
+import org.junit.Ignore;
 
 import java.util.List;
 
@@ -79,6 +80,7 @@ public class CamelDirectEndpointReferenceTest extends CamelLightCodeInsightFixtu
         "  </route>" +
         "</camelContext>";
 
+    @Ignore
     public void testJavaDirectEndpointReference() {
         myFixture.configureByText("RouteWithReferences.java", JAVA_ROUTE_WITH_REFERENCE);
         PsiElement element = TestReferenceUtil.getParentElementAtCaret(myFixture);

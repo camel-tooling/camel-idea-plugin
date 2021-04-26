@@ -16,6 +16,7 @@
  */
 package com.github.cameltooling.idea;
 
+/*
 import java.io.File;
 import java.io.IOException;
 
@@ -38,10 +39,12 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
+*/
 /**
  * Test if the {@link CamelService} service is updated correctly when changes happen to
  * the Project and model configuration
- */
+ *//*
+
 public class CamelProjectComponentTestIT extends ModuleTestCase {
 
     private File root;
@@ -163,3 +166,4 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         });
     }
 }
+*/

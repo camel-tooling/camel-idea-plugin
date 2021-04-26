@@ -32,6 +32,7 @@ import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiReference;
+import org.junit.Ignore;
 
 /**
  * Test if the expected documentation is called where the caret is placed
@@ -73,6 +74,7 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
         return "src/test/resources/testData/documentation/";
     }
 
+    @Ignore
     public void testJavaClassQuickNavigateInfo() throws Exception {
         myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestWithCursorBeforeCamelComponent());
 
@@ -89,6 +91,7 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
         assertNull(new CamelDocumentationProvider().getUrlFor(null, null));
     }
 
+    @Ignore
     public void testGenerateDoc() throws Exception {
         myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestDataWithCursorAfterQuestionMark());
 

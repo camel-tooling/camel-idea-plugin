@@ -20,6 +20,7 @@ import java.util.List;
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.completion.CompletionType;
 import org.intellij.lang.annotations.Language;
+import org.junit.Ignore;
 
 /**
  * Testing bean reference completion in blueprint files
@@ -85,6 +86,7 @@ public class BeanReferenceCompletionExtensionIT extends CamelLightCodeInsightFix
         "  </camelContext>" +
         "</blueprint>";
 
+    @Ignore
     public void testBeanInjectValue() {
         myFixture.configureByFiles("TestClass1.java", "TestClass2.java", "TestClass3.java", "beans.xml");
         myFixture.complete(CompletionType.BASIC);

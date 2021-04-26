@@ -21,6 +21,8 @@ import java.util.List;
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.completion.CompletionType;
 import org.hamcrest.Matchers;
+import org.junit.Ignore;
+
 import static org.junit.Assert.assertThat;
 
 /**
@@ -70,6 +72,7 @@ public class PropertyEndpointSmartCompletionTestIT extends CamelLightCodeInsight
         return "TIME=timer:trigger?repeatCount=10&<caret>";
     }
 
+    @Ignore
     public void testAfterAmpCompletion() {
         myFixture.configureByText("TestData.properties", getfterAmpOptionsTestData());
         myFixture.complete(CompletionType.BASIC, 1);

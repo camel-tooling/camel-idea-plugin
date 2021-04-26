@@ -24,7 +24,7 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.xml.XmlToken;
-
+import org.junit.Ignore;
 
 import static com.github.cameltooling.idea.gutter.GutterTestUtil.getGuttersWithJavaTarget;
 import static com.github.cameltooling.idea.gutter.GutterTestUtil.getGuttersWithXMLTarget;
@@ -34,6 +34,7 @@ import static com.github.cameltooling.idea.gutter.GutterTestUtil.getGuttersWithX
  */
 public class MultiLanguageCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
+    @Ignore
     public void testCamelGutterForJavaAndXMLRoutes() {
         myFixture.configureByFiles("XmlCamelRouteLineMarkerProviderTestData.xml", "JavaCamelRouteLineMarkerProviderTestData.java");
         List<GutterMark> javaGutters = myFixture.findAllGutters("JavaCamelRouteLineMarkerProviderTestData.java");

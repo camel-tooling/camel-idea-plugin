@@ -19,6 +19,7 @@ package com.github.cameltooling.idea.gutter;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.github.cameltooling.idea.reference.blueprint.ReferenceableIdPsiElement;
 import com.intellij.codeInsight.daemon.GutterMark;
@@ -28,6 +29,7 @@ import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
+import org.junit.Ignore;
 
 
 public class BeanInjectLineMarkerProviderTest extends CamelLightCodeInsightFixtureTestCaseIT {
@@ -43,6 +45,7 @@ public class BeanInjectLineMarkerProviderTest extends CamelLightCodeInsightFixtu
         assertEmpty(beanInjectMarkers);
     }
 
+    @Ignore
     public void testBeanInjectGutter() {
         myFixture.configureByFiles("TestClass1.java", "TestClass2.java", "TestClass3.java", "beans.xml");
 

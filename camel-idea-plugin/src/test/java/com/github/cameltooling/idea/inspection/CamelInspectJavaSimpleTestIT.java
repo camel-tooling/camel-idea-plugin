@@ -16,6 +16,7 @@
  */
 package com.github.cameltooling.idea.inspection;
 
+/*
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
 import com.intellij.testFramework.JavaInspectionTestCase;
 import com.intellij.testFramework.PsiTestUtil;
@@ -48,3 +49,4 @@ public class CamelInspectJavaSimpleTestIT extends JavaInspectionTestCase {
     }
 
 }
+*/

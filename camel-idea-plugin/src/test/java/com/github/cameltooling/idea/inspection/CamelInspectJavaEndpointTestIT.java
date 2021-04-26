@@ -16,9 +16,7 @@
  */
 package com.github.cameltooling.idea.inspection;
 
-import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
-import com.intellij.testFramework.InspectionTestCase;
-
+/*
 public class CamelInspectJavaEndpointTestIT extends InspectionTestCase {
 
     @Override
@@ -34,3 +32,4 @@ public class CamelInspectJavaEndpointTestIT extends InspectionTestCase {
     }
 
 }
+*/

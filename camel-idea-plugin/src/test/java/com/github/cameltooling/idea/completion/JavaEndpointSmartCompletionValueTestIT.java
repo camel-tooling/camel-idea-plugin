@@ -22,6 +22,8 @@ import java.util.List;
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.completion.CompletionType;
 import org.hamcrest.Matchers;
+import org.junit.Ignore;
+
 import static org.junit.Assert.assertThat;
 
 /**
@@ -82,6 +84,7 @@ public class JavaEndpointSmartCompletionValueTestIT extends CamelLightCodeInsigh
             + "        }\n"
             + "    }";
     }
+    @Ignore
     public void testUnresolvedValueWithPreTestCompletion() {
         myFixture.configureByText("JavaCaretInMiddleOptionsTestData.java", getJavaUnresolvedValueWithPreTestData());
         myFixture.complete(CompletionType.BASIC, 1);

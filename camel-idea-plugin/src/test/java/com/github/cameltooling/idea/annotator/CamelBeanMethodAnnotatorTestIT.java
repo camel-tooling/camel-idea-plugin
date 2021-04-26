@@ -22,6 +22,7 @@ import java.util.Optional;
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
 import com.intellij.lang.annotation.HighlightSeverity;
+import org.junit.Ignore;
 
 
 /**
@@ -41,6 +42,7 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
     /**
      * Test if the annotator mark the bean call "thisIsVeryPrivate","methodDoesNotExist" as errors
      */
+    @Ignore
     public void testAnnotatorJavaBeanWithPrivateAndNoneExistingMethod() {
         myFixture.configureByFiles("AnnotatorJavaBeanRoute1TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
         myFixture.checkHighlighting(false, false, false, true);
@@ -54,6 +56,7 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
     /**
      * Test if the annotator mark the bean call "thisIsVeryPrivate","methodDoesNotExist" as errors
      */
+    @Ignore
     public void testAnnotatorJavaBeanWithAbstractMethod() {
         myFixture.configureByFiles("AnnotatorJavaBeanRoute2TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
         myFixture.checkHighlighting(false, false, false, true);
@@ -69,6 +72,7 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
      * Test if the annotator mark the bean call "myOverLoadedBean" as errors because it's Ambiguous. This test also test if the scenario where one of the
      * overloaded methods is private and the other is public
      */
+    @Ignore
     public void testAnnotatorJavaBeanAmbiguousMatch() {
         myFixture.configureByFiles("AnnotatorJavaBeanRoute3TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
         myFixture.checkHighlighting(false, false, false, true);
@@ -82,6 +86,7 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
     /**
      * Test if the annotator is false and don't mark any methods even it's ambiguous, but one of the methods are marked as @Handle
      */
+    @Ignore
     public void testAnnotatorJavaBeanWithHandlerAnnotation() {
         myFixture.configureByFiles("AnnotatorJavaBeanRoute4TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
         myFixture.checkHighlighting(false, false, false, true);
@@ -93,6 +98,7 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
     /**
      * Test if the calling methods is ambiguous and the Camel DSL bean calling method is with parameters
      */
+    @Ignore
     public void testAnnotatorJavaBeanAmbiguousMatchWithParameter() {
         myFixture.configureByFiles("AnnotatorJavaBeanRoute5TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
         myFixture.checkHighlighting(false, false, false, true);

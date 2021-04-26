@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.ui.components.JBCheckBox;
+import org.junit.Ignore;
 
 public class CamelAnnotatorPageTest extends CamelLightCodeInsightFixtureTestCaseIT {
 
@@ -46,7 +47,7 @@ public class CamelAnnotatorPageTest extends CamelLightCodeInsightFixtureTestCase
         annotatorPage.disposeUIResources();
         annotatorPage = null;
     }
-
+    @Ignore
     public void testPluginXmlShouldContainAnnotatorPreferencesPage() {
         File pluginXml = new File("src/main/resources/META-INF/plugin.xml");
         assertNotNull(pluginXml);
@@ -64,24 +65,28 @@ public class CamelAnnotatorPageTest extends CamelLightCodeInsightFixtureTestCase
         }
     }
 
+    @Ignore
     public void testShouldContainRealTimeEndpointValidationCatalogCheckBox() {
         JBCheckBox checkBox = annotatorPage.getRealTimeEndpointValidationCatalogCheckBox();
         assertEquals("Real time validation of Camel endpoints in editor", checkBox.getText());
         assertTrue(checkBox.isSelected());
     }
 
+    @Ignore
     public void testShouldContainRealTimeSimpleValidationCatalogCheckBox() {
         JBCheckBox checkBox = annotatorPage.getRealTimeSimpleValidationCatalogCheckBox();
         assertEquals("Real time validation of Camel simple language in editor", checkBox.getText());
         assertTrue(checkBox.isSelected());
     }
 
+    @Ignore
     public void testShouldContainHighlightCustomOptionsCheckBox() {
         JBCheckBox checkBox = annotatorPage.getHighlightCustomOptionsCheckBox();
         assertEquals("Highlight custom endpoint options as warnings in editor", checkBox.getText());
         assertTrue(checkBox.isSelected());
     }
 
+    @Ignore
     public void testShouldChangeStateOfRealTimeEndpointValidationCatalogCheckBox() throws ConfigurationException {
         JBCheckBox checkBox = annotatorPage.getRealTimeEndpointValidationCatalogCheckBox();
         assertEquals(true, checkBox.isSelected());
@@ -92,6 +97,7 @@ public class CamelAnnotatorPageTest extends CamelLightCodeInsightFixtureTestCase
         assertEquals(false, annotatorPage.getCamelPreferenceService().isRealTimeEndpointValidation());
     }
 
+    @Ignore
     public void testShouldChangeStateOfRealTimeSimpleValidationCatalogCheckBox() throws ConfigurationException {
         JBCheckBox checkBox = annotatorPage.getRealTimeSimpleValidationCatalogCheckBox();
         assertEquals(true, checkBox.isSelected());
@@ -102,6 +108,7 @@ public class CamelAnnotatorPageTest extends CamelLightCodeInsightFixtureTestCase
         assertEquals(false, annotatorPage.getCamelPreferenceService().isRealTimeSimpleValidation());
     }
 
+    @Ignore
     public void testShouldChangeStateOfHighlightCustomOptionsCheckBox() throws ConfigurationException {
         JBCheckBox checkBox = annotatorPage.getHighlightCustomOptionsCheckBox();
         assertEquals(true, checkBox.isSelected());
@@ -112,6 +119,7 @@ public class CamelAnnotatorPageTest extends CamelLightCodeInsightFixtureTestCase
         assertEquals(false, annotatorPage.getCamelPreferenceService().isHighlightCustomOptions());
     }
 
+    @Ignore
     public void testShouldResetRealTimeEndpointValidationCatalogCheckBox() {
         JBCheckBox checkBox = annotatorPage.getRealTimeEndpointValidationCatalogCheckBox();
         checkBox.setSelected(false);
@@ -119,6 +127,7 @@ public class CamelAnnotatorPageTest extends CamelLightCodeInsightFixtureTestCase
         assertTrue(checkBox.isSelected());
     }
 
+    @Ignore
     public void testShouldRestRealTimeSimpleValidationCatalogCheckBox() {
         JBCheckBox checkBox = annotatorPage.getRealTimeSimpleValidationCatalogCheckBox();
         boolean status = checkBox.isSelected();
@@ -127,6 +136,7 @@ public class CamelAnnotatorPageTest extends CamelLightCodeInsightFixtureTestCase
         assertEquals(status, checkBox.isSelected());
     }
 
+    @Ignore
     public void testShouldResetHighlightCustomOptionsCheckBox() {
         JBCheckBox checkBox = annotatorPage.getHighlightCustomOptionsCheckBox();
         boolean status = checkBox.isSelected();

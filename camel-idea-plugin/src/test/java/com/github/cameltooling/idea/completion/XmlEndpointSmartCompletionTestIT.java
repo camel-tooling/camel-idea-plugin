@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.completion.CompletionType;
+import org.junit.Ignore;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -114,6 +115,7 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
             + "</routes>";
     }
 
+    @Ignore
     public void testXmlAfterAmbeCompletion() {
         myFixture.configureByText("XmlCaretInMiddleOptionsTestData.xml", getXmlfterAmpOptionsTestData());
         myFixture.complete(CompletionType.BASIC, 1);
@@ -200,6 +202,7 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
             + "  </route>\n"
             + "</routes>";
     }
+    @Ignore
     public void testXmlMultilineTestData() {
         myFixture.configureByText("CamelRoute.xml", getXmlMultilineTestData());
         myFixture.complete(CompletionType.BASIC, 1);
@@ -226,6 +229,7 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
             + "  </route>\n"
             + "</routes>";
     }
+    @Ignore
     public void testXmlMultilineTest2Data() {
         myFixture.configureByText("CamelRoute.xml", getXmlMultilineTest2Data());
         myFixture.complete(CompletionType.BASIC, 1);
@@ -252,6 +256,7 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
             + "  </route>\n"
             + "</routes>";
     }
+    @Ignore
     public void testXmlMultilineTest3Data() {
         myFixture.configureByText("CamelRoute.xml", getXmlMultilineTest3Data());
         myFixture.complete(CompletionType.BASIC, 1);

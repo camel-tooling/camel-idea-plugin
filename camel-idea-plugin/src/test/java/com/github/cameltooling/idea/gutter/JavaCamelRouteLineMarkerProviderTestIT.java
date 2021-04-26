@@ -20,19 +20,21 @@ import java.util.List;
 import javax.swing.*;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.codeInsight.daemon.GutterMark;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiJavaToken;
-import com.github.cameltooling.idea.service.CamelPreferenceService;
+import org.junit.Ignore;
 
 /**
  * Testing the Camel icon is shown in the gutter where a Camel route starts in Java DSL and the route navigation
  */
 public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
+    @Ignore
     public void testCamelGutter() {
         myFixture.configureByFiles("JavaCamelRouteLineMarkerProviderTestData.java");
         List<GutterMark> gutters = myFixture.findAllGutters();
@@ -70,6 +72,7 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
             GutterTestUtil.getGuttersWithJavaTarget(secondGutterTargets).get(0).getMethodExpression().getQualifierExpression().getText());
     }
 
+    @Ignore
     public void testCamelGutterForToDAndToF() {
         myFixture.configureByFiles("JavaCamelRouteLineMarkerProviderAlternateToTestData.java");
         List<GutterMark> gutters = myFixture.findAllGutters();
@@ -107,6 +110,7 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
             GutterTestUtil.getGuttersWithJavaTarget(secondGutterTargets).get(0).getMethodExpression().getQualifierExpression().getText());
     }
 
+    @Ignore
     public void testCamelGutterForVariableAndConstant() {
         myFixture.configureByFiles("JavaCamelRouteLineMarkerProviderFromVariableTestData.java");
         List<GutterMark> gutters = myFixture.findAllGutters();
@@ -128,6 +132,7 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
         assertEquals("Navigation should have two targets", 2, firstGutterTargets.size());
     }
 
+    @Ignore
     public void testCamelGutterForMethodCallFrom() {
         myFixture.configureByFiles("JavaCamelRouteLineMarkerProviderFromMethodCallTestData.java");
         List<GutterMark> gutters = myFixture.findAllGutters();

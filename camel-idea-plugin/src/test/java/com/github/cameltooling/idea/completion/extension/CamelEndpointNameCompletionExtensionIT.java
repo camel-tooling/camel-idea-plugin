@@ -16,10 +16,11 @@
  */
 package com.github.cameltooling.idea.completion.extension;
 
+import java.util.List;
+
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.completion.CompletionType;
-
-import java.util.List;
+import org.junit.Ignore;
 
 /**
  * Testing camel endpoint name completion in Java and XML DSL
@@ -31,6 +32,7 @@ public class CamelEndpointNameCompletionExtensionIT extends CamelLightCodeInsigh
         return "src/test/resources/testData/completion/endpointname";
     }
 
+    @Ignore
     public void testDirectEndpointNameCompletionInJava() {
         myFixture.configureByFiles("CompleteDirectEndpointNameTestData.java");
         doTestCompletion();
