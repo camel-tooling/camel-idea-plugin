@@ -427,7 +427,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         if (existing != null && !existing.isEmpty()) {
             JsonObject jsonObject;
             try {
-                 jsonObject = (JsonObject) Jsoner.deserialize(json);
+                jsonObject = (JsonObject) Jsoner.deserialize(json);
             } catch (DeserializationException e) {
                 throw new RuntimeException(e);
             }
