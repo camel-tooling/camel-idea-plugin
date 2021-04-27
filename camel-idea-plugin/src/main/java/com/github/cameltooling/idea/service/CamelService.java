@@ -294,7 +294,10 @@ public class CamelService implements Disposable {
     }
 
     private boolean isCamelCoreMavenDependency(String groupId, String artifactId) {
-        return "org.apache.camel".equals(groupId) && "camel-core".equals(artifactId);
+        // camel 2.x or using camel-core with camel 3
+        boolean camel2 = "org.apache.camel".equals(groupId) && "camel-core".equals(artifactId);
+        boolean camel3 = "org.apache.camel".equals(groupId) && "camel-core-engine".equals(artifactId);
+        return camel2 || camel3;
     }
 
     private void expireOldCamelCatalogVersion() {
