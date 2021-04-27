@@ -72,7 +72,8 @@ public class CamelService implements Disposable {
     private static final int MIN_MAJOR_VERSION = 2;
     private static final int MIN_MINOR_VERSION = 16;
 
-    private Library camelCoreLibrary;
+    private Library camel2CoreLibrary;
+    private Library[] camel3CoreLibraries = new Library[2];
     private Library slf4japiLibrary;
     private ClassLoader camelCoreClassloader;
     private Set<String> processedLibraries = new HashSet<>();
@@ -106,7 +107,8 @@ public class CamelService implements Disposable {
         }
 
         camelCoreClassloader = null;
-        camelCoreLibrary = null;
+        camel2CoreLibrary = null;
+        camel3CoreLibraries = null;
         slf4japiLibrary = null;
         projectClassloader = null;
     }
@@ -169,7 +171,11 @@ public class CamelService implements Disposable {
     public ClassLoader getCamelCoreClassloader() {
         if (camelCoreClassloader == null) {
             try {
-                camelCoreClassloader = getIdeaUtils().newURLClassLoaderForLibrary(camelCoreLibrary, slf4japiLibrary);
+                if (camel2CoreLibrary != null) {
+                    camelCoreClassloader = getIdeaUtils().newURLClassLoaderForLibrary(camel2CoreLibrary, slf4japiLibrary);
+                } else {
+                    camelCoreClassloader = getIdeaUtils().newURLClassLoaderForLibrary(camel3CoreLibraries[0], camel3CoreLibraries[1], slf4japiLibrary);
+                }
             } catch (Throwable e) {
                 LOG.warn("Error creating URLClassLoader for loading classes from camel-core", e);
             }
@@ -246,8 +252,18 @@ public class CamelService implements Disposable {
 
             if (isSlf4jMavenDependency(groupId, artifactId)) {
                 slf4japiLibrary = library;
-            } else if (isCamelCoreMavenDependency(groupId, artifactId)) {
-                camelCoreLibrary = library;
+            } else if (isCamel2CoreMavenDependency(groupId, artifactId) || isCamel3CoreMavenDependency(groupId, artifactId)) {
+
+                // its either camel-2 or camel-3
+                if (isCamel2CoreMavenDependency(groupId, artifactId)) {
+                    camel2CoreLibrary = library;
+                } else {
+                    if (camel3CoreLibraries[0] == null) {
+                        camel3CoreLibraries[0] = library;
+                    } else {
+                        camel3CoreLibraries[1] = library;
+                    }
+                }
 
                 // okay its a camel project
                 setCamelPresent(true);
@@ -293,11 +309,15 @@ public class CamelService implements Disposable {
         return "org.slf4j".equals(groupId) && "slf4j-api".equals(artifactId);
     }
 
-    private boolean isCamelCoreMavenDependency(String groupId, String artifactId) {
-        // camel 2.x or using camel-core with camel 3
+    private boolean isCamel2CoreMavenDependency(String groupId, String artifactId) {
         boolean camel2 = "org.apache.camel".equals(groupId) && "camel-core".equals(artifactId);
-        boolean camel3 = "org.apache.camel".equals(groupId) && "camel-core-engine".equals(artifactId);
-        return camel2 || camel3;
+        return camel2;
+    }
+
+    private boolean isCamel3CoreMavenDependency(String groupId, String artifactId) {
+        boolean camel3a = "org.apache.camel".equals(groupId) && "camel-base-engine".equals(artifactId);
+        boolean camel3b = "org.apache.camel".equals(groupId) && "camel-core-languages".equals(artifactId);
+        return camel3a || camel3b;
     }
 
     private void expireOldCamelCatalogVersion() {

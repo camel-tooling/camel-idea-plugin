@@ -51,7 +51,7 @@ public class CamelCatalogService implements Disposable {
      * @param repos   any third party maven repositories
      */
     boolean loadVersion(@NotNull String version, @NotNull Map<String, String> repos) {
-        // we should load a new version of the catalog, and therefor must discard the old version
+        // we should load a new version of the catalog, and therefore must discard the old version
         dispose();
         // use maven to be able to load the version dynamic
         CamelMavenVersionManager maven = new CamelMavenVersionManager();
