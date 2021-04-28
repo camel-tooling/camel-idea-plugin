@@ -18,9 +18,7 @@ package com.github.cameltooling.idea.completion.extension;
 
 import java.util.List;
 import java.util.Map;
-import com.github.cameltooling.idea.model.ComponentModel;
-import com.github.cameltooling.idea.model.EndpointOptionModel;
-import com.github.cameltooling.idea.model.ModelHelper;
+
 import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
@@ -33,6 +31,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.catalog.CamelCatalog;
+import org.apache.camel.tooling.model.ComponentModel;
+import org.apache.camel.tooling.model.JsonMapper;
 import org.jetbrains.annotations.NotNull;
 import static com.github.cameltooling.idea.completion.endpoint.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsContextPath;
 import static com.github.cameltooling.idea.completion.endpoint.CamelSmartCompletionEndpointOptions.addSmartCompletionSuggestionsQueryParameters;
@@ -72,7 +72,7 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
 
         String json = camelCatalog.componentJSonSchema(componentName);
-        ComponentModel componentModel = ModelHelper.generateComponentModel(json, true);
+        ComponentModel componentModel = JsonMapper.generateComponentModel(json);
         final PsiElement element = parameters.getPosition();
 
         // grab all existing parameters
@@ -132,7 +132,10 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
 
         List<LookupElement> answer = null;
         if (editOptionValue) {
-            EndpointOptionModel endpointOption = componentModel.getEndpointOption(queryParameter[0].substring(1));
+            String name = queryParameter[0].substring(1);
+            ComponentModel.EndpointOptionModel endpointOption = componentModel.getEndpointOptions().stream().filter(
+                o -> name.equals(o.getName()))
+                .findFirst().orElse(null);
             if (endpointOption != null) {
                 answer = addSmartCompletionForEndpointValue(parameters.getEditor(), queryAtPosition, suffix, endpointOption, element, xmlMode);
             }

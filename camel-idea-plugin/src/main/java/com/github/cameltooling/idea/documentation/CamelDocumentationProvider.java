@@ -19,9 +19,7 @@ package com.github.cameltooling.idea.documentation;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import com.github.cameltooling.idea.model.ComponentModel;
-import com.github.cameltooling.idea.model.EndpointOptionModel;
-import com.github.cameltooling.idea.model.ModelHelper;
+
 import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.service.CamelService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
@@ -54,6 +52,8 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlToken;
 import com.intellij.psi.xml.XmlTokenType;
 import org.apache.camel.catalog.CamelCatalog;
+import org.apache.camel.tooling.model.ComponentModel;
+import org.apache.camel.tooling.model.JsonMapper;
 import org.apache.camel.util.json.DeserializationException;
 import org.apache.camel.util.json.JsonObject;
 import org.apache.camel.util.json.Jsoner;
@@ -205,13 +205,13 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                 if (json == null) {
                     return null;
                 }
-                ComponentModel component = ModelHelper.generateComponentModel(json, true);
+                ComponentModel component = JsonMapper.generateComponentModel(json);
 
                 final String prefixOption = option;
 
                 // find the line with this prefix as prefix and multivalue
-                EndpointOptionModel endpointOption = component.getEndpointOptions().stream().filter(
-                    o -> "true".equals(o.getMultiValue()) && prefixOption.equals(o.getPrefix()))
+                ComponentModel.EndpointOptionModel endpointOption = component.getEndpointOptions().stream().filter(
+                    o -> o.isMultiValue() && prefixOption.equals(o.getPrefix()))
                     .findFirst().orElse(null);
 
                 // use the real option name instead of the prefix
@@ -294,7 +294,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         if (name != null && camelCatalog.findComponentNames().contains(name)) {
 
             String json = camelCatalog.componentJSonSchema(name);
-            ComponentModel component = ModelHelper.generateComponentModel(json, false);
+            ComponentModel component = JsonMapper.generateComponentModel(json);
 
             // to build external links which points to github
             String artifactId = component.getArtifactId();
@@ -363,16 +363,18 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         if (json == null) {
             return null;
         }
-        ComponentModel component = ModelHelper.generateComponentModel(json, true);
+        ComponentModel component = JsonMapper.generateComponentModel(json);
 
-        EndpointOptionModel endpointOption;
+        ComponentModel.EndpointOptionModel endpointOption;
         if (option.endsWith(".")) {
             // find the line with this prefix as prefix and multivalue
             endpointOption = component.getEndpointOptions().stream().filter(
-                o -> "true".equals(o.getMultiValue()) && option.equals(o.getPrefix()))
+                o -> o.isMultiValue() && option.equals(o.getPrefix()))
                 .findFirst().orElse(null);
         } else {
-            endpointOption = component.getEndpointOption(option);
+            endpointOption = component.getEndpointOptions().stream().filter(
+                o -> option.equals(o.getName()))
+                .findFirst().orElse(null);
         }
         if (endpointOption == null) {
             return null;
@@ -382,15 +384,13 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         builder.append("<strong>").append(endpointOption.getName()).append("</strong><br/><br/>");
         builder.append("<strong>Group: </strong>").append(endpointOption.getGroup()).append("<br/>");
         builder.append("<strong>Type: </strong>").append("<tt>").append(endpointOption.getJavaType()).append("</tt>").append("<br/>");
-        boolean required = false;
-        if (!endpointOption.getRequired().equals("")) {
-            required = true;
-        }
+        boolean required = endpointOption.isRequired();
         builder.append("<strong>Required: </strong>").append(required).append("<br/>");
-        if (!endpointOption.getEnums().equals("")) {
-            builder.append("<strong>Possible values: </strong>").append(endpointOption.getEnums().replace(",", ", ")).append("<br/>");
+        if (endpointOption.getEnums() != null) {
+            String values = String.join(", ", endpointOption.getEnums());
+            builder.append("<strong>Possible values: </strong>").append(values).append("<br/>");
         }
-        if (!endpointOption.getDefaultValue().equals("")) {
+        if (endpointOption.getDefaultValue() != null) {
             builder.append("<strong>Default value: </strong>").append(endpointOption.getDefaultValue()).append("<br/>");
         }
         builder.append("<br/><div>").append(endpointOption.getDescription()).append("</div>");
@@ -405,7 +405,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             return null;
         }
 
-        ComponentModel component = ModelHelper.generateComponentModel(json, false);
+        ComponentModel component = JsonMapper.generateComponentModel(json);
 
         // camel catalog expects &amp; as & when it parses so replace all &amp; as &
         String camelQuery = val;

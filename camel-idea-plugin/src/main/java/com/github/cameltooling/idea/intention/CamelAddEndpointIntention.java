@@ -21,8 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.*;
-import com.github.cameltooling.idea.model.ComponentModel;
-import com.github.cameltooling.idea.model.ModelHelper;
+
 import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
@@ -47,6 +46,8 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.IncorrectOperationException;
 import org.apache.camel.catalog.CamelCatalog;
+import org.apache.camel.tooling.model.ComponentModel;
+import org.apache.camel.tooling.model.JsonMapper;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
@@ -154,10 +155,10 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
         for (String name : camelCatalog.findComponentNames()) {
             String json = camelCatalog.componentJSonSchema(name);
-            ComponentModel model = ModelHelper.generateComponentModel(json, false);
+            ComponentModel model = JsonMapper.generateComponentModel(json);
             if (artifactIds.contains(model.getArtifactId())) {
-                boolean onlyConsume = "true".equals(model.getConsumerOnly());
-                boolean onlyProduce = "true".equals(model.getProducerOnly());
+                boolean onlyConsume = model.isConsumerOnly();
+                boolean onlyProduce = model.isProducerOnly();
                 boolean both = !onlyConsume && !onlyProduce;
 
                 if (both) {

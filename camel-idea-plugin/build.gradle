@@ -41,6 +41,7 @@ dependencies {
     compile "org.apache.camel:camel-catalog-maven:${camelVersion}"
     compile "org.apache.camel:camel-util-json:${camelVersion}"
     compile "org.apache.camel:camel-util:${camelVersion}"
+    compile "org.apache.camel:camel-tooling-model:${camelVersion}"
     testCompile "org.apache.camel:camel-core:${camelVersion}"
     testCompile 'org.jboss.shrinkwrap:shrinkwrap-depchain:1.2.6'
     testCompile 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-depchain:3.1.4'
