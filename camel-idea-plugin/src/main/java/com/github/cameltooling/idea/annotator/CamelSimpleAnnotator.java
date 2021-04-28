@@ -71,10 +71,13 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                     }
                     if (!result.isSuccess()) {
                         String error = result.getShortError();
+                        // TODO: Need fix in Camel 3.10, so use workaround
+                        if ("[null]".equals(error)) {
+                            return;
+                        }
                         TextRange range = element.getTextRange();
                         if (result.getIndex() > 0) {
                             range = getAdjustedTextRange(element, range, text, result);
-
                         }
                         holder.createErrorAnnotation(range, error);
                     }
