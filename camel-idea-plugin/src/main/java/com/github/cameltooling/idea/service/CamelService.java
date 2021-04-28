@@ -73,7 +73,7 @@ public class CamelService implements Disposable {
     private static final int MIN_MINOR_VERSION = 16;
 
     private Library camel2CoreLibrary;
-    private Library[] camel3CoreLibraries = new Library[2];
+    private List<Library> camel3CoreLibraries = new ArrayList<>();
     private Library slf4japiLibrary;
     private ClassLoader camelCoreClassloader;
     private Set<String> processedLibraries = new HashSet<>();
@@ -174,7 +174,9 @@ public class CamelService implements Disposable {
                 if (camel2CoreLibrary != null) {
                     camelCoreClassloader = getIdeaUtils().newURLClassLoaderForLibrary(camel2CoreLibrary, slf4japiLibrary);
                 } else {
-                    camelCoreClassloader = getIdeaUtils().newURLClassLoaderForLibrary(camel3CoreLibraries[0], camel3CoreLibraries[1], slf4japiLibrary);
+                    List<Library> list = new ArrayList<>(camel3CoreLibraries);
+                    list.add(slf4japiLibrary);
+                    camelCoreClassloader = getIdeaUtils().newURLClassLoaderForLibrary(list.toArray(new Library[0]));
                 }
             } catch (Throwable e) {
                 LOG.warn("Error creating URLClassLoader for loading classes from camel-core", e);
@@ -252,17 +254,13 @@ public class CamelService implements Disposable {
 
             if (isSlf4jMavenDependency(groupId, artifactId)) {
                 slf4japiLibrary = library;
-            } else if (isCamel2CoreMavenDependency(groupId, artifactId) || isCamel3CoreMavenDependency(groupId, artifactId)) {
+            } else if (isCamel2CoreMavenDependency(groupId, artifactId, version) || isCamel3CoreMavenDependency(groupId, artifactId, version)) {
 
                 // its either camel-2 or camel-3
-                if (isCamel2CoreMavenDependency(groupId, artifactId)) {
+                if (isCamel2CoreMavenDependency(groupId, artifactId, version)) {
                     camel2CoreLibrary = library;
                 } else {
-                    if (camel3CoreLibraries[0] == null) {
-                        camel3CoreLibraries[0] = library;
-                    } else {
-                        camel3CoreLibraries[1] = library;
-                    }
+                    camel3CoreLibraries.add(library);
                 }
 
                 // okay its a camel project
@@ -309,15 +307,32 @@ public class CamelService implements Disposable {
         return "org.slf4j".equals(groupId) && "slf4j-api".equals(artifactId);
     }
 
-    private boolean isCamel2CoreMavenDependency(String groupId, String artifactId) {
+    private boolean isCamel2CoreMavenDependency(String groupId, String artifactId, String version) {
         boolean camel2 = "org.apache.camel".equals(groupId) && "camel-core".equals(artifactId);
+        if (version != null) {
+            return camel2 && version.startsWith("2");
+        }
         return camel2;
     }
 
-    private boolean isCamel3CoreMavenDependency(String groupId, String artifactId) {
-        boolean camel3a = "org.apache.camel".equals(groupId) && "camel-base-engine".equals(artifactId);
-        boolean camel3b = "org.apache.camel".equals(groupId) && "camel-core-languages".equals(artifactId);
-        return camel3a || camel3b;
+    private boolean isCamel3CoreMavenDependency(String groupId, String artifactId, String version) {
+        boolean camel3a = "org.apache.camel".equals(groupId) && "camel-api".equals(artifactId);
+        boolean camel3b = "org.apache.camel".equals(groupId) && "camel-base".equals(artifactId);
+        boolean camel3c = "org.apache.camel".equals(groupId) && "camel-core-engine".equals(artifactId);
+        boolean camel3d = "org.apache.camel".equals(groupId) && "camel-base-engine".equals(artifactId);
+        boolean camel3e = "org.apache.camel".equals(groupId) && "camel-util".equals(artifactId);
+        boolean camel3f = "org.apache.camel".equals(groupId) && "camel-core-languages".equals(artifactId);
+        boolean camel3g = "org.apache.camel".equals(groupId) && "camel-management-api".equals(artifactId);
+        boolean camel3h = "org.apache.camel".equals(groupId) && "camel-support".equals(artifactId);
+        boolean camel3i = "org.apache.camel".equals(groupId) && "camel-core-model".equals(artifactId);
+        boolean camel3j = "org.apache.camel".equals(groupId) && "camel-core-processor".equals(artifactId);
+        boolean camel3k = "org.apache.camel".equals(groupId) && "camel-bean".equals(artifactId);
+
+        boolean camel3 = camel3a || camel3b || camel3c || camel3d || camel3e || camel3f || camel3g || camel3h || camel3i || camel3j || camel3k;
+        if (version != null) {
+            return camel3 && version.startsWith("3");
+        }
+        return camel3;
     }
 
     private void expireOldCamelCatalogVersion() {
@@ -530,8 +545,8 @@ public class CamelService implements Disposable {
         // split into major, minor and patch
         String[] parts = version.split("\\.");
         if (parts.length >= 2) {
-            major = Integer.valueOf(parts[0]);
-            minor = Integer.valueOf(parts[1]);
+            major = Integer.parseInt(parts[0]);
+            minor = Integer.parseInt(parts[1]);
         }
 
         if (major > MIN_MAJOR_VERSION) {
@@ -541,7 +556,7 @@ public class CamelService implements Disposable {
             return false;
         }
 
-        // okay its the same major versiom, then the minor must be equal or higher
+        // okay its the same major version, then the minor must be equal or higher
         return minor >= MIN_MINOR_VERSION;
     }
 
@@ -614,13 +629,11 @@ public class CamelService implements Disposable {
             JarEntry entry;
             while ((entry = jarStream.getNextJarEntry()) != null) {
                 String name = entry.getName();
-                if (name != null) {
-                    name = name.trim();
-                    if (name.startsWith(urlPath)) {
-                        if (!entry.isDirectory() && !name.endsWith(".class")) {
-                            name = name.substring(urlPath.length());
-                            entries.add(name);
-                        }
+                name = name.trim();
+                if (name.startsWith(urlPath)) {
+                    if (!entry.isDirectory() && !name.endsWith(".class")) {
+                        name = name.substring(urlPath.length());
+                        entries.add(name);
                     }
                 }
             }

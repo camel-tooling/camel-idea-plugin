@@ -302,7 +302,7 @@ lengths, if/try depths, etc...
         <!-- Metrics checks.                   -->
         <!-- See http://checkstyle.sf.net/config_metrics.html -->
         <module name="BooleanExpressionComplexity">
-            <property name="max" value="6"/>
+            <property name="max" value="20"/>
         </module>
         <!--<module name="ClassDataAbstractionCoupling"/>-->
         <!--<module name="ClassFanOutComplexity"/>-->

@@ -64,7 +64,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                     predicate = getCamelIdeaUtils().isCamelExpressionUsedAsPredicate(element, "simple");
                     if (predicate) {
                         LOG.debug("Validate simple predicate: " + text);
-                        result = catalogService.validateLanguageExpression(loader, "simple", text);
+                        result = catalogService.validateLanguagePredicate(loader, "simple", text);
                     } else {
                         LOG.debug("Validate simple expression: " + text);
                         result = catalogService.validateLanguageExpression(loader, "simple", text);
