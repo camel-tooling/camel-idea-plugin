@@ -129,7 +129,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
                 boolean predicate = getCamelIdeaUtils().isCamelExpressionUsedAsPredicate(element, "simple");
                 if (predicate) {
                     LOG.debug("Inspecting simple predicate: " + text);
-                    result = catalogService.validateLanguageExpression(loader, "simple", text);
+                    result = catalogService.validateLanguagePredicate(loader, "simple", text);
                 } else {
                     LOG.debug("Inspecting simple expression: " + text);
                     result = catalogService.validateLanguageExpression(loader, "simple", text);
@@ -139,6 +139,10 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
                     String msg = result.getShortError();
                     if (msg == null) {
                         msg = result.getError();
+                    }
+                    // TODO: Need fix in Camel 3.10, so use workaround
+                    if ("[null]".equals(msg)) {
+                        return;
                     }
                     holder.registerProblem(element, msg);
                 }
@@ -179,6 +183,10 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
                     String msg = result.getShortError();
                     if (msg == null) {
                         msg = result.getError();
+                    }
+                    // TODO: Need fix in Camel 3.10, so use workaround
+                    if ("[null]".equals(msg)) {
+                        return;
                     }
                     holder.registerProblem(element, msg);
                 }

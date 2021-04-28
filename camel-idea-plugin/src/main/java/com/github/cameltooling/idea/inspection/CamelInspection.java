@@ -21,6 +21,7 @@ import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlToken;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Camel inspection to validate Camel endpoints and languages such as simple.
