@@ -29,21 +29,19 @@ import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.codeInsight.intention.LowPriorityAction;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
-import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.popup.IPopupChooserBuilder;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
-import com.intellij.openapi.ui.popup.PopupChooserBuilder;
 import com.intellij.openapi.util.Iconable;
 import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
-import com.intellij.ui.components.JBList;
 import com.intellij.util.IncorrectOperationException;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.tooling.model.ComponentModel;
@@ -52,7 +50,10 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
 
-
+/**
+ * Popup intention (ctrl + enter) to add action to add a Camel endpoint by choosing among all the known
+ * Camel components available via the classpath.
+ */
 public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction implements Iconable, LowPriorityAction {
 
     public IdeaUtils getIdeaUtils() {
@@ -74,23 +75,18 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         }
 
         // show popup to chose the component
-        JBList list = new JBList(names.toArray(new Object[names.size()]));
-        PopupChooserBuilder builder = JBPopupFactory.getInstance().createListPopupBuilder(list);
+        IPopupChooserBuilder<String> builder = JBPopupFactory.getInstance().createPopupChooserBuilder(names);
         builder.setAdText(names.size() + " components");
         builder.setTitle("Add Camel Endpoint");
-        builder.setItemChoosenCallback(() -> {
-            String line = (String) list.getSelectedValue();
+        builder.setItemChosenCallback(line -> {
             int pos = editor.getCaretModel().getCurrentCaret().getOffset();
             if (pos > 0) {
                 // must run this as write action because we change the source code
-                new WriteCommandAction(project, element.getContainingFile()) {
-                    @Override
-                    protected void run(@NotNull Result result) throws Throwable {
-                        String text = line + ":";
-                        editor.getDocument().insertString(pos, text);
-                        editor.getCaretModel().moveToOffset(pos + text.length());
-                    }
-                }.execute();
+                WriteCommandAction.writeCommandAction(project, element.getContainingFile()).run(() -> {
+                    String text = line + ":";
+                    editor.getDocument().insertString(pos, text);
+                    editor.getCaretModel().moveToOffset(pos + text.length());
+                });
             }
         });
 
