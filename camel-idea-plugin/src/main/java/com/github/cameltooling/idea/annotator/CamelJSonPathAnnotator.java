@@ -22,6 +22,7 @@ import com.github.cameltooling.idea.service.CamelService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
+import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.TextRange;
@@ -88,7 +89,8 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
                             range = getAdjustedTextRange(element, range, text, result);
 
                         }
-                        holder.createErrorAnnotation(range, error);
+                        holder.newAnnotation(HighlightSeverity.ERROR, error)
+                                .range(range).create();
                     }
                 }
             } catch (Throwable e) {

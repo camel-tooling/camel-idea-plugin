@@ -27,7 +27,7 @@ import com.github.cameltooling.idea.util.JavaMethodUtils;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
-import com.intellij.lang.jvm.JvmModifier;
+import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiClass;
@@ -35,8 +35,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
 import org.jetbrains.annotations.NotNull;
-
-
 
 /**
  * Annotate camel bean reference with error if the method is private or does not exist
@@ -104,13 +102,12 @@ public class CamelBeanMethodAnnotator implements Annotator {
             } else {
                 errorMessage = allPrivates ? String.format(METHOD_HAS_PRIVATE_ACCESS, methodNameWithParameters, psiClass.getQualifiedName()) : null;
             }
-
         }
 
         if (errorMessage != null) {
-            holder.createErrorAnnotation(element, errorMessage);
+            holder.newAnnotation(HighlightSeverity.ERROR, errorMessage)
+                    .range(element).create();
         }
-
     }
 
     @NotNull

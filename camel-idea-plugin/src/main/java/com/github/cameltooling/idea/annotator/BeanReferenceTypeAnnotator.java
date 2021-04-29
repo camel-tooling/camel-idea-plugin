@@ -23,6 +23,7 @@ import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.util.BeanUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
+import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
@@ -74,10 +75,11 @@ public class BeanReferenceTypeAnnotator extends AbstractCamelAnnotator {
         PsiType expectedType = BeanUtils.getService().findExpectedBeanTypeAt(element);
         if (expectedType != null) {
             if (beanClass == null) {
-                holder.createWeakWarningAnnotation(elementRange, "Unable to determine type of the referenced bean.");
+                holder.newAnnotation(HighlightSeverity.WARNING, "Unable to determine type of the referenced bean.")
+                        .range(elementRange).create();
             } else if (!isAssignableFrom(expectedType, beanClass)) {
-                holder.createErrorAnnotation(elementRange, "Bean must be of '"
-                    + expectedType.getCanonicalText() + "' type");
+                holder.newAnnotation(HighlightSeverity.ERROR, "Bean must be of '" + expectedType.getCanonicalText() + "' type")
+                        .range(elementRange).create();
             }
         }
     }

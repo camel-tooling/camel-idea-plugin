@@ -27,6 +27,7 @@ import com.github.cameltooling.idea.service.QueryUtils;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
+import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.TextRange;
@@ -125,7 +126,8 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                     ResolveResult[] targets = endpointReference.multiResolve(false);
                     if (targets.length == 0) {
                         TextRange range = endpointReference.getRangeInElement().shiftRight(element.getTextRange().getStartOffset());
-                        holder.createErrorAnnotation(range, "Cannot find endpoint declaration: " + endpointReference.getCanonicalText());
+                        holder.newAnnotation(HighlightSeverity.ERROR, "Cannot find endpoint declaration: " + endpointReference.getCanonicalText())
+                            .range(range).create();
                     }
                 });
         }
@@ -150,11 +152,14 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                     element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
 
                 if (msg.isInfoLevel()) {
-                    holder.createInfoAnnotation(range, summaryMessage(result, propertyValue, msg));
+                    holder.newAnnotation(HighlightSeverity.INFORMATION, summaryMessage(result, propertyValue, msg))
+                            .range(range).create();
                 } else if (msg.isWarnLevel()) {
-                    holder.createWarningAnnotation(range, summaryMessage(result, propertyValue, msg));
+                    holder.newAnnotation(HighlightSeverity.WARNING, summaryMessage(result, propertyValue, msg))
+                            .range(range).create();
                 } else {
-                    holder.createErrorAnnotation(range, summaryMessage(result, propertyValue, msg));
+                    holder.newAnnotation(HighlightSeverity.ERROR, summaryMessage(result, propertyValue, msg))
+                            .range(range).create();
                 }
             }
         }
@@ -186,7 +191,8 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + startIdx,
                     element.getTextRange().getStartOffset() + startIdx + propertyLength);
-                holder.createErrorAnnotation(range, summaryMessage(result, entry, msg));
+                holder.newAnnotation(HighlightSeverity.ERROR, summaryMessage(result, entry, msg))
+                        .range(range).create();
             }
         }
     }
