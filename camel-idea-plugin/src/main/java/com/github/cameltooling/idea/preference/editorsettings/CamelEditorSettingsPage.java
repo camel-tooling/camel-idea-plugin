@@ -17,7 +17,6 @@
 package com.github.cameltooling.idea.preference.editorsettings;
 
 import java.awt.*;
-import java.util.Objects;
 import javax.swing.*;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.openapi.components.ServiceManager;
@@ -25,14 +24,11 @@ import com.intellij.openapi.options.BaseConfigurable;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
-import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.components.JBCheckBox;
 import net.miginfocom.swing.MigLayout;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-
 
 public class CamelEditorSettingsPage extends BaseConfigurable implements SearchableConfigurable, Configurable.NoScroll {
 
@@ -40,7 +36,6 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
     private JBCheckBox scanThirdPartyComponentsCatalogCheckBox;
     private JBCheckBox scanThirdPartyLegacyComponentsCatalogCheckBox;
     private JBCheckBox camelIconInGutterCheckBox;
-    private JComboBox<String> camelIconsComboBox;
 
     @Nullable
     @Override
@@ -49,9 +44,6 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         scanThirdPartyComponentsCatalogCheckBox = new JBCheckBox("Scan classpath for third party Camel components using modern component packaging");
         scanThirdPartyLegacyComponentsCatalogCheckBox = new JBCheckBox("Scan classpath for third party Camel components using legacy component packaging");
         camelIconInGutterCheckBox = new JBCheckBox("Show Camel icon in gutter");
-        camelIconsComboBox = new ComboBox<>(new String[]{"Camel Icon", "Camel Animal Icon", "Camel Badge Icon"});
-
-        camelIconsComboBox.setRenderer(new CamelChosenIconCellRender());
 
         // use mig layout which is like a spread-sheet with 2 columns, which we can span if we only have one element
         JPanel panel = new JPanel(new MigLayout("fillx,wrap 2", "[left]rel[grow,fill]"));
@@ -61,9 +53,6 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         panel.add(scanThirdPartyComponentsCatalogCheckBox, "span 2");
         panel.add(scanThirdPartyLegacyComponentsCatalogCheckBox, "span 2");
         panel.add(camelIconInGutterCheckBox, "span 2");
-
-        panel.add(new JLabel("Camel icon"));
-        panel.add(camelIconsComboBox);
 
         JPanel result = new JPanel(new BorderLayout());
         result.add(panel, BorderLayout.NORTH);
@@ -77,7 +66,6 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         getCamelPreferenceService().setScanThirdPartyComponents(scanThirdPartyComponentsCatalogCheckBox.isSelected());
         getCamelPreferenceService().setScanThirdPartyLegacyComponents(scanThirdPartyLegacyComponentsCatalogCheckBox.isSelected());
         getCamelPreferenceService().setShowCamelIconInGutter(camelIconInGutterCheckBox.isSelected());
-        getCamelPreferenceService().setChosenCamelIcon(camelIconsComboBox.getSelectedItem().toString());
     }
 
     @Override
@@ -88,10 +76,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         boolean b2 = getCamelPreferenceService().isScanThirdPartyLegacyComponents() != scanThirdPartyLegacyComponentsCatalogCheckBox.isSelected()
                 || getCamelPreferenceService().isShowCamelIconInGutter() != camelIconInGutterCheckBox.isSelected();
 
-        // other fields
-        boolean b3 = !Objects.equals(getCamelPreferenceService().getChosenCamelIcon(), camelIconsComboBox.getSelectedItem());
-
-        return b1 || b2 || b3;
+        return b1 || b2;
     }
 
     @Override
@@ -100,7 +85,6 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         scanThirdPartyComponentsCatalogCheckBox.setSelected(getCamelPreferenceService().isScanThirdPartyComponents());
         scanThirdPartyLegacyComponentsCatalogCheckBox.setSelected(getCamelPreferenceService().isScanThirdPartyLegacyComponents());
         camelIconInGutterCheckBox.setSelected(getCamelPreferenceService().isShowCamelIconInGutter());
-        camelIconsComboBox.setSelectedItem(getCamelPreferenceService().getChosenCamelIcon());
     }
 
     @NotNull
@@ -133,9 +117,5 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
 
     JBCheckBox getCamelIconInGutterCheckBox() {
         return camelIconInGutterCheckBox;
-    }
-
-    JComboBox<String> getCamelIconsComboBox() {
-        return camelIconsComboBox;
     }
 }

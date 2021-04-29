@@ -23,7 +23,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.swing.*;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.ui.components.JBCheckBox;
@@ -87,17 +86,6 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
         assertTrue(checkBox.isSelected());
     }
 
-    public void testShouldContainCamelIconsComboBox() {
-        JComboBox<String> comboBox = editorSettingsPage.getCamelIconsComboBox();
-        assertNotNull(comboBox.getSelectedItem());
-        assertEquals("Camel Icon", comboBox.getSelectedItem());
-        assertEquals(3, comboBox.getItemCount());
-        assertEquals("Camel Icon", comboBox.getItemAt(0));
-        assertEquals("Camel Animal Icon", comboBox.getItemAt(1));
-        assertEquals("Camel Badge Icon", comboBox.getItemAt(2));
-        assertEquals(0, comboBox.getSelectedIndex());
-    }
-
     public void testShouldDownloadCatalogCheckBox() {
         JBCheckBox checkBox = editorSettingsPage.getDownloadCatalogCheckBox();
         checkBox.setSelected(false);
@@ -126,11 +114,4 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
         assertTrue(checkBox.isSelected());
     }
 
-    public void testShouldResetCamelIconsComboBox() {
-        JComboBox<String> comboBox = editorSettingsPage.getCamelIconsComboBox();
-        comboBox.setSelectedIndex(1);
-        editorSettingsPage.reset();
-        assertNotNull(comboBox.getSelectedItem());
-        assertEquals("Camel Icon", comboBox.getSelectedItem().toString());
-    }
 }

@@ -145,7 +145,6 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
         service.setShowCamelIconInGutter(true);
         service.setScanThirdPartyComponents(true);
         service.setRealTimeSimpleValidation(true);
-        service.setChosenCamelIcon("Camel Icon");
     }
 
     @NotNull

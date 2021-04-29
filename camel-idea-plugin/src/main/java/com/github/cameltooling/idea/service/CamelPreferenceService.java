@@ -26,7 +26,6 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Transient;
@@ -41,13 +40,7 @@ import org.jetbrains.annotations.Nullable;
 public final class CamelPreferenceService implements PersistentStateComponent<CamelPreferenceService>, Disposable {
 
     @Transient
-    public static final Icon CAMEL_ICON = IconLoader.getIcon("/icons/camel.png");
-    @Transient
-    public static final Icon CAMEL_ANIMAL_ICON = IconLoader.getIcon("/icons/camel-animal.png");
-    @Transient
-    public static final Icon CAMEL_BADGE_ICON = IconLoader.getIcon("/icons/camel-badge.png");
-    @Transient
-    private static final Logger LOG = Logger.getInstance(CamelPreferenceService.class);
+    public static final Icon CAMEL_ICON = IconLoader.getIcon("/META-INF/pluginIcon.svg", CamelPreferenceService.class);
     @Transient
     private static String[] defaultIgnoreProperties = {
         // ignore java and logger prefixes
@@ -69,8 +62,6 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     private boolean scanThirdPartyComponents = true;
     private boolean scanThirdPartyLegacyComponents = true;
     private boolean showCamelIconInGutter = true;
-    @Transient
-    private String chosenCamelIcon = "Camel Icon";
     private List<String> ignorePropertyList = new ArrayList<>();
     private List<String> excludePropertyFiles = new ArrayList<>();
 
@@ -152,14 +143,6 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
         this.showCamelIconInGutter = showCamelIconInGutter;
     }
 
-    public String getChosenCamelIcon() {
-        return chosenCamelIcon;
-    }
-
-    public void setChosenCamelIcon(String chosenCamelIcon) {
-        this.chosenCamelIcon = chosenCamelIcon;
-    }
-
     public List<String> getIgnorePropertyList() {
         if (ignorePropertyList.isEmpty()) {
             ignorePropertyList = new ArrayList<>(Arrays.asList(defaultIgnoreProperties));
@@ -185,13 +168,6 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     }
 
     public Icon getCamelIcon() {
-        if (chosenCamelIcon.equals("Camel Icon")) {
-            return CAMEL_ICON;
-        } else if (chosenCamelIcon.equals("Camel Animal Icon")) {
-            return CAMEL_ANIMAL_ICON;
-        } else if (chosenCamelIcon.equals("Camel Badge Icon")) {
-            return CAMEL_BADGE_ICON;
-        }
         return CAMEL_ICON;
     }
 
@@ -231,7 +207,6 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
             && scanThirdPartyComponents == that.scanThirdPartyComponents
             && scanThirdPartyLegacyComponents == that.scanThirdPartyLegacyComponents
             && showCamelIconInGutter == that.showCamelIconInGutter
-            && Objects.equals(chosenCamelIcon, that.chosenCamelIcon)
             && Objects.equals(ignorePropertyList, that.ignorePropertyList)
             && Objects.equals(excludePropertyFiles, that.excludePropertyFiles);
     }
@@ -241,7 +216,7 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
         return Objects.hash(realTimeEndpointValidation, realTimeSimpleValidation, realTimeJSonPathValidation,
             realTimeIdReferenceTypeValidation, downloadCatalog, scanThirdPartyComponents,
             scanThirdPartyLegacyComponents, showCamelIconInGutter,
-            chosenCamelIcon, ignorePropertyList, excludePropertyFiles);
+            ignorePropertyList, excludePropertyFiles);
     }
 
     public boolean isRealTimeBeanMethodValidationCheckBox() {
