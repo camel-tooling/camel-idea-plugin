@@ -78,8 +78,8 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         // grab all existing parameters
         String concatQuery = query[0];
         String suffix = query[1];
-        String queryAtPosition =  query[2];
-        String prefixValue =  query[2];
+        String queryAtPosition = query[2];
+        String prefixValue = query[2];
         // camel catalog expects &amp; as & when it parses so replace all &amp; as &
         concatQuery = concatQuery.replaceAll("&amp;", "&");
 

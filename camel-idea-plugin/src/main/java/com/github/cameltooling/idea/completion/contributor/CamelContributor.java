@@ -35,8 +35,6 @@ import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-
-
 /**
  * Hook into the IDEA language completion system, to setup Camel smart completion.
  * Extend this class to define what it should re-act on when using smart completion
@@ -56,6 +54,29 @@ public abstract class CamelContributor extends CompletionContributor {
         private final List<CamelCompletionExtension> camelCompletionExtensions;
 
         EndpointCompletion(List<CamelCompletionExtension> camelCompletionExtensions) {
+            this.camelCompletionExtensions = camelCompletionExtensions;
+        }
+
+        public void addCompletions(@NotNull CompletionParameters parameters,
+                                   ProcessingContext context,
+                                   @NotNull CompletionResultSet resultSet) {
+            if (ServiceManager.getService(parameters.getOriginalFile().getProject(), CamelService.class).isCamelPresent()) {
+                String[] tuple = parsePsiElement(parameters);
+                camelCompletionExtensions.stream()
+                    .filter(p -> p.isValid(parameters, context, tuple))
+                    .forEach(p -> p.addCompletions(parameters, context, resultSet, tuple));
+            }
+        }
+    }
+
+    /**
+     * Smart completion for Camel properties.
+     */
+    protected static class PropertiesCompletion extends CompletionProvider<CompletionParameters> {
+
+        private final List<CamelCompletionExtension> camelCompletionExtensions;
+
+        PropertiesCompletion(List<CamelCompletionExtension> camelCompletionExtensions) {
             this.camelCompletionExtensions = camelCompletionExtensions;
         }
 
