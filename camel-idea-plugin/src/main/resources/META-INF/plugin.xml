@@ -1,11 +1,11 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
-  <name>Apache Camel IDEA Plugin</name>
-  <version>0.7.0</version>
+  <name>Apache Camel</name>
+  <version>0.7.1</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
-      Plugin for Intellij IDEA to provide a set of small Apache Camel related capabilities to the code editor.
+      Plugin for Intellij IDEA to provide a set of Apache Camel related capabilities to the code editor.
 
       The plugin includes:
       <ul>
@@ -30,41 +30,14 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      v.0.7.1
+      <ul>
+        <li>bug fixes</li>
+      </ul>
       v.0.7.0
       <ul>
         <li>Upgrade to Intellij 2021.1</li>
         <li>Upgrade to Apache Camel 3</li>
-      </ul>
-      v0.6.4
-      <ul>
-        <li>bug fixes</li>
-      </ul>
-      v0.6.4
-      <ul>
-        <li>Upgrade to IntelliJ IDEA 2020.1</li>
-        <li>bug fixes</li>
-      </ul>
-      v0.6.3
-      <ul>
-        <li>Upgrade to Intellij 2019.3.1</li>
-        <li>Upgrade to Intellij 2019.2.4</li>
-      </ul>
-      v0.6.2
-      <ul>
-        <li>Upgrade to Intellij 2019.2.3</li>
-        <li>Upgraded to Apache Camel 2.24.2</li>
-        <li>Upgrade to Intellij 2019.2.2</li>
-      </ul>
-      v0.6.1
-      <ul>
-        <li>Upgrade to Intellij 2019.2</li>
-      </ul>
-      v0.6.0
-      <ul>
-        <li>Bug fixes</li>
-        <li>Upgrade to Intellij 2019.1.3</li>
-        <li>Add support for using static string name as bean reference</li>
-        <li>Upgraded to Apache Camel 2.24.1</li>
       </ul>
     ]]>
   </change-notes>
@@ -124,6 +97,7 @@
     <!-- allow code completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelJavaReferenceContributor" order="first"/>
     <completion.contributor language="XML" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelXmlReferenceContributor"/>
+    <completion.contributor language="Properties" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertiesContributor"/>
     <completion.contributor language="any" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertiesOrYamlFileReferenceContributor" order="before javaClassReference"/>
 
     <!-- puts the Camel icon in the gutter for each line that starts a Camel route -->
