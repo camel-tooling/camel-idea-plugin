@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -36,6 +37,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.stream.Collectors;
 import javax.swing.*;
+
+import com.intellij.notification.NotificationGroupManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -65,7 +68,7 @@ import static org.apache.camel.catalog.impl.CatalogHelper.loadText;
  */
 public class CamelService implements Disposable {
 
-    private static final NotificationGroup CAMEL_NOTIFICATION_GROUP = NotificationGroup.balloonGroup("Apache Camel");
+    private static final NotificationGroup CAMEL_NOTIFICATION_GROUP = NotificationGroupManager.getInstance().getNotificationGroup("Camel Notification Group");
 
     private static final Logger LOG = Logger.getInstance(CamelService.class);
 
@@ -484,25 +487,23 @@ public class CamelService implements Disposable {
             if (classLoader != null) {
                 // is there any custom Camel components in this library?
                 Properties properties = loadComponentProperties(classLoader, legacyScan);
-                if (properties != null) {
-                    String components = (String) properties.get("components");
-                    if (components != null) {
-                        String[] part = components.split("\\s");
-                        for (String scheme : part) {
-                            if (!camelCatalog.findComponentNames().contains(scheme)) {
-                                // mark as added to avoid re-scanning the same component again
-                                added = true;
-                                // find the class name
-                                String javaType = extractComponentJavaType(classLoader, scheme);
-                                if (javaType != null) {
-                                    String json = loadComponentJSonSchema(classLoader, scheme);
-                                    if (json != null) {
-                                        // okay a new Camel component was added
-                                        camelCatalog.addComponent(scheme, javaType, json);
-                                    } else {
-                                        // the component has no json schema, and hence its not supported by the plugin
-                                        missingJSonSchemas.add(artifactId);
-                                    }
+                String components = (String) properties.get("components");
+                if (components != null) {
+                    String[] part = components.split("\\s");
+                    for (String scheme : part) {
+                        if (!camelCatalog.findComponentNames().contains(scheme)) {
+                            // mark as added to avoid re-scanning the same component again
+                            added = true;
+                            // find the class name
+                            String javaType = extractComponentJavaType(classLoader, scheme);
+                            if (javaType != null) {
+                                String json = loadComponentJSonSchema(classLoader, scheme);
+                                if (json != null) {
+                                    // okay a new Camel component was added
+                                    camelCatalog.addComponent(scheme, javaType, json);
+                                } else {
+                                    // the component has no json schema, and hence its not supported by the plugin
+                                    missingJSonSchemas.add(artifactId);
                                 }
                             }
                         }
@@ -585,7 +586,7 @@ public class CamelService implements Disposable {
                 URL url = e.nextElement();
                 String urlPath = url.getFile();
 
-                urlPath = URLDecoder.decode(urlPath, "UTF-8");
+                urlPath = URLDecoder.decode(urlPath, StandardCharsets.UTF_8);
 
                 // If it's a file in a directory, trim the stupid file: spec
                 if (urlPath.startsWith("file:")) {
