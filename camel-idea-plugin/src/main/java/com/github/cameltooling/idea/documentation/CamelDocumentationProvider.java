@@ -171,7 +171,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Override
     public PsiElement getDocumentationElementForLookupItem(PsiManager psiManager, Object object, PsiElement element) {
         // we only support literal - string types where Camel endpoints can be specified
-        if (object == null || !(object instanceof String)) {
+        if (!(object instanceof String)) {
             return null;
         }
 
@@ -232,15 +232,14 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         return null;
     }
 
-    @Nullable
     @Override
-    public PsiElement getCustomDocumentationElement(@NotNull Editor editor, @NotNull PsiFile file, @Nullable PsiElement contextElement) {
+    public @Nullable PsiElement getCustomDocumentationElement(@NotNull Editor editor, @NotNull PsiFile file, @Nullable PsiElement contextElement, int targetOffset) {
         // documentation from properties file will cause IDEA to call this method where we can tell IDEA we can provide
         // documentation for the element if we can detect its a Camel component
 
         if (contextElement != null) {
             ASTNode node = contextElement.getNode();
-            if (node != null && node instanceof XmlToken) {
+            if (node instanceof XmlToken) {
                 //there is an &amp; in the route that splits the route in separated PsiElements
                 if (node.getElementType() == XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN
                     //the caret is at the end of the route next to the " character
@@ -260,9 +259,8 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         return null;
     }
 
-    @Nullable
     @Override
-    public String fetchExternalDocumentation(Project project, PsiElement element, List<String> docUrls) {
+    public @Nullable String fetchExternalDocumentation(Project project, PsiElement element, List<String> docUrls, boolean onHover) {
         return null;
     }
 
@@ -492,20 +490,21 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             sb.append("Maven: <tt>").append(g).append(":").append(a).append(":").append(v).append("</tt><br/>");
         }
         sb.append("<p/>");
+        sb.append("<br/>");
 
         // indent the endpoint url with 5 spaces and wrap it by url separator
         String wrapped = wrapSeparator(val, "&", "<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", 100);
         sb.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>").append(wrapped).append("</b><br/>");
 
         if (options.length() > 0) {
-            sb.append(options.toString());
+            sb.append(options);
         }
         return sb.toString();
     }
 
     private boolean isPsiMethodCamelLanguage(PsiMethod method) {
         PsiType type = method.getReturnType();
-        if (type != null && type instanceof PsiClassReferenceType) {
+        if (type instanceof PsiClassReferenceType) {
             PsiClassReferenceType clazz = (PsiClassReferenceType) type;
             PsiClass resolved = clazz.resolve();
             if (resolved != null) {
