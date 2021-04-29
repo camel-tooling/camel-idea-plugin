@@ -32,9 +32,9 @@
   <change-notes><![CDATA[
       v.0.7.1
       <ul>
-        <li>bug fixes</li>
-        <li>Remove Camel icon chooser as the official logo will be used</li>
+        <li>Removed Camel icon chooser as the official logo will be used</li>
         <li>Fixed some IDEA Compatibility verification reporting warnings</li>
+        <li>Bug fixes</li>
       </ul>
       v.0.7.0
       <ul>

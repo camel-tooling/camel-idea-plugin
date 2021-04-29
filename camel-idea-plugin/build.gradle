@@ -29,6 +29,12 @@ intellij {
     plugins = ['java', 'java-i18n', 'properties', 'yaml']
 }
 
+// to support IDEA 2020.3
+// http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
+patchPluginXml {
+    sinceBuild = "203"
+}
+
 publishPlugin {
     def authenticationToken = "$System.env.INTELLIJ_TOKEN"
     token authenticationToken
