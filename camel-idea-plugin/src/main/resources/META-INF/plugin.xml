@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
-  <version>0.7.2</version>
+  <version>0.7.3</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -9,6 +9,11 @@
     ]]></description>
 
   <change-notes><![CDATA[
+      v.0.7.3
+      <ul>
+        <li>Fixed some IDEA Compatibility verification reporting warnings</li>
+        <li>Bug fixes</li>
+      </ul>
       v.0.7.2
       <ul>
         <li>Fixed some IDEA Compatibility verification reporting warnings</li>
