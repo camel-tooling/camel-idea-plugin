@@ -38,39 +38,36 @@
   <!-- depend on the properties plugin -->
   <depends>com.intellij.properties</depends>
 
-  <!-- depend on the yml plugin -->
+  <!-- depend on the yaml plugin -->
   <depends>org.jetbrains.plugins.yaml</depends>
 
   <depends>com.intellij.java</depends>
 
+  <!-- main listener to trigger Camel IDEA plugin to detect if Camel is present or not in the project -->
+  <applicationListeners>
+    <listener class="com.github.cameltooling.idea.CamelPluginStartup" topic="com.intellij.openapi.project.ProjectManagerListener"/>
+  </applicationListeners>
+
   <extensions defaultExtensionNs="com.intellij">
-    <notificationGroup id="Camel Notification Group" displayType="BALLOON" key="notification.group.name"/>
+    <notificationGroup id="Camel Notification Group" displayType="BALLOON"/>
   </extensions>
 
   <extensions defaultExtensionNs="org.apache.camel">
-    <IdeaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.idea.JavaIdeaUtils" />
-    <IdeaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.idea.XmlIdeaUtils" />
-    <IdeaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.idea.PropertyIdeaUtils" />
-    <IdeaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.idea.YamlIdeaUtils" />
+    <ideaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.idea.JavaIdeaUtils" />
+    <ideaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.idea.XmlIdeaUtils" />
+    <ideaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.idea.PropertyIdeaUtils" />
+    <ideaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.idea.YamlIdeaUtils" />
 
-    <CamelIdeaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.camel.JavaCamelIdeaUtils" />
-    <CamelIdeaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.camel.XmlCamelIdeaUtils" />
+    <camelIdeaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.camel.JavaCamelIdeaUtils" />
+    <camelIdeaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.camel.XmlCamelIdeaUtils" />
   </extensions>
 
   <extensionPoints>
-    <extensionPoint name="IdeaUtilsSupport" interface="com.github.cameltooling.idea.extension.IdeaUtilsExtension" />
+    <extensionPoint name="ideaUtilsSupport" interface="com.github.cameltooling.idea.extension.IdeaUtilsExtension" />
   </extensionPoints>
-
   <extensionPoints>
-    <extensionPoint name="CamelIdeaUtilsSupport" interface="com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension" />
+    <extensionPoint name="camelIdeaUtilsSupport" interface="com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension" />
   </extensionPoints>
-
-  <project-components>
-    <!-- Camel project component -->
-    <component>
-      <implementation-class>com.github.cameltooling.idea.CamelProjectComponent</implementation-class>
-    </component>
-  </project-components>
 
   <extensions defaultExtensionNs="com.intellij">
 
@@ -87,7 +84,8 @@
     <!-- allow code completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelJavaReferenceContributor" order="first"/>
     <completion.contributor language="XML" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelXmlReferenceContributor"/>
-    <completion.contributor language="Properties" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertiesContributor"/>
+    <!-- TODO: work in progress -->
+<!--    <completion.contributor language="Properties" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertiesContributor"/>-->
     <completion.contributor language="any" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertiesOrYamlFileReferenceContributor" order="before javaClassReference"/>
 
     <!-- puts the Camel icon in the gutter for each line that starts a Camel route -->
@@ -132,7 +130,7 @@
     <annotator language="JAVA" implementationClass="com.github.cameltooling.idea.annotator.CamelBeanMethodAnnotator"/>
 
     <!-- inspection to validate endpoints -->
-    <localInspection displayName="Camel inspection" groupName="Apache Camel" implementationClass="com.github.cameltooling.idea.inspection.CamelInspection"/>
+    <localInspection displayName="Camel inspection" groupName="Camel" implementationClass="com.github.cameltooling.idea.inspection.CamelInspection"/>
 
     <!-- preference -->
     <applicationConfigurable id="camel" groupId="language" displayName="Apache Camel" instance="com.github.cameltooling.idea.preference.CamelPreferenceEntryPage"/>
