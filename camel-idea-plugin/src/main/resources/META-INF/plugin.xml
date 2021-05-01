@@ -11,7 +11,8 @@
   <change-notes><![CDATA[
       v.0.7.2
       <ul>
-        <li>Bug fixes</li>
+        <li>Fixed some IDEA Compatibility verification reporting warnings</li>
+        <li>Support for Intellij 2020 did not work, so only 2021 is supported currently</li>
       </ul>
       v.0.7.1
       <ul>
@@ -28,7 +29,7 @@
   </change-notes>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="203" until-build="211.*"/>
+  <idea-version since-build="211"/>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
