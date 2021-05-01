@@ -24,11 +24,11 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 
 /**
- * Extension point for CamelIdeaUtils for handling specific plugin language elements
+ * Extension point for camelIdeaUtils for handling specific plugin language elements
  */
 public interface CamelIdeaUtilsExtension {
 
-    ExtensionPointName<CamelIdeaUtilsExtension> EP_NAME = ExtensionPointName.create("org.apache.camel.CamelIdeaUtilsSupport");
+    ExtensionPointName<CamelIdeaUtilsExtension> EP_NAME = ExtensionPointName.create("org.apache.camel.camelIdeaUtilsSupport");
 
     /**
      * Is the given element from the start of a Camel route, eg <tt>from</tt>, ot &lt;from&gt;.

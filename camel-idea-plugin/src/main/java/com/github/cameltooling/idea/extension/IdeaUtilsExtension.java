@@ -21,24 +21,22 @@ import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 
-
 /**
- * Extension point for IdeaUtils for handling specific plugin language elements
+ * Extension point for ideaUtils for handling specific plugin language elements
  */
 public interface IdeaUtilsExtension {
 
-    ExtensionPointName<IdeaUtilsExtension> EP_NAME = ExtensionPointName.create("org.apache.camel.IdeaUtilsSupport");
+    ExtensionPointName<IdeaUtilsExtension> EP_NAME = ExtensionPointName.create("org.apache.camel.ideaUtilsSupport");
 
     /**
      * Extract the text value from the {@link PsiElement} from any of the support languages this plugin works with.
      *
      * @param element the element
      * @param concatString concatenated the string if it wrapped
-     * @param stripWhitespace
+     * @param stripWhitespace whether to strip white space
      * @return the text or <tt>null</tt> if the element is not a text/literal kind.
      */
     Optional<String> extractTextFromElement(@NotNull PsiElement element, boolean concatString, boolean stripWhitespace);
-
 
     /**
      * Is the element from a java setter method (eg setBrokerURL) or from a XML configured <tt>bean</tt> style
