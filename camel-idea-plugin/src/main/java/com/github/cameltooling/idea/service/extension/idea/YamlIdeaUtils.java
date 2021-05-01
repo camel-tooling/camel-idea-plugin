@@ -19,7 +19,7 @@ package com.github.cameltooling.idea.service.extension.idea;
 import java.util.Optional;
 import com.github.cameltooling.idea.extension.IdeaUtilsExtension;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
@@ -47,7 +47,7 @@ public class YamlIdeaUtils implements IdeaUtilsExtension {
 
     @Override
     public boolean isExtensionEnabled() {
-        final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("org.jetbrains.plugins.yaml"));
+        final IdeaPluginDescriptor plugin = PluginManagerCore.getPlugin(PluginId.getId("org.jetbrains.plugins.yaml"));
         return plugin != null && plugin.isEnabled();
     }
 

@@ -19,7 +19,7 @@ package com.github.cameltooling.idea.service.extension.idea;
 import java.util.Optional;
 import com.github.cameltooling.idea.extension.IdeaUtilsExtension;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
-import com.intellij.ide.plugins.PluginManager;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
@@ -44,7 +44,7 @@ public class PropertyIdeaUtils implements IdeaUtilsExtension {
 
     @Override
     public boolean isExtensionEnabled() {
-        final IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.intellij.properties"));
+        final IdeaPluginDescriptor plugin = PluginManagerCore.getPlugin(PluginId.getId("com.intellij.properties"));
         return plugin != null && plugin.isEnabled();
     }
 }
