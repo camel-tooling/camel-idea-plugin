@@ -13,6 +13,7 @@
       <ul>
         <li>Fixed some IDEA Compatibility verification reporting warnings</li>
         <li>Support for Intellij 2020 did not work, so only 2021 is supported currently</li>
+        <li>Restart no longer required after installing or updating this plugin</li>
       </ul>
       v.0.7.1
       <ul>
