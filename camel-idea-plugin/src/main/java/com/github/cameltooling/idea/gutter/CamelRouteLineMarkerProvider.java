@@ -97,6 +97,15 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                     }
                 }
             }
+            // skip if its a Camel route that is multi-lined, then we only want Camel icon on the first line
+            if (element instanceof PsiJavaToken) {
+                if (isPartOfPolyadicExpression((PsiJavaToken) element)) {
+                    PsiExpression first = getFirstExpressionFromPolyadicExpression((PsiJavaToken) element);
+                    if (first != null && !element.isEquivalentTo(first.getFirstChild())) {
+                        return;
+                    }
+                }
+            }
 
             Icon icon = getCamelPreferenceService().getCamelIcon();
 
@@ -321,6 +330,16 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
     }
 
     /**
+     * Determines if the given {@link PsiLiteralExpression} is part of a {@link PsiPolyadicExpression}
+     *
+     * @param psiJavaToken the {@link PsiJavaToken} to be checked
+     * @return true if it's part of {@link PsiPolyadicExpression}, false otherwise
+     */
+    private static boolean isPartOfPolyadicExpression(PsiJavaToken psiJavaToken) {
+        return PsiTreeUtil.getParentOfType(psiJavaToken, PsiPolyadicExpression.class) != null;
+    }
+
+    /**
      * Returns the first operand from a {@link PsiPolyadicExpression}
      *
      * @param psiLiteralExpression the {@link PsiLiteralExpression} that is part of a {@link PsiPolyadicExpression}
@@ -330,6 +349,23 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
     private static PsiExpression getFirstExpressionFromPolyadicExpression(PsiLiteralExpression psiLiteralExpression) {
         if (isPartOfPolyadicExpression(psiLiteralExpression)) {
             PsiPolyadicExpression psiPolyadicExpression = PsiTreeUtil.getParentOfType(psiLiteralExpression, PsiPolyadicExpression.class);
+            if (psiPolyadicExpression != null) {
+                return psiPolyadicExpression.getOperands()[0];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the first operand from a {@link PsiPolyadicExpression}
+     *
+     * @param psiJavaToken the {@link PsiLiteralExpression} that is part of a {@link PsiPolyadicExpression}
+     * @return the first {@link PsiExpression} if the given {@link PsiLiteralExpression} is part of a {@link PsiPolyadicExpression}, null otherwise
+     */
+    @Nullable
+    private static PsiExpression getFirstExpressionFromPolyadicExpression(PsiJavaToken psiJavaToken) {
+        if (isPartOfPolyadicExpression(psiJavaToken)) {
+            PsiPolyadicExpression psiPolyadicExpression = PsiTreeUtil.getParentOfType(psiJavaToken, PsiPolyadicExpression.class);
             if (psiPolyadicExpression != null) {
                 return psiPolyadicExpression.getOperands()[0];
             }
