@@ -18,11 +18,10 @@ The plugin includes:
 - Quick documentation for Camel endpoints and external link to Camel component opening in web browser (`ctrl + j` and `shift-F1`)
 - Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders
 - Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)
-- Attempts to use same version as camel-core dependency from the loaded project (requires Camel 2.16.1 or newer and may require download over internet)
+- Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)
 - Inspection (analyze code) to validate Camel endpoints in Java, XML
 - Camel icon in gutter can be customized by choosing one of the three provided icons
 - Supports loading camel-catalog from third party Maven repositories define in the project Maven pom.xml file 
-- Supports Maven, Gradle, and SBT based projects
 
 When the plugin becomes more complete and stable then the intention is to donate the source code
 to Apache Software Foundation to be included out of the box at Apache Camel.
@@ -34,22 +33,21 @@ However currently the code is located at github to allow faster and wider collab
 
 ### How to install
 
-The plugin `Apache Camel IDEA plugin` is available from Jetbrains Plugin Repository at: https://plugins.jetbrains.com/idea/plugin/9371-apache-camel-idea-plugin
+The plugin `Apache Camel` is available from Jetbrains Plugin Repository at: https://plugins.jetbrains.com/idea/plugin/9371-apache-camel-idea-plugin
 
 You should be able to install the plugin from within IDEA plugin manager.
-Open the `Preference` menu and select `Plugins`. Click the `Browse repositories...` if `Apache Camel IDEA plugin` is not
-available in the plugin list. From there you should be able to browse all the plugins from the Jetbrains remote plugin repository.
-
+Open the `Preference` menu and select `Plugins`. Click the `Markeplace...` and type `Apache Camel` in the search box to find the plugin,
+and then you can install it.
 
 ### How to try
 
-Currently the plugin is editing Java endpoints in Java source code.
+The plugin is editing Java endpoints in Java source code.
 
-You can open any Camel example which uses Java code, such as `camel-example-spring-boot` an
-select the `MySpringBootRouter` route class and position the cursor on any of the Camel endpoints
+You can open any Camel example which uses Java code, such as the [Camel Spring Boot Example](https://github.com/apache/camel-spring-boot-examples/tree/main/spring-boot)
+and select the `MySpringBootRouter` route class and position the cursor on any of the Camel endpoints
 after the '?' mark and press `ctrl + space`. 
 
-Currently its only endpoint options in the URI query section which can be edited. Its planned to add
+Currently, its only endpoint options in the URI query section which can be edited. It's planned to add
 support for editing the options in the URI context-path section as well.
 
 
@@ -128,8 +126,8 @@ Running the IntelliJ unit test from gradle with the community version
 
 ### Contributing / Hacking on the code
 
-We love contributions. And anyone is welcome to join and hack on the code. For code changes you
-can submit github PRs (pull requests) which anyone can review and get merged into the code base.
+We love contributions. Anyone is welcome to join and hack on the code. For code changes you
+can submit GitHub PRs (pull requests) which anyone can review and get merged into the code base.
 
 For people who hack more on the code, can be granted commit rights.
 
@@ -156,16 +154,8 @@ We created a FAQ page to help other developers with common errors when working w
 
 - https://github.com/camel-idea-plugin/camel-idea-plugin/wiki/Frequently-Asked-Questions
 
-### TODOs
-
-The issue tracker has a list of tickets with items to implement. This can be a good place
-to look for _stuff_ you can help with. We have labeled the beginner tickets with `beginner` and `help wanted`.
-
-Also we love feedback and you are welcome to log tickets about issues, ideas, etc.
-
-
 ### Screenshots
 
-We will post various screen shots of the plugin in the
+We will post various screenshots of the plugin in the
 [img directory](https://github.com/camel-idea-plugin/camel-idea-plugin/tree/master/img)
 which you can browse.
