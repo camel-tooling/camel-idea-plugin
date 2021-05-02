@@ -40,7 +40,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
     @Override
     public JComponent createComponent() {
         downloadCatalogCheckBox = new JBCheckBox("Allow downloading camel-catalog over the internet");
-        scanThirdPartyComponentsCatalogCheckBox = new JBCheckBox("Scan classpath for third party Camel components using modern component packaging");
+        scanThirdPartyComponentsCatalogCheckBox = new JBCheckBox("Scan classpath for third party Camel components");
         camelIconInGutterCheckBox = new JBCheckBox("Show Camel icon in gutter");
 
         // use mig layout which is like a spread-sheet with 2 columns, which we can span if we only have one element
