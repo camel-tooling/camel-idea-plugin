@@ -45,8 +45,13 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     private static String[] defaultIgnoreProperties = {
         // ignore java and logger prefixes
         "java.", "Logger.", "logger", "appender.", "rootLogger.",
+        // ignore camel component/dataformat/language
+        "camel.component.", "camel.dataformat.", "camel.language.",
+        // ignore camel-main configuration prefixes
+        "came.main.", "camel.faulttolerance.", "camel.hystrix.", "camel.resilience4j.", "camel.rest.", "camel.health.", "camel.lra.", "camel.threadpool.",
         // ignore camel-spring-boot auto configuration prefixes
-        "camel.springboot.", "camel.component.", "camel.dataformat.", "camel.language."};
+        "camel.springboot."
+    };
 
     @Transient
     private static String[] defaultExcludeFilePattern = {
