@@ -30,10 +30,13 @@ import com.intellij.lang.Language;
 import com.intellij.lang.documentation.DocumentationProviderEx;
 import com.intellij.lang.documentation.ExternalDocumentationHandler;
 import com.intellij.lang.documentation.ExternalDocumentationProvider;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
@@ -266,7 +269,9 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Override
     public @Nullable String fetchExternalDocumentation(Project project, PsiElement element, List<String> docUrls, boolean onHover) {
         // F1 documentation which is external but shown inside IDEA
-        return generateDoc(element, element);
+
+        // need to be run as read-action to avoid IDEA reporting an error
+        return ApplicationManager.getApplication().runReadAction((Computable<String>) () -> generateDoc(element, element));
     }
 
     @Override
