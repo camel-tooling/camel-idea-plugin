@@ -48,7 +48,7 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
         // ignore camel component/dataformat/language
         "camel.component.", "camel.dataformat.", "camel.language.",
         // ignore camel-main configuration prefixes
-        "came.main.", "camel.faulttolerance.", "camel.hystrix.", "camel.resilience4j.", "camel.rest.", "camel.health.", "camel.lra.", "camel.threadpool.",
+        "camel.main.", "camel.faulttolerance.", "camel.hystrix.", "camel.resilience4j.", "camel.rest.", "camel.health.", "camel.lra.", "camel.threadpool.",
         // ignore camel-spring-boot auto configuration prefixes
         "camel.springboot."
     };
