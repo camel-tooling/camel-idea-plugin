@@ -393,7 +393,11 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         }
 
         StringBuilder builder = new StringBuilder();
-        builder.append("<strong>").append(endpointOption.getName()).append("</strong><br/><br/>");
+        if (endpointOption.isDeprecated()) {
+            builder.append("<strong><s>").append(endpointOption.getName()).append("</s></strong><br/><br/>");
+        } else {
+            builder.append("<strong>").append(endpointOption.getName()).append("</strong><br/><br/>");
+        }
         builder.append("<strong>Group: </strong>").append(endpointOption.getGroup()).append("<br/>");
         builder.append("<strong>Type: </strong>").append("<tt>").append(endpointOption.getJavaType()).append("</tt>").append("<br/>");
         boolean required = endpointOption.isRequired();
@@ -452,12 +456,17 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
                 if (row != null) {
                     String kind = row.getString("kind");
+                    String deprecated = row.getString("deprecated");
 
                     String line;
                     if ("path".equals(kind)) {
                         line = value + "<br/>";
                     } else {
-                        line = name + "=" + value + "<br/>";
+                        if ("true".equals(deprecated)) {
+                            line = "<s>" + name + "</s>=" + value + "<br/>";
+                        } else {
+                            line = name + "=" + value + "<br/>";
+                        }
                     }
                     options.append("<br/>");
                     options.append("<b>").append(line).append("</b>");
