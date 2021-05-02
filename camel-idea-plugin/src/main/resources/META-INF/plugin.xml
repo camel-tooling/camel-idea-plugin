@@ -12,7 +12,8 @@
       v.0.7.3
       <ul>
         <li>Fixed some IDEA Compatibility verification reporting warnings</li>
-        <li>Bug fixes</li>
+        <li>Improved inlined documentation (F1) for Camel endpoints</li>
+        <li>External documentation (Shift F1) opens the link on Camel website (LTS version or latest)</li>
       </ul>
       v.0.7.2
       <ul>
