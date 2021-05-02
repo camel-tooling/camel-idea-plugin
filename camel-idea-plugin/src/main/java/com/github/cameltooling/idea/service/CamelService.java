@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 import javax.swing.*;
 
 import com.intellij.notification.NotificationGroupManager;
+import com.intellij.openapi.project.ProjectUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -79,8 +80,8 @@ public class CamelService implements Disposable {
     private List<Library> camel3CoreLibraries = new ArrayList<>();
     private Library slf4japiLibrary;
     private ClassLoader camelCoreClassloader;
-    private Set<String> processedLibraries = new HashSet<>();
-    private Set<Library> projectLibraries = new HashSet<>();
+    private final Set<String> processedLibraries = new HashSet<>();
+    private final Set<Library> projectLibraries = new HashSet<>();
     private ClassLoader projectClassloader;
     private volatile boolean camelPresent;
     private Notification camelVersionNotification;
@@ -348,7 +349,7 @@ public class CamelService implements Disposable {
     }
 
     /**
-     * attempt to load new version of camel-catalog to match the version from the project
+     * Attempt to load new version of camel-catalog to match the version from the project
      * use catalog service to load version (which takes care of switching catalog as well)
      */
     private boolean downloadNewCamelCatalogVersion(@NotNull Project project, @NotNull Module module, String version, boolean notifyLoaded) {
@@ -420,7 +421,7 @@ public class CamelService implements Disposable {
         }
 
         if (!missingJSonSchemas.isEmpty()) {
-            String components = missingJSonSchemas.stream().collect(Collectors.joining(","));
+            String components = String.join(",", missingJSonSchemas);
             String message = "The following Camel components with artifactId [" + components
                     + "] does not include component JSon schema metadata which is required for the Camel IDEA plugin to support these components.";
 
@@ -439,7 +440,10 @@ public class CamelService implements Disposable {
     private @NotNull Map<String, String> scanThirdPartyMavenRepositories(@NotNull Module module) {
         Map<String, String> answer = new LinkedHashMap<>();
 
-        VirtualFile vf = module.getProject().getBaseDir().findFileByRelativePath("pom.xml");
+        VirtualFile vf = ProjectUtil.guessProjectDir(module.getProject());
+        if (vf != null) {
+            vf = vf.findFileByRelativePath("pom.xml");
+        }
         if (vf != null) {
             try {
                 InputStream is = vf.getInputStream();
