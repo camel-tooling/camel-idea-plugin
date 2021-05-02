@@ -74,12 +74,6 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
         assertTrue(checkBox.isSelected());
     }
 
-    public void testShouldContainScanThirdPartyLegacyComponentsCatalogCheckBox() {
-        JBCheckBox checkBox = editorSettingsPage.getScanThirdPartyLegacyComponentsCatalogCheckBox();
-        assertEquals("Scan classpath for third party Camel components using legacy component packaging", checkBox.getText());
-        assertTrue(checkBox.isSelected());
-    }
-
     public void testShouldContainCamelIconInGutterCheckBox() {
         JBCheckBox checkBox = editorSettingsPage.getCamelIconInGutterCheckBox();
         assertEquals("Show Camel icon in gutter", checkBox.getText());
@@ -95,13 +89,6 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
 
     public void testShouldResetScanThirdPartyComponentsCatalogCheckBox() {
         JBCheckBox checkBox = editorSettingsPage.getScanThirdPartyComponentsCatalogCheckBox();
-        checkBox.setSelected(false);
-        editorSettingsPage.reset();
-        assertTrue(checkBox.isSelected());
-    }
-
-    public void testShouldResetScanThirdPartyLegacyComponentsCatalogCheckBox() {
-        JBCheckBox checkBox = editorSettingsPage.getScanThirdPartyLegacyComponentsCatalogCheckBox();
         checkBox.setSelected(false);
         editorSettingsPage.reset();
         assertTrue(checkBox.isSelected());

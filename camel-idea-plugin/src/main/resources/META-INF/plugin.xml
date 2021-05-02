@@ -14,6 +14,7 @@
         <li>Fixed some IDEA Compatibility verification reporting warnings</li>
         <li>Improved inlined documentation (F1) for Camel endpoints</li>
         <li>External documentation (Shift F1) opens the link on Camel website (LTS version or latest)</li>
+        <li>Removed obsolete scan 3rd-party Camel components using legacy format</li>
       </ul>
       v.0.7.2
       <ul>

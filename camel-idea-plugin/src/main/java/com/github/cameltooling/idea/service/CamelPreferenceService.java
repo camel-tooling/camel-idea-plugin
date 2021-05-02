@@ -60,7 +60,6 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     private boolean highlightCustomOptions = true;
     private boolean downloadCatalog = true;
     private boolean scanThirdPartyComponents = true;
-    private boolean scanThirdPartyLegacyComponents = true;
     private boolean showCamelIconInGutter = true;
     private List<String> ignorePropertyList = new ArrayList<>();
     private List<String> excludePropertyFiles = new ArrayList<>();
@@ -125,14 +124,6 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
 
     public void setScanThirdPartyComponents(boolean scanThirdPartyComponents) {
         this.scanThirdPartyComponents = scanThirdPartyComponents;
-    }
-
-    public boolean isScanThirdPartyLegacyComponents() {
-        return scanThirdPartyLegacyComponents;
-    }
-
-    public void setScanThirdPartyLegacyComponents(boolean scanThirdPartyLegacyComponents) {
-        this.scanThirdPartyLegacyComponents = scanThirdPartyLegacyComponents;
     }
 
     public boolean isShowCamelIconInGutter() {
@@ -205,7 +196,6 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
             && realTimeIdReferenceTypeValidation == that.realTimeIdReferenceTypeValidation
             && downloadCatalog == that.downloadCatalog
             && scanThirdPartyComponents == that.scanThirdPartyComponents
-            && scanThirdPartyLegacyComponents == that.scanThirdPartyLegacyComponents
             && showCamelIconInGutter == that.showCamelIconInGutter
             && Objects.equals(ignorePropertyList, that.ignorePropertyList)
             && Objects.equals(excludePropertyFiles, that.excludePropertyFiles);
@@ -215,7 +205,6 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     public int hashCode() {
         return Objects.hash(realTimeEndpointValidation, realTimeSimpleValidation, realTimeJSonPathValidation,
             realTimeIdReferenceTypeValidation, downloadCatalog, scanThirdPartyComponents,
-            scanThirdPartyLegacyComponents, showCamelIconInGutter,
             ignorePropertyList, excludePropertyFiles);
     }
 

@@ -484,13 +484,12 @@ public class CamelService implements Disposable {
      * @param artifactId   the artifact id of the dependency
      */
     private void addCustomCamelComponentsFromDependency(CamelCatalog camelCatalog, Library library, String artifactId, List<String> missingJSonSchemas) {
-        boolean legacyScan = getCamelPreferenceService().isScanThirdPartyLegacyComponents();
         boolean added = false;
 
         try (URLClassLoader classLoader = getIdeaUtils().newURLClassLoaderForLibrary(library)) {
             if (classLoader != null) {
                 // is there any custom Camel components in this library?
-                Properties properties = loadComponentProperties(classLoader, legacyScan);
+                Properties properties = loadComponentProperties(classLoader);
                 String components = (String) properties.get("components");
                 if (components != null) {
                     String[] part = components.split("\\s");
@@ -565,16 +564,13 @@ public class CamelService implements Disposable {
         return minor >= MIN_MINOR_VERSION;
     }
 
-    private static Properties loadComponentProperties(URLClassLoader classLoader, boolean legacyScan) {
+    private static Properties loadComponentProperties(URLClassLoader classLoader) {
         Properties answer = new Properties();
         try {
             // load the component files using the recommended way by a component.properties file
             InputStream is = classLoader.getResourceAsStream("META-INF/services/org/apache/camel/component.properties");
             if (is != null) {
                 answer.load(is);
-            } else if (legacyScan) {
-                // okay then try to load using a fallback using legacy classpath scanning
-                loadComponentPropertiesClasspathScan(classLoader, answer);
             }
         } catch (Throwable e) {
             LOG.warn("Error loading META-INF/services/org/apache/camel/component.properties file", e);

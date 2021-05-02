@@ -34,7 +34,6 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
 
     private JBCheckBox downloadCatalogCheckBox;
     private JBCheckBox scanThirdPartyComponentsCatalogCheckBox;
-    private JBCheckBox scanThirdPartyLegacyComponentsCatalogCheckBox;
     private JBCheckBox camelIconInGutterCheckBox;
 
     @Nullable
@@ -42,7 +41,6 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
     public JComponent createComponent() {
         downloadCatalogCheckBox = new JBCheckBox("Allow downloading camel-catalog over the internet");
         scanThirdPartyComponentsCatalogCheckBox = new JBCheckBox("Scan classpath for third party Camel components using modern component packaging");
-        scanThirdPartyLegacyComponentsCatalogCheckBox = new JBCheckBox("Scan classpath for third party Camel components using legacy component packaging");
         camelIconInGutterCheckBox = new JBCheckBox("Show Camel icon in gutter");
 
         // use mig layout which is like a spread-sheet with 2 columns, which we can span if we only have one element
@@ -51,7 +49,6 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
 
         panel.add(downloadCatalogCheckBox, "span 2");
         panel.add(scanThirdPartyComponentsCatalogCheckBox, "span 2");
-        panel.add(scanThirdPartyLegacyComponentsCatalogCheckBox, "span 2");
         panel.add(camelIconInGutterCheckBox, "span 2");
 
         JPanel result = new JPanel(new BorderLayout());
@@ -64,7 +61,6 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
     public void apply() throws ConfigurationException {
         getCamelPreferenceService().setDownloadCatalog(downloadCatalogCheckBox.isSelected());
         getCamelPreferenceService().setScanThirdPartyComponents(scanThirdPartyComponentsCatalogCheckBox.isSelected());
-        getCamelPreferenceService().setScanThirdPartyLegacyComponents(scanThirdPartyLegacyComponentsCatalogCheckBox.isSelected());
         getCamelPreferenceService().setShowCamelIconInGutter(camelIconInGutterCheckBox.isSelected());
     }
 
@@ -72,18 +68,15 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
     public boolean isModified() {
         // check boxes
         boolean b1 = getCamelPreferenceService().isDownloadCatalog() != downloadCatalogCheckBox.isSelected()
-                || getCamelPreferenceService().isScanThirdPartyComponents() != scanThirdPartyComponentsCatalogCheckBox.isSelected();
-        boolean b2 = getCamelPreferenceService().isScanThirdPartyLegacyComponents() != scanThirdPartyLegacyComponentsCatalogCheckBox.isSelected()
+                || getCamelPreferenceService().isScanThirdPartyComponents() != scanThirdPartyComponentsCatalogCheckBox.isSelected()
                 || getCamelPreferenceService().isShowCamelIconInGutter() != camelIconInGutterCheckBox.isSelected();
-
-        return b1 || b2;
+        return b1;
     }
 
     @Override
     public void reset() {
         downloadCatalogCheckBox.setSelected(getCamelPreferenceService().isDownloadCatalog());
         scanThirdPartyComponentsCatalogCheckBox.setSelected(getCamelPreferenceService().isScanThirdPartyComponents());
-        scanThirdPartyLegacyComponentsCatalogCheckBox.setSelected(getCamelPreferenceService().isScanThirdPartyLegacyComponents());
         camelIconInGutterCheckBox.setSelected(getCamelPreferenceService().isShowCamelIconInGutter());
     }
 
@@ -109,10 +102,6 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
 
     JBCheckBox getScanThirdPartyComponentsCatalogCheckBox() {
         return scanThirdPartyComponentsCatalogCheckBox;
-    }
-
-    JBCheckBox getScanThirdPartyLegacyComponentsCatalogCheckBox() {
-        return scanThirdPartyLegacyComponentsCatalogCheckBox;
     }
 
     JBCheckBox getCamelIconInGutterCheckBox() {

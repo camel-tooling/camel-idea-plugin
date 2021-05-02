@@ -135,7 +135,6 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
         CamelPreferenceService service = ServiceManager.getService(CamelPreferenceService.class);
         service.setExcludePropertyFiles(expectedExcludedProperties);
         service.setRealTimeEndpointValidation(true);
-        service.setScanThirdPartyLegacyComponents(true);
         service.setDownloadCatalog(true);
         service.setHighlightCustomOptions(true);
 
