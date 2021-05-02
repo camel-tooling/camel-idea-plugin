@@ -39,6 +39,10 @@ import java.util.stream.Collectors;
 import javax.swing.*;
 
 import com.intellij.notification.NotificationGroupManager;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressIndicatorProvider;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.ProjectUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -60,6 +64,7 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.camel.catalog.CamelCatalog;
 import org.jetbrains.annotations.NotNull;
+
 import static com.github.cameltooling.idea.service.XmlUtils.getChildNodeByTagName;
 import static com.github.cameltooling.idea.service.XmlUtils.loadDocument;
 import static org.apache.camel.catalog.impl.CatalogHelper.loadText;
@@ -209,7 +214,7 @@ public class CamelService implements Disposable {
         if (camelMissingJSonPathJarNotification == null) {
             Icon icon = getCamelPreferenceService().getCamelIcon();
             camelMissingJSonPathJarNotification = CAMEL_NOTIFICATION_GROUP.createNotification("camel-jsonpath is not on classpath. Cannot perform real time JSonPath validation.",
-                NotificationType.WARNING).setImportant(true).setIcon(icon);
+                    NotificationType.WARNING).setImportant(true).setIcon(icon);
             camelMissingJSonPathJarNotification.notify(project);
         }
     }
@@ -276,26 +281,33 @@ public class CamelService implements Disposable {
                     currentVersion = getCamelCatalogService(project).get().getCatalogVersion();
                 }
                 if (isThereDifferentVersionToBeLoaded(version, currentVersion)) {
-                    boolean notifyNewCamelCatalogVersionLoaded = false;
-
                     boolean downloadAllowed = getCamelPreferenceService().isDownloadCatalog();
+                    final String downloadVersion = version;
                     if (downloadAllowed) {
-                        notifyNewCamelCatalogVersionLoaded = downloadNewCamelCatalogVersion(project, module, version, notifyNewCamelCatalogVersionLoaded);
+                        // execute this work in a background thread
+                        new Task.Backgroundable(project, "Download camel-catalog", true) {
+                            public void run(ProgressIndicator indicator) {
+                                indicator.setText("Downloading camel-catalog version: " + downloadVersion);
+                                indicator.setIndeterminate(false);
+                                indicator.setFraction(0.10);
+                                // download
+                                boolean notifyNewCamelCatalogVersionLoaded = downloadNewCamelCatalogVersion(project, module, downloadVersion, true);
+                                if (notifyNewCamelCatalogVersionLoaded(notifyNewCamelCatalogVersionLoaded)) {
+                                    expireOldCamelCatalogVersion();
+                                }
+                                // only notify this once on startup (or if a new version was successfully loaded)
+                                if (camelVersionNotification == null) {
+                                    String loadedVersion = getCamelCatalogService(project).get().getLoadedVersion();
+                                    if (loadedVersion == null) {
+                                        // okay no special version was loaded so its the catalog version we are using
+                                        loadedVersion = getCamelCatalogService(project).get().getCatalogVersion();
+                                    }
+                                    showCamelCatalogVersionAtPluginStart(project, loadedVersion);
+                                }
+                                indicator.setFraction(1.0);
+                            }
+                        }.setCancelText("Stop Downloading camel-catalog").queue();
                     }
-
-                    if (notifyNewCamelCatalogVersionLoaded(notifyNewCamelCatalogVersionLoaded)) {
-                        expireOldCamelCatalogVersion();
-                    }
-                }
-
-                // only notify this once on startup (or if a new version was successfully loaded)
-                if (camelVersionNotification == null) {
-                    currentVersion = getCamelCatalogService(project).get().getLoadedVersion();
-                    if (currentVersion == null) {
-                        // okay no special version was loaded so its the catalog version we are using
-                        currentVersion = getCamelCatalogService(project).get().getCatalogVersion();
-                    }
-                    showCamelCatalogVersionAtPluginStart(project, currentVersion);
                 }
             }
         }
