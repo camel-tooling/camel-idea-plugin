@@ -64,7 +64,6 @@ import static com.github.cameltooling.idea.util.StringUtils.asLanguageName;
 import static com.github.cameltooling.idea.util.StringUtils.wrapSeparator;
 import static com.github.cameltooling.idea.util.StringUtils.wrapWords;
 
-
 /**
  * Camel documentation provider to hook into IDEA to show Camel endpoint documentation in popups and various other places.
  */
@@ -306,12 +305,22 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         if (name != null && camelCatalog.findComponentNames().contains(name)) {
             String json = camelCatalog.componentJSonSchema(name);
             ComponentModel component = JsonMapper.generateComponentModel(json);
-            if ("other".equals(component.getKind())) {
-                url = String.format("https://camel.apache.org/components/latest/others/%s.html", component.getName());
-            } else if ("component".equals(component.getKind())) {
-                url = String.format("https://camel.apache.org/components/latest/%s-component.html", component.getName());
+            String version = component.getVersion();
+            if (version.startsWith("2")) {
+                version = "2.x";
+            } else if (version.startsWith("3.4")) {
+                version = "3.4.x"; // LTS
+            } else if (version.startsWith("3.7")) {
+                version = "3.7.x"; // LTS
             } else {
-                url = String.format("https://camel.apache.org/components/latest/%ss/%s-%s.html", component.getKind(), component.getName(), component.getKind());
+                version = "latest";
+            }
+            if ("other".equals(component.getKind())) {
+                url = String.format("https://camel.apache.org/components/%s/others/%s.html", version, component.getName());
+            } else if ("component".equals(component.getKind())) {
+                url = String.format("https://camel.apache.org/components/%s/%s-component.html", version, component.getName());
+            } else {
+                url = String.format("https://camel.apache.org/components/%s/%ss/%s-%s.html", version, component.getKind(), component.getName(), component.getKind());
             }
         }
         return url;
