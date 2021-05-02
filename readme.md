@@ -58,12 +58,6 @@ If you want to change the default preferences open the `Preferences...` menu, se
 ![Screenshot](https://github.com/camel-tooling/camel-idea-plugin/blob/master/img/26-plugin-preferences-1.png)
 ![Screenshot](https://github.com/camel-tooling/camel-idea-plugin/blob/master/img/27-plugin-preferences-2.png)
 
-### IDEA Compatibility
-
-The Camel IDEA plugin currently requires IDEA 2016.2 or newer. If you are using a older version of IDEA and still want to try the plugin, follow the guide [here](#runningwithpreviousversion)
-
-IDEA provides more information about their SDK versions here: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
-
 
 ### <a name="buildingfromsource"></a> Building from source
 
