@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.stream.Collectors;
@@ -40,8 +41,6 @@ import javax.swing.*;
 
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressIndicatorProvider;
-import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.ProjectUtil;
 import org.w3c.dom.Document;
@@ -81,6 +80,7 @@ public class CamelService implements Disposable {
     private static final int MIN_MAJOR_VERSION = 2;
     private static final int MIN_MINOR_VERSION = 16;
 
+    private final AtomicBoolean downloadInProgress = new AtomicBoolean();
     private Library camel2CoreLibrary;
     private List<Library> camel3CoreLibraries = new ArrayList<>();
     private Library slf4japiLibrary;
@@ -283,14 +283,15 @@ public class CamelService implements Disposable {
                 if (isThereDifferentVersionToBeLoaded(version, currentVersion)) {
                     boolean downloadAllowed = getCamelPreferenceService().isDownloadCatalog();
                     final String downloadVersion = version;
-                    if (downloadAllowed) {
+                    if (downloadAllowed && downloadInProgress.compareAndSet(false, true)) {
                         // execute this work in a background thread
                         new Task.Backgroundable(project, "Download camel-catalog", true) {
                             public void run(ProgressIndicator indicator) {
                                 indicator.setText("Downloading camel-catalog version: " + downloadVersion);
                                 indicator.setIndeterminate(false);
-                                indicator.setFraction(0.10);
-                                // download
+                                indicator.setFraction(0.00);
+
+                                // download catalog via maven
                                 boolean notifyNewCamelCatalogVersionLoaded = downloadNewCamelCatalogVersion(project, module, downloadVersion, true);
                                 if (notifyNewCamelCatalogVersionLoaded(notifyNewCamelCatalogVersionLoaded)) {
                                     expireOldCamelCatalogVersion();
@@ -305,6 +306,7 @@ public class CamelService implements Disposable {
                                     showCamelCatalogVersionAtPluginStart(project, loadedVersion);
                                 }
                                 indicator.setFraction(1.0);
+                                downloadInProgress.set(false);
                             }
                         }.setCancelText("Stop Downloading camel-catalog").queue();
                     }

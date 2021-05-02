@@ -16,6 +16,7 @@
         <li>External documentation (Shift F1) opens the link on Camel website (LTS version or latest)</li>
         <li>Removed obsolete scan 3rd-party Camel components using legacy format</li>
         <li>Deprecated endpoint options is now marked with strike-through in documentation popup</li>
+        <li>Downloading camel-catalog is using an IDEA background task (with progress indicator)</li>
       </ul>
       v.0.7.2
       <ul>
