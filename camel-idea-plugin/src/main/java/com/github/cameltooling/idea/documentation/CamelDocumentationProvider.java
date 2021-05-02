@@ -54,6 +54,7 @@ import com.intellij.psi.xml.XmlTokenType;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.tooling.model.ComponentModel;
 import org.apache.camel.tooling.model.JsonMapper;
+import org.apache.camel.tooling.model.SupportLevel;
 import org.apache.camel.util.json.DeserializationException;
 import org.apache.camel.util.json.JsonObject;
 import org.apache.camel.util.json.Jsoner;
@@ -478,17 +479,26 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("<b>").append(component.getTitle()).append(" Component</b><br/>");
+        if (component.isDeprecated()) {
+            sb.append("<b><s>").append(component.getTitle()).append(" Component (deprecated)</s></b><br/>");
+        } else {
+            sb.append("<b>").append(component.getTitle()).append(" Component</b><br/>");
+        }
         sb.append(wrapText(component.getDescription(), wrapLength)).append("<br/><br/>");
-        sb.append("Syntax: <tt>").append(component.getSyntax()).append("?options</tt><br/>");
-        sb.append("Java class: <tt>").append(component.getJavaType()).append("</tt><br/>");
-
+        if (component.getDeprecatedSince() != null) {
+            sb.append("<b>Deprecated Since:</b> <tt>").append(component.getDeprecatedSince()).append("</tt><br/>");
+        }
+        sb.append("<b>Since:</b> <tt>").append(component.getFirstVersionShort()).append("</tt><br/>");
+        if (component.getSupportLevel() != null) {
+            sb.append("<b>Support Level:</b> <tt>").append(component.getSupportLevel()).append("</tt><br/>");
+        }
         String g = component.getGroupId();
         String a = component.getArtifactId();
         String v = component.getVersion();
         if (g != null && a != null && v != null) {
-            sb.append("Maven: <tt>").append(g).append(":").append(a).append(":").append(v).append("</tt><br/>");
+            sb.append("<b>Maven:</b> <tt>").append(g).append(":").append(a).append(":").append(v).append("</tt><br/>");
         }
+        sb.append("<b>Syntax:</b> <tt>").append(component.getSyntax()).append("?options</tt><br/>");
         sb.append("<p/>");
         sb.append("<br/>");
 
