@@ -54,7 +54,6 @@ import com.intellij.psi.xml.XmlTokenType;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.tooling.model.ComponentModel;
 import org.apache.camel.tooling.model.JsonMapper;
-import org.apache.camel.tooling.model.SupportLevel;
 import org.apache.camel.util.json.DeserializationException;
 import org.apache.camel.util.json.JsonObject;
 import org.apache.camel.util.json.Jsoner;
@@ -72,8 +71,6 @@ import static com.github.cameltooling.idea.util.StringUtils.wrapWords;
 public class CamelDocumentationProvider extends DocumentationProviderEx implements ExternalDocumentationProvider, ExternalDocumentationHandler {
 
     private static final Logger LOG = Logger.getInstance(CamelDocumentationProvider.class);
-
-    private static final String GITHUB_EXTERNAL_DOC_URL = "https://github.com/apache/camel/blob/master";
 
     public IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);
@@ -122,6 +119,13 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public List<String> getUrlFor(PsiElement element, PsiElement originalElement) {
+        if (hasDocumentationForCamelComponent(element)) {
+            String val = fetchLiteralForCamelDocumentation(element);
+            String url = externalUrl(element.getProject(), val);
+            if (url != null) {
+                return List.of(url);
+            }
+        }
         return null;
     }
 
@@ -262,7 +266,8 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
     @Override
     public @Nullable String fetchExternalDocumentation(Project project, PsiElement element, List<String> docUrls, boolean onHover) {
-        return null;
+        // F1 documentation which is external but shown inside IDEA
+        return generateDoc(element, element);
     }
 
     @Override
@@ -286,31 +291,30 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         if (val == null || !ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
             return false;
         }
-
-        String name = asComponentName(val);
-        Project project = element.getProject();
-        CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
-        if (name != null && camelCatalog.findComponentNames().contains(name)) {
-
-            String json = camelCatalog.componentJSonSchema(name);
-            ComponentModel component = JsonMapper.generateComponentModel(json);
-
-            // to build external links which points to github
-            String artifactId = component.getArtifactId();
-
-            String url;
-            if ("camel-core".equals(artifactId)) {
-                url = GITHUB_EXTERNAL_DOC_URL + "/camel-core/src/main/docs/" + name + "-component.adoc";
-            } else {
-                url = GITHUB_EXTERNAL_DOC_URL + "/components/" + component.getArtifactId() + "/src/main/docs/" + name + "-component.adoc";
-            }
-
-            String hash = component.getTitle().toLowerCase().replace(' ', '-') + "-component";
-            BrowserUtil.browse(url + "#" + hash);
+        String url = externalUrl(element.getProject(), val);
+        if (url != null) {
+            BrowserUtil.browse(url);
             return true;
         }
-
         return false;
+    }
+
+    private static String externalUrl(Project project, String val) {
+        String url = null;
+        String name = asComponentName(val);
+        CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
+        if (name != null && camelCatalog.findComponentNames().contains(name)) {
+            String json = camelCatalog.componentJSonSchema(name);
+            ComponentModel component = JsonMapper.generateComponentModel(json);
+            if ("other".equals(component.getKind())) {
+                url = String.format("https://camel.apache.org/components/latest/others/%s.html", component.getName());
+            } else if ("component".equals(component.getKind())) {
+                url = String.format("https://camel.apache.org/components/latest/%s-component.html", component.getName());
+            } else {
+                url = String.format("https://camel.apache.org/components/latest/%ss/%s-%s.html", component.getKind(), component.getName(), component.getKind());
+            }
+        }
+        return url;
     }
 
     @Override
