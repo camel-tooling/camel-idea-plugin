@@ -80,7 +80,7 @@ public final class CamelSmartCompletionEndpointValue {
                 // mark as deprecated
                 builder = builder.withStrikeoutness(true);
             }
-            boolean isDefaultValue = defaultValue != null && part.equals(defaultValue);
+            boolean isDefaultValue = part.equals(defaultValue);
             if (isDefaultValue) {
                 builder = builder.withTailText(" (default value)");
                 // add default value first in the list
@@ -117,11 +117,11 @@ public final class CamelSmartCompletionEndpointValue {
         builder = addInsertHandler(editor, suffix, builder, xmlMode);
         // only show the option in the UI
         builder = builder.withPresentableText("false");
-        if ("true".equals(deprecated)) {
+        if (deprecated) {
             // mark as deprecated
             builder = builder.withStrikeoutness(true);
         }
-        isDefaultValue = defaultValue != null && "false".equals(defaultValue);
+        isDefaultValue = "false".equals(defaultValue);
         if (isDefaultValue) {
             builder = builder.withTailText(" (default value)");
             // add default value first in the list

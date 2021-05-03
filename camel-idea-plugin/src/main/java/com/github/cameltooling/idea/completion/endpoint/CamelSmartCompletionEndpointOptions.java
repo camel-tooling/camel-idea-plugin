@@ -177,12 +177,10 @@ public final class CamelSmartCompletionEndpointOptions {
                                                                                     final ComponentModel component,
                                                                                     final Map<String, String> existing) {
         final List<LookupElement> answer = new ArrayList<>();
-
         double priority = 100.0d;
 
         // lets help the suggestion list if we are editing the context-path and only have 1 enum type option
         // and the option has not been in use yet, then we can populate the list with the enum values.
-
         final long enums = component
                 .getEndpointOptions()
                 .stream()
@@ -190,7 +188,6 @@ public final class CamelSmartCompletionEndpointOptions {
                 .count();
         if (enums == 1) {
             for (final ComponentModel.EndpointOptionModel option : component.getEndpointOptions()) {
-
                 // only add support for enum in the context-path smart completion
                 if ("path".equals(option.getKind()) && option.getEnums() != null) {
                     final String name = option.getName();
@@ -261,7 +258,6 @@ public final class CamelSmartCompletionEndpointOptions {
      * from("jms:qu<caret>")
      */
     private static String removeUnknownEnum(String val, final PsiElement element) {
-
         final String[] strToRemove = getIdeaUtils().getQueryParameterAtCursorPosition(element);
         //to compare the string against known options we need to strip it from equal sign
         strToRemove[0] = strToRemove[0].replace(":", "");
@@ -305,7 +301,6 @@ public final class CamelSmartCompletionEndpointOptions {
                 final int offset = -1 * value.length();
                 EditorModificationUtil.moveCaretRelatively(editor, offset);
             }
-
         });
     }
 
