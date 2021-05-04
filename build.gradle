@@ -19,8 +19,8 @@ allprojects {
     apply plugin: 'checkstyle'
 
     checkstyle {
-        toolVersion = '8.18'
-        configDir = file("$rootProject.projectDir/config/checkstyle")
+        toolVersion = '8.23'
+        configDirectory = file("$rootProject.projectDir/config/checkstyle")
     }
     
     group = 'com.github.camel-tooling'
