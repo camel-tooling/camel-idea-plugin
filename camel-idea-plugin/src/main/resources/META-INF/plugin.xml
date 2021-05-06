@@ -11,6 +11,7 @@
   <change-notes><![CDATA[
       v.0.7.5
       <ul>
+        <li>Support for IDEA 2020 and 2021</li>
         <li>Bug fixes</li>
       </ul>
       v.0.7.4
@@ -47,7 +48,7 @@
   </change-notes>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="211"/>
+  <idea-version since-build="203"/>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
