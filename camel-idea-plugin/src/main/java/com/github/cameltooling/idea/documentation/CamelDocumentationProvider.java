@@ -323,7 +323,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             if ("other".equals(component.getKind())) {
                 url = String.format("https://camel.apache.org/components/%s/others/%s.html", version, component.getName());
             } else if ("component".equals(component.getKind())) {
-                url = String.format("https://camel.apache.org/components/%s/%s-component.html", version, component.getName());
+                url = String.format("https://camel.apache.org/components/%s/%s-component.html", version, component.getScheme());
             } else {
                 url = String.format("https://camel.apache.org/components/%s/%ss/%s-%s.html", version, component.getKind(), component.getName(), component.getKind());
             }
