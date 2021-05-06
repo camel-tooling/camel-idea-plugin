@@ -75,14 +75,12 @@ public final class CamelSmartCompletionEndpointOptions {
 
                 // if we are consumer only, then any option that has producer in the label should be skipped (as its only for producer)
                 final boolean consumerOnly = getCamelIdeaUtils().isConsumerEndpoint(element);
-                if (consumerOnly && option
-                        .getLabel()
-                        .contains("producer")) {
+                if (consumerOnly && option.getLabel() != null && option.getLabel().contains("producer")) {
                     continue;
                 }
                 // if we are producer only, then any option that has consume in the label should be skipped (as its only for consumer)
                 final boolean producerOnly = getCamelIdeaUtils().isProducerEndpoint(element);
-                if (producerOnly && option.getLabel().contains("consumer")) {
+                if (producerOnly && option.getLabel() != null && option.getLabel().contains("consumer")) {
                     continue;
                 }
 
