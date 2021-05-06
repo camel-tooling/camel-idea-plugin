@@ -12,37 +12,8 @@
       v.0.7.5
       <ul>
         <li>Support for IDEA 2020 and 2021</li>
+        <li>Better support for Camel 2.x</li>
         <li>Bug fixes</li>
-      </ul>
-      v.0.7.4
-      <ul>
-        <li>Bug fixes</li>
-      </ul>
-      v.0.7.3
-      <ul>
-        <li>Fixed some IDEA Compatibility verification reporting warnings</li>
-        <li>Improved inlined documentation (F1) for Camel endpoints</li>
-        <li>External documentation (Shift F1) opens the link on Camel website (LTS version or latest)</li>
-        <li>Removed obsolete scan 3rd-party Camel components using legacy format</li>
-        <li>Deprecated endpoint options is now marked with strike-through in documentation popup</li>
-        <li>Downloading camel-catalog is using an IDEA background task (with progress indicator)</li>
-      </ul>
-      v.0.7.2
-      <ul>
-        <li>Fixed some IDEA Compatibility verification reporting warnings</li>
-        <li>Support for Intellij 2020 did not work, so only 2021 is supported currently</li>
-        <li>Restart no longer required after installing or updating this plugin</li>
-      </ul>
-      v.0.7.1
-      <ul>
-        <li>Removed Camel icon chooser as the official logo will be used</li>
-        <li>Fixed some IDEA Compatibility verification reporting warnings</li>
-        <li>Bug fixes</li>
-      </ul>
-      v.0.7.0
-      <ul>
-        <li>Upgrade to Intellij 2021.1</li>
-        <li>Upgrade to Apache Camel 3</li>
       </ul>
     ]]>
   </change-notes>
