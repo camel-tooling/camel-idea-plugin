@@ -36,6 +36,7 @@ import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiElement;
@@ -70,29 +71,18 @@ public class BeanInjectLineMarkerProvider extends RelatedItemLineMarkerProvider 
                     .setPopupTitle("Choose Bean")
                     .setEmptyPopupText("Could not find the bean declaration");
             if (reference != null) {
-                builder.setTargets(new NotNullLazyValue<Collection<? extends PsiElement>>() {
-                    @NotNull
-                    @Override
-                    protected Collection<? extends PsiElement> compute() {
-                        return wrapInCollection(reference.resolve());
-                    }
-                });
+                builder.setTargets(NotNullLazyValue.lazy((Computable<Collection<? extends PsiElement>>) () -> wrapInCollection(reference.resolve())));
             } else {
-                builder.setTargets(new NotNullLazyValue<Collection<? extends PsiElement>>() {
-                    @NotNull
-                    @Override
-                    protected Collection<? extends PsiElement> compute() {
-                        PsiType beanType = IdeaUtils.getService().findAnnotatedElementType(beanInjectAnnotation);
-                        if (beanType != null) {
-                            List<ReferenceableBeanId> beans = BeanUtils.getService().findReferenceableBeanIdsByType(module, beanType);
-                            return beans.stream()
-                                    .map(ReferenceableBeanId::getElement)
-                                    .collect(Collectors.toList());
-                        }
-                        return Collections.emptyList();
+                builder.setTargets(NotNullLazyValue.lazy((Computable<Collection<? extends PsiElement>>) () -> {
+                    PsiType beanType = IdeaUtils.getService().findAnnotatedElementType(beanInjectAnnotation);
+                    if (beanType != null) {
+                        List<ReferenceableBeanId> beans = BeanUtils.getService().findReferenceableBeanIdsByType(module, beanType);
+                        return beans.stream()
+                                .map(ReferenceableBeanId::getElement)
+                                .collect(Collectors.toList());
                     }
-                });
-
+                    return Collections.emptyList();
+                }));
             }
             result.add(builder.createLineMarkerInfo(element));
         }

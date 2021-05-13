@@ -28,7 +28,6 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.ui.AddEditRemovePanel;
 import com.intellij.ui.components.panels.VerticalLayout;
-import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -98,14 +97,14 @@ class CamelIgnoreAndExcludePage extends BaseConfigurable implements SearchableCo
     private void resetExcludePropertiesTable() {
         myExcludedProperties = new ArrayList<>();
         List<String> excludePropertyList = getCamelPreferenceService().getExcludePropertyFiles();
-        ContainerUtil.addAll(myExcludedProperties, excludePropertyList);
+        myExcludedProperties.addAll(excludePropertyList);
         excludePropertyFilePanel.setData(myExcludedProperties);
     }
 
     private void resetIgnorePropertiesTable() {
         myIgnoredProperties = new ArrayList<>();
         List<String> ignorePropertyList = getCamelPreferenceService().getIgnorePropertyList();
-        ContainerUtil.addAll(myIgnoredProperties, ignorePropertyList);
+        myIgnoredProperties.addAll(ignorePropertyList);
         ignorePropertyFilePanel.setData(myIgnoredProperties);
     }
 
