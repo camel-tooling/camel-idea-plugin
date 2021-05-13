@@ -44,7 +44,7 @@
   </applicationListeners>
 
   <extensions defaultExtensionNs="com.intellij">
-    <notificationGroup id="Camel Notification Group" displayType="BALLOON"/>
+    <notificationGroup id="Apache Camel" displayType="BALLOON"/>
   </extensions>
 
   <extensions defaultExtensionNs="org.apache.camel">

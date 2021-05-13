@@ -73,7 +73,7 @@ import static org.apache.camel.catalog.impl.CatalogHelper.loadText;
  */
 public class CamelService implements Disposable {
 
-    private static final NotificationGroup CAMEL_NOTIFICATION_GROUP = NotificationGroupManager.getInstance().getNotificationGroup("Camel Notification Group");
+    private static final NotificationGroup CAMEL_NOTIFICATION_GROUP = NotificationGroupManager.getInstance().getNotificationGroup("Apache Camel");
 
     private static final Logger LOG = Logger.getInstance(CamelService.class);
 
@@ -316,7 +316,7 @@ public class CamelService implements Disposable {
     }
 
     private void showCamelCatalogVersionAtPluginStart(@NotNull Project project, String currentVersion) {
-        camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification("Camel IDEA plugin is using camel-catalog version "
+        camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification("Apache Camel plugin is using camel-catalog version "
                 + currentVersion, NotificationType.INFORMATION);
         camelVersionNotification.notify(project);
     }
