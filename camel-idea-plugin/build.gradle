@@ -23,7 +23,7 @@ apply plugin: 'java'
 apply plugin: 'org.jetbrains.intellij'
 
 intellij {
-    version = '2020.3'
+    version = '2021.1'
     downloadSources = true
     type = project.hasProperty('intellij_type') ? project.intellij_type : 'IC'
     plugins = ['java', 'java-i18n', 'properties', 'yaml']
@@ -32,8 +32,7 @@ intellij {
 // to support IDEA 2020 onwards
 // http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
 patchPluginXml {
-    sinceBuild = "203"
-    untilBuild = "211.*"
+    sinceBuild = "211"
 }
 
 publishPlugin {
