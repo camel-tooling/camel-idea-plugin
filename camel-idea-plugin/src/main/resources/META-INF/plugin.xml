@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
-  <version>0.7.7</version>
+  <version>0.7.8</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -9,20 +9,8 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.0.7.7
+      v.0.7.8
       <ul>
-        <li>Upgraded to Camel 3.10.0</li>
-        <li>Bug fixes</li>
-      </ul>
-      v.0.7.6
-      <ul>
-        <li>Support for IDEA 2021 only</li>
-        <li>Bug fixes</li>
-      </ul>
-      v.0.7.5
-      <ul>
-        <li>Support for IDEA 2020 and 2021</li>
-        <li>Better support for Camel 2.x</li>
         <li>Bug fixes</li>
       </ul>
     ]]>
