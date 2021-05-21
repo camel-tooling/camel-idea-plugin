@@ -77,7 +77,6 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
                     }
                     if (!result.isSuccess()) {
                         String error = result.getShortError();
-                        // TODO: Need fix in Camel 3.10, so use workaround
                         if ("[null]".equals(error)) {
                             return;
                         }

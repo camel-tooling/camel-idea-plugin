@@ -140,7 +140,6 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
                     if (msg == null) {
                         msg = result.getError();
                     }
-                    // TODO: Need fix in Camel 3.10, so use workaround
                     if ("[null]".equals(msg)) {
                         return;
                     }
@@ -184,7 +183,6 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
                     if (msg == null) {
                         msg = result.getError();
                     }
-                    // TODO: Need fix in Camel 3.10, so use workaround
                     if ("[null]".equals(msg)) {
                         return;
                     }

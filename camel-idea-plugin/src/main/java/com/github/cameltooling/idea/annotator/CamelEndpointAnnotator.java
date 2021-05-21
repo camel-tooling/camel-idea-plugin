@@ -108,9 +108,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 extractSetValue(result, result.getNotConsumerOnly(), uri, element, holder, new NotConsumerOnlyErrorMsg(), false);
                 extractSetValue(result, result.getNotProducerOnly(), uri, element, holder, new NotProducerOnlyErrorMsg(), false);
             } catch (Throwable e) {
-                // TODO: Upgrade to Camel 3.10
-                // ignore as its a known issue that requires Camel 3.10
-                // LOG.warn("Error validating Camel endpoint: " + uri, e);
+                LOG.warn("Error validating Camel endpoint: " + uri, e);
             }
         }
     }
