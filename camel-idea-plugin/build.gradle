@@ -35,10 +35,10 @@ patchPluginXml {
     sinceBuild = "211"
 }
 
-publishPlugin {
-    def authenticationToken = "$System.env.INTELLIJ_TOKEN"
-    token authenticationToken
-}
+// publishPlugin {
+//    def authenticationToken = "$System.env.INTELLIJ_TOKEN"
+//    token authenticationToken
+// }
 
 println "Building with intellij type : ${intellij.type}"
 
