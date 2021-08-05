@@ -11,14 +11,14 @@
   <change-notes><![CDATA[
       v.0.7.9
       <ul>
-        <li>Bug fixes</li>
         <li>Upgraded to Camel 3.11.1</li>
+        <li>Updated to IDEA 2021.2</li>
       </ul>
     ]]>
   </change-notes>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="211"/>
+  <idea-version since-build="212"/>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
