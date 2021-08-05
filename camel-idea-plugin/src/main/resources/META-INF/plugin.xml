@@ -12,6 +12,7 @@
       v.0.7.9
       <ul>
         <li>Bug fixes</li>
+        <li>Upgraded to Camel 3.11.1</li>
       </ul>
     ]]>
   </change-notes>
