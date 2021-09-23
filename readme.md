@@ -28,7 +28,7 @@ to Apache Software Foundation to be included out of the box at Apache Camel.
  
 However currently the code is located at github to allow faster and wider collaboration in the community.
 
-![Screenshot](https://github.com/camel-idea-plugin/camel-idea-plugin/blob/master/img/24-option-smart-completion.gif)
+![Screenshot](https://github.com/camel-idea-plugin/camel-idea-plugin/blob/main/img/24-option-smart-completion.gif)
 
 
 ### How to install
@@ -55,8 +55,8 @@ support for editing the options in the URI context-path section as well.
 
 The plugin comes with a preference where you can configure global settings for the plugin such as turning on or off the real time validation in the editor, or whether to show the Camel icon in the gutter, etc.
 If you want to change the default preferences open the `Preferences...` menu, select `Languages & Frameworks` and `Apache Camel`. Here are screenshots of it:
-![Screenshot](https://github.com/camel-tooling/camel-idea-plugin/blob/master/img/26-plugin-preferences-1.png)
-![Screenshot](https://github.com/camel-tooling/camel-idea-plugin/blob/master/img/27-plugin-preferences-2.png)
+![Screenshot](https://github.com/camel-tooling/camel-idea-plugin/blob/main/img/26-plugin-preferences-1.png)
+![Screenshot](https://github.com/camel-tooling/camel-idea-plugin/blob/main/img/27-plugin-preferences-2.png)
 
 
 ### <a name="buildingfromsource"></a> Building from source
@@ -105,7 +105,7 @@ The plugin is tested with `IDEA 2016.2` or newer, but if you want to try with a 
 After completing all steps and if everything is setup correctly, then you can launch the plugin by running the
 gradle task `runIde` and for building and running test run the gradle task `build`
 
-![gradle task](https://github.com/camel-tooling/camel-idea-plugin/blob/master/img/setup/camel-idea-plugin-gradle.png)
+![gradle task](https://github.com/camel-tooling/camel-idea-plugin/blob/main/img/setup/camel-idea-plugin-gradle.png)
 
 You can also launch the plugin in debug mode where you can put breakpoints in the source code.
 This is very handy to debug the code and find issues. However for code changes you need to stop and
@@ -151,5 +151,5 @@ We created a FAQ page to help other developers with common errors when working w
 ### Screenshots
 
 We will post various screenshots of the plugin in the
-[img directory](https://github.com/camel-idea-plugin/camel-idea-plugin/tree/master/img)
+[img directory](https://github.com/camel-idea-plugin/camel-idea-plugin/tree/main/img)
 which you can browse.
