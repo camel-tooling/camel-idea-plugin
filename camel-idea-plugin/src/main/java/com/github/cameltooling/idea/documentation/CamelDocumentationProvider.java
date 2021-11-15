@@ -150,26 +150,6 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         String componentName = asComponentName(val);
         if (componentName != null) {
             return generateCamelComponentDocumentation(componentName, val, -1, element.getProject());
-        } else {
-            // its maybe a method call for a Camel language
-            PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-            if (call != null) {
-                PsiMethod method = call.resolveMethod();
-                if (method != null) {
-                    // try to see if we have a Camel language with the method name
-                    String name = asLanguageName(method.getName());
-                    if (ServiceManager.getService(element.getProject(), CamelCatalogService.class).get().findLanguageNames().contains(name)) {
-                        // okay its a potential Camel language so see if the psi method call is using
-                        // camel-core types so we know for a fact its really a Camel language
-                        if (isPsiMethodCamelLanguage(method)) {
-                            String html = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get().languageHtmlDoc(name);
-                            if (html != null) {
-                                return html;
-                            }
-                        }
-                    }
-                }
-            }
         }
         return null;
     }
