@@ -131,6 +131,12 @@
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.blueprint.BlueprintReferenceContributor"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.CamelBeanInjectReferenceContributor"/>
     <renameHandler implementation="com.github.cameltooling.idea.reference.CamelBeanReferenceRenameHandler"/>
+
+    <!-- Debugger -->
+<!--    <programRunner id="Debug" implementation="org.mule.tooling.esb.launcher.configuration.runner.MuleProgramDebugger" order="last"/>-->
+    <xdebugger.breakpointType implementation="com.github.cameltooling.idea.debugger.breakpoint.CamelBreakpointType"/>
+<!--    <programRunner id="RemoteDebug" implementation="org.mule.tooling.esb.launcher.configuration.runner.MuleRemoteDebugger" order="last"/>-->
+
   </extensions>
 
 </idea-plugin>
