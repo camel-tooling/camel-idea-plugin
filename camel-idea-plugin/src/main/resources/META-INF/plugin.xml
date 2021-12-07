@@ -31,6 +31,8 @@
 
   <depends>com.intellij.java</depends>
 
+  <depends>org.jetbrains.idea.maven</depends>
+
   <!-- main listener to trigger Camel IDEA plugin to detect if Camel is present or not in the project -->
   <applicationListeners>
     <listener class="com.github.cameltooling.idea.CamelPluginStartup" topic="com.intellij.openapi.project.ProjectManagerListener"/>
@@ -134,9 +136,9 @@
 
     <!-- Debugger -->
 <!--    <programRunner id="Debug" implementation="org.mule.tooling.esb.launcher.configuration.runner.MuleProgramDebugger" order="last"/>-->
-    <xdebugger.breakpointType implementation="com.github.cameltooling.idea.debugger.breakpoint.CamelBreakpointType"/>
-<!--    <programRunner id="RemoteDebug" implementation="org.mule.tooling.esb.launcher.configuration.runner.MuleRemoteDebugger" order="last"/>-->
-
+    <xdebugger.breakpointType implementation="com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointType"/>
+    <programRunner id="Debug" implementation="com.github.cameltooling.idea.runner.debugger.CamelSpringBootDebuggerRunner" order="first"/>
+    <configurationType implementation="com.github.cameltooling.idea.runner.CamelSpringBootRunConfigurationType"/>
   </extensions>
 
 </idea-plugin>

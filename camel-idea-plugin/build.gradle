@@ -48,6 +48,7 @@ dependencies {
     implementation "org.apache.camel:camel-util:${camelVersion}"
     implementation "org.apache.camel:camel-util-json:${camelVersion}"
     implementation "org.apache.camel:camel-tooling-model:${camelVersion}"
+    implementation "org.apache.camel:camel-management-api:${camelVersion}"
 
     testImplementation "org.apache.camel:camel-core:${camelVersion}"
     testImplementation 'org.jboss.shrinkwrap:shrinkwrap-depchain:1.2.6'

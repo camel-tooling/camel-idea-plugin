@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.debugger.breakpoint;
+package com.github.cameltooling.idea.runner.debugger.breakpoint;
 
-import com.github.cameltooling.idea.debugger.CamelDebuggerEditorsProvider;
+import com.github.cameltooling.idea.runner.debugger.CamelDebuggerEditorsProvider;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.openapi.editor.Document;
