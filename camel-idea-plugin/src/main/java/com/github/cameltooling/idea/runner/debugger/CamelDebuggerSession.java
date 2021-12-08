@@ -16,6 +16,7 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
+import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.execution.process.OSProcessUtil;
 import com.intellij.execution.process.ProcessHandler;
@@ -52,19 +53,32 @@ import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class CamelDebuggerSession implements AbstractDebuggerSession {
 
     private static final int MAX_RETRIES = 30;
 
+    private final List<XLineBreakpoint<XBreakpointProperties>> addBreakpoints = new ArrayList<>();
+    private final List<XLineBreakpoint<XBreakpointProperties>> removeBreakpoints = new ArrayList<>();
+
+    private final Map<String, XLineBreakpoint<XBreakpointProperties>> breakpoints = new HashMap<>();
+    private final List<String> suspendedBreakpoints = new ArrayList<>();
+
+    private final List<MessageReceivedListener> messageReceivedListeners = new ArrayList<>();
+
     private Project project;
     private ManagedBacklogDebuggerMBean backlogDebugger;
     private ManagedCamelContextMBean camelContext;
 
-    private List<XLineBreakpoint<XBreakpointProperties>> addBreakpoints = new ArrayList<>();
-    private List<XLineBreakpoint<XBreakpointProperties>> removeBreakpoints = new ArrayList<>();
+    private MBeanServerConnection serverConnection;
+    private ObjectName debuggerMBeanObjectName;
+
+    private org.w3c.dom.Document routesDOMDocument;
 
     public boolean isConnected() {
         boolean isConnected = false;
@@ -92,7 +106,10 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
     public void connect(final ProcessHandler javaProcessHandler) {
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            connect(javaProcessHandler, true, 0);
+            boolean isConnected = connect(javaProcessHandler, true, 0);
+            if (isConnected) {
+                checkSuspendedBreakpoints();
+            }
         });
     }
 
@@ -133,6 +150,20 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         this.project = project;
     }
 
+    public Project getProject() {
+        return project;
+    }
+
+    public void addMessageReceivedListener(MessageReceivedListener listener) {
+        messageReceivedListeners.add(listener);
+    }
+
+    public void resume() {
+        for (String suspendedId : suspendedBreakpoints) {
+            backlogDebugger.resumeBreakpoint(suspendedId);
+        }
+        suspendedBreakpoints.clear();
+    }
     private boolean connect(final ProcessHandler javaProcessHandler, boolean retry, int retries) {
         boolean isConnected = doConnect(javaProcessHandler);
         while (!isConnected && retry && retries < MAX_RETRIES && !javaProcessHandler.isProcessTerminated() && !javaProcessHandler.isProcessTerminating()) {
@@ -150,7 +181,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         String javaProcessPID = getPID(javaProcessHandler);
 
         try {
-            MBeanServerConnection serverConnection = getLocalJavaProcessMBeanServer(javaProcessPID);
+            this.serverConnection = getLocalJavaProcessMBeanServer(javaProcessPID);
             if (serverConnection == null) {
                 return false;
             }
@@ -160,16 +191,23 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
             Set<ObjectName> names = serverConnection.queryNames(objectName, null);
             if (names != null && !names.isEmpty()) {
-                ObjectName mbeanName = names.iterator().next();
-                backlogDebugger = JMX.newMBeanProxy(serverConnection, mbeanName, ManagedBacklogDebuggerMBean.class);
+                this.debuggerMBeanObjectName = names.iterator().next();
+                backlogDebugger = JMX.newMBeanProxy(serverConnection, debuggerMBeanObjectName, ManagedBacklogDebuggerMBean.class);
                 backlogDebugger.enableDebugger();
 
                 //Lookup camel context
                 objectName = new ObjectName("org.apache.camel:context=*,type=context,name=*");
                 names = serverConnection.queryNames(objectName, null);
                 if (names != null && !names.isEmpty()) {
-                    mbeanName = names.iterator().next();
+                    ObjectName mbeanName = names.iterator().next();
                     camelContext = JMX.newMBeanProxy(serverConnection, mbeanName, ManagedCamelContextMBean.class);
+
+                    //Init DOM Document
+                    String routes = getCamelContext().dumpRoutesAsXml(true, true);
+                    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                    DocumentBuilder documentBuilder = dbf.newDocumentBuilder();
+                    InputStream targetStream = new ByteArrayInputStream(routes.getBytes());
+                    this.routesDOMDocument = documentBuilder.parse(targetStream);
                 }
 
                 //Toggle all pending breakpoints
@@ -189,6 +227,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 }
                 addBreakpoints.clear();
                 removeBreakpoints.clear();
+
                 return true;
             }
 
@@ -234,13 +273,8 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         String path = "/routes" + getXPathOfTheXMLTag(breakpointTag);
 
         try {
-            String routes = getCamelContext().dumpRoutesAsXml(true, true);
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder documentBuilder = dbf.newDocumentBuilder();
-            InputStream targetStream = new ByteArrayInputStream(routes.getBytes());
-            org.w3c.dom.Document routesDocument = documentBuilder.parse(targetStream);
             XPath xPath = XPathFactory.newInstance().newXPath();
-            Node breakpointTagFromContext = (Node) xPath.compile(path).evaluate(routesDocument, XPathConstants.NODE);
+            Node breakpointTagFromContext = (Node) xPath.compile(path).evaluate(routesDOMDocument, XPathConstants.NODE);
             if (breakpointTagFromContext != null) {
                 breakpointId = breakpointTagFromContext.getAttributes().getNamedItem("id").getTextContent();
             }
@@ -258,11 +292,88 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             } else {
                 backlogDebugger.removeBreakpoint(breakpointId);
             }
+
+            breakpoints.put(breakpointId, xBreakpoint);
+
             return true;
         }
 
         return false;
     }
+
+    private void checkSuspendedBreakpoints() {
+        while (isConnected()) {
+            try {
+                //Set<String> suspendedBreakpointIDs = backlogDebugger.getSuspendedBreakpointNodeIds();
+                // this throws exception: javax.management.AttributeNotFoundException: getAttribute failed: ModelMBeanAttributeInfo not found for SuspendedBreakpointNodeIds
+                //	at java.management/javax.management.modelmbean.RequiredModelMBean.getAttribute(RequiredModelMBean.java:1440)
+                //	at java.management/com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.getAttribute(DefaultMBeanServerInterceptor.java:641)
+                //	at java.management/com.sun.jmx.mbeanserver.JmxMBeanServer.getAttribute(JmxMBeanServer.java:678)
+                //	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doOperation(RMIConnectionImpl.java:1443)
+                //	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl$PrivilegedOperation.run(RMIConnectionImpl.java:1307)
+                //	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doPrivilegedOperation(RMIConnectionImpl.java:1399)
+                //	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.getAttribute(RMIConnectionImpl.java:637)
+                //	at java.base/jdk.internal.reflect.GeneratedMethodAccessor151.invoke(Unknown Source)
+                //	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+                //	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
+                //	at java.rmi/sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:359)
+                //	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:200)
+                //	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:197)
+                //	at java.base/java.security.AccessController.doPrivileged(AccessController.java:689)
+                //	at java.rmi/sun.rmi.transport.Transport.serviceCall(Transport.java:196)
+                //	at java.rmi/sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:562)
+                //	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:796)
+                //	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(TCPTransport.java:677)
+                //	at java.base/java.security.AccessController.doPrivileged(AccessController.java:389)
+                //	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:676)
+                //	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+                //	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+                //	at java.base/java.lang.Thread.run(Thread.java:835)
+                //	at java.rmi/sun.rmi.transport.StreamRemoteCall.exceptionReceivedFromServer(StreamRemoteCall.java:303)
+                //	at java.rmi/sun.rmi.transport.StreamRemoteCall.executeCall(StreamRemoteCall.java:279)
+                //	at java.rmi/sun.rmi.server.UnicastRef.invoke(UnicastRef.java:164)
+                //	at jdk.remoteref/jdk.jmx.remote.internal.rmi.PRef.invoke(Unknown Source)
+                //	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl_Stub.getAttribute(Unknown Source)
+                //	at java.management.rmi/javax.management.remote.rmi.RMIConnector$RemoteMBeanServerConnection.getAttribute(RMIConnector.java:904)
+                //	at java.management/javax.management.MBeanServerInvocationHandler.invoke(MBeanServerInvocationHandler.java:273)
+                //	... 13 more
+
+                Collection<String> suspendedBreakpointIDs = (Collection<String>) serverConnection.invoke(this.debuggerMBeanObjectName, "getSuspendedBreakpointNodeIds", new Object[] { } , new String[] { });
+                if (suspendedBreakpointIDs != null && !suspendedBreakpointIDs.isEmpty()) {
+                    //Fire notifications here, we need to display the exchange, stack etc
+                    for (String id : suspendedBreakpointIDs) {
+                        if (!suspendedBreakpoints.contains(id)) {
+                            String suspendedMessage = backlogDebugger.dumpTracedMessagesAsXml(id);
+                            suspendedBreakpoints.add(id);
+                            ApplicationManager.getApplication().runReadAction(() -> {
+                                for (MessageReceivedListener listener : messageReceivedListeners) {
+                                    try {
+                                        XLineBreakpoint<XBreakpointProperties> xLineBreakpoint = breakpoints.get(id);
+                                        XSourcePosition position = xLineBreakpoint.getSourcePosition();
+                                        XmlTag breakpointTag = getXmlTagAt(project, position);
+                                        listener.onNewMessageReceived(new CamelMessageInfo(suspendedMessage, xLineBreakpoint, breakpointTag));
+                                    } catch (Exception e) {
+
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+
+                try {
+                    Thread.sleep(1000L);
+                } catch (InterruptedException e) {
+
+                } finally {
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     //================= Private XML helper methods
     @Nullable
     private XmlTag getXmlTagAt(Project project, XSourcePosition sourcePosition) {

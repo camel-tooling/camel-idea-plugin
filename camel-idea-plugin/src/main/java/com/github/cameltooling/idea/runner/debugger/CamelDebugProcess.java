@@ -17,13 +17,17 @@
 package com.github.cameltooling.idea.runner.debugger;
 
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointHandler;
+import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
+import com.github.cameltooling.idea.runner.debugger.stack.CamelStackFrame;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.util.ArrayUtil;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.breakpoints.XBreakpointHandler;
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
+import com.intellij.xdebugger.frame.XSuspendContext;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class CamelDebugProcess extends XDebugProcess {
     private CamelDebuggerEditorsProvider camelDebuggerEditorsProvider;
@@ -69,30 +73,29 @@ public class CamelDebugProcess extends XDebugProcess {
 
     public void init() {
         camelDebuggerSession.connect(javaProcessHandler);
-/*
-    muleDebuggerSession.addMessageReceivedListener(new MessageReceivedListener() {
-      @Override
-      public void onNewMessageReceived(MuleMessageInfo muleMessageInfo) {
 
-        getSession().positionReached(new MuleSuspendContext(new MuleStackFrame(getSession().getProject(), muleDebuggerSession, muleMessageInfo)));
-      }
+        camelDebuggerSession.addMessageReceivedListener(new MessageReceivedListener() {
+            @Override
+            public void onNewMessageReceived(CamelMessageInfo camelMessageInfo) {
+                getSession().positionReached(new CamelSuspendContext(new CamelStackFrame(getSession().getProject(), camelDebuggerSession, camelMessageInfo)));
+            }
 
-      @Override
-      public void onExceptionThrown(MuleMessageInfo muleMessageInfo, ObjectFieldDefinition exceptionThrown) {
+//      @Override
+//      public void onExceptionThrown(MuleMessageInfo muleMessageInfo, ObjectFieldDefinition exceptionThrown) {
+//
+//        getSession().positionReached(new MuleSuspendContext(new CamelStackFrame(getSession().getProject(), muleDebuggerSession, muleMessageInfo, exceptionThrown)));
+//      }
+//
+//      @Override
+//      public void onExecutionStopped(MuleMessageInfo muleMessageInfo, List<ObjectFieldDefinition> frame, String path, String internalPosition) {
+//        System.out.println("MuleDebugProcess.onExecutionStopped : " + path + "#" + internalPosition);
+//        final WeaveIntegrationStackFrame weaveStackFrame = new WeaveIntegrationStackFrame(getSession().getProject(), muleDebuggerSession, path, internalPosition, frame);
+//        final CamelStackFrame muleStackFrame = new CamelStackFrame(getSession().getProject(), muleDebuggerSession, muleMessageInfo, null);
+//        getSession().positionReached(new MuleSuspendContext(weaveStackFrame, muleStackFrame));
+//      }
 
-        getSession().positionReached(new MuleSuspendContext(new MuleStackFrame(getSession().getProject(), muleDebuggerSession, muleMessageInfo, exceptionThrown)));
-      }
+        });
 
-      @Override
-      public void onExecutionStopped(MuleMessageInfo muleMessageInfo, List<ObjectFieldDefinition> frame, String path, String internalPosition) {
-        System.out.println("MuleDebugProcess.onExecutionStopped : " + path + "#" + internalPosition);
-        final WeaveIntegrationStackFrame weaveStackFrame = new WeaveIntegrationStackFrame(getSession().getProject(), muleDebuggerSession, path, internalPosition, frame);
-        final MuleStackFrame muleStackFrame = new MuleStackFrame(getSession().getProject(), muleDebuggerSession, muleMessageInfo, null);
-        getSession().positionReached(new MuleSuspendContext(weaveStackFrame, muleStackFrame));
-      }
-
-    });
-*/
     }
 
     @Override
@@ -100,11 +103,10 @@ public class CamelDebugProcess extends XDebugProcess {
         camelDebuggerSession.disconnect();
     }
 
-/*
-    protected Project getProject() {
-        return getSession().getProject();
+    @Override
+    public void resume(@Nullable XSuspendContext context) {
+        camelDebuggerSession.resume();
     }
-*/
 
     @NotNull
     @Override
@@ -142,10 +144,7 @@ public class CamelDebugProcess extends XDebugProcess {
     muleDebuggerSession.nextStep();
   }
 
-  @Override
-  public void resume(@Nullable XSuspendContext context) {
-    muleDebuggerSession.resume();
-  }
+
 
   @Override
   public void registerAdditionalActions(@NotNull DefaultActionGroup leftToolbar, @NotNull DefaultActionGroup topToolbar, @NotNull DefaultActionGroup settings) {

@@ -17,6 +17,7 @@
 package com.github.cameltooling.idea.runner.debugger;
 
 import com.github.cameltooling.idea.runner.CamelSpringBootRunConfiguration;
+import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.debugger.DefaultDebugEnvironment;
 import com.intellij.debugger.engine.DebugProcessImpl;
@@ -114,12 +115,13 @@ public class CamelSpringBootDebuggerRunner extends GenericDebuggerRunner {
                         final Map<String, XDebugProcess> context = new HashMap<>();
                         final ContextAwareDebugProcess contextAwareDebugProcess = new ContextAwareDebugProcess(session, executionResult.getProcessHandler(), context, JAVA_CONTEXT);
 
-                        /*muleDebuggerSession.addMessageReceivedListener(new MessageReceivedListener() {
+                        camelDebuggerSession.addMessageReceivedListener(new MessageReceivedListener() {
                             @Override
-                            public void onNewMessageReceived(MuleMessageInfo muleMessageInfo) {
-                                contextAwareDebugProcess.setContext(MULE_CONTEXT);
+                            public void onNewMessageReceived(CamelMessageInfo camelMessageInfo) {
+                                contextAwareDebugProcess.setContext(CAMEL_CONTEXT);
                             }
 
+/*
                             @Override
                             public void onExceptionThrown(MuleMessageInfo muleMessageInfo, ObjectFieldDefinition exceptionThrown) {
                                 contextAwareDebugProcess.setContext(MULE_CONTEXT);
@@ -129,7 +131,8 @@ public class CamelSpringBootDebuggerRunner extends GenericDebuggerRunner {
                             public void onExecutionStopped(MuleMessageInfo muleMessageInfo, List<ObjectFieldDefinition> frame, String path, String internalPosition) {
                                 contextAwareDebugProcess.setContext(MULE_CONTEXT);
                             }
-                        });*/
+*/
+                        });
 
                         debuggerSession.getContextManager().addListener((newContext, event) -> contextAwareDebugProcess.setContext(JAVA_CONTEXT));
 
