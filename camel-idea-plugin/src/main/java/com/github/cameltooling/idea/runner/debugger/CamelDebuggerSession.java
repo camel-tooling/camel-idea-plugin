@@ -217,7 +217,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 this.debuggerMBeanObjectName = names.iterator().next();
                 backlogDebugger = JMX.newMBeanProxy(serverConnection, debuggerMBeanObjectName, ManagedBacklogDebuggerMBean.class);
                 backlogDebugger.enableDebugger();
-                backlogDebugger.setLoggingLevel("WARN");//To avoid noise
+                backlogDebugger.setLoggingLevel("TRACE");//By default it's INFO and a bit too noisy
                 //Lookup camel context
                 objectName = new ObjectName("org.apache.camel:context=*,type=context,name=*");
                 names = serverConnection.queryNames(objectName, null);
@@ -556,15 +556,18 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             return "//" + path;
         } else {
             Element parent = (Element) element.getParentNode();
-            NodeList children = parent.getElementsByTagName(element.getTagName());
+            int index = 0;
+            NodeList children = parent.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
                 Node nextChild = children.item(i);
-                if (nextChild instanceof Element && element.equals((Element) nextChild)) {
-                    path = path + "[" + String.valueOf(i + 1) + "]";
-                    break;
+                if (nextChild instanceof Element && element.getTagName().equals(((Element)nextChild).getTagName())) {
+                    index++;
+                    if (element.equals((Element) nextChild)) {
+                        path = path + "[" + String.valueOf(index) + "]";
+                        break;
+                    }
                 }
             }
-            ;
 
             path = getXPathOfTheElement(parent) + "/" + path;
         }
