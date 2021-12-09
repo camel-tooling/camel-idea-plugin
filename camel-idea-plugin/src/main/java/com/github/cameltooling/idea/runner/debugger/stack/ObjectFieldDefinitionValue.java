@@ -72,11 +72,22 @@ public class ObjectFieldDefinitionValue extends XValue {
     public void computeSourcePosition(@NotNull XNavigatable navigatable) {
         /* Slow operations are prohibited on EDT. Executing on pooled thread */
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            ApplicationManager.getApplication().runReadAction(() -> {
+                PsiClass aClass = JavaPsiFacade.getInstance(session.getProject()).findClass(fieldDefinition.getType(), GlobalSearchScope.allScope(session.getProject()));
+                if (aClass != null) {
+                    navigatable.setSourcePosition(createPositionByElement(aClass));
+                }
+            });
+        });
+/*
+        ApplicationManager.getApplication().runReadAction(() -> {
             PsiClass aClass = JavaPsiFacade.getInstance(session.getProject()).findClass(fieldDefinition.getType(), GlobalSearchScope.allScope(session.getProject()));
             if (aClass != null) {
                 navigatable.setSourcePosition(createPositionByElement(aClass));
             }
         });
+*/
+
     }
 
 /*

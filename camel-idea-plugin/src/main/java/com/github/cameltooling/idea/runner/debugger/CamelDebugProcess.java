@@ -108,6 +108,21 @@ public class CamelDebugProcess extends XDebugProcess {
         camelDebuggerSession.resume();
     }
 
+    @Override
+    public void startStepOver(@Nullable XSuspendContext context) {
+        camelDebuggerSession.nextStep(context.getActiveExecutionStack().getTopFrame().getSourcePosition());
+    }
+
+    @Override
+    public void startStepInto(@Nullable XSuspendContext context) {
+        camelDebuggerSession.nextStep(context.getActiveExecutionStack().getTopFrame().getSourcePosition());
+    }
+
+    @Override
+    public void startStepOut(@Nullable XSuspendContext context) {
+        camelDebuggerSession.nextStep(context.getActiveExecutionStack().getTopFrame().getSourcePosition());
+    }
+
     @NotNull
     @Override
     public XBreakpointHandler<?>[] getBreakpointHandlers() {
@@ -115,10 +130,6 @@ public class CamelDebugProcess extends XDebugProcess {
         return ArrayUtil.append(breakpointHandlers, camelBreakpointHandler);
     }
 
-//  @Override
-//  public void startStepOver(@Nullable XSuspendContext context) {
-//    muleDebuggerSession.nextStep();
-//  }
 
 /*
   @NotNull
@@ -134,15 +145,7 @@ public class CamelDebugProcess extends XDebugProcess {
     return processHandler;
   }
 
-  @Override
-  public void startStepInto(@Nullable XSuspendContext context) {
-    muleDebuggerSession.nextStep();
-  }
 
-  @Override
-  public void startStepOut(@Nullable XSuspendContext context) {
-    muleDebuggerSession.nextStep();
-  }
 
 
 

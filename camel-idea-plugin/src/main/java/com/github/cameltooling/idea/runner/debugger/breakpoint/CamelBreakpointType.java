@@ -24,9 +24,9 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
@@ -49,8 +49,9 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
             if (psiFile != null) {
                 final boolean isCamelAndXml = IdeaUtils.getService().isXmlLanguage(psiFile);
                 if (isCamelAndXml) {
-                    PsiElement psiElement = IdeaUtils.getXmlTagAt(project, XDebuggerUtil.getInstance().createPosition(file, line));
-                    return CamelIdeaUtils.getService().isInsideCamelRoute(psiElement, false);
+                    XmlTag tag = IdeaUtils.getXmlTagAt(project, XDebuggerUtil.getInstance().createPosition(file, line));
+                    //The tag must be inside "route" and cannot be "from"
+                    return CamelIdeaUtils.getService().isInsideCamelRoute(tag, true) && !"from".equalsIgnoreCase(tag.getLocalName());
                 }
             }
         }

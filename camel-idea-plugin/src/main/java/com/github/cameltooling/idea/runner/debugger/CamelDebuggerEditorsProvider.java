@@ -16,8 +16,10 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
+import com.intellij.lang.Language;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.fileTypes.LanguageFileType;
 import com.intellij.openapi.fileTypes.PlainTextFileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiDocumentManager;
@@ -30,6 +32,9 @@ import com.intellij.xdebugger.evaluation.EvaluationMode;
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Collection;
+import java.util.Collections;
 
 
 public class CamelDebuggerEditorsProvider extends XDebuggerEditorsProvider {
@@ -46,5 +51,13 @@ public class CamelDebuggerEditorsProvider extends XDebuggerEditorsProvider {
         final PsiFile psiFile = PsiFileFactory.getInstance(project)
                 .createFileFromText("camelExpr." + getFileType().getDefaultExtension(), getFileType(), expression.getExpression(), LocalTimeCounter.currentTime(), true);
         return PsiDocumentManager.getInstance(project).getDocument(psiFile);
+    }
+
+    @NotNull
+    @Override
+    public Collection<Language> getSupportedLanguages(@NotNull Project project, @Nullable XSourcePosition sourcePosition) {
+        //TODO - use Simple, Datasonnet
+        FileType type = getFileType();
+        return type instanceof LanguageFileType ? Collections.singleton(((LanguageFileType)type).getLanguage()) : Collections.emptyList();
     }
 }

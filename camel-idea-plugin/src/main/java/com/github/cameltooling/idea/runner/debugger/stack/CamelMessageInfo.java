@@ -19,8 +19,7 @@ package com.github.cameltooling.idea.runner.debugger.stack;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.ArrayUtil;
-import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
-import com.intellij.xdebugger.breakpoints.XLineBreakpoint;
+import com.intellij.xdebugger.XSourcePosition;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -41,13 +40,13 @@ public class CamelMessageInfo {
     private final String messageInfoAsXML;
     private final DocumentBuilder documentBuilder;
 
-    private XLineBreakpoint<XBreakpointProperties> xBreakpoint;
+    private XSourcePosition position;
     private XmlTag tag;
 
-    public CamelMessageInfo(String messageInfoAsXML, XLineBreakpoint<XBreakpointProperties> xBreakpoint, XmlTag tag) throws Exception {
+    public CamelMessageInfo(String messageInfoAsXML, XSourcePosition position, XmlTag tag) throws Exception {
         this.messageInfoAsXML = messageInfoAsXML;
         this.documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        this.xBreakpoint = xBreakpoint;
+        this.position = position;
         this.tag = tag;
         init();
     }
@@ -96,8 +95,8 @@ public class CamelMessageInfo {
         return exchangeId;
     }
 
-    public XLineBreakpoint<XBreakpointProperties> getBreakpoint() {
-        return xBreakpoint;
+    public XSourcePosition getXSourcePosition() {
+        return this.position;
     }
 
     public XmlTag getTag() {

@@ -66,7 +66,7 @@ public class CamelStackFrame extends XStackFrame {
     @Nullable
     @Override
     public XSourcePosition getSourcePosition() {
-        return this.camelMessageInfo.getBreakpoint().getSourcePosition();
+        return this.camelMessageInfo.getXSourcePosition();
     }
 
     public void customizePresentation(@NotNull ColoredTextContainer component) {
