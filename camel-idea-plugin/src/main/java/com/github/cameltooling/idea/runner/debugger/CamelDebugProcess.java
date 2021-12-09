@@ -77,7 +77,9 @@ public class CamelDebugProcess extends XDebugProcess {
         camelDebuggerSession.addMessageReceivedListener(new MessageReceivedListener() {
             @Override
             public void onNewMessageReceived(CamelMessageInfo camelMessageInfo) {
-                getSession().positionReached(new CamelSuspendContext(new CamelStackFrame(getSession().getProject(), camelDebuggerSession, camelMessageInfo)));
+                if (!camelMessageInfo.getXSourcePosition().equals(getSession().getCurrentPosition())) {
+                    getSession().positionReached(new CamelSuspendContext(new CamelStackFrame(getSession().getProject(), camelDebuggerSession, camelMessageInfo)));
+                }
             }
 
 //      @Override
