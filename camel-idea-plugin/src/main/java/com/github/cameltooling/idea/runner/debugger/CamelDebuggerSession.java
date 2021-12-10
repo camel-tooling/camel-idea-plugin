@@ -95,7 +95,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
     private org.w3c.dom.Document routesDOMDocument;
 
-    private String temporaryBreakpointId = null;
+    private String temporaryBreakpointId;
 
     public boolean isConnected() {
         boolean isConnected = false;
@@ -246,7 +246,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 this.debuggerMBeanObjectName = names.iterator().next();
                 backlogDebugger = JMX.newMBeanProxy(serverConnection, debuggerMBeanObjectName, ManagedBacklogDebuggerMBean.class);
                 backlogDebugger.enableDebugger();
-                backlogDebugger.setLoggingLevel(BACKLOG_DEBUGGER_LOGGING_LEVEL);//By default it's INFO and a bit too noisy
+                backlogDebugger.setLoggingLevel(BACKLOG_DEBUGGER_LOGGING_LEVEL); //By default it's INFO and a bit too noisy
                 //Lookup camel context
                 objectName = new ObjectName("org.apache.camel:context=*,type=context,name=*");
                 names = serverConnection.queryNames(objectName, null);
@@ -359,37 +359,37 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             try {
                 //Set<String> suspendedBreakpointIDs = backlogDebugger.getSuspendedBreakpointNodeIds();
                 // this throws exception: javax.management.AttributeNotFoundException: getAttribute failed: ModelMBeanAttributeInfo not found for SuspendedBreakpointNodeIds
-                //	at java.management/javax.management.modelmbean.RequiredModelMBean.getAttribute(RequiredModelMBean.java:1440)
-                //	at java.management/com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.getAttribute(DefaultMBeanServerInterceptor.java:641)
-                //	at java.management/com.sun.jmx.mbeanserver.JmxMBeanServer.getAttribute(JmxMBeanServer.java:678)
-                //	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doOperation(RMIConnectionImpl.java:1443)
-                //	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl$PrivilegedOperation.run(RMIConnectionImpl.java:1307)
-                //	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doPrivilegedOperation(RMIConnectionImpl.java:1399)
-                //	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.getAttribute(RMIConnectionImpl.java:637)
-                //	at java.base/jdk.internal.reflect.GeneratedMethodAccessor151.invoke(Unknown Source)
-                //	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-                //	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-                //	at java.rmi/sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:359)
-                //	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:200)
-                //	at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:197)
-                //	at java.base/java.security.AccessController.doPrivileged(AccessController.java:689)
-                //	at java.rmi/sun.rmi.transport.Transport.serviceCall(Transport.java:196)
-                //	at java.rmi/sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:562)
-                //	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:796)
-                //	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(TCPTransport.java:677)
-                //	at java.base/java.security.AccessController.doPrivileged(AccessController.java:389)
-                //	at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:676)
-                //	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
-                //	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
-                //	at java.base/java.lang.Thread.run(Thread.java:835)
-                //	at java.rmi/sun.rmi.transport.StreamRemoteCall.exceptionReceivedFromServer(StreamRemoteCall.java:303)
-                //	at java.rmi/sun.rmi.transport.StreamRemoteCall.executeCall(StreamRemoteCall.java:279)
-                //	at java.rmi/sun.rmi.server.UnicastRef.invoke(UnicastRef.java:164)
-                //	at jdk.remoteref/jdk.jmx.remote.internal.rmi.PRef.invoke(Unknown Source)
-                //	at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl_Stub.getAttribute(Unknown Source)
-                //	at java.management.rmi/javax.management.remote.rmi.RMIConnector$RemoteMBeanServerConnection.getAttribute(RMIConnector.java:904)
-                //	at java.management/javax.management.MBeanServerInvocationHandler.invoke(MBeanServerInvocationHandler.java:273)
-                //	... 13 more
+                //  at java.management/javax.management.modelmbean.RequiredModelMBean.getAttribute(RequiredModelMBean.java:1440)
+                //  at java.management/com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.getAttribute(DefaultMBeanServerInterceptor.java:641)
+                //  at java.management/com.sun.jmx.mbeanserver.JmxMBeanServer.getAttribute(JmxMBeanServer.java:678)
+                //  at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doOperation(RMIConnectionImpl.java:1443)
+                //  at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl$PrivilegedOperation.run(RMIConnectionImpl.java:1307)
+                //  at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doPrivilegedOperation(RMIConnectionImpl.java:1399)
+                //  at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.getAttribute(RMIConnectionImpl.java:637)
+                //  at java.base/jdk.internal.reflect.GeneratedMethodAccessor151.invoke(Unknown Source)
+                //  at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+                //  at java.base/java.lang.reflect.Method.invoke(Method.java:567)
+                //  at java.rmi/sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:359)
+                //  at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:200)
+                //  at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:197)
+                //  at java.base/java.security.AccessController.doPrivileged(AccessController.java:689)
+                //  at java.rmi/sun.rmi.transport.Transport.serviceCall(Transport.java:196)
+                //  at java.rmi/sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:562)
+                //  at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:796)
+                //  at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(TCPTransport.java:677)
+                //  at java.base/java.security.AccessController.doPrivileged(AccessController.java:389)
+                //  at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:676)
+                //  at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+                //  at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+                //  at java.base/java.lang.Thread.run(Thread.java:835)
+                //  at java.rmi/sun.rmi.transport.StreamRemoteCall.exceptionReceivedFromServer(StreamRemoteCall.java:303)
+                //  at java.rmi/sun.rmi.transport.StreamRemoteCall.executeCall(StreamRemoteCall.java:279)
+                //  at java.rmi/sun.rmi.server.UnicastRef.invoke(UnicastRef.java:164)
+                //  at jdk.remoteref/jdk.jmx.remote.internal.rmi.PRef.invoke(Unknown Source)
+                //  at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl_Stub.getAttribute(Unknown Source)
+                //  at java.management.rmi/javax.management.remote.rmi.RMIConnector$RemoteMBeanServerConnection.getAttribute(RMIConnector.java:904)
+                //  at java.management/javax.management.MBeanServerInvocationHandler.invoke(MBeanServerInvocationHandler.java:273)
+                //  ... 13 more
 
                 Collection<String> suspendedBreakpointIDs = (Collection<String>) serverConnection.invoke(this.debuggerMBeanObjectName, "getSuspendedBreakpointNodeIds", new Object[]{}, new String[]{});
                 if (suspendedBreakpointIDs != null && !suspendedBreakpointIDs.isEmpty()) {
@@ -529,7 +529,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                             }
                             PsiElement elem = pointer.getElement();
                             if (elem instanceof Navigatable) {
-                                return ((Navigatable) elem);
+                                return (Navigatable) elem;
                             }
                             return NonNavigatable.INSTANCE;
                         }

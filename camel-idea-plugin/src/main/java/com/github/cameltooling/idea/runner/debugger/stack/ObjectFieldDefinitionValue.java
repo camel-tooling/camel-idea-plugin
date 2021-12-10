@@ -112,17 +112,17 @@ public class ObjectFieldDefinitionValue extends XValue {
 
     @Nullable
     private XSourcePosition createPositionByElement(PsiElement element) {
-        if (element == null)
+        if (element == null) {
             return null;
-
+        }
         PsiFile psiFile = element.getContainingFile();
-        if (psiFile == null)
+        if (psiFile == null) {
             return null;
-
+        }
         final VirtualFile file = psiFile.getVirtualFile();
-        if (file == null)
+        if (file == null) {
             return null;
-
+        }
         final SmartPsiElementPointer<PsiElement> pointer =
                 SmartPointerManager.getInstance(element.getProject()).createSmartPsiElementPointer(element);
 
@@ -167,7 +167,7 @@ public class ObjectFieldDefinitionValue extends XValue {
                 }
                 PsiElement elem = pointer.getElement();
                 if (elem instanceof Navigatable) {
-                    return ((Navigatable) elem);
+                    return (Navigatable) elem;
                 }
                 return NonNavigatable.INSTANCE;
             }
