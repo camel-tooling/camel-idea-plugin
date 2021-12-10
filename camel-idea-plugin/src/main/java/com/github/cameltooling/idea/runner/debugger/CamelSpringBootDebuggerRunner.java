@@ -120,16 +120,15 @@ public class CamelSpringBootDebuggerRunner extends GenericDebuggerRunner {
                             public void onNewMessageReceived(CamelMessageInfo camelMessageInfo) {
                                 contextAwareDebugProcess.setContext(CAMEL_CONTEXT);
                             }
-
 /*
                             @Override
-                            public void onExceptionThrown(MuleMessageInfo muleMessageInfo, ObjectFieldDefinition exceptionThrown) {
-                                contextAwareDebugProcess.setContext(MULE_CONTEXT);
+                            public void onExceptionThrown(CamelMessageInfo camelMessageInfo, ObjectFieldDefinition exceptionThrown) {
+                                contextAwareDebugProcess.setContext(CAMEL_CONTEXT);
                             }
 
                             @Override
-                            public void onExecutionStopped(MuleMessageInfo muleMessageInfo, List<ObjectFieldDefinition> frame, String path, String internalPosition) {
-                                contextAwareDebugProcess.setContext(MULE_CONTEXT);
+                            public void onExecutionStopped(CamelMessageInfo camelMessageInfo, List<ObjectFieldDefinition> frame, String path, String internalPosition) {
+                                contextAwareDebugProcess.setContext(CAMEL_CONTEXT);
                             }
 */
                         });
@@ -160,7 +159,4 @@ public class CamelSpringBootDebuggerRunner extends GenericDebuggerRunner {
             }
         }
     }
-
-
-
 }

@@ -37,6 +37,7 @@ import com.intellij.psi.SmartPointerManager;
 import com.intellij.psi.SmartPsiElementPointer;
 import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.xdebugger.AbstractDebuggerSession;
@@ -76,12 +77,12 @@ import java.util.Set;
 public class CamelDebuggerSession implements AbstractDebuggerSession {
 
     private static final int MAX_RETRIES = 30;
+    private static final String BACKLOG_DEBUGGER_LOGGING_LEVEL = "TRACE";
 
     private final List<XLineBreakpoint<XBreakpointProperties>> pendingBreakpointsAdd = new ArrayList<>();
     private final List<XLineBreakpoint<XBreakpointProperties>> pendingBreakpointsRemove = new ArrayList<>();
 
     private final Map<String, CamelBreakpoint> breakpoints = new HashMap<>();
-    private final List<String> suspendedBreakpoints = new ArrayList<>();
 
     private final List<MessageReceivedListener> messageReceivedListeners = new ArrayList<>();
 
@@ -93,6 +94,8 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private ObjectName debuggerMBeanObjectName;
 
     private org.w3c.dom.Document routesDOMDocument;
+
+    private String temporaryBreakpointId = null;
 
     public boolean isConnected() {
         boolean isConnected = false;
@@ -173,18 +176,44 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     public void resume() {
-        for (String suspendedId : suspendedBreakpoints) {
-            backlogDebugger.resumeBreakpoint(suspendedId);
+        //First, remove temporary breakpoint
+        if (temporaryBreakpointId != null) {
+            backlogDebugger.removeBreakpoint(temporaryBreakpointId);
+            temporaryBreakpointId = null;
         }
-        suspendedBreakpoints.clear();
+        backlogDebugger.resumeAll();
     }
 
-    public void nextStep(XSourcePosition position) {
+    public void stepInto(XSourcePosition position) {
+        nextStep(position, false);
+    }
+
+    public void stepOver(XSourcePosition position) {
+        nextStep(position, true);
+    }
+
+    private void nextStep(XSourcePosition position, boolean isOver) {
         XmlTag breakpointTag = getXmlTagAt(project, position);
         String breakpointId = getBreakpointId(breakpointTag);
         breakpoints.put(breakpointId, new CamelBreakpoint(breakpointId, breakpointTag, position));
-        suspendedBreakpoints.remove(breakpointId);
-        backlogDebugger.stepBreakpoint(breakpointId);
+
+        if (temporaryBreakpointId != null) { //Remove previous temporary breakpoint
+            backlogDebugger.removeBreakpoint(temporaryBreakpointId);
+            temporaryBreakpointId = null;
+        }
+
+        if (isOver && ("to".equals(breakpointTag.getLocalName()) || "toD".equals(breakpointTag.getLocalName()))) {
+            XmlTag nextTag = PsiTreeUtil.getNextSiblingOfType(breakpointTag, XmlTag.class);
+            if (nextTag != null) {
+                //Add temporary breakpoint
+                temporaryBreakpointId = getBreakpointId(nextTag);
+                backlogDebugger.addBreakpoint(temporaryBreakpointId);
+                //Run to that breakpoint
+                backlogDebugger.resumeBreakpoint(breakpointId);
+            }
+        } else {
+            backlogDebugger.stepBreakpoint(breakpointId);
+        }
     }
 
     private boolean connect(final ProcessHandler javaProcessHandler, boolean retry, int retries) {
@@ -217,7 +246,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 this.debuggerMBeanObjectName = names.iterator().next();
                 backlogDebugger = JMX.newMBeanProxy(serverConnection, debuggerMBeanObjectName, ManagedBacklogDebuggerMBean.class);
                 backlogDebugger.enableDebugger();
-                backlogDebugger.setLoggingLevel("TRACE");//By default it's INFO and a bit too noisy
+                backlogDebugger.setLoggingLevel(BACKLOG_DEBUGGER_LOGGING_LEVEL);//By default it's INFO and a bit too noisy
                 //Lookup camel context
                 objectName = new ObjectName("org.apache.camel:context=*,type=context,name=*");
                 names = serverConnection.queryNames(objectName, null);
@@ -364,13 +393,8 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
                 Collection<String> suspendedBreakpointIDs = (Collection<String>) serverConnection.invoke(this.debuggerMBeanObjectName, "getSuspendedBreakpointNodeIds", new Object[]{}, new String[]{});
                 if (suspendedBreakpointIDs != null && !suspendedBreakpointIDs.isEmpty()) {
-                    //First remove all suspendedBreakpoints that are NOT in the suspendedBreakpointIDs
-                    suspendedBreakpoints.removeIf(id -> !suspendedBreakpointIDs.contains(id));
                     //Fire notifications here, we need to display the exchange, stack etc
                     for (String id : suspendedBreakpointIDs) {
-                        if (!suspendedBreakpoints.contains(id)) {
-                            suspendedBreakpoints.add(id);
-                        }
                         String suspendedMessage = backlogDebugger.dumpTracedMessagesAsXml(id);
                         ApplicationManager.getApplication().runReadAction(() -> {
                             for (MessageReceivedListener listener : messageReceivedListeners) {
@@ -560,7 +584,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             NodeList children = parent.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
                 Node nextChild = children.item(i);
-                if (nextChild instanceof Element && element.getTagName().equals(((Element)nextChild).getTagName())) {
+                if (nextChild instanceof Element && element.getTagName().equals(((Element) nextChild).getTagName())) {
                     index++;
                     if (element.equals((Element) nextChild)) {
                         path = path + "[" + String.valueOf(index) + "]";

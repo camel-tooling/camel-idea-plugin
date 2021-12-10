@@ -97,7 +97,6 @@ public class CamelDebugProcess extends XDebugProcess {
 //      }
 
         });
-
     }
 
     @Override
@@ -112,18 +111,21 @@ public class CamelDebugProcess extends XDebugProcess {
 
     @Override
     public void startStepOver(@Nullable XSuspendContext context) {
-        camelDebuggerSession.nextStep(context.getActiveExecutionStack().getTopFrame().getSourcePosition());
+        camelDebuggerSession.stepOver(context.getActiveExecutionStack().getTopFrame().getSourcePosition());
     }
 
     @Override
     public void startStepInto(@Nullable XSuspendContext context) {
-        camelDebuggerSession.nextStep(context.getActiveExecutionStack().getTopFrame().getSourcePosition());
+        camelDebuggerSession.stepInto(context.getActiveExecutionStack().getTopFrame().getSourcePosition());
     }
 
     @Override
     public void startStepOut(@Nullable XSuspendContext context) {
-        camelDebuggerSession.nextStep(context.getActiveExecutionStack().getTopFrame().getSourcePosition());
+        //TODO need stepOut logic
+        camelDebuggerSession.stepInto(context.getActiveExecutionStack().getTopFrame().getSourcePosition());
     }
+
+    //TODO runToPosition
 
     @NotNull
     @Override

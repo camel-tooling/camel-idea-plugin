@@ -47,19 +47,10 @@ public class CamelStackFrame extends XStackFrame {
     }
 
 /*
-    public CamelStackFrame(@NotNull Project project, @NotNull CamelDebuggerSession session, CamelMessageInfo camelMessageInfo)
+    public CamelStackFrame(@NotNull Project project, CamelDebuggerSession session, CamelMessageInfo camelMessageInfo, @Nullable ObjectFieldDefinition exceptionThrown)
     {
-        this(project, session, camelMessageInfo, null);
-    }
-
-    public CamelStackFrame(@NotNull Project project, CamelDebuggerSession session, CamelMessageInfo muleMessageInfo, @Nullable ObjectFieldDefinition exceptionThrown)
-    {
-        this.session = session;
-        this.camelMessageInfo = camelMessageInfo;
+        this(project, session, camelMessageInfo);
         this.exceptionThrown = exceptionThrown;
-        this.tag = MuleConfigUtils.getTagAt(project, muleMessageInfo.getMessageProcessorInfo().getPath());
-        this.position = MuleConfigUtils.createPositionByElement(tag);
-        this.project = project;
     }
 */
 
@@ -78,7 +69,7 @@ public class CamelStackFrame extends XStackFrame {
     @Nullable
     @Override
     public XDebuggerEvaluator getEvaluator() {
-        //return new MuleScriptEvaluator(session);
+        //return new CamelScriptEvaluator(session);
         return null;
     }
 
@@ -93,16 +84,13 @@ public class CamelStackFrame extends XStackFrame {
         final XValueChildrenList children = new XValueChildrenList();
         children.add("Body", new ObjectFieldDefinitionValue(this.session, this.camelMessageInfo.getBody(), AllIcons.Debugger.Value));
         children.add("Headers", new MapOfObjectFieldDefinitionValue(this.session, this.camelMessageInfo.getHeaders(), AllIcons.Debugger.Value));
+
+        //TODO when Exchange is available
 /*
-        children.add("Message Processor", new MessageProcessorInfoValue(this.session, this.muleMessageInfo.getMessageProcessorInfo()));
-        children.add("Payload", new ObjectFieldDefinitionValue(this.session, this.muleMessageInfo.getPayloadDefinition(), AllIcons.Debugger.Value));
         if (exceptionThrown != null) {
             children.add("Exception", new ObjectFieldDefinitionValue(this.session, exceptionThrown, AllIcons.General.Error));
         }
-        children.add("Flow Vars", new MapOfObjectFieldDefinitionValue(this.session, this.muleMessageInfo.getInvocationProperties(), AllIcons.Nodes.Parameter));
-        children.add("Session Properties", new MapOfObjectFieldDefinitionValue(this.session, this.muleMessageInfo.getSessionProperties(), AllIcons.Nodes.Parameter));
-        children.add("Inbound Properties", new MapOfObjectFieldDefinitionValue(this.session, this.muleMessageInfo.getInboundProperties(), AllIcons.Nodes.Parameter));
-        children.add("OutboundProperties", new MapOfObjectFieldDefinitionValue(this.session, this.muleMessageInfo.getOutboundProperties(), AllIcons.Nodes.Parameter));
+        children.add("Properties", new MapOfObjectFieldDefinitionValue(this.session, this.camelMessageInfo.getProperties(), AllIcons.Nodes.Parameter));
 */
         node.addChildren(children, true);
     }

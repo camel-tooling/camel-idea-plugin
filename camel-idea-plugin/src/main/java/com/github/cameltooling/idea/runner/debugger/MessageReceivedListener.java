@@ -22,7 +22,7 @@ public interface MessageReceivedListener {
 
     void onNewMessageReceived(CamelMessageInfo camelMessageInfo);
 
-//    void onExceptionThrown(MuleMessageInfo muleMessageInfo, ObjectFieldDefinition exceptionThrown);
+//    void onExceptionThrown(CamelMessageInfo camelMessageInfo, ObjectFieldDefinition exceptionThrown);
 //
-//    void onExecutionStopped(MuleMessageInfo muleMessageInfo, List<ObjectFieldDefinition> frame, String path, String internalPosition);
+//    void onExecutionStopped(CamelMessageInfo camelMessageInfo, List<ObjectFieldDefinition> frame, String path, String internalPosition);
 }

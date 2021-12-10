@@ -47,7 +47,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class CamelSpringBootBeforeRunTasksProvider extends BeforeRunTaskProvider<CamelSpringBootBeforeRunTask> {
-    public static final Key<MavenBeforeRunTask> ID = Key.create("Mule.BeforeRunTask");
+    public static final Key<MavenBeforeRunTask> ID = Key.create("Camel.BeforeRunTask");
 
     @Override
     public Key getId() {
@@ -104,9 +104,9 @@ public class CamelSpringBootBeforeRunTasksProvider extends BeforeRunTaskProvider
 
         final Project project = executionEnvironment.getProject();
 
-        CamelSpringBootRunConfiguration muleConfiguration = (CamelSpringBootRunConfiguration) runConfiguration;
+        CamelSpringBootRunConfiguration camelConfiguration = (CamelSpringBootRunConfiguration) runConfiguration;
 
-        Module[] modules = muleConfiguration.getModules();
+        Module[] modules = camelConfiguration.getModules();
 
         for (Module nextModule : modules) {
             //final MavenProject mavenProject = getMavenProject(runConfiguration, project);
