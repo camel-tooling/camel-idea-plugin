@@ -255,7 +255,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                     camelContext = JMX.newMBeanProxy(serverConnection, mbeanName, ManagedCamelContextMBean.class);
 
                     //Init DOM Document
-                    String routes = getCamelContext().dumpRoutesAsXml(true, true);
+                    String routes = getCamelContext().dumpRoutesAsXml(false, true);
                     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
                     DocumentBuilder documentBuilder = dbf.newDocumentBuilder();
                     InputStream targetStream = new ByteArrayInputStream(routes.getBytes());
