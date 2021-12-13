@@ -18,6 +18,8 @@ package com.github.cameltooling.idea.runner.debugger.stack;
 
 
 import com.github.cameltooling.idea.runner.debugger.CamelDebuggerSession;
+import com.github.cameltooling.idea.runner.debugger.CamelSimpleEvaluator;
+import com.intellij.debugger.engine.JavaStackFrame;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.xml.XmlTag;
@@ -69,8 +71,7 @@ public class CamelStackFrame extends XStackFrame {
     @Nullable
     @Override
     public XDebuggerEvaluator getEvaluator() {
-        //return new CamelScriptEvaluator(session);
-        return null;
+        return new CamelSimpleEvaluator(session);
     }
 
     @Override
@@ -85,12 +86,15 @@ public class CamelStackFrame extends XStackFrame {
         children.add("Body", new ObjectFieldDefinitionValue(this.session, this.camelMessageInfo.getBody(), AllIcons.Debugger.Value));
         children.add("Headers", new MapOfObjectFieldDefinitionValue(this.session, this.camelMessageInfo.getHeaders(), AllIcons.Debugger.Value));
 
-        //TODO when Exchange is available
+        if (this.camelMessageInfo.getProperties() != null) {
+            children.add("Exchange Properties", new MapOfObjectFieldDefinitionValue(this.session, this.camelMessageInfo.getProperties(), AllIcons.Debugger.Value));
+        } else {
+            children.add("WARNING: ", JavaStackFrame.createMessageNode("Exchange Properties in Debugger are only available in Camel version 3.14 or later", AllIcons.Nodes.WarningMark));
+        }
 /*
         if (exceptionThrown != null) {
             children.add("Exception", new ObjectFieldDefinitionValue(this.session, exceptionThrown, AllIcons.General.Error));
         }
-        children.add("Properties", new MapOfObjectFieldDefinitionValue(this.session, this.camelMessageInfo.getProperties(), AllIcons.Nodes.Parameter));
 */
         node.addChildren(children, true);
     }

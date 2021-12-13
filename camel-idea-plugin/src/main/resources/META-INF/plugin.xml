@@ -135,10 +135,10 @@
     <renameHandler implementation="com.github.cameltooling.idea.reference.CamelBeanReferenceRenameHandler"/>
 
     <!-- Debugger -->
-<!--    <programRunner id="Debug" implementation="org.mule.tooling.esb.launcher.configuration.runner.MuleProgramDebugger" order="last"/>-->
     <xdebugger.breakpointType implementation="com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointType"/>
     <programRunner id="Debug" implementation="com.github.cameltooling.idea.runner.debugger.CamelSpringBootDebuggerRunner" order="first"/>
     <configurationType implementation="com.github.cameltooling.idea.runner.CamelSpringBootRunConfigurationType"/>
+
   </extensions>
 
 </idea-plugin>

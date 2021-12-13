@@ -72,6 +72,7 @@ public class CamelDebugProcess extends XDebugProcess {
 
 
     public void init() {
+        camelDebuggerSession.setXDebugSession(this.getSession());
         camelDebuggerSession.connect(javaProcessHandler);
 
         camelDebuggerSession.addMessageReceivedListener(new MessageReceivedListener() {

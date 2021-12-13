@@ -20,6 +20,8 @@ import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.ArrayUtil;
 import com.intellij.xdebugger.XSourcePosition;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -33,18 +35,22 @@ import java.util.Map;
 
 public class CamelMessageInfo {
 
-    private final Map<String, Value[]> headers = new HashMap<>();
+    private Map<String, Value[]> headers = null;
+    private Map<String, Value[]> properties = null;
+
     private Value body;
     private String exchangeId;
 
     private final String messageInfoAsXML;
+    private final String propertiesAsXML;
     private final DocumentBuilder documentBuilder;
 
     private XSourcePosition position;
     private XmlTag tag;
 
-    public CamelMessageInfo(String messageInfoAsXML, XSourcePosition position, XmlTag tag) throws Exception {
+    public CamelMessageInfo(@NotNull String messageInfoAsXML, @Nullable String propertiesAsXML, XSourcePosition position, XmlTag tag) throws Exception {
         this.messageInfoAsXML = messageInfoAsXML;
+        this.propertiesAsXML = propertiesAsXML;
         this.documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         this.position = position;
         this.tag = tag;
@@ -54,6 +60,9 @@ public class CamelMessageInfo {
     private void init() throws Exception {
         InputStream targetStream = new ByteArrayInputStream(messageInfoAsXML.getBytes());
         Document document = documentBuilder.parse(targetStream);
+
+        headers = new HashMap<>();
+
         //parse headers
         NodeList headersNodeList = document.getElementsByTagName("header");
         for (int i = 0; i < headersNodeList.getLength(); i++) {
@@ -76,15 +85,43 @@ public class CamelMessageInfo {
             }
         }
         //Get Exchange ID
-        Element exchangeElement = (Element)(document.getElementsByTagName("exchangeId").item(0));
+        Element exchangeElement = (Element) (document.getElementsByTagName("exchangeId").item(0));
         exchangeId = exchangeElement.getTextContent();
         //Get Body
-        Element bodyElement = (Element)(document.getElementsByTagName("body").item(0));
+        Element bodyElement = (Element) (document.getElementsByTagName("body").item(0));
         body = new Value(bodyElement.getAttribute("type"), bodyElement.getTextContent());
+
+        if (propertiesAsXML != null) {
+            properties = new HashMap<>();
+            targetStream = new ByteArrayInputStream(propertiesAsXML.getBytes());
+            document = documentBuilder.parse(targetStream);
+            //parse properties
+            NodeList propertiesNodeList = document.getElementsByTagName("property");
+            for (int i = 0; i < propertiesNodeList.getLength(); i++) {
+                Element nextProp = (Element) propertiesNodeList.item(i);
+                String key = nextProp.getAttribute("name");
+                String type = nextProp.getAttribute("type");
+                String value = nextProp.getTextContent();
+
+                if (StringUtils.isEmpty(type)) {
+                    type = "java.lang.String";
+                }
+                if (StringUtils.isEmpty(value)) {
+                    value = "";
+                }
+                Value newValue = new Value(type, value);
+                properties.put(key, new Value[]{newValue});
+            }
+        }
     }
 
     public Map<String, Value[]> getHeaders() {
         return headers;
+    }
+
+    @Nullable
+    public Map<String, Value[]> getProperties() {
+        return properties;
     }
 
     public Value getBody() {
@@ -103,11 +140,11 @@ public class CamelMessageInfo {
         return tag;
     }
 
-    class Value {
+    public static class Value {
         private String type;
         private Object value;
 
-        Value(String type, Object value) {
+        public Value(String type, Object value) {
             this.type = type;
             this.value = value;
         }

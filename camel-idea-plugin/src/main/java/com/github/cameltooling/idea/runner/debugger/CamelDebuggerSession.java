@@ -27,6 +27,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.pom.Navigatable;
@@ -41,6 +42,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.xdebugger.AbstractDebuggerSession;
+import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint;
@@ -56,6 +58,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.management.JMX;
+import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorFactory;
@@ -78,6 +81,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
     private static final int MAX_RETRIES = 30;
     private static final String BACKLOG_DEBUGGER_LOGGING_LEVEL = "TRACE";
+    private static final long FALLBACK_TIMEOUT = Long.MAX_VALUE - 1;
 
     private final List<XLineBreakpoint<XBreakpointProperties>> pendingBreakpointsAdd = new ArrayList<>();
     private final List<XLineBreakpoint<XBreakpointProperties>> pendingBreakpointsRemove = new ArrayList<>();
@@ -96,6 +100,8 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private org.w3c.dom.Document routesDOMDocument;
 
     private String temporaryBreakpointId;
+
+    private XDebugSession xDebugSession;
 
     public boolean isConnected() {
         boolean isConnected = false;
@@ -184,6 +190,38 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         backlogDebugger.resumeAll();
     }
 
+    public void setXDebugSession(XDebugSession xDebugSession) {
+        this.xDebugSession = xDebugSession;
+    }
+
+    public Object evaluateExpression(String script, String language) {
+        if (isConnected()) {
+            XSourcePosition xSourcePosition = xDebugSession.getCurrentPosition();
+            XmlTag breakpointTag = getXmlTagAt(project, xSourcePosition);
+            String breakpointId = getBreakpointId(breakpointTag);
+
+            String stringClassName = String.class.getName();
+            try {
+                Object result;
+                ClassLoader current = Thread.currentThread().getContextClassLoader();
+                try {
+                    Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+                    result = serverConnection.invoke(this.debuggerMBeanObjectName, "evaluateExpressionAtBreakpoint",
+                            new Object[]{breakpointId, language, script},
+                            new String[]{stringClassName, stringClassName, stringClassName});
+                } finally {
+                    Thread.currentThread().setContextClassLoader(current);
+                }
+                return result;
+            } catch (MBeanException mbe) {
+                return new Exception("Expression Evaluator is only available for Camel version 3.14 and later", mbe);
+            } catch (Exception e) {
+                return new Exception(e);
+            }
+        }
+        return null;
+    }
+
     public void stepInto(XSourcePosition position) {
         nextStep(position, false);
     }
@@ -212,6 +250,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 backlogDebugger.resumeBreakpoint(breakpointId);
             }
         } else {
+            //TODO If to or toD and 'direct:...' - push current ID into stack
             backlogDebugger.stepBreakpoint(breakpointId);
         }
     }
@@ -231,8 +270,11 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
     private boolean doConnect(final ProcessHandler javaProcessHandler) {
         String javaProcessPID = getPID(javaProcessHandler);
+        ClassLoader current = Thread.currentThread().getContextClassLoader();
 
         try {
+            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+
             this.serverConnection = getLocalJavaProcessMBeanServer(javaProcessPID);
             if (serverConnection == null) {
                 return false;
@@ -247,6 +289,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 backlogDebugger = JMX.newMBeanProxy(serverConnection, debuggerMBeanObjectName, ManagedBacklogDebuggerMBean.class);
                 backlogDebugger.enableDebugger();
                 backlogDebugger.setLoggingLevel(BACKLOG_DEBUGGER_LOGGING_LEVEL); //By default it's INFO and a bit too noisy
+                backlogDebugger.setFallbackTimeout(FALLBACK_TIMEOUT);
                 //Lookup camel context
                 objectName = new ObjectName("org.apache.camel:context=*,type=context,name=*");
                 names = serverConnection.queryNames(objectName, null);
@@ -278,10 +321,11 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
                 return true;
             }
-
             return false;
         } catch (Exception e) {
             return false;
+        } finally {
+            Thread.currentThread().setContextClassLoader(current);
         }
     }
 
@@ -396,6 +440,16 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                     //Fire notifications here, we need to display the exchange, stack etc
                     for (String id : suspendedBreakpointIDs) {
                         String suspendedMessage = backlogDebugger.dumpTracedMessagesAsXml(id);
+
+                        String properties;
+                        try {
+                            properties = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "dumpExchangePropertiesAsXml", new Object[]{id}, new String[]{String.class.getName()});
+                        } catch (Exception e) {
+                            properties = null;
+                            //TODO log this or display warning
+                        }
+                        final String suspendedExchangeProperties = properties;
+
                         ApplicationManager.getApplication().runReadAction(() -> {
                             for (MessageReceivedListener listener : messageReceivedListeners) {
                                 try {
@@ -405,7 +459,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                                         breakpoint = getCamelBreakpointById(id);
                                         breakpoints.put(id, breakpoint);
                                     }
-                                    listener.onNewMessageReceived(new CamelMessageInfo(suspendedMessage, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag()));
+                                    listener.onNewMessageReceived(new CamelMessageInfo(suspendedMessage, suspendedExchangeProperties, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag()));
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
@@ -476,66 +530,67 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
         final XPathSupport support = XPathSupport.getInstance();
 
-        //TODO what happens if there are multiple copies of the file or multiple files matching the xpath?
         final Collection<VirtualFile> files = FileTypeIndex.getFiles(XmlFileType.INSTANCE, GlobalSearchScope.projectScope(project));
         for (VirtualFile file : files) {
-            final XmlFile xmlFile = (XmlFile) PsiManager.getInstance(project).findFile(file);
-            final org.jaxen.XPath nextXpath = support.createXPath(xmlFile, camelXPath);
-            final Object result = nextXpath.evaluate(xmlFile.getRootTag());
-            if (result != null && result instanceof List<?>) {
-                final List<?> list = (List<?>) result;
-                if (!((List<?>) result).isEmpty()) {
-                    XmlTag xmlTag = (XmlTag) list.get(0);
-                    final SmartPsiElementPointer<PsiElement> pointer =
-                            SmartPointerManager.getInstance(xmlTag.getProject()).createSmartPsiElementPointer(xmlTag);
-                    XSourcePosition position = new XSourcePosition() {
-                        private volatile XSourcePosition myDelegate;
+            ProjectFileIndex index = ProjectFileIndex.SERVICE.getInstance(project);
+            if (index.getSourceRootForFile(file) != null || index.getClassRootForFile(file) != null) {//Only in source root or classpath
+                final XmlFile xmlFile = (XmlFile) PsiManager.getInstance(project).findFile(file);
+                final org.jaxen.XPath nextXpath = support.createXPath(xmlFile, camelXPath);
+                final Object result = nextXpath.evaluate(xmlFile.getRootTag());
+                if (result != null && result instanceof List<?>) {
+                    final List<?> list = (List<?>) result;
+                    if (!((List<?>) result).isEmpty()) {
+                        XmlTag xmlTag = (XmlTag) list.get(0);
+                        final SmartPsiElementPointer<PsiElement> pointer =
+                                SmartPointerManager.getInstance(xmlTag.getProject()).createSmartPsiElementPointer(xmlTag);
+                        XSourcePosition position = new XSourcePosition() {
+                            private volatile XSourcePosition myDelegate;
 
-                        private XSourcePosition getDelegate() {
-                            if (myDelegate == null) {
-                                myDelegate = ApplicationManager.getApplication().runReadAction(new Computable<XSourcePosition>() {
-                                    @Override
-                                    public XSourcePosition compute() {
-                                        PsiElement elem = pointer.getElement();
-                                        return XSourcePositionImpl.createByOffset(pointer.getVirtualFile(), elem != null ? elem.getTextOffset() : -1);
-                                    }
-                                });
+                            private XSourcePosition getDelegate() {
+                                if (myDelegate == null) {
+                                    myDelegate = ApplicationManager.getApplication().runReadAction(new Computable<XSourcePosition>() {
+                                        @Override
+                                        public XSourcePosition compute() {
+                                            PsiElement elem = pointer.getElement();
+                                            return XSourcePositionImpl.createByOffset(pointer.getVirtualFile(), elem != null ? elem.getTextOffset() : -1);
+                                        }
+                                    });
+                                }
+                                return myDelegate;
                             }
-                            return myDelegate;
-                        }
 
-                        @Override
-                        public int getLine() {
-                            return getDelegate().getLine();
-                        }
-
-                        @Override
-                        public int getOffset() {
-                            return getDelegate().getOffset();
-                        }
-
-                        @NotNull
-                        @Override
-                        public VirtualFile getFile() {
-                            return file;
-                        }
-
-                        @NotNull
-                        @Override
-                        public Navigatable createNavigatable(@NotNull Project project) {
-                            // no need to create delegate here, it may be expensive
-                            if (myDelegate != null) {
-                                return myDelegate.createNavigatable(project);
+                            @Override
+                            public int getLine() {
+                                return getDelegate().getLine();
                             }
-                            PsiElement elem = pointer.getElement();
-                            if (elem instanceof Navigatable) {
-                                return (Navigatable) elem;
-                            }
-                            return NonNavigatable.INSTANCE;
-                        }
-                    };
 
-                    return new CamelBreakpoint(id, xmlTag, position);
+                            @Override
+                            public int getOffset() {
+                                return getDelegate().getOffset();
+                            }
+
+                            @NotNull
+                            @Override
+                            public VirtualFile getFile() {
+                                return file;
+                            }
+
+                            @NotNull
+                            @Override
+                            public Navigatable createNavigatable(@NotNull Project project) {
+                                // no need to create delegate here, it may be expensive
+                                if (myDelegate != null) {
+                                    return myDelegate.createNavigatable(project);
+                                }
+                                PsiElement elem = pointer.getElement();
+                                if (elem instanceof Navigatable) {
+                                    return (Navigatable) elem;
+                                }
+                                return NonNavigatable.INSTANCE;
+                            }
+                        };
+                        return new CamelBreakpoint(id, xmlTag, position);
+                    }
                 }
             }
         }
@@ -598,4 +653,14 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         return path;
     }
 
+    private String getParentRouteId(String id) throws Exception {
+        String path = "//route[*[attribute::id = '" + id + "']]";
+        XPath xPath = XPathFactory.newInstance().newXPath();
+        Node tagNode = (Node) xPath.compile(path).evaluate(routesDOMDocument, XPathConstants.NODE);
+        if (tagNode == null) {
+            return null;
+        }
+        Element tag = (Element) tagNode;
+        return tag.getAttribute("id");
+    }
 }
