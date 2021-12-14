@@ -43,6 +43,7 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.xdebugger.AbstractDebuggerSession;
 import com.intellij.xdebugger.XDebugSession;
+import com.intellij.xdebugger.XExpression;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint;
@@ -381,11 +382,14 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         XmlTag breakpointTag = getXmlTagAt(project, position);
         String breakpointId = getBreakpointId(breakpointTag);
 
-        //TODO Conditions
-
         if (breakpointId != null) {
             if (toggleOn) {
-                backlogDebugger.addBreakpoint(breakpointId);
+                XExpression condition = xBreakpoint.getConditionExpression();
+                if (condition == null) {
+                    backlogDebugger.addBreakpoint(breakpointId);
+                } else {
+                    backlogDebugger.addConditionalBreakpoint(breakpointId, condition.getLanguage().getID(), condition.getExpression());
+                }
             } else {
                 backlogDebugger.removeBreakpoint(breakpointId);
             }
