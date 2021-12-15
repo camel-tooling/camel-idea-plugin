@@ -62,6 +62,7 @@ import javax.management.JMX;
 import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.xml.parsers.DocumentBuilder;
@@ -207,14 +208,26 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 ClassLoader current = Thread.currentThread().getContextClassLoader();
                 try {
                     Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+
+                    /*
+                       TODO - if we can provide output media type and result type:
+
+                            mbeanServer.invoke(on, "setMessageHeaderOnBreakpoint", new Object[] { "bar", "CamelDatasonnetOutputMediaType", "application/json" },
+                new String[] { "java.lang.String", "java.lang.String", "java.lang.Object" });
+
+                            mbeanServer.invoke(on, "removeMessageHeaderOnBreakpoint", new Object[] { "bar", "CamelDatasonnetOutputMediaType" },
+                new String[] { "java.lang.String", "java.lang.String" });
+
+                     */
+                    //TODO We need to be able to set type of the response
                     result = serverConnection.invoke(this.debuggerMBeanObjectName, "evaluateExpressionAtBreakpoint",
-                            new Object[]{breakpointId, language, script},
-                            new String[]{stringClassName, stringClassName, stringClassName});
+                            new Object[]{breakpointId, language, script, Object.class.getName()},
+                            new String[]{stringClassName, stringClassName, stringClassName, stringClassName});
                 } finally {
                     Thread.currentThread().setContextClassLoader(current);
                 }
                 return result;
-            } catch (MBeanException mbe) {
+            } catch (MBeanException | ReflectionException mbe) {
                 return new Exception("Expression Evaluator is only available for Camel version 3.14 and later", mbe);
             } catch (Exception e) {
                 return new Exception(e);
@@ -443,16 +456,14 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 if (suspendedBreakpointIDs != null && !suspendedBreakpointIDs.isEmpty()) {
                     //Fire notifications here, we need to display the exchange, stack etc
                     for (String id : suspendedBreakpointIDs) {
-                        String suspendedMessage = backlogDebugger.dumpTracedMessagesAsXml(id);
-
-                        String properties;
-                        try {
-                            properties = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "dumpExchangePropertiesAsXml", new Object[]{id}, new String[]{String.class.getName()});
+                        String xml = backlogDebugger.dumpTracedMessagesAsXml(id);
+                        try { //If the Camel version is 3.14 or later, the exchange properties are included
+                            xml = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "dumpTracedMessagesAsXml", new Object[]{id, true},
+                                    new String[]{"java.lang.String", "boolean"});
                         } catch (Exception e) {
-                            properties = null;
                             //TODO log this or display warning
                         }
-                        final String suspendedExchangeProperties = properties;
+                        final String suspendedMessage = xml;
 
                         ApplicationManager.getApplication().runReadAction(() -> {
                             for (MessageReceivedListener listener : messageReceivedListeners) {
@@ -463,7 +474,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                                         breakpoint = getCamelBreakpointById(id);
                                         breakpoints.put(id, breakpoint);
                                     }
-                                    listener.onNewMessageReceived(new CamelMessageInfo(suspendedMessage, suspendedExchangeProperties, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag()));
+                                    listener.onNewMessageReceived(new CamelMessageInfo(suspendedMessage, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag()));
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }

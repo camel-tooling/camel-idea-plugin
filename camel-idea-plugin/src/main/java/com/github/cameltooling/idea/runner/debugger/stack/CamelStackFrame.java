@@ -18,7 +18,7 @@ package com.github.cameltooling.idea.runner.debugger.stack;
 
 
 import com.github.cameltooling.idea.runner.debugger.CamelDebuggerSession;
-import com.github.cameltooling.idea.runner.debugger.CamelSimpleEvaluator;
+import com.github.cameltooling.idea.runner.debugger.CamelExpressionEvaluator;
 import com.intellij.debugger.engine.JavaStackFrame;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
@@ -71,7 +71,7 @@ public class CamelStackFrame extends XStackFrame {
     @Nullable
     @Override
     public XDebuggerEvaluator getEvaluator() {
-        return new CamelSimpleEvaluator(session);
+        return new CamelExpressionEvaluator(session);
     }
 
     @Override

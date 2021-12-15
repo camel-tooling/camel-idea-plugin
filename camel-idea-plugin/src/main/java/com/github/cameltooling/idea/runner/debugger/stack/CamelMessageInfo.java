@@ -42,15 +42,13 @@ public class CamelMessageInfo {
     private String exchangeId;
 
     private final String messageInfoAsXML;
-    private final String propertiesAsXML;
     private final DocumentBuilder documentBuilder;
 
     private XSourcePosition position;
     private XmlTag tag;
 
-    public CamelMessageInfo(@NotNull String messageInfoAsXML, @Nullable String propertiesAsXML, XSourcePosition position, XmlTag tag) throws Exception {
+    public CamelMessageInfo(@NotNull String messageInfoAsXML, XSourcePosition position, XmlTag tag) throws Exception {
         this.messageInfoAsXML = messageInfoAsXML;
-        this.propertiesAsXML = propertiesAsXML;
         this.documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         this.position = position;
         this.tag = tag;
@@ -91,27 +89,24 @@ public class CamelMessageInfo {
         Element bodyElement = (Element) (document.getElementsByTagName("body").item(0));
         body = new Value(bodyElement.getAttribute("type"), bodyElement.getTextContent());
 
-        if (propertiesAsXML != null) {
+        NodeList propertiesNodeList = document.getElementsByTagName("exchangeProperty");
+        if (propertiesNodeList.getLength() > 0) {
             properties = new HashMap<>();
-            targetStream = new ByteArrayInputStream(propertiesAsXML.getBytes());
-            document = documentBuilder.parse(targetStream);
-            //parse properties
-            NodeList propertiesNodeList = document.getElementsByTagName("property");
-            for (int i = 0; i < propertiesNodeList.getLength(); i++) {
-                Element nextProp = (Element) propertiesNodeList.item(i);
-                String key = nextProp.getAttribute("name");
-                String type = nextProp.getAttribute("type");
-                String value = nextProp.getTextContent();
+        }
+        for (int i = 0; i < propertiesNodeList.getLength(); i++) {
+            Element nextProp = (Element) propertiesNodeList.item(i);
+            String key = nextProp.getAttribute("name");
+            String type = nextProp.getAttribute("type");
+            String value = nextProp.getTextContent();
 
-                if (StringUtils.isEmpty(type)) {
-                    type = "java.lang.String";
-                }
-                if (StringUtils.isEmpty(value)) {
-                    value = "";
-                }
-                Value newValue = new Value(type, value);
-                properties.put(key, new Value[]{newValue});
+            if (StringUtils.isEmpty(type)) {
+                type = "java.lang.String";
             }
+            if (StringUtils.isEmpty(value)) {
+                value = "";
+            }
+            Value newValue = new Value(type, value);
+            properties.put(key, new Value[]{newValue});
         }
     }
 
