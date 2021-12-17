@@ -139,6 +139,15 @@
     <programRunner id="Debug" implementation="com.github.cameltooling.idea.runner.debugger.CamelSpringBootDebuggerRunner" order="first"/>
     <configurationType implementation="com.github.cameltooling.idea.runner.CamelSpringBootRunConfigurationType"/>
 
+<!--    <xdebugger.debuggerSupport id="CamelDebuggerSupport" implementation="com.github.cameltooling.idea.runner.debugger.CamelDebuggerSupport" order="first"/>-->
   </extensions>
 
+  <actions>
+    <action id="EvaluateCamelExpression" text="Evaluate Camel Expression..." description="Evaluate Camel Expression" class="com.github.cameltooling.idea.runner.debugger.evaluator.CamelEvaluateAction" icon="com.github.cameltooling.idea.runner.debugger.CamelDebuggerIcons.EVALUATE_EXPRESSION_ICON">
+      <add-to-group group-id="DebugMainMenu" relative-to-action="EvaluateExpression" anchor="after"/>
+      <add-to-group group-id="EditorPopupMenuDebug" relative-to-action="EvaluateExpression" anchor="after"/>
+      <add-to-group group-id="XDebugger.ToolWindow.TopToolbar" relative-to-action="EvaluateExpression" anchor="after"/>
+      <add-to-group group-id="XDebugger.ValueGroup" relative-to-action="EvaluateExpression" anchor="after"/>
+    </action>
+  </actions>
 </idea-plugin>

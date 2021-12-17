@@ -109,8 +109,8 @@ public class CamelSpringBootRunnerConfPanel implements PanelWithAnchor, MavenSet
     protected void setData(final MavenRunnerParameters data) {
         String goals = "clean package "
                 + (skipTestsCheckBox.isSelected() ? "-DskipTests " : "")
-                + "-Dspring-boot.run.fork=false spring-boot:run";
-
+                + "-Dspring-boot.run.fork=false spring-boot:run "
+                + "-Dspring-boot.run.arguments=--camel.springboot.debugging=true"; //TODO Should it be camel.main.debugging ?
 
         data.setWorkingDirPath(workingDirComponent.getComponent().getText());
 

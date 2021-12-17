@@ -35,8 +35,8 @@ import java.util.Map;
 
 public class CamelMessageInfo {
 
-    private Map<String, Value[]> headers = null;
-    private Map<String, Value[]> properties = null;
+    private Map<String, Value[]> headers;
+    private Map<String, Value[]> properties;
 
     private Value body;
     private String exchangeId;

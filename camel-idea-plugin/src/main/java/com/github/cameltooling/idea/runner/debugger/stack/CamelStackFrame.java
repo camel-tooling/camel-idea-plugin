@@ -18,7 +18,7 @@ package com.github.cameltooling.idea.runner.debugger.stack;
 
 
 import com.github.cameltooling.idea.runner.debugger.CamelDebuggerSession;
-import com.github.cameltooling.idea.runner.debugger.CamelExpressionEvaluator;
+import com.github.cameltooling.idea.runner.debugger.evaluator.CamelExpressionEvaluator;
 import com.intellij.debugger.engine.JavaStackFrame;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
@@ -89,7 +89,7 @@ public class CamelStackFrame extends XStackFrame {
         if (this.camelMessageInfo.getProperties() != null) {
             children.add("Exchange Properties", new MapOfObjectFieldDefinitionValue(this.session, this.camelMessageInfo.getProperties(), AllIcons.Debugger.Value));
         } else {
-            children.add("WARNING: ", JavaStackFrame.createMessageNode("Exchange Properties in Debugger are only available in Camel version 3.14 or later", AllIcons.Nodes.WarningMark));
+            children.add("WARNING: ", JavaStackFrame.createMessageNode("Exchange Properties in Debugger are only available in Camel version 3.15 or later", AllIcons.Nodes.WarningMark));
         }
 /*
         if (exceptionThrown != null) {

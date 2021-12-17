@@ -17,6 +17,7 @@
 package com.github.cameltooling.idea.runner.debugger;
 
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointHandler;
+import com.github.cameltooling.idea.runner.debugger.evaluator.CamelExpressionEvaluator;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelStackFrame;
 import com.intellij.execution.process.ProcessHandler;
@@ -25,6 +26,7 @@ import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.breakpoints.XBreakpointHandler;
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
+import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.frame.XSuspendContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -56,6 +58,12 @@ public class CamelDebugProcess extends XDebugProcess {
     @Override
     public @NotNull XDebuggerEditorsProvider getEditorsProvider() {
         return camelDebuggerEditorsProvider;
+    }
+
+    @Nullable
+    @Override
+    public XDebuggerEvaluator getEvaluator() {
+        return new CamelExpressionEvaluator(camelDebuggerSession);
     }
 
 /*
@@ -181,5 +189,37 @@ public class CamelDebugProcess extends XDebugProcess {
     return editorProperties;
   }
 */
+/*    private void initializeClassLoader() {
+        List<URL> urls = new ArrayList<>();
 
+        Project project = getSession().getProject();
+
+        Module[] modules = ModuleManager.getInstance(project).getModules();
+        for (Module module :  modules) {
+            final OrderEnumerator enumerator = ModuleRootManager.getInstance(module)
+                    .orderEntries().recursively().librariesOnly().exportedOnly();
+        }
+    }
+
+
+    private static String getMuleHome(@NotNull Module module) {
+        if (!DumbService.isDumb(module.getProject())) {
+            final OrderEnumerator enumerator = ModuleRootManager.getInstance(module)
+                    .orderEntries().recursively().librariesOnly().exportedOnly();
+            final String[] home = new String[1];
+            enumerator.forEachLibrary(library -> {
+                if (MuleLibraryKind.MULE_LIBRARY_KIND.equals(((LibraryEx) library).getKind()) &&
+                        library.getFiles(OrderRootType.CLASSES) != null &&
+                        library.getFiles(OrderRootType.CLASSES).length > 0) {
+                    home[0] = getMuleHome(library.getFiles(OrderRootType.CLASSES)[0]);
+                    return false;
+                } else {
+                    return true;
+                }
+            });
+
+            return home[0];
+        }
+        return null;
+    }*/
 }

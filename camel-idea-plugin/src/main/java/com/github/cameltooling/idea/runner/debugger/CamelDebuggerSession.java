@@ -16,16 +16,17 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
+import com.github.cameltooling.idea.language.DatasonnetLanguage;
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpoint;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
+import com.github.cameltooling.idea.runner.debugger.util.ClasspathUtils;
+import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.execution.process.OSProcessUtil;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessInfo;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.util.Computable;
@@ -196,10 +197,10 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         this.xDebugSession = xDebugSession;
     }
 
-    public Object evaluateExpression(String script, String language) {
+    public Object evaluateExpression(String script, String language, @Nullable Map<String, String> params) {
         if (isConnected()) {
             XSourcePosition xSourcePosition = xDebugSession.getCurrentPosition();
-            XmlTag breakpointTag = getXmlTagAt(project, xSourcePosition);
+            XmlTag breakpointTag = IdeaUtils.getService().getXmlTagAt(project, xSourcePosition);
             String breakpointId = getBreakpointId(breakpointTag);
 
             String stringClassName = String.class.getName();
@@ -207,28 +208,38 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 Object result;
                 ClassLoader current = Thread.currentThread().getContextClassLoader();
                 try {
-                    Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+                    ClassLoader projectClassLoader = ClasspathUtils.getProjectClassLoader(project, this.getClass().getClassLoader());
+                    Thread.currentThread().setContextClassLoader(projectClassLoader);
 
-                    /*
-                       TODO - if we can provide output media type and result type:
+                    String bodyMediaType = params != null && params.containsKey("bodyMediaType") ? params.get("bodyMediaType") : "application/json";
+                    String outputMediaType = params != null && params.containsKey("outputMediaType") ? params.get("outputMediaType") : "application/json";
+                    String resultType = params != null && params.containsKey("resultType") ? params.get("resultType") : String.class.getName();
 
-                            mbeanServer.invoke(on, "setMessageHeaderOnBreakpoint", new Object[] { "bar", "CamelDatasonnetOutputMediaType", "application/json" },
-                new String[] { "java.lang.String", "java.lang.String", "java.lang.Object" });
+                    if (DatasonnetLanguage.LANGUAGE_ID.equals(language)) {
+                        serverConnection.invoke(this.debuggerMBeanObjectName, "setMessageHeaderOnBreakpoint", new Object[] { breakpointId, "CamelDatasonnetBodyMediaType", bodyMediaType },
+                                new String[] { "java.lang.String", "java.lang.String", "java.lang.Object" });
 
-                            mbeanServer.invoke(on, "removeMessageHeaderOnBreakpoint", new Object[] { "bar", "CamelDatasonnetOutputMediaType" },
-                new String[] { "java.lang.String", "java.lang.String" });
+                        serverConnection.invoke(this.debuggerMBeanObjectName, "setMessageHeaderOnBreakpoint", new Object[] { breakpointId, "CamelDatasonnetOutputMediaType", outputMediaType },
+                                new String[] { "java.lang.String", "java.lang.String", "java.lang.Object" });
+                    }
 
-                     */
-                    //TODO We need to be able to set type of the response
                     result = serverConnection.invoke(this.debuggerMBeanObjectName, "evaluateExpressionAtBreakpoint",
-                            new Object[]{breakpointId, language, script, Object.class.getName()},
+                            new Object[]{breakpointId, language, script, resultType},
                             new String[]{stringClassName, stringClassName, stringClassName, stringClassName});
+
+                    if (DatasonnetLanguage.LANGUAGE_ID.equals(language)) {
+                        serverConnection.invoke(this.debuggerMBeanObjectName, "removeMessageHeaderOnBreakpoint", new Object[] { breakpointId, "CamelDatasonnetBodyMediaType" },
+                                new String[] { "java.lang.String", "java.lang.String" });
+
+                        serverConnection.invoke(this.debuggerMBeanObjectName, "removeMessageHeaderOnBreakpoint", new Object[] { breakpointId, "CamelDatasonnetOutputMediaType" },
+                                new String[] { "java.lang.String", "java.lang.String" });
+                    }
                 } finally {
                     Thread.currentThread().setContextClassLoader(current);
                 }
                 return result;
             } catch (MBeanException | ReflectionException mbe) {
-                return new Exception("Expression Evaluator is only available for Camel version 3.14 and later", mbe);
+                return new Exception("Expression Evaluator is only available for Camel version 3.15 and later", mbe);
             } catch (Exception e) {
                 return new Exception(e);
             }
@@ -245,7 +256,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     private void nextStep(XSourcePosition position, boolean isOver) {
-        XmlTag breakpointTag = getXmlTagAt(project, position);
+        XmlTag breakpointTag = IdeaUtils.getService().getXmlTagAt(project, position);
         String breakpointId = getBreakpointId(breakpointTag);
         breakpoints.put(breakpointId, new CamelBreakpoint(breakpointId, breakpointTag, position));
 
@@ -287,7 +298,8 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         ClassLoader current = Thread.currentThread().getContextClassLoader();
 
         try {
-            Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+            ClassLoader projectClassLoader = ClasspathUtils.getProjectClassLoader(project, this.getClass().getClassLoader());
+            Thread.currentThread().setContextClassLoader(projectClassLoader);
 
             this.serverConnection = getLocalJavaProcessMBeanServer(javaProcessPID);
             if (serverConnection == null) {
@@ -392,7 +404,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
         XSourcePosition position = xBreakpoint.getSourcePosition();
 
-        XmlTag breakpointTag = getXmlTagAt(project, position);
+        XmlTag breakpointTag = IdeaUtils.getService().getXmlTagAt(project, position);
         String breakpointId = getBreakpointId(breakpointTag);
 
         if (breakpointId != null) {
@@ -497,14 +509,15 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     //================= Private XML helper methods
-    @Nullable
+    /*@Nullable
     private XmlTag getXmlTagAt(Project project, XSourcePosition sourcePosition) {
         final VirtualFile file = sourcePosition.getFile();
         final XmlFile xmlFile = (XmlFile) PsiManager.getInstance(project).findFile(file);
         final XmlTag rootTag = xmlFile.getRootTag();
         return findXmlTag(sourcePosition, rootTag);
     }
-
+*/
+/*
     private XmlTag findXmlTag(XSourcePosition sourcePosition, XmlTag rootTag) {
         final XmlTag[] subTags = rootTag.getSubTags();
         for (int i = 0; i < subTags.length; i++) {
@@ -523,12 +536,13 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             return null;
         }
     }
-
+*/
+/*
     private int getLineNumber(VirtualFile file, XmlTag tag) {
         final int offset = tag.getTextOffset();
         final Document document = FileDocumentManager.getInstance().getDocument(file);
         return offset < document.getTextLength() ? document.getLineNumber(offset) : -1;
-    }
+    }*/
 
     @Nullable
     private CamelBreakpoint getCamelBreakpointById(String id) throws Exception {
@@ -548,7 +562,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         final Collection<VirtualFile> files = FileTypeIndex.getFiles(XmlFileType.INSTANCE, GlobalSearchScope.projectScope(project));
         for (VirtualFile file : files) {
             ProjectFileIndex index = ProjectFileIndex.SERVICE.getInstance(project);
-            if (index.getSourceRootForFile(file) != null || index.getClassRootForFile(file) != null) {//Only in source root or classpath
+            if (index.getSourceRootForFile(file) != null || index.getClassRootForFile(file) != null) { //Only in source root or classpath
                 final XmlFile xmlFile = (XmlFile) PsiManager.getInstance(project).findFile(file);
                 final org.jaxen.XPath nextXpath = support.createXPath(xmlFile, camelXPath);
                 final Object result = nextXpath.evaluate(xmlFile.getRootTag());
