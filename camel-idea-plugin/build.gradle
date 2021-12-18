@@ -36,6 +36,10 @@ patchPluginXml {
     untilBuild = "213.*"
 }
 
+runPluginVerifier {
+    ideVersions = [ "2021.2", "2021.3" ]
+}
+
 // publishPlugin {
 //    def authenticationToken = "$System.env.INTELLIJ_TOKEN"
 //    token authenticationToken
