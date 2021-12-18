@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.runner;
+package com.github.cameltooling.idea.runner.beforerun;
 
+import com.github.cameltooling.idea.runner.CamelRunConfiguration;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.execution.BeforeRunTaskProvider;
 import com.intellij.execution.configurations.RunConfiguration;
@@ -28,17 +29,14 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Key;
 import com.intellij.util.concurrency.Semaphore;
 import com.intellij.util.execution.ParametersListUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.idea.maven.execution.MavenRunner;
 import org.jetbrains.idea.maven.execution.MavenRunnerParameters;
 import org.jetbrains.idea.maven.model.MavenExplicitProfiles;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
-import org.jetbrains.idea.maven.tasks.MavenBeforeRunTask;
 import org.jetbrains.idea.maven.tasks.TasksBundle;
 
 import javax.swing.Icon;
@@ -46,32 +44,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class CamelSpringBootBeforeRunTasksProvider extends BeforeRunTaskProvider<CamelSpringBootBeforeRunTask> {
-    public static final Key<MavenBeforeRunTask> ID = Key.create("Camel.BeforeRunTask");
-
-    @Override
-    public Key getId() {
-        return ID;
-    }
-
+public abstract class AbstractCamelBeforeRunTasksProvider extends BeforeRunTaskProvider<CamelBeforeRunTask> {
     @Override
     public Icon getIcon() {
         return CamelPreferenceService.getService().getCamelIcon();
     }
 
     @Override
-    public Icon getTaskIcon(CamelSpringBootBeforeRunTask task) {
+    public Icon getTaskIcon(CamelBeforeRunTask task) {
         return CamelPreferenceService.getService().getCamelIcon();
-    }
-
-    @Override
-    public String getName() {
-        return "Camel SpringBoot Builder";
-    }
-
-    @Override
-    public String getDescription(CamelSpringBootBeforeRunTask beforeRunTask) {
-        return "Build the Camel SpringBoot Application";
     }
 
     @Override
@@ -79,32 +60,24 @@ public class CamelSpringBootBeforeRunTasksProvider extends BeforeRunTaskProvider
         return false;
     }
 
-    @Nullable
     @Override
-    public CamelSpringBootBeforeRunTask createTask(RunConfiguration runConfiguration) {
-        final CamelSpringBootBeforeRunTask camelSpringBootBeforeRunTask = new CamelSpringBootBeforeRunTask(getId());
-        camelSpringBootBeforeRunTask.setEnabled(runConfiguration instanceof CamelSpringBootRunConfiguration);
-        return camelSpringBootBeforeRunTask;
+    public boolean configureTask(RunConfiguration runConfiguration, CamelBeforeRunTask beforeRunTask) {
+        return runConfiguration instanceof CamelRunConfiguration;
     }
 
     @Override
-    public boolean configureTask(RunConfiguration runConfiguration, CamelSpringBootBeforeRunTask beforeRunTask) {
-        return runConfiguration instanceof CamelSpringBootRunConfiguration;
+    public boolean canExecuteTask(RunConfiguration runConfiguration, CamelBeforeRunTask beforeRunTask) {
+        return runConfiguration instanceof CamelRunConfiguration;
     }
 
     @Override
-    public boolean canExecuteTask(RunConfiguration runConfiguration, CamelSpringBootBeforeRunTask beforeRunTask) {
-        return runConfiguration instanceof CamelSpringBootRunConfiguration;
-    }
-
-    @Override
-    public boolean executeTask(DataContext dataContext, RunConfiguration runConfiguration, ExecutionEnvironment executionEnvironment, CamelSpringBootBeforeRunTask camelSpringBootBeforeRunTask) {
+    public boolean executeTask(DataContext dataContext, RunConfiguration runConfiguration, ExecutionEnvironment executionEnvironment, CamelBeforeRunTask camelBeforeRunTask) {
         final Semaphore targetDone = new Semaphore();
         final List<Boolean> results = new ArrayList<>();
 
         final Project project = executionEnvironment.getProject();
 
-        CamelSpringBootRunConfiguration camelConfiguration = (CamelSpringBootRunConfiguration) runConfiguration;
+        CamelRunConfiguration camelConfiguration = (CamelRunConfiguration) runConfiguration;
 
         Module[] modules = camelConfiguration.getModules();
 

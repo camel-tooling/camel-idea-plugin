@@ -16,28 +16,32 @@
  */
 package com.github.cameltooling.idea.runner.ui;
 
-import com.github.cameltooling.idea.runner.CamelSpringBootRunConfiguration;
+import com.github.cameltooling.idea.runner.CamelRunConfiguration;
+import com.github.cameltooling.idea.runner.CamelSpringBootRunConfigurationType;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-public class CamelSpringBootSettingsEditor extends SettingsEditor<CamelSpringBootRunConfiguration> {
-    private CamelSpringBootRunnerConfPanel configurationPanel;
+public class CamelSettingsEditor extends SettingsEditor<CamelRunConfiguration> {
+    private AbstractCamelRunnerConfPanel configurationPanel;
 
-    public CamelSpringBootSettingsEditor(CamelSpringBootRunConfiguration runnerConfiguration) {
-        this.configurationPanel = new CamelSpringBootRunnerConfPanel(runnerConfiguration.getProject());
+    public CamelSettingsEditor(CamelRunConfiguration runnerConfiguration) {
+        this.configurationPanel = CamelSpringBootRunConfigurationType.ID.equals(runnerConfiguration.getType().getId()) ?
+                new CamelSpringBootRunnerConfPanel(runnerConfiguration.getProject()) :
+                new CamelRunnerConfPanel(runnerConfiguration.getProject());
+
         super.resetFrom(runnerConfiguration);
     }
 
     @Override
-    protected void resetEditorFrom(@NotNull CamelSpringBootRunConfiguration runnerConfiguration) {
+    protected void resetEditorFrom(@NotNull CamelRunConfiguration runnerConfiguration) {
         configurationPanel.getData(runnerConfiguration.getRunnerParameters());
     }
 
     @Override
-    protected void applyEditorTo(@NotNull CamelSpringBootRunConfiguration runnerConfiguration) throws ConfigurationException {
+    protected void applyEditorTo(@NotNull CamelRunConfiguration runnerConfiguration) throws ConfigurationException {
         configurationPanel.setData(runnerConfiguration.getRunnerParameters());
     }
 

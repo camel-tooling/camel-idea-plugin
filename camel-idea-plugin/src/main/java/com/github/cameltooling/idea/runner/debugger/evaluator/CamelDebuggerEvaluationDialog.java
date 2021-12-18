@@ -34,7 +34,6 @@ import com.intellij.xdebugger.impl.breakpoints.XExpressionImpl;
 import com.intellij.xdebugger.impl.evaluate.CodeFragmentInputComponent;
 import com.intellij.xdebugger.impl.evaluate.DebuggerEvaluationStatisticsCollector;
 import com.intellij.xdebugger.impl.evaluate.EvaluationInputComponent;
-import com.intellij.xdebugger.impl.evaluate.ExpressionInputComponent;
 import com.intellij.xdebugger.impl.settings.XDebuggerSettingManagerImpl;
 import com.intellij.xdebugger.impl.ui.XDebugSessionTab;
 import com.intellij.xdebugger.impl.ui.XDebuggerEditorBase;
@@ -299,9 +298,13 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
     private EvaluationInputComponent createInputComponent(EvaluationMode mode, XExpression text) {
         text = XExpressionImpl.changeMode(text, mode);
         if (mode == EvaluationMode.EXPRESSION) {
-            ExpressionInputComponent component =
-                    new ExpressionInputComponent(myProject, myEditorsProvider, "evaluateExpression", mySourcePosition, text, myDisposable,
+            CamelExpressionInputComponent component =
+                    new CamelExpressionInputComponent(myProject, myEditorsProvider, "evaluateExpression", mySourcePosition, text, myDisposable,
                             mySession != null);
+            component.setResultTypeCombo(myCamelExpressionParameters.getResultTypeCombo());
+            component.setBodyMediaTypeCombo(myCamelExpressionParameters.getBodyMediaTypeCombo());
+            component.setOutputMediaTypeCombo(myCamelExpressionParameters.getOutputMediaTypeCombo());
+
             component.getInputEditor().setExpandHandler(() -> mySwitchModeAction.actionPerformed(null));
             component.getInputEditor().getLanguageChooser().addPropertyChangeListener(new PropertyChangeListener() {
                 @Override

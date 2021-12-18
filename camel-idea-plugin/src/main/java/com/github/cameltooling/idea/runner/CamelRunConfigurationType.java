@@ -58,8 +58,8 @@ import javax.swing.Icon;
 import java.util.Collections;
 import java.util.List;
 
-public class CamelSpringBootRunConfigurationType implements ConfigurationType {
-    public static final String ID = "CamelSpringBootRunConfiguration";
+public class CamelRunConfigurationType implements ConfigurationType {
+    public static final String ID = "CamelRunConfiguration";
 
     private static final Key<Boolean> IS_DELEGATE_BUILD = new Key<>("IS_DELEGATE_BUILD");
     private static final int MAX_NAME_LENGTH = 40;
@@ -69,23 +69,23 @@ public class CamelSpringBootRunConfigurationType implements ConfigurationType {
     /**
      * reflection
      */
-    CamelSpringBootRunConfigurationType() {
-        myFactory = new CamelSpringBootRunConfigurationType.CamelSpringBootRunConfigurationFactory(this);
+    CamelRunConfigurationType() {
+        myFactory = new CamelRunConfigurationType.CamelRunConfigurationFactory(this);
     }
 
-    public static CamelSpringBootRunConfigurationType getInstance() {
-        return ConfigurationTypeUtil.findConfigurationType(CamelSpringBootRunConfigurationType.class);
+    public static CamelRunConfigurationType getInstance() {
+        return ConfigurationTypeUtil.findConfigurationType(CamelRunConfigurationType.class);
     }
 
     @NotNull
     @Override
     public String getDisplayName() {
-        return "Camel SpringBoot Application";
+        return "Camel Application";
     }
 
     @Override
     public String getConfigurationTypeDescription() {
-        return CamelSpringBootRunConfigurationType.ID;
+        return CamelRunConfigurationType.ID;
     }
 
     @Override
@@ -229,7 +229,7 @@ public class CamelSpringBootRunConfigurationType implements ConfigurationType {
                                                                                       @NotNull Project project,
                                                                                       @NotNull String name,
                                                                                       boolean isDelegate) {
-        CamelSpringBootRunConfigurationType type = ConfigurationTypeUtil.findConfigurationType(CamelSpringBootRunConfigurationType.class);
+        CamelRunConfigurationType type = ConfigurationTypeUtil.findConfigurationType(CamelRunConfigurationType.class);
 
         RunnerAndConfigurationSettings settings = RunManager.getInstance(project).createConfiguration(name, type.myFactory);
         CamelRunConfiguration runConfiguration = (CamelRunConfiguration) settings.getConfiguration();
@@ -246,26 +246,26 @@ public class CamelSpringBootRunConfigurationType implements ConfigurationType {
         return settings;
     }
 
-    public static class CamelSpringBootRunConfigurationFactory extends ConfigurationFactory {
-        public CamelSpringBootRunConfigurationFactory(ConfigurationType type) {
+    public static class CamelRunConfigurationFactory extends ConfigurationFactory {
+        public CamelRunConfigurationFactory(ConfigurationType type) {
             super(type);
         }
 
         @NotNull
         @Override
         public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-            return new CamelRunConfiguration(project, this, "Camel SpringBoot Application");
+            return new CamelRunConfiguration(project, this, "Camel Application");
         }
 
         @NotNull
         @Override
         public RunConfiguration createTemplateConfiguration(@NotNull Project project, @NotNull RunManager runManager) {
-            return new CamelRunConfiguration(project, this, "Camel SpringBoot Application");
+            return new CamelRunConfiguration(project, this, "Camel Application");
         }
 
         @Override
         public @NotNull String getId() {
-            return CamelSpringBootRunConfigurationType.ID;
+            return CamelRunConfigurationType.ID;
         }
 
         @NotNull

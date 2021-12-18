@@ -20,8 +20,9 @@ package com.github.cameltooling.idea.runner.ui;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
-public class CamelSpringBootRunnerConfPanel extends AbstractCamelRunnerConfPanel {
-    public CamelSpringBootRunnerConfPanel(@NotNull Project project) {
+public class CamelRunnerConfPanel extends AbstractCamelRunnerConfPanel {
+
+    public CamelRunnerConfPanel(@NotNull Project project) {
         super(project);
     }
 
@@ -29,7 +30,7 @@ public class CamelSpringBootRunnerConfPanel extends AbstractCamelRunnerConfPanel
     protected String getGoals() {
         return "clean package "
                 + (skipTestsCheckBox.isSelected() ? "-DskipTests " : "")
-                + "-Dspring-boot.run.fork=false spring-boot:run "
-                + "-Dspring-boot.run.arguments=--camel.springboot.debugging=true"; //TODO Should it be camel.main.debugging ?
+                + "camel:run "
+                + "-Dcamel.main.debugging=true";
     }
 }

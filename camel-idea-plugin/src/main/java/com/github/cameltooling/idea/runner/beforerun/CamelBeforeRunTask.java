@@ -14,22 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.runner.ui;
+package com.github.cameltooling.idea.runner.beforerun;
 
-
-import com.intellij.openapi.project.Project;
+import com.intellij.execution.BeforeRunTask;
+import com.intellij.openapi.util.Key;
 import org.jetbrains.annotations.NotNull;
 
-public class CamelSpringBootRunnerConfPanel extends AbstractCamelRunnerConfPanel {
-    public CamelSpringBootRunnerConfPanel(@NotNull Project project) {
-        super(project);
-    }
-
-    @Override
-    protected String getGoals() {
-        return "clean package "
-                + (skipTestsCheckBox.isSelected() ? "-DskipTests " : "")
-                + "-Dspring-boot.run.fork=false spring-boot:run "
-                + "-Dspring-boot.run.arguments=--camel.springboot.debugging=true"; //TODO Should it be camel.main.debugging ?
+public class CamelBeforeRunTask extends BeforeRunTask<CamelBeforeRunTask> {
+    protected CamelBeforeRunTask(@NotNull Key providerId) {
+        super(providerId);
     }
 }

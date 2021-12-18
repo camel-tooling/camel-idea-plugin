@@ -136,9 +136,13 @@
 
     <!-- Debugger -->
     <xdebugger.breakpointType implementation="com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointType"/>
-    <programRunner id="Debug" implementation="com.github.cameltooling.idea.runner.debugger.CamelSpringBootDebuggerRunner" order="first"/>
+    <programRunner id="Debug" implementation="com.github.cameltooling.idea.runner.debugger.CamelDebuggerRunner" order="first"/>
     <configurationType implementation="com.github.cameltooling.idea.runner.CamelSpringBootRunConfigurationType"/>
-
+    <configurationType implementation="com.github.cameltooling.idea.runner.CamelRunConfigurationType"/>
+<!--
+    <stepsBeforeRunProvider implementation="com.github.cameltooling.idea.runner.beforerun.CamelBeforeRunTasksProvider"/>
+    <stepsBeforeRunProvider implementation="com.github.cameltooling.idea.runner.beforerun.CamelSpringBootBeforeRunTasksProvider"/>
+-->
 <!--    <xdebugger.debuggerSupport id="CamelDebuggerSupport" implementation="com.github.cameltooling.idea.runner.debugger.CamelDebuggerSupport" order="first"/>-->
   </extensions>
 

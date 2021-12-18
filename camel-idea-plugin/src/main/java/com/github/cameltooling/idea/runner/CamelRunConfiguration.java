@@ -16,7 +16,7 @@
  */
 package com.github.cameltooling.idea.runner;
 
-import com.github.cameltooling.idea.runner.ui.CamelSpringBootSettingsEditor;
+import com.github.cameltooling.idea.runner.ui.CamelSettingsEditor;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.options.SettingsEditor;
@@ -24,14 +24,14 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.execution.MavenRunConfiguration;
 
-public class CamelSpringBootRunConfiguration extends MavenRunConfiguration {
-    protected CamelSpringBootRunConfiguration(Project project, ConfigurationFactory factory, String name) {
+public class CamelRunConfiguration extends MavenRunConfiguration {
+    protected CamelRunConfiguration(Project project, ConfigurationFactory factory, String name) {
         super(project, factory, name);
     }
 
     @NotNull
     @Override
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-        return new CamelSpringBootSettingsEditor(this);
+        return new CamelSettingsEditor(this);
     }
 }

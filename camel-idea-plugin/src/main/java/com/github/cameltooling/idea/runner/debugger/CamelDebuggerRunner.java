@@ -16,7 +16,7 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
-import com.github.cameltooling.idea.runner.CamelSpringBootRunConfiguration;
+import com.github.cameltooling.idea.runner.CamelRunConfiguration;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.debugger.DefaultDebugEnvironment;
@@ -48,15 +48,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class CamelSpringBootDebuggerRunner extends GenericDebuggerRunner {
+public class CamelDebuggerRunner extends GenericDebuggerRunner {
 
     public static final String JAVA_CONTEXT = "Java";
     public static final String CAMEL_CONTEXT = "Camel";
 
     @NonNls
-    private static final String ID = "CamelSpringBootDebuggerRunner";
+    private static final String ID = "CamelDebuggerRunner";
 
-    public CamelSpringBootDebuggerRunner() {
+    public CamelDebuggerRunner() {
         super();
     }
 
@@ -68,7 +68,7 @@ public class CamelSpringBootDebuggerRunner extends GenericDebuggerRunner {
 
     @Override
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-        return executorId.equals(DefaultDebugExecutor.EXECUTOR_ID) && profile instanceof CamelSpringBootRunConfiguration;
+        return executorId.equals(DefaultDebugExecutor.EXECUTOR_ID) && profile instanceof CamelRunConfiguration;
     }
 
     @Override

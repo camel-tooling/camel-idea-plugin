@@ -24,8 +24,6 @@ import com.intellij.xdebugger.breakpoints.XLineBreakpoint;
 import org.jetbrains.annotations.NotNull;
 
 public class CamelBreakpointHandler extends XBreakpointHandler<XLineBreakpoint<XBreakpointProperties>> {
-    //final static Logger logger = Logger.getInstance(CamelBreakpointHandler.class);
-
     private final CamelDebuggerSession debuggerSession;
 
     public CamelBreakpointHandler(Project project, CamelDebuggerSession debuggerSession) {
