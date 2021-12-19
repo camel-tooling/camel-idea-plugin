@@ -73,43 +73,43 @@ public class ContextAwareDebugProcess extends XDebugProcess {
     @Override
     @NotNull
     public XDebuggerEditorsProvider getEditorsProvider() {
-        return getDebugProcesses().getEditorsProvider();
+        return getCurrentDebugProcess().getEditorsProvider();
     }
 
     @Override
     public void sessionInitialized() {
-        getDebugProcesses().sessionInitialized();
+        getCurrentDebugProcess().sessionInitialized();
     }
 
     @Override
     public void startPausing() {
-        getDefaultDebugProcesses().startPausing();
+        getDefaultDebugProcess().startPausing();
     }
 
     @Override
     public void startStepOver(@Nullable XSuspendContext context) {
-        getDebugProcesses().startStepOver(context);
+        getCurrentDebugProcess().startStepOver(context);
     }
 
     @Override
     public void startForceStepInto(@Nullable XSuspendContext context) {
-        getDebugProcesses().startForceStepInto(context);
+        getCurrentDebugProcess().startForceStepInto(context);
     }
 
     @Override
     public void startStepInto(@Nullable XSuspendContext context) {
-        getDebugProcesses().startStepInto(context);
+        getCurrentDebugProcess().startStepInto(context);
     }
 
     @Override
     public void startStepOut(@Nullable XSuspendContext context) {
-        getDebugProcesses().startStepOut(context);
+        getCurrentDebugProcess().startStepOut(context);
     }
 
     @Override
     @Nullable
     public XSmartStepIntoHandler<?> getSmartStepIntoHandler() {
-        return getDebugProcesses().getSmartStepIntoHandler();
+        return getCurrentDebugProcess().getSmartStepIntoHandler();
     }
 
     @Override
@@ -127,27 +127,27 @@ public class ContextAwareDebugProcess extends XDebugProcess {
         for (XDebugProcess value : values) {
             value.stopAsync();
         }
-        return getDefaultDebugProcesses().stopAsync();
+        return getDefaultDebugProcess().stopAsync();
     }
 
     @Override
     public void resume(@Nullable XSuspendContext context) {
-        getDebugProcesses().resume(context);
+        getCurrentDebugProcess().resume(context);
     }
 
     @Override
     public void runToPosition(@NotNull XSourcePosition xSourcePosition, @Nullable XSuspendContext context) {
-        getDebugProcesses().runToPosition(xSourcePosition, context);
+        getCurrentDebugProcess().runToPosition(xSourcePosition, context);
     }
 
     @Override
     public boolean checkCanPerformCommands() {
-        return getDebugProcesses().checkCanPerformCommands();
+        return getCurrentDebugProcess().checkCanPerformCommands();
     }
 
     @Override
     public boolean checkCanInitBreakpoints() {
-        return getDebugProcesses().checkCanInitBreakpoints();
+        return getCurrentDebugProcess().checkCanInitBreakpoints();
     }
 
     @Override
@@ -159,13 +159,13 @@ public class ContextAwareDebugProcess extends XDebugProcess {
     @Override
     @NotNull
     public ExecutionConsole createConsole() {
-        return getDefaultDebugProcesses().createConsole();
+        return getDefaultDebugProcess().createConsole();
     }
 
     @Override
     @Nullable
     public XValueMarkerProvider<?, ?> createValueMarkerProvider() {
-        return getDefaultDebugProcesses().createValueMarkerProvider();
+        return getDefaultDebugProcess().createValueMarkerProvider();
     }
 
     @Override
@@ -178,39 +178,42 @@ public class ContextAwareDebugProcess extends XDebugProcess {
 
     @Override
     public String getCurrentStateMessage() {
-        return getDebugProcesses().getCurrentStateMessage();
+        return getCurrentDebugProcess().getCurrentStateMessage();
     }
 
     @Override
     @Nullable
     public HyperlinkListener getCurrentStateHyperlinkListener() {
-        return getDebugProcesses().getCurrentStateHyperlinkListener();
+        return getCurrentDebugProcess().getCurrentStateHyperlinkListener();
     }
 
     @Override
     @NotNull
     public XDebugTabLayouter createTabLayouter() {
-        return getDefaultDebugProcesses().createTabLayouter();
+        return getDefaultDebugProcess().createTabLayouter();
     }
 
     @Override
     public boolean isValuesCustomSorted() {
-        return getDebugProcesses().isValuesCustomSorted();
+        return getCurrentDebugProcess().isValuesCustomSorted();
     }
 
     @Override
     @Nullable
     public XDebuggerEvaluator getEvaluator() {
-        return getDebugProcesses().getEvaluator();
+        return getCurrentDebugProcess().getEvaluator();
     }
 
-    public XDebugProcess getDefaultDebugProcesses() {
+    public XDebugProcess getDefaultDebugProcess() {
         return debugProcesses.get(defaultContext);
     }
 
-    public XDebugProcess getDebugProcesses() {
+    public XDebugProcess getCurrentDebugProcess() {
         final XDebugProcess debugProcess = currentContext != null ? debugProcesses.get(currentContext) : null;
-        return debugProcess != null ? debugProcess : getDefaultDebugProcesses();
+        return debugProcess != null ? debugProcess : getDefaultDebugProcess();
     }
 
+    public Map<String, XDebugProcess> getAllDebugProcesses() {
+        return debugProcesses;
+    }
 }

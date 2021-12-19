@@ -28,9 +28,9 @@ public class CamelSettingsEditor extends SettingsEditor<CamelRunConfiguration> {
     private AbstractCamelRunnerConfPanel configurationPanel;
 
     public CamelSettingsEditor(CamelRunConfiguration runnerConfiguration) {
-        this.configurationPanel = CamelSpringBootRunConfigurationType.ID.equals(runnerConfiguration.getType().getId()) ?
-                new CamelSpringBootRunnerConfPanel(runnerConfiguration.getProject()) :
-                new CamelRunnerConfPanel(runnerConfiguration.getProject());
+        this.configurationPanel = CamelSpringBootRunConfigurationType.ID.equals(runnerConfiguration.getType().getId())
+                ? new CamelSpringBootRunnerConfPanel(runnerConfiguration.getProject())
+                : new CamelRunnerConfPanel(runnerConfiguration.getProject());
 
         super.resetFrom(runnerConfiguration);
     }

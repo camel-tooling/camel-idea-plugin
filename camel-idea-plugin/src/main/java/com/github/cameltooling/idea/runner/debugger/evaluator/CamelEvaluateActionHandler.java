@@ -16,6 +16,7 @@
  */
 package com.github.cameltooling.idea.runner.debugger.evaluator;
 
+import com.github.cameltooling.idea.language.DatasonnetLanguage;
 import com.github.cameltooling.idea.language.SimpleLanguage;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
@@ -89,6 +90,10 @@ public class CamelEvaluateActionHandler extends XDebuggerActionHandler {
                                    XStackFrame stackFrame,
                                    XDebuggerEvaluator evaluator,
                                    @Nullable XExpression expression) {
+        //Hack to register languages before deserialization of stored expressions
+        SimpleLanguage.getInstance();
+        DatasonnetLanguage.getInstance();
+
         if (expression == null) {
             expression = XExpressionImpl.EMPTY_EXPRESSION;
         }

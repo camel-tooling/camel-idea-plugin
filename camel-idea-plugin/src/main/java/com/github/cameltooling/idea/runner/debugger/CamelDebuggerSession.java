@@ -197,6 +197,10 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         this.xDebugSession = xDebugSession;
     }
 
+    public XDebugSession getXDebugSession() {
+        return xDebugSession;
+    }
+
     public Object evaluateExpression(String script, String language, @Nullable Map<String, String> params) {
         if (isConnected()) {
             XSourcePosition xSourcePosition = xDebugSession.getCurrentPosition();
@@ -216,11 +220,11 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                     String resultType = params != null && params.containsKey("resultType") ? params.get("resultType") : String.class.getName();
 
                     if (DatasonnetLanguage.LANGUAGE_ID.equals(language)) {
-                        serverConnection.invoke(this.debuggerMBeanObjectName, "setMessageHeaderOnBreakpoint", new Object[] { breakpointId, "CamelDatasonnetBodyMediaType", bodyMediaType },
-                                new String[] { "java.lang.String", "java.lang.String", "java.lang.Object" });
+                        serverConnection.invoke(this.debuggerMBeanObjectName, "setMessageHeaderOnBreakpoint", new Object[]{breakpointId, "CamelDatasonnetBodyMediaType", bodyMediaType},
+                                new String[]{"java.lang.String", "java.lang.String", "java.lang.Object"});
 
-                        serverConnection.invoke(this.debuggerMBeanObjectName, "setMessageHeaderOnBreakpoint", new Object[] { breakpointId, "CamelDatasonnetOutputMediaType", outputMediaType },
-                                new String[] { "java.lang.String", "java.lang.String", "java.lang.Object" });
+                        serverConnection.invoke(this.debuggerMBeanObjectName, "setMessageHeaderOnBreakpoint", new Object[]{breakpointId, "CamelDatasonnetOutputMediaType", outputMediaType},
+                                new String[]{"java.lang.String", "java.lang.String", "java.lang.Object"});
                     }
 
                     result = serverConnection.invoke(this.debuggerMBeanObjectName, "evaluateExpressionAtBreakpoint",
@@ -228,11 +232,11 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                             new String[]{stringClassName, stringClassName, stringClassName, stringClassName});
 
                     if (DatasonnetLanguage.LANGUAGE_ID.equals(language)) {
-                        serverConnection.invoke(this.debuggerMBeanObjectName, "removeMessageHeaderOnBreakpoint", new Object[] { breakpointId, "CamelDatasonnetBodyMediaType" },
-                                new String[] { "java.lang.String", "java.lang.String" });
+                        serverConnection.invoke(this.debuggerMBeanObjectName, "removeMessageHeaderOnBreakpoint", new Object[]{breakpointId, "CamelDatasonnetBodyMediaType"},
+                                new String[]{"java.lang.String", "java.lang.String"});
 
-                        serverConnection.invoke(this.debuggerMBeanObjectName, "removeMessageHeaderOnBreakpoint", new Object[] { breakpointId, "CamelDatasonnetOutputMediaType" },
-                                new String[] { "java.lang.String", "java.lang.String" });
+                        serverConnection.invoke(this.debuggerMBeanObjectName, "removeMessageHeaderOnBreakpoint", new Object[]{breakpointId, "CamelDatasonnetOutputMediaType"},
+                                new String[]{"java.lang.String", "java.lang.String"});
                     }
                 } finally {
                     Thread.currentThread().setContextClassLoader(current);

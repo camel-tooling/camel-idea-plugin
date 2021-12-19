@@ -64,8 +64,8 @@ public class CamelExpressionEvaluator extends XDebuggerEvaluator {
             customInfoMap = Arrays.stream(customInfo.split(","))
                     .map(s -> s.split("="))
                     .collect(Collectors.toMap(
-                            a -> a[0].trim(),  //key
-                            a -> a[1].trim()   //value
+                        a -> a[0].trim(),  //key
+                        a -> a[1].trim()   //value
                     ));
         }
 

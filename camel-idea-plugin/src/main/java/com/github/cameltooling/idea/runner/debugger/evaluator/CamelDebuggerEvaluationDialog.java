@@ -1,4 +1,19 @@
-// Copyright 2000-2021 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.github.cameltooling.idea.runner.debugger.evaluator;
 
 import com.github.cameltooling.idea.language.DatasonnetLanguage;
@@ -69,7 +84,7 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
 
     //can not use new SHIFT_DOWN_MASK etc because in this case ActionEvent modifiers do not match
     private static final int ADD_WATCH_MODIFIERS = (SystemInfo.isMac ? InputEvent.META_MASK : InputEvent.CTRL_MASK) | InputEvent.SHIFT_MASK;
-    static KeyStroke ADD_WATCH_KEYSTROKE = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, ADD_WATCH_MODIFIERS);
+    static KeyStroke addWatchKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, ADD_WATCH_MODIFIERS);
 
     private final JPanel myMainPanel;
     private final JPanel myResultPanel;
@@ -86,29 +101,29 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
     private CamelExpressionParameters myCamelExpressionParameters;
 
     public CamelDebuggerEvaluationDialog(@NotNull XDebugSession session,
-                                     @NotNull XDebuggerEditorsProvider editorsProvider,
-                                     @NotNull XExpression text,
-                                     @Nullable XSourcePosition sourcePosition,
-                                     boolean isCodeFragmentEvaluationSupported) {
+                                         @NotNull XDebuggerEditorsProvider editorsProvider,
+                                         @NotNull XExpression text,
+                                         @Nullable XSourcePosition sourcePosition,
+                                         boolean isCodeFragmentEvaluationSupported) {
         this(session, null, session.getProject(), editorsProvider, text, sourcePosition, isCodeFragmentEvaluationSupported);
     }
 
     public CamelDebuggerEvaluationDialog(@NotNull XDebuggerEvaluator evaluator,
-                                     @NotNull Project project,
-                                     @NotNull XDebuggerEditorsProvider editorsProvider,
-                                     @NotNull XExpression text,
-                                     @Nullable XSourcePosition sourcePosition,
-                                     boolean isCodeFragmentEvaluationSupported) {
+                                         @NotNull Project project,
+                                         @NotNull XDebuggerEditorsProvider editorsProvider,
+                                         @NotNull XExpression text,
+                                         @Nullable XSourcePosition sourcePosition,
+                                         boolean isCodeFragmentEvaluationSupported) {
         this(null, () -> evaluator, project, editorsProvider, text, sourcePosition, isCodeFragmentEvaluationSupported);
     }
 
     private CamelDebuggerEvaluationDialog(@Nullable XDebugSession session,
-                                      @Nullable Supplier<? extends XDebuggerEvaluator> evaluatorSupplier,
-                                      @NotNull Project project,
-                                      @NotNull XDebuggerEditorsProvider editorsProvider,
-                                      @NotNull XExpression text,
-                                      @Nullable XSourcePosition sourcePosition,
-                                      boolean isCodeFragmentEvaluationSupported) {
+                                          @Nullable Supplier<? extends XDebuggerEvaluator> evaluatorSupplier,
+                                          @NotNull Project project,
+                                          @NotNull XDebuggerEditorsProvider editorsProvider,
+                                          @NotNull XExpression text,
+                                          @Nullable XSourcePosition sourcePosition,
+                                          boolean isCodeFragmentEvaluationSupported) {
         super(project, true);
         mySession = session;
         myEvaluatorSupplier = evaluatorSupplier;
@@ -121,7 +136,7 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
         setCancelButtonText(XDebuggerBundle.message("xdebugger.evaluate.dialog.close"));
 
         myTreePanel = new XDebuggerTreePanel(project, editorsProvider, myDisposable, sourcePosition, XDebuggerActions.EVALUATE_DIALOG_TREE_POPUP_GROUP,
-                session == null ? null : ((XDebugSessionImpl)session).getValueMarkers());
+                session == null ? null : ((XDebugSessionImpl) session).getValueMarkers());
         myResultPanel = JBUI.Panels.simplePanel()
                 .addToTop(new JLabel(XDebuggerBundle.message("xdebugger.evaluate.label.result")))
                 .addToCenter(myTreePanel.getMainPanel());
@@ -137,7 +152,7 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
                         new CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.ALT_DOWN_MASK)),
                         getRootPane(), myDisposable);
 
-        new AnAction(){
+        new AnAction() {
             @Override
             public void update(@NotNull AnActionEvent e) {
                 Project project = e.getProject();
@@ -149,7 +164,7 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
                 //doOKAction(); // do not evaluate on add to watches
                 addToWatches();
             }
-        }.registerCustomShortcutSet(new CustomShortcutSet(ADD_WATCH_KEYSTROKE), getRootPane(), myDisposable);
+        }.registerCustomShortcutSet(new CustomShortcutSet(addWatchKeyStroke), getRootPane(), myDisposable);
 
         new AnAction() {
             @Override
@@ -176,22 +191,24 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
         }
         init();
 
-        if (mySession != null) mySession.addSessionListener(new XDebugSessionListener() {
-            @Override
-            public void sessionStopped() {
-                ApplicationManager.getApplication().invokeLater(() -> close(CANCEL_EXIT_CODE));
-            }
+        if (mySession != null) {
+            mySession.addSessionListener(new XDebugSessionListener() {
+                @Override
+                public void sessionStopped() {
+                    ApplicationManager.getApplication().invokeLater(() -> close(CANCEL_EXIT_CODE));
+                }
 
-            @Override
-            public void stackFrameChanged() {
-                updateSourcePosition();
-            }
+                @Override
+                public void stackFrameChanged() {
+                    updateSourcePosition();
+                }
 
-            @Override
-            public void sessionPaused() {
-                updateSourcePosition();
-            }
-        }, myDisposable);
+                @Override
+                public void sessionPaused() {
+                    updateSourcePosition();
+                }
+            }, myDisposable);
+        }
     }
 
 
@@ -202,7 +219,9 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
     }
 
     private void updateSourcePosition() {
-        if (mySession == null) return;
+        if (mySession == null) {
+            return;
+        }
         ApplicationManager.getApplication().invokeLater(() -> {
             mySourcePosition = mySession.getCurrentPosition();
             getInputEditor().setSourcePosition(mySourcePosition);
@@ -219,7 +238,7 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
     @Override
     protected void createDefaultActions() {
         super.createDefaultActions();
-        myOKAction = new OkAction(){
+        myOKAction = new OkAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 super.actionPerformed(e);
@@ -234,7 +253,7 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
         if (myMode == EvaluationMode.EXPRESSION) {
             XExpression expression = getInputEditor().getExpression();
             if (!XDebuggerUtilImpl.isEmptyExpression(expression)) {
-                XDebugSessionTab tab = ((XDebugSessionImpl)mySession).getSessionTab();
+                XDebugSessionTab tab = ((XDebugSessionImpl) mySession).getSessionTab();
                 if (tab != null) {
                     tab.getWatchesView().addWatchExpression(expression, -1, true);
                     getInputEditor().requestFocusInEditor();
@@ -272,7 +291,9 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
     }
 
     private void switchToMode(EvaluationMode mode, XExpression text) {
-        if (myMode == mode) return;
+        if (myMode == mode) {
+            return;
+        }
 
         myMode = mode;
 
@@ -323,8 +344,7 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
                 }
             });
             return component;
-        }
-        else {
+        } else {
             CodeFragmentInputComponent component = new CodeFragmentInputComponent(myProject, myEditorsProvider, mySourcePosition, text,
                     getDimensionServiceKey() + ".splitter", myDisposable);
             component.getInputEditor().addCollapseButton(() -> mySwitchModeAction.actionPerformed(null));
@@ -397,14 +417,15 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
         XDebuggerEvaluator evaluator = mySession == null ? myEvaluatorSupplier.get() : mySession.getDebugProcess().getEvaluator();
         if (evaluator == null) {
             evaluationCallback.errorOccurred(XDebuggerBundle.message("xdebugger.evaluate.stack.frame.has.not.evaluator"));
-        }
-        else {
+        } else {
             evaluator.evaluate(expression, evaluationCallback, null);
         }
     }
 
     public void evaluationDone() {
-        if (mySession != null) mySession.rebuildViews();
+        if (mySession != null) {
+            mySession.rebuildViews();
+        }
     }
 
     @Override

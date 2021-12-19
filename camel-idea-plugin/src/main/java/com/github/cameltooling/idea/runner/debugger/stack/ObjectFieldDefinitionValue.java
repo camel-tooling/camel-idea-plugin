@@ -55,7 +55,7 @@ public class ObjectFieldDefinitionValue extends XValue {
     @Override
     public void computePresentation(@NotNull XValueNode node, @NotNull XValuePlace xValuePlace) {
 //        final List<ObjectFieldDefinition> innerElements = fieldDefinition.getInnerElements();
-        node.setPresentation(icon, fieldDefinition.getType(), "'" + String.valueOf(fieldDefinition.getValue()) + "'", false);
+        node.setPresentation(icon, fieldDefinition.getType(), String.valueOf(fieldDefinition.getValue()), false);
     }
 
     @Override
