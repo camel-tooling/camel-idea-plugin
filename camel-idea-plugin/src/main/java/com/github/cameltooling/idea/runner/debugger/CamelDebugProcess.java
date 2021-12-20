@@ -31,6 +31,9 @@ import com.intellij.xdebugger.frame.XSuspendContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CamelDebugProcess extends XDebugProcess {
     private CamelDebuggerEditorsProvider camelDebuggerEditorsProvider;
 
@@ -66,19 +69,6 @@ public class CamelDebugProcess extends XDebugProcess {
         return new CamelExpressionEvaluator(camelDebuggerSession);
     }
 
-/*
-  public CamelDebugProcess(@NotNull final XDebugSession session, @NotNull final MuleDebuggerSession muleDebuggerSession, ExecutionResult result, Map<String, String> modulesToAppsMap) {
-    super(session);
-    this.muleDebuggerSession = muleDebuggerSession;
-    this.muleBreakpointHandler = new MuleBreakpointHandler(muleDebuggerSession, modulesToAppsMap);
-    this.editorProperties = new MuleDebuggerEditorProperties();
-    this.processHandler = result.getProcessHandler();
-    this.executionConsole = result.getExecutionConsole();
-    init();
-  }
-*/
-
-
     public void init() {
         camelDebuggerSession.setXDebugSession(this.getSession());
         camelDebuggerSession.connect(javaProcessHandler);
@@ -86,25 +76,14 @@ public class CamelDebugProcess extends XDebugProcess {
         camelDebuggerSession.addMessageReceivedListener(new MessageReceivedListener() {
             @Override
             public void onNewMessageReceived(CamelMessageInfo camelMessageInfo) {
-                if (!camelMessageInfo.getXSourcePosition().equals(getSession().getCurrentPosition())) {
-                    getSession().positionReached(new CamelSuspendContext(new CamelStackFrame(getSession().getProject(), camelDebuggerSession, camelMessageInfo)));
+                //List frames
+                List<CamelStackFrame> stackFrames = new ArrayList<CamelStackFrame>();
+                for (CamelMessageInfo info : camelMessageInfo.getStack()) {
+                    CamelStackFrame nextFrame = new CamelStackFrame(getSession().getProject(), camelDebuggerSession, info);
+                    stackFrames.add(nextFrame);
                 }
+                getSession().positionReached(new CamelSuspendContext(stackFrames.toArray(new CamelStackFrame[stackFrames.size()])));
             }
-
-//      @Override
-//      public void onExceptionThrown(MuleMessageInfo muleMessageInfo, ObjectFieldDefinition exceptionThrown) {
-//
-//        getSession().positionReached(new MuleSuspendContext(new CamelStackFrame(getSession().getProject(), muleDebuggerSession, muleMessageInfo, exceptionThrown)));
-//      }
-//
-//      @Override
-//      public void onExecutionStopped(MuleMessageInfo muleMessageInfo, List<ObjectFieldDefinition> frame, String path, String internalPosition) {
-//        System.out.println("MuleDebugProcess.onExecutionStopped : " + path + "#" + internalPosition);
-//        final WeaveIntegrationStackFrame weaveStackFrame = new WeaveIntegrationStackFrame(getSession().getProject(), muleDebuggerSession, path, internalPosition, frame);
-//        final CamelStackFrame muleStackFrame = new CamelStackFrame(getSession().getProject(), muleDebuggerSession, muleMessageInfo, null);
-//        getSession().positionReached(new MuleSuspendContext(weaveStackFrame, muleStackFrame));
-//      }
-
         });
     }
 
@@ -143,45 +122,17 @@ public class CamelDebugProcess extends XDebugProcess {
         return ArrayUtil.append(breakpointHandlers, camelBreakpointHandler);
     }
 
-
 /*
-  @NotNull
-  @Override
-  public ExecutionConsole createConsole() {
-    return executionConsole != null ? executionConsole : super.createConsole();
-  }
-*/
-
-/*
-  @Override
-  protected ProcessHandler doGetProcessHandler() {
-    return processHandler;
-  }
-
-
-
-
-
   @Override
   public void registerAdditionalActions(@NotNull DefaultActionGroup leftToolbar, @NotNull DefaultActionGroup topToolbar, @NotNull DefaultActionGroup settings) {
     super.registerAdditionalActions(leftToolbar, topToolbar, settings);
-    leftToolbar.add(new ExceptionBreakpointSwitchAction(muleDebuggerSession));
-  }
-
-  @Nullable
-  @Override
-  public XDebuggerEvaluator getEvaluator() {
-    return new MuleScriptEvaluator(muleDebuggerSession);
+    leftToolbar.add(new Action(...));
   }
 
   @Override
   public void runToPosition(@NotNull XSourcePosition xSourcePosition, @Nullable XSuspendContext context) {
-    //muleDebuggerSession.runToCursor(getMulePath(getXmlTagAt(getModule().getProject(), xSourcePosition)));
-    muleDebuggerSession.runToCursor(getMulePath(getXmlTagAt(getProject(), xSourcePosition)));
+
   }
-
-
-
 
   @NotNull
   @Override
@@ -189,37 +140,5 @@ public class CamelDebugProcess extends XDebugProcess {
     return editorProperties;
   }
 */
-/*    private void initializeClassLoader() {
-        List<URL> urls = new ArrayList<>();
 
-        Project project = getSession().getProject();
-
-        Module[] modules = ModuleManager.getInstance(project).getModules();
-        for (Module module :  modules) {
-            final OrderEnumerator enumerator = ModuleRootManager.getInstance(module)
-                    .orderEntries().recursively().librariesOnly().exportedOnly();
-        }
-    }
-
-
-    private static String getMuleHome(@NotNull Module module) {
-        if (!DumbService.isDumb(module.getProject())) {
-            final OrderEnumerator enumerator = ModuleRootManager.getInstance(module)
-                    .orderEntries().recursively().librariesOnly().exportedOnly();
-            final String[] home = new String[1];
-            enumerator.forEachLibrary(library -> {
-                if (MuleLibraryKind.MULE_LIBRARY_KIND.equals(((LibraryEx) library).getKind()) &&
-                        library.getFiles(OrderRootType.CLASSES) != null &&
-                        library.getFiles(OrderRootType.CLASSES).length > 0) {
-                    home[0] = getMuleHome(library.getFiles(OrderRootType.CLASSES)[0]);
-                    return false;
-                } else {
-                    return true;
-                }
-            });
-
-            return home[0];
-        }
-        return null;
-    }*/
 }

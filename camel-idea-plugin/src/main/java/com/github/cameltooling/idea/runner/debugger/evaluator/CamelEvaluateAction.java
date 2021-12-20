@@ -45,15 +45,15 @@ public class CamelEvaluateAction extends XDebuggerActionBase {
         super.update(event);
         if (event.getPresentation().isEnabledAndVisible()) {
             //If we are debugging Camel project, this should be enabled - but how do we know it's a Camel project?
-
             //Find Maven project and see if there's a Camel dependency
             MavenProject mavenProject = MavenActionUtil.getMavenProject(event.getDataContext());
             if (mavenProject != null) {
                 List<MavenArtifact> dependencies = mavenProject.getDependencies();
 
-                boolean isCamelSpringBoot = dependencies.stream().anyMatch(mavenArtifact -> mavenArtifact.getArtifactId().equals("camel-spring-boot"));
-                event.getPresentation().setEnabled(isCamelSpringBoot);
-                event.getPresentation().setVisible(isCamelSpringBoot);
+                boolean isCamel = dependencies.stream().anyMatch(mavenArtifact -> mavenArtifact.getArtifactId().equals("camel-main") || mavenArtifact.getArtifactId().equals("camel-spring-boot"));
+
+                event.getPresentation().setEnabled(isCamel);
+                event.getPresentation().setVisible(isCamel);
             }
         }
     }

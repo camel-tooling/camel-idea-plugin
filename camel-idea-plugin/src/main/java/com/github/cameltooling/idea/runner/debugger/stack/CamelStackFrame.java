@@ -40,7 +40,7 @@ public class CamelStackFrame extends XStackFrame {
     private CamelDebuggerSession session;
     private CamelMessageInfo camelMessageInfo;
     //    @Nullable
-//    private ObjectFieldDefinition exceptionThrown;
+    //    private ObjectFieldDefinition exceptionThrown;
 
     public CamelStackFrame(@NotNull Project project, @NotNull CamelDebuggerSession session, CamelMessageInfo camelMessageInfo) {
         this.session = session;
@@ -64,8 +64,15 @@ public class CamelStackFrame extends XStackFrame {
 
     public void customizePresentation(@NotNull ColoredTextContainer component) {
         XmlTag tag = this.camelMessageInfo.getTag();
-        final String mp = StringUtils.isNotBlank(tag.getNamespacePrefix()) ? tag.getNamespacePrefix() + ":" + tag.getLocalName() : tag.getLocalName();
-        component.append(mp, SimpleTextAttributes.REGULAR_ATTRIBUTES);
+
+        StringBuilder nameBuilder = new StringBuilder();
+        if (StringUtils.isNotBlank(tag.getNamespacePrefix())) {
+            nameBuilder.append(tag.getNamespacePrefix()).append(":");
+        }
+        nameBuilder.append(tag.getLocalName()).append(" ");
+        nameBuilder.append("[id=").append(this.camelMessageInfo.getBreakpointID()).append("]");
+
+        component.append(nameBuilder.toString(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
     }
 
     @Nullable

@@ -75,6 +75,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +104,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private org.w3c.dom.Document routesDOMDocument;
 
     private String temporaryBreakpointId;
+    private String currentBreakpointId;
 
     private XDebugSession xDebugSession;
 
@@ -472,30 +474,34 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 if (suspendedBreakpointIDs != null && !suspendedBreakpointIDs.isEmpty()) {
                     //Fire notifications here, we need to display the exchange, stack etc
                     for (String id : suspendedBreakpointIDs) {
-                        String xml = backlogDebugger.dumpTracedMessagesAsXml(id);
-                        try { //If the Camel version is 3.14 or later, the exchange properties are included
-                            xml = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "dumpTracedMessagesAsXml", new Object[]{id, true},
-                                    new String[]{"java.lang.String", "boolean"});
-                        } catch (Exception e) {
-                            //TODO log this or display warning
-                        }
-                        final String suspendedMessage = xml;
-
-                        ApplicationManager.getApplication().runReadAction(() -> {
-                            for (MessageReceivedListener listener : messageReceivedListeners) {
-                                try {
-                                    CamelBreakpoint breakpoint = breakpoints.get(id);
-                                    if (breakpoint == null) {
-                                        //find tag and source position based on ID
-                                        breakpoint = getCamelBreakpointById(id);
-                                        breakpoints.put(id, breakpoint);
-                                    }
-                                    listener.onNewMessageReceived(new CamelMessageInfo(suspendedMessage, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag()));
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
+                        if (!id.equals(currentBreakpointId)) {
+                            currentBreakpointId = id;
+                            String xml = backlogDebugger.dumpTracedMessagesAsXml(id);
+                            try { //If the Camel version is 3.14 or later, the exchange properties are included
+                                xml = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "dumpTracedMessagesAsXml", new Object[]{id, true},
+                                        new String[]{"java.lang.String", "boolean"});
+                            } catch (Exception e) {
+                                //TODO log this or display warning
                             }
-                        });
+                            final String suspendedMessage = xml;
+
+                            ApplicationManager.getApplication().runReadAction(() -> {
+                                for (MessageReceivedListener listener : messageReceivedListeners) {
+                                    try {
+                                        CamelBreakpoint breakpoint = breakpoints.get(id);
+                                        if (breakpoint == null) {
+                                            //find tag and source position based on ID
+                                            breakpoint = getCamelBreakpointById(id);
+                                            breakpoints.put(id, breakpoint);
+                                        }
+                                        List stack = getStack(id, suspendedMessage);
+                                        listener.onNewMessageReceived(new CamelMessageInfo(suspendedMessage, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag(), id, stack));
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                        }
                     }
                 }
 
@@ -511,42 +517,6 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             }
         }
     }
-
-    //================= Private XML helper methods
-    /*@Nullable
-    private XmlTag getXmlTagAt(Project project, XSourcePosition sourcePosition) {
-        final VirtualFile file = sourcePosition.getFile();
-        final XmlFile xmlFile = (XmlFile) PsiManager.getInstance(project).findFile(file);
-        final XmlTag rootTag = xmlFile.getRootTag();
-        return findXmlTag(sourcePosition, rootTag);
-    }
-*/
-/*
-    private XmlTag findXmlTag(XSourcePosition sourcePosition, XmlTag rootTag) {
-        final XmlTag[] subTags = rootTag.getSubTags();
-        for (int i = 0; i < subTags.length; i++) {
-            XmlTag subTag = subTags[i];
-            final int subTagLineNumber = getLineNumber(sourcePosition.getFile(), subTag);
-            if (subTagLineNumber == sourcePosition.getLine()) {
-                return subTag;
-            } else if (subTagLineNumber > sourcePosition.getLine() && i > 0 && subTags[i - 1].getSubTags().length > 0) {
-                return findXmlTag(sourcePosition, subTags[i - 1]);
-            }
-        }
-        if (subTags.length > 0) {
-            final XmlTag lastElement = subTags[subTags.length - 1];
-            return findXmlTag(sourcePosition, lastElement);
-        } else {
-            return null;
-        }
-    }
-*/
-/*
-    private int getLineNumber(VirtualFile file, XmlTag tag) {
-        final int offset = tag.getTextOffset();
-        final Document document = FileDocumentManager.getInstance().getDocument(file);
-        return offset < document.getTextLength() ? document.getLineNumber(offset) : -1;
-    }*/
 
     @Nullable
     private CamelBreakpoint getCamelBreakpointById(String id) throws Exception {
@@ -695,5 +665,39 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         }
         Element tag = (Element) tagNode;
         return tag.getAttribute("id");
+    }
+
+    private List<CamelMessageInfo> getStack(String breakpointId, String suspendedMessage) throws Exception {
+        List<CamelMessageInfo> stack = new ArrayList<>();
+
+        String messageHistory = (String)serverConnection.invoke(this.debuggerMBeanObjectName, "evaluateExpressionAtBreakpoint",
+                new Object[]{breakpointId, "simple", "${messageHistory(false)}", "java.lang.String"},
+                new String[]{"java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String"});
+
+        if (!StringUtils.isEmpty(messageHistory)) {
+            String separator = System.getProperty("line.separator");
+            String[] lines = messageHistory.split(separator);
+            for (int i = 4; i < lines.length; i++) {
+                String[] cols = lines[i].split("\\] \\[");
+                String processorId = cols[1].trim();
+                CamelBreakpoint breakpoint = breakpoints.get(processorId);
+                if (breakpoint == null) {
+                    //find tag and source position based on ID
+                    breakpoint = getCamelBreakpointById(processorId);
+                    breakpoints.put(processorId, breakpoint);
+                }
+                CamelMessageInfo info = new CamelMessageInfo(suspendedMessage, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag(), processorId, null);
+/*
+                Map<String, String> stackEntry = new HashMap<>();
+                stackEntry.put("routeId", cols[0].substring(1).trim());
+                stackEntry.put("processorId", cols[1].trim());
+                stackEntry.put("processor", cols[2].trim());
+*/
+                stack.add(info);
+            }
+        }
+
+        Collections.reverse(stack);
+        return stack;
     }
 }

@@ -30,6 +30,6 @@ public class CamelSpringBootRunnerConfPanel extends AbstractCamelRunnerConfPanel
         return "clean package "
                 + (skipTestsCheckBox.isSelected() ? "-DskipTests " : "")
                 + "-Dspring-boot.run.fork=false spring-boot:run "
-                + "-Dspring-boot.run.arguments=--camel.springboot.debugging=true"; //TODO Should it be camel.main.debugging ?
+                + "-Dspring-boot.run.arguments=\"--camel.springboot.debugging=true --camel.springboot.messagehistory=true\""; //TODO Should it be camel.main.debugging ?
     }
 }

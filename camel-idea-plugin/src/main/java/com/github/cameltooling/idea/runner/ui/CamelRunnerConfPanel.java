@@ -31,6 +31,7 @@ public class CamelRunnerConfPanel extends AbstractCamelRunnerConfPanel {
         return "clean package "
                 + (skipTestsCheckBox.isSelected() ? "-DskipTests " : "")
                 + "camel:run "
-                + "-Dcamel.main.debugging=true";
+                + "-Dcamel.main.debugging=true "
+                + "-Dcamel.main.messagehistory=true";
     }
 }

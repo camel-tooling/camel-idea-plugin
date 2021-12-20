@@ -31,6 +31,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CamelMessageInfo {
@@ -47,11 +48,17 @@ public class CamelMessageInfo {
     private XSourcePosition position;
     private XmlTag tag;
 
-    public CamelMessageInfo(@NotNull String messageInfoAsXML, XSourcePosition position, XmlTag tag) throws Exception {
+    private String breakpointID;
+
+    private List<CamelMessageInfo> stack;
+
+    public CamelMessageInfo(@NotNull String messageInfoAsXML, XSourcePosition position, XmlTag tag, String breakpointID, List<CamelMessageInfo> stack) throws Exception {
         this.messageInfoAsXML = messageInfoAsXML;
         this.documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         this.position = position;
         this.tag = tag;
+        this.breakpointID = breakpointID;
+        this.stack = stack;
         init();
     }
 
@@ -133,6 +140,14 @@ public class CamelMessageInfo {
 
     public XmlTag getTag() {
         return tag;
+    }
+
+    public String getBreakpointID() {
+        return breakpointID;
+    }
+
+    public List<CamelMessageInfo> getStack() {
+        return stack;
     }
 
     public static class Value {
