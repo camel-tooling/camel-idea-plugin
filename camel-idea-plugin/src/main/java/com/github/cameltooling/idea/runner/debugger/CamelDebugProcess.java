@@ -24,6 +24,7 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.util.ArrayUtil;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugSession;
+import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.breakpoints.XBreakpointHandler;
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
 import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
@@ -76,13 +77,16 @@ public class CamelDebugProcess extends XDebugProcess {
         camelDebuggerSession.addMessageReceivedListener(new MessageReceivedListener() {
             @Override
             public void onNewMessageReceived(CamelMessageInfo camelMessageInfo) {
-                //List frames
-                List<CamelStackFrame> stackFrames = new ArrayList<CamelStackFrame>();
-                for (CamelMessageInfo info : camelMessageInfo.getStack()) {
-                    CamelStackFrame nextFrame = new CamelStackFrame(getSession().getProject(), camelDebuggerSession, info);
-                    stackFrames.add(nextFrame);
+                XSourcePosition topPosition = getSession().getTopFramePosition();
+                if (topPosition == null || !topPosition.equals(camelMessageInfo.getXSourcePosition())) {
+                    //List frames
+                    List<CamelStackFrame> stackFrames = new ArrayList<CamelStackFrame>();
+                    for (CamelMessageInfo info : camelMessageInfo.getStack()) {
+                        CamelStackFrame nextFrame = new CamelStackFrame(getSession().getProject(), camelDebuggerSession, info);
+                        stackFrames.add(nextFrame);
+                    }
+                    getSession().positionReached(new CamelSuspendContext(stackFrames.toArray(new CamelStackFrame[stackFrames.size()])));
                 }
-                getSession().positionReached(new CamelSuspendContext(stackFrames.toArray(new CamelStackFrame[stackFrames.size()])));
             }
         });
     }
@@ -109,8 +113,7 @@ public class CamelDebugProcess extends XDebugProcess {
 
     @Override
     public void startStepOut(@Nullable XSuspendContext context) {
-        //TODO need stepOut logic
-        camelDebuggerSession.stepInto(context.getActiveExecutionStack().getTopFrame().getSourcePosition());
+        camelDebuggerSession.stepOut(context.getActiveExecutionStack().getTopFrame().getSourcePosition());
     }
 
     //TODO runToPosition

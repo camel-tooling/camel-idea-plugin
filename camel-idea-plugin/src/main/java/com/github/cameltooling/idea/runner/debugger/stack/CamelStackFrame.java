@@ -22,7 +22,6 @@ import com.github.cameltooling.idea.runner.debugger.evaluator.CamelExpressionEva
 import com.intellij.debugger.engine.JavaStackFrame;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.xml.XmlTag;
 import com.intellij.ui.ColoredTextContainer;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.xdebugger.XSourcePosition;
@@ -30,7 +29,6 @@ import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.frame.XCompositeNode;
 import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.frame.XValueChildrenList;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -48,7 +46,11 @@ public class CamelStackFrame extends XStackFrame {
         this.project = project;
     }
 
-/*
+    public CamelMessageInfo getCamelMessageInfo() {
+        return camelMessageInfo;
+    }
+
+    /*
     public CamelStackFrame(@NotNull Project project, CamelDebuggerSession session, CamelMessageInfo camelMessageInfo, @Nullable ObjectFieldDefinition exceptionThrown)
     {
         this(project, session, camelMessageInfo);
@@ -63,14 +65,12 @@ public class CamelStackFrame extends XStackFrame {
     }
 
     public void customizePresentation(@NotNull ColoredTextContainer component) {
-        XmlTag tag = this.camelMessageInfo.getTag();
-
         StringBuilder nameBuilder = new StringBuilder();
-        if (StringUtils.isNotBlank(tag.getNamespacePrefix())) {
-            nameBuilder.append(tag.getNamespacePrefix()).append(":");
-        }
-        nameBuilder.append(tag.getLocalName()).append(" ");
-        nameBuilder.append("[id=").append(this.camelMessageInfo.getBreakpointID()).append("]");
+
+        nameBuilder.append(this.camelMessageInfo.getProcessor());
+        nameBuilder.append(" [");
+        nameBuilder.append("route=").append(this.camelMessageInfo.getRouteId()).append(",");
+        nameBuilder.append("id=").append(this.camelMessageInfo.getProcessorId()).append("]");
 
         component.append(nameBuilder.toString(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
     }

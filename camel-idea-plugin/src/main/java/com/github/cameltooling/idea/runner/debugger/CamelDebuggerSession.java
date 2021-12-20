@@ -91,6 +91,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private final List<XLineBreakpoint<XBreakpointProperties>> pendingBreakpointsRemove = new ArrayList<>();
 
     private final Map<String, CamelBreakpoint> breakpoints = new HashMap<>();
+    private final List<String> explicitBreakpointIDs = new ArrayList<>();
 
     private final List<MessageReceivedListener> messageReceivedListeners = new ArrayList<>();
 
@@ -104,7 +105,6 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private org.w3c.dom.Document routesDOMDocument;
 
     private String temporaryBreakpointId;
-    private String currentBreakpointId;
 
     private XDebugSession xDebugSession;
 
@@ -187,11 +187,11 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     public void resume() {
-        //First, remove temporary breakpoint
-        if (temporaryBreakpointId != null) {
+        //Remove temporary breakpoint
+        if (temporaryBreakpointId != null && !explicitBreakpointIDs.contains(temporaryBreakpointId)) {
             backlogDebugger.removeBreakpoint(temporaryBreakpointId);
-            temporaryBreakpointId = null;
         }
+        temporaryBreakpointId = null;
         backlogDebugger.resumeAll();
     }
 
@@ -261,27 +261,65 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         nextStep(position, true);
     }
 
+    public void stepOut(XSourcePosition position) {
+        try {
+            XmlTag currentTag = IdeaUtils.getService().getXmlTagAt(project, position);
+            String breakpointId = getBreakpointId(currentTag);
+            //Get the route of the current tag
+            Element routeElement = getParentRouteId(breakpointId);
+            String routeId = routeElement.getAttribute("id");
+            //Get current stack and find the caller in the stack
+            List<CamelMessageInfo> stack = getStack(breakpointId, backlogDebugger.dumpTracedMessagesAsXml(breakpointId));
+            CamelMessageInfo callerStackFrame = stack.stream()
+                    .filter(info -> ((!info.getRouteId().equals(routeId)) && info.getProcessorId().startsWith("to")))
+                    .findFirst()
+                    .orElse(null);
+            if (callerStackFrame == null) { //This is the top route
+                resume();
+            } else {
+                //Find breakpoint tag
+                XmlTag nextTag = PsiTreeUtil.getNextSiblingOfType(callerStackFrame.getTag(), XmlTag.class);
+                if (nextTag != null) {
+                    //Add temporary breakpoint
+                    String newTemporaryBreakpointId = getBreakpointId(nextTag);
+                    backlogDebugger.addBreakpoint(newTemporaryBreakpointId);
+                    //Run to that breakpoint
+                    backlogDebugger.resumeBreakpoint(breakpointId);
+                    if (temporaryBreakpointId != null && !explicitBreakpointIDs.contains(temporaryBreakpointId) && !temporaryBreakpointId.equals(newTemporaryBreakpointId)) { //Remove previous temporary breakpoint
+                        backlogDebugger.removeBreakpoint(temporaryBreakpointId);
+                    }
+                    temporaryBreakpointId = newTemporaryBreakpointId;
+                } else { //This was the last one
+                    resume();
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void nextStep(XSourcePosition position, boolean isOver) {
         XmlTag breakpointTag = IdeaUtils.getService().getXmlTagAt(project, position);
         String breakpointId = getBreakpointId(breakpointTag);
         breakpoints.put(breakpointId, new CamelBreakpoint(breakpointId, breakpointTag, position));
 
-        if (temporaryBreakpointId != null) { //Remove previous temporary breakpoint
-            backlogDebugger.removeBreakpoint(temporaryBreakpointId);
-            temporaryBreakpointId = null;
-        }
-
         if (isOver && ("to".equals(breakpointTag.getLocalName()) || "toD".equals(breakpointTag.getLocalName()))) {
             XmlTag nextTag = PsiTreeUtil.getNextSiblingOfType(breakpointTag, XmlTag.class);
             if (nextTag != null) {
                 //Add temporary breakpoint
-                temporaryBreakpointId = getBreakpointId(nextTag);
-                backlogDebugger.addBreakpoint(temporaryBreakpointId);
+                String newTemporaryBreakpointId = getBreakpointId(nextTag);
+                backlogDebugger.addBreakpoint(newTemporaryBreakpointId);
                 //Run to that breakpoint
                 backlogDebugger.resumeBreakpoint(breakpointId);
+                if (temporaryBreakpointId != null && !explicitBreakpointIDs.contains(temporaryBreakpointId) && !newTemporaryBreakpointId.equals(temporaryBreakpointId)) { //Remove previous temporary breakpoint
+                    backlogDebugger.removeBreakpoint(temporaryBreakpointId);
+                }
+                temporaryBreakpointId = newTemporaryBreakpointId;
+            } else { //This was the last one
+                resume();
             }
         } else {
-            //TODO If to or toD and 'direct:...' - push current ID into stack
             backlogDebugger.stepBreakpoint(breakpointId);
         }
     }
@@ -421,8 +459,10 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 } else {
                     backlogDebugger.addConditionalBreakpoint(breakpointId, condition.getLanguage().getID(), condition.getExpression());
                 }
+                explicitBreakpointIDs.add(breakpointId);
             } else {
                 backlogDebugger.removeBreakpoint(breakpointId);
+                explicitBreakpointIDs.remove(breakpointId);
             }
 
             breakpoints.put(breakpointId, new CamelBreakpoint(breakpointId, breakpointTag, position));
@@ -474,34 +514,33 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 if (suspendedBreakpointIDs != null && !suspendedBreakpointIDs.isEmpty()) {
                     //Fire notifications here, we need to display the exchange, stack etc
                     for (String id : suspendedBreakpointIDs) {
-                        if (!id.equals(currentBreakpointId)) {
-                            currentBreakpointId = id;
-                            String xml = backlogDebugger.dumpTracedMessagesAsXml(id);
-                            try { //If the Camel version is 3.14 or later, the exchange properties are included
-                                xml = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "dumpTracedMessagesAsXml", new Object[]{id, true},
-                                        new String[]{"java.lang.String", "boolean"});
-                            } catch (Exception e) {
-                                //TODO log this or display warning
-                            }
-                            final String suspendedMessage = xml;
-
-                            ApplicationManager.getApplication().runReadAction(() -> {
-                                for (MessageReceivedListener listener : messageReceivedListeners) {
-                                    try {
-                                        CamelBreakpoint breakpoint = breakpoints.get(id);
-                                        if (breakpoint == null) {
-                                            //find tag and source position based on ID
-                                            breakpoint = getCamelBreakpointById(id);
-                                            breakpoints.put(id, breakpoint);
-                                        }
-                                        List stack = getStack(id, suspendedMessage);
-                                        listener.onNewMessageReceived(new CamelMessageInfo(suspendedMessage, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag(), id, stack));
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            });
+                        String xml = backlogDebugger.dumpTracedMessagesAsXml(id);
+                        try { //If the Camel version is 3.15 or later, the exchange properties are included
+                            xml = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "dumpTracedMessagesAsXml", new Object[]{id, true},
+                                    new String[]{"java.lang.String", "boolean"});
+                        } catch (Exception e) {
+                            //TODO log this or display warning
                         }
+                        final String suspendedMessage = xml;
+
+                        ApplicationManager.getApplication().runReadAction(() -> {
+                            for (MessageReceivedListener listener : messageReceivedListeners) {
+                                try {
+                                    CamelBreakpoint breakpoint = breakpoints.get(id);
+                                    if (breakpoint == null) {
+                                        //find tag and source position based on ID
+                                        breakpoint = getCamelBreakpointById(id);
+                                        breakpoints.put(id, breakpoint);
+                                    }
+                                    List<CamelMessageInfo> stack = getStack(id, suspendedMessage);
+                                    CamelMessageInfo info = stack.get(0);//We only need stack for the top frame
+                                    info.setStack(stack);
+                                    listener.onNewMessageReceived(info);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
                     }
                 }
 
@@ -656,7 +695,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         return path;
     }
 
-    private String getParentRouteId(String id) throws Exception {
+    private Element getParentRouteId(String id) throws Exception {
         String path = "//route[*[attribute::id = '" + id + "']]";
         XPath xPath = XPathFactory.newInstance().newXPath();
         Node tagNode = (Node) xPath.compile(path).evaluate(routesDOMDocument, XPathConstants.NODE);
@@ -664,13 +703,13 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             return null;
         }
         Element tag = (Element) tagNode;
-        return tag.getAttribute("id");
+        return tag;
     }
 
     private List<CamelMessageInfo> getStack(String breakpointId, String suspendedMessage) throws Exception {
         List<CamelMessageInfo> stack = new ArrayList<>();
 
-        String messageHistory = (String)serverConnection.invoke(this.debuggerMBeanObjectName, "evaluateExpressionAtBreakpoint",
+        String messageHistory = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "evaluateExpressionAtBreakpoint",
                 new Object[]{breakpointId, "simple", "${messageHistory(false)}", "java.lang.String"},
                 new String[]{"java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String"});
 
@@ -679,14 +718,16 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             String[] lines = messageHistory.split(separator);
             for (int i = 4; i < lines.length; i++) {
                 String[] cols = lines[i].split("\\] \\[");
+                String routeId = cols[0].substring(1).trim();
                 String processorId = cols[1].trim();
+                String processor = cols[2].trim();
                 CamelBreakpoint breakpoint = breakpoints.get(processorId);
                 if (breakpoint == null) {
                     //find tag and source position based on ID
                     breakpoint = getCamelBreakpointById(processorId);
                     breakpoints.put(processorId, breakpoint);
                 }
-                CamelMessageInfo info = new CamelMessageInfo(suspendedMessage, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag(), processorId, null);
+                CamelMessageInfo info = new CamelMessageInfo(suspendedMessage, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag(), routeId, processorId, processor, null);
 /*
                 Map<String, String> stackEntry = new HashMap<>();
                 stackEntry.put("routeId", cols[0].substring(1).trim());

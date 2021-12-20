@@ -48,16 +48,20 @@ public class CamelMessageInfo {
     private XSourcePosition position;
     private XmlTag tag;
 
-    private String breakpointID;
+    private String routeId;
+    private String processorId;
+    private String processor;
 
     private List<CamelMessageInfo> stack;
 
-    public CamelMessageInfo(@NotNull String messageInfoAsXML, XSourcePosition position, XmlTag tag, String breakpointID, List<CamelMessageInfo> stack) throws Exception {
+    public CamelMessageInfo(@NotNull String messageInfoAsXML, XSourcePosition position, XmlTag tag, String routeId, String processorId, String processor, List<CamelMessageInfo> stack) throws Exception {
         this.messageInfoAsXML = messageInfoAsXML;
         this.documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         this.position = position;
         this.tag = tag;
-        this.breakpointID = breakpointID;
+        this.routeId = routeId;
+        this.processorId = processorId;
+        this.processor = processor;
         this.stack = stack;
         init();
     }
@@ -142,12 +146,24 @@ public class CamelMessageInfo {
         return tag;
     }
 
-    public String getBreakpointID() {
-        return breakpointID;
-    }
-
     public List<CamelMessageInfo> getStack() {
         return stack;
+    }
+
+    public void setStack(List<CamelMessageInfo> stack) {
+        this.stack = stack;
+    }
+
+    public String getRouteId() {
+        return routeId;
+    }
+
+    public String getProcessorId() {
+        return processorId;
+    }
+
+    public String getProcessor() {
+        return processor;
     }
 
     public static class Value {
