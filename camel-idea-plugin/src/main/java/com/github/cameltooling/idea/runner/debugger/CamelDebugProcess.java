@@ -116,7 +116,10 @@ public class CamelDebugProcess extends XDebugProcess {
         camelDebuggerSession.stepOut(context.getActiveExecutionStack().getTopFrame().getSourcePosition());
     }
 
-    //TODO runToPosition
+    @Override
+    public void runToPosition(@NotNull XSourcePosition xSourcePosition, @Nullable XSuspendContext context) {
+        camelDebuggerSession.runToPosition(context.getActiveExecutionStack().getTopFrame().getSourcePosition(), xSourcePosition);
+    }
 
     @NotNull
     @Override
@@ -126,21 +129,11 @@ public class CamelDebugProcess extends XDebugProcess {
     }
 
 /*
+//TODO additional actions for setting body, headers and/or properties
   @Override
   public void registerAdditionalActions(@NotNull DefaultActionGroup leftToolbar, @NotNull DefaultActionGroup topToolbar, @NotNull DefaultActionGroup settings) {
     super.registerAdditionalActions(leftToolbar, topToolbar, settings);
     leftToolbar.add(new Action(...));
-  }
-
-  @Override
-  public void runToPosition(@NotNull XSourcePosition xSourcePosition, @Nullable XSuspendContext context) {
-
-  }
-
-  @NotNull
-  @Override
-  public XDebuggerEditorsProvider getEditorsProvider() {
-    return editorProperties;
   }
 */
 

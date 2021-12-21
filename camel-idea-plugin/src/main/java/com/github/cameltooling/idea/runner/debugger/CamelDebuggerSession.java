@@ -129,7 +129,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     public void dispose() {
-        backlogDebugger.disableDebugger();
+        disconnect();
     }
 
     public void connect(final ProcessHandler javaProcessHandler) {
@@ -148,6 +148,8 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             } catch (Exception e) {
             } finally {
                 backlogDebugger = null;
+                serverConnection = null;
+                camelContext = null;
             }
         }
     }
@@ -271,7 +273,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             //Get current stack and find the caller in the stack
             List<CamelMessageInfo> stack = getStack(breakpointId, backlogDebugger.dumpTracedMessagesAsXml(breakpointId));
             CamelMessageInfo callerStackFrame = stack.stream()
-                    .filter(info -> ((!info.getRouteId().equals(routeId)) && info.getProcessorId().startsWith("to")))
+                    .filter(info -> !info.getRouteId().equals(routeId) && info.getProcessorId().startsWith("to"))
                     .findFirst()
                     .orElse(null);
             if (callerStackFrame == null) { //This is the top route
@@ -285,7 +287,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                     backlogDebugger.addBreakpoint(newTemporaryBreakpointId);
                     //Run to that breakpoint
                     backlogDebugger.resumeBreakpoint(breakpointId);
-                    if (temporaryBreakpointId != null && !explicitBreakpointIDs.contains(temporaryBreakpointId) && !temporaryBreakpointId.equals(newTemporaryBreakpointId)) { //Remove previous temporary breakpoint
+                    if (temporaryBreakpointId != null
+                            && !explicitBreakpointIDs.contains(temporaryBreakpointId)
+                            && !temporaryBreakpointId.equals(newTemporaryBreakpointId)) { //Remove previous temporary breakpoint
                         backlogDebugger.removeBreakpoint(temporaryBreakpointId);
                     }
                     temporaryBreakpointId = newTemporaryBreakpointId;
@@ -297,6 +301,30 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void runToPosition(XSourcePosition fromPosition, XSourcePosition toPosition) {
+
+        XmlTag toBreakpointTag = IdeaUtils.getService().getXmlTagAt(project, toPosition);
+        if (toBreakpointTag == null) { //this is not a tag
+            return;
+        }
+        String toBreakpointId = getBreakpointId(toBreakpointTag);
+        if (toBreakpointId == null) { //this is not a tag
+            return;
+        }
+        XmlTag fromBreakpointTag = IdeaUtils.getService().getXmlTagAt(project, fromPosition);
+        String fromBreakpointId = getBreakpointId(fromBreakpointTag);
+
+        breakpoints.put(toBreakpointId, new CamelBreakpoint(toBreakpointId, toBreakpointTag, toPosition));
+
+        backlogDebugger.addBreakpoint(toBreakpointId);
+        //Run to that breakpoint
+        backlogDebugger.resumeBreakpoint(fromBreakpointId);
+        if (temporaryBreakpointId != null && !explicitBreakpointIDs.contains(temporaryBreakpointId) && !toBreakpointId.equals(temporaryBreakpointId)) { //Remove previous temporary breakpoint
+            backlogDebugger.removeBreakpoint(temporaryBreakpointId);
+        }
+        temporaryBreakpointId = toBreakpointId;
     }
 
     private void nextStep(XSourcePosition position, boolean isOver) {
@@ -312,7 +340,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 backlogDebugger.addBreakpoint(newTemporaryBreakpointId);
                 //Run to that breakpoint
                 backlogDebugger.resumeBreakpoint(breakpointId);
-                if (temporaryBreakpointId != null && !explicitBreakpointIDs.contains(temporaryBreakpointId) && !newTemporaryBreakpointId.equals(temporaryBreakpointId)) { //Remove previous temporary breakpoint
+                if (temporaryBreakpointId != null
+                        && !explicitBreakpointIDs.contains(temporaryBreakpointId)
+                        && !newTemporaryBreakpointId.equals(temporaryBreakpointId)) { //Remove previous temporary breakpoint
                     backlogDebugger.removeBreakpoint(temporaryBreakpointId);
                 }
                 temporaryBreakpointId = newTemporaryBreakpointId;
@@ -533,7 +563,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                                         breakpoints.put(id, breakpoint);
                                     }
                                     List<CamelMessageInfo> stack = getStack(id, suspendedMessage);
-                                    CamelMessageInfo info = stack.get(0);//We only need stack for the top frame
+                                    CamelMessageInfo info = stack.get(0); //We only need stack for the top frame
                                     info.setStack(stack);
                                     listener.onNewMessageReceived(info);
                                 } catch (Exception e) {
@@ -741,4 +771,5 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         Collections.reverse(stack);
         return stack;
     }
+
 }

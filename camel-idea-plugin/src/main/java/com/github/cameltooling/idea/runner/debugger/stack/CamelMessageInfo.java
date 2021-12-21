@@ -54,7 +54,13 @@ public class CamelMessageInfo {
 
     private List<CamelMessageInfo> stack;
 
-    public CamelMessageInfo(@NotNull String messageInfoAsXML, XSourcePosition position, XmlTag tag, String routeId, String processorId, String processor, List<CamelMessageInfo> stack) throws Exception {
+    public CamelMessageInfo(@NotNull String messageInfoAsXML,
+                            XSourcePosition position,
+                            XmlTag tag,
+                            String routeId,
+                            String processorId,
+                            String processor,
+                            List<CamelMessageInfo> stack) throws Exception {
         this.messageInfoAsXML = messageInfoAsXML;
         this.documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         this.position = position;
