@@ -31,6 +31,8 @@
 
   <depends>com.intellij.java</depends>
 
+  <depends>org.jetbrains.idea.maven</depends>
+
   <!-- main listener to trigger Camel IDEA plugin to detect if Camel is present or not in the project -->
   <applicationListeners>
     <listener class="com.github.cameltooling.idea.CamelPluginStartup" topic="com.intellij.openapi.project.ProjectManagerListener"/>
@@ -131,6 +133,25 @@
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.blueprint.BlueprintReferenceContributor"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.CamelBeanInjectReferenceContributor"/>
     <renameHandler implementation="com.github.cameltooling.idea.reference.CamelBeanReferenceRenameHandler"/>
+
+    <!-- Debugger -->
+    <xdebugger.breakpointType implementation="com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointType"/>
+    <programRunner id="Debug" implementation="com.github.cameltooling.idea.runner.debugger.CamelDebuggerRunner" order="first"/>
+    <configurationType implementation="com.github.cameltooling.idea.runner.CamelSpringBootRunConfigurationType"/>
+    <configurationType implementation="com.github.cameltooling.idea.runner.CamelRunConfigurationType"/>
+<!--
+    <stepsBeforeRunProvider implementation="com.github.cameltooling.idea.runner.beforerun.CamelBeforeRunTasksProvider"/>
+    <stepsBeforeRunProvider implementation="com.github.cameltooling.idea.runner.beforerun.CamelSpringBootBeforeRunTasksProvider"/>
+-->
+<!--    <xdebugger.debuggerSupport id="CamelDebuggerSupport" implementation="com.github.cameltooling.idea.runner.debugger.CamelDebuggerSupport" order="first"/>-->
   </extensions>
 
+  <actions>
+    <action id="EvaluateCamelExpression" text="Evaluate Camel Expression..." description="Evaluate Camel Expression" class="com.github.cameltooling.idea.runner.debugger.evaluator.CamelEvaluateAction" icon="com.github.cameltooling.idea.runner.debugger.CamelDebuggerIcons.EVALUATE_EXPRESSION_ICON">
+      <add-to-group group-id="DebugMainMenu" relative-to-action="EvaluateExpression" anchor="after"/>
+      <add-to-group group-id="EditorPopupMenuDebug" relative-to-action="EvaluateExpression" anchor="after"/>
+      <add-to-group group-id="XDebugger.ToolWindow.TopToolbar" relative-to-action="EvaluateExpression" anchor="after"/>
+      <add-to-group group-id="XDebugger.ValueGroup" relative-to-action="EvaluateExpression" anchor="after"/>
+    </action>
+  </actions>
 </idea-plugin>

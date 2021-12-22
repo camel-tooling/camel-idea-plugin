@@ -33,7 +33,10 @@ import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleFileIndex;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderRootType;
@@ -64,6 +67,7 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xml.util.XmlUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -533,5 +537,38 @@ public final class IdeaUtils implements Disposable {
     @Override
     public void dispose() {
         //noop
+    }
+
+    @Nullable
+    public static XmlTag getXmlTagAt(Project project, XSourcePosition sourcePosition) {
+        final VirtualFile file = sourcePosition.getFile();
+        final XmlFile xmlFile = (XmlFile) PsiManager.getInstance(project).findFile(file);
+        final XmlTag rootTag = xmlFile.getRootTag();
+        return findXmlTag(sourcePosition, rootTag);
+    }
+
+    private static XmlTag findXmlTag(XSourcePosition sourcePosition, XmlTag rootTag) {
+        final XmlTag[] subTags = rootTag.getSubTags();
+        for (int i = 0; i < subTags.length; i++) {
+            XmlTag subTag = subTags[i];
+            final int subTagLineNumber = getLineNumber(sourcePosition.getFile(), subTag);
+            if (subTagLineNumber == sourcePosition.getLine()) {
+                return subTag;
+            } else if (subTagLineNumber > sourcePosition.getLine() && i > 0 && subTags[i - 1].getSubTags().length > 0) {
+                return findXmlTag(sourcePosition, subTags[i - 1]);
+            }
+        }
+        if (subTags.length > 0) {
+            final XmlTag lastElement = subTags[subTags.length - 1];
+            return findXmlTag(sourcePosition, lastElement);
+        } else {
+            return null;
+        }
+    }
+
+    public static int getLineNumber(VirtualFile file, XmlTag tag) {
+        final int offset = tag.getTextOffset();
+        final Document document = FileDocumentManager.getInstance().getDocument(file);
+        return offset < document.getTextLength() ? document.getLineNumber(offset) : -1;
     }
 }

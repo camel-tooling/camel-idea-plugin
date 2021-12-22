@@ -26,7 +26,7 @@ intellij {
     version = '2021.2'
     downloadSources = true
     type = project.hasProperty('intellij_type') ? project.intellij_type : 'IC'
-    plugins = ['java', 'java-i18n', 'properties', 'yaml']
+    plugins = ['java', 'java-i18n', 'properties', 'yaml', 'maven', 'xpath']
 }
 
 // to support IDEA 2020 onwards
@@ -53,6 +53,7 @@ dependencies {
     implementation "org.apache.camel:camel-util:${camelVersion}"
     implementation "org.apache.camel:camel-util-json:${camelVersion}"
     implementation "org.apache.camel:camel-tooling-model:${camelVersion}"
+    implementation "org.apache.camel:camel-management-api:${camelVersion}"
 
     testImplementation "org.apache.camel:camel-core:${camelVersion}"
     testImplementation 'org.jboss.shrinkwrap:shrinkwrap-depchain:1.2.6'
