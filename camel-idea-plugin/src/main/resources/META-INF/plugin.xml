@@ -9,9 +9,9 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.0.7.12
+      v.0.8.0
       <ul>
-        <li>Bug fixes</li>
+        <li>Tech Preview of the new Camel Route Debugger (currently only XML routes)</li>
       </ul>
     ]]>
   </change-notes>
