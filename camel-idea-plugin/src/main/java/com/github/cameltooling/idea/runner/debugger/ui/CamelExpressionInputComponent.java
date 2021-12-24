@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.runner.debugger.evaluator;
+package com.github.cameltooling.idea.runner.debugger.ui;
 
-import com.github.cameltooling.idea.language.DatasonnetLanguage;
-import com.github.cameltooling.idea.language.SimpleLanguage;
+import com.github.cameltooling.idea.language.CamelLanguages;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.editor.ex.util.EditorUtil;
@@ -52,7 +51,7 @@ import java.util.stream.Collectors;
 public class CamelExpressionInputComponent extends EvaluationInputComponent {
     private final XDebuggerEditorBase myExpressionEditor;
     private final ExpressionInputForm myMainForm = new ExpressionInputForm();
-
+    private BorderLayoutPanel expressionPanel = JBUI.Panels.simplePanel();
     private ComboBox<String> resultTypeCombo;
     private ComboBox<String> bodyMediaTypeCombo;
     private ComboBox<String> outputMediaTypeCombo;
@@ -65,7 +64,6 @@ public class CamelExpressionInputComponent extends EvaluationInputComponent {
                                          @NotNull Disposable parentDisposable,
                                          boolean showHelp) {
         super(XDebuggerBundle.message("xdebugger.dialog.title.evaluate.expression"));
-        BorderLayoutPanel expressionPanel = JBUI.Panels.simplePanel();
         myExpressionEditor = new XDebuggerExpressionComboBox(project, editorsProvider, historyId, sourcePosition, true, false) {
             @Override
             protected void prepareEditor(EditorEx editor) {
@@ -104,11 +102,11 @@ public class CamelExpressionInputComponent extends EvaluationInputComponent {
             public XExpression getExpression() {
                 XExpression xExpression = super.getExpression();
 
-                if (xExpression.getLanguage().is(DatasonnetLanguage.getInstance()) || expression.getLanguage().is(SimpleLanguage.getInstance())) {
+                if (xExpression.getLanguage().is(CamelLanguages.DATASONNET_LANGUAGE) || expression.getLanguage().is(CamelLanguages.SIMPLE_LANGUAGE)) {
                     Map<String, String> customInfo = new HashMap<>();
                     customInfo.put("resultType", resultTypeCombo.getItem());
 
-                    if (xExpression.getLanguage().is(DatasonnetLanguage.getInstance())) {
+                    if (xExpression.getLanguage().is(CamelLanguages.DATASONNET_LANGUAGE)) {
                         customInfo.put("bodyMediaType", bodyMediaTypeCombo.getItem());
                         customInfo.put("outputMediaType", outputMediaTypeCombo.getItem());
                     }
@@ -149,6 +147,10 @@ public class CamelExpressionInputComponent extends EvaluationInputComponent {
     @NotNull
     public XDebuggerEditorBase getInputEditor() {
         return myExpressionEditor;
+    }
+
+    public void addExpressionParametersComponent(JPanel componentPanel) {
+        expressionPanel.addToBottom(componentPanel);
     }
 
     public void setResultTypeCombo(ComboBox<String> resultTypeCombo) {

@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.runner.debugger.evaluator;
+package com.github.cameltooling.idea.runner.debugger.ui;
 
-import com.github.cameltooling.idea.language.DatasonnetLanguage;
+import com.github.cameltooling.idea.language.CamelLanguages;
+import com.github.cameltooling.idea.runner.debugger.evaluator.CamelEvaluatingExpressionRootNode;
 import com.intellij.codeInsight.lookup.LookupManager;
 import com.intellij.featureStatistics.FeatureUsageTracker;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -348,6 +349,17 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
             CodeFragmentInputComponent component = new CodeFragmentInputComponent(myProject, myEditorsProvider, mySourcePosition, text,
                     getDimensionServiceKey() + ".splitter", myDisposable);
             component.getInputEditor().addCollapseButton(() -> mySwitchModeAction.actionPerformed(null));
+            component.getInputEditor().getLanguageChooser().addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    Object newValueObj = evt.getNewValue();
+                    if (newValueObj != null) {
+                        String newValue = evt.getNewValue().toString();
+                        myCamelExpressionParameters.getBodyMediaTypePanel().setVisible("DataSonnet".equals(newValue));
+                        myCamelExpressionParameters.getOutputMediaTypePanel().setVisible("DataSonnet".equals(newValue));
+                    }
+                }
+            });
             return component;
         }
     }
@@ -408,7 +420,7 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
 
         Map<String, String> customInfo = new HashMap<>();
         customInfo.put("resultType", myCamelExpressionParameters.getResultTypeCombo().getItem());
-        if (expression.getLanguage().is(DatasonnetLanguage.getInstance())) {
+        if (expression.getLanguage().is(CamelLanguages.DATASONNET_LANGUAGE)) {
             customInfo.put("bodyMediaType", myCamelExpressionParameters.getBodyMediaTypeCombo().getItem());
             customInfo.put("outputMediaType", myCamelExpressionParameters.getOutputMediaTypeCombo().getItem());
         }

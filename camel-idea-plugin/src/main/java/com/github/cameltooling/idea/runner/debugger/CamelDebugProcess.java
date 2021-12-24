@@ -16,11 +16,17 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
+import com.github.cameltooling.idea.runner.debugger.actions.CamelEvaluateAction;
+import com.github.cameltooling.idea.runner.debugger.actions.CamelSetValueAction;
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointHandler;
 import com.github.cameltooling.idea.runner.debugger.evaluator.CamelExpressionEvaluator;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelStackFrame;
 import com.intellij.execution.process.ProcessHandler;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.util.ArrayUtil;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugSession;
@@ -43,6 +49,7 @@ public class CamelDebugProcess extends XDebugProcess {
     private ProcessHandler javaProcessHandler;
 
 //  private final ExecutionConsole executionConsole;
+    private boolean forceRefresh;
 
     protected CamelDebugProcess(@NotNull XDebugSession session, @NotNull CamelDebuggerSession camelDebuggerSession, ProcessHandler javaProcessHandler) {
         super(session);
@@ -78,7 +85,8 @@ public class CamelDebugProcess extends XDebugProcess {
             @Override
             public void onNewMessageReceived(CamelMessageInfo camelMessageInfo) {
                 XSourcePosition topPosition = getSession().getTopFramePosition();
-                if (topPosition == null || !topPosition.equals(camelMessageInfo.getXSourcePosition())) {
+                if (forceRefresh || topPosition == null || !topPosition.equals(camelMessageInfo.getXSourcePosition())) {
+                    forceRefresh = false;
                     //List frames
                     List<CamelStackFrame> stackFrames = new ArrayList<CamelStackFrame>();
                     for (CamelMessageInfo info : camelMessageInfo.getStack()) {
@@ -121,6 +129,17 @@ public class CamelDebugProcess extends XDebugProcess {
         camelDebuggerSession.runToPosition(context.getActiveExecutionStack().getTopFrame().getSourcePosition(), xSourcePosition);
     }
 
+    public void setValue(String target,
+                         @Nullable String targetName,
+                         String expression,
+                         String language,
+                         String resultType,
+                         @Nullable String bodyMediaType,
+                         @Nullable String outputMediaType) {
+        camelDebuggerSession.setValue(target, targetName, expression, language, resultType, bodyMediaType, outputMediaType);
+        forceRefresh = true;
+    }
+
     @NotNull
     @Override
     public XBreakpointHandler<?>[] getBreakpointHandlers() {
@@ -128,13 +147,26 @@ public class CamelDebugProcess extends XDebugProcess {
         return ArrayUtil.append(breakpointHandlers, camelBreakpointHandler);
     }
 
-/*
-//TODO additional actions for setting body, headers and/or properties
-  @Override
-  public void registerAdditionalActions(@NotNull DefaultActionGroup leftToolbar, @NotNull DefaultActionGroup topToolbar, @NotNull DefaultActionGroup settings) {
-    super.registerAdditionalActions(leftToolbar, topToolbar, settings);
-    leftToolbar.add(new Action(...));
-  }
-*/
+    @Override
+    public void registerAdditionalActions(@NotNull DefaultActionGroup leftToolbar, @NotNull DefaultActionGroup topToolbar, @NotNull DefaultActionGroup settings) {
+        super.registerAdditionalActions(leftToolbar, topToolbar, settings);
 
+        CamelEvaluateAction evaluateAction = new CamelEvaluateAction();
+        Presentation presentation = evaluateAction.getTemplatePresentation();
+        presentation.setText("Evaluate Camel Expression...");
+        presentation.setDescription("Evaluate Camel Expression");
+        presentation.setIcon(CamelDebuggerIcons.EVALUATE_EXPRESSION_ICON);
+        topToolbar.add(evaluateAction);
+
+        CamelSetValueAction setValueAction = new CamelSetValueAction();
+        presentation = setValueAction.getTemplatePresentation();
+        presentation.setText("Set Value...");
+        presentation.setDescription("Set Camel Message header, body or Exchange property value");
+        presentation.setIcon(CamelDebuggerIcons.SET_VALUE_ICON);
+        topToolbar.add(setValueAction);
+
+        AnAction evaluate = ActionManager.getInstance().getAction("EvaluateExpression");
+        topToolbar.remove(evaluate);
+
+    }
 }

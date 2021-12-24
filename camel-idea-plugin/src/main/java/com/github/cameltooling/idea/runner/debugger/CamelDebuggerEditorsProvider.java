@@ -16,8 +16,7 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
-import com.github.cameltooling.idea.language.DatasonnetLanguage;
-import com.github.cameltooling.idea.language.SimpleLanguage;
+import com.github.cameltooling.idea.language.CamelLanguages;
 import com.intellij.lang.Language;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileTypes.FileType;
@@ -34,9 +33,7 @@ import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 
 public class CamelDebuggerEditorsProvider extends XDebuggerEditorsProvider {
@@ -58,9 +55,6 @@ public class CamelDebuggerEditorsProvider extends XDebuggerEditorsProvider {
     @NotNull
     @Override
     public Collection<Language> getSupportedLanguages(@NotNull Project project, @Nullable XSourcePosition sourcePosition) {
-        List<Language> supportedLanguages = new ArrayList<>();
-        supportedLanguages.add(SimpleLanguage.getInstance());
-        supportedLanguages.add(DatasonnetLanguage.getInstance());
-        return supportedLanguages;
+        return CamelLanguages.ALL;
     }
 }

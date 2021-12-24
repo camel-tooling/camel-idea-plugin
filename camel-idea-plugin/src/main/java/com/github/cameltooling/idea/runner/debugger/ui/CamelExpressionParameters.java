@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.runner.debugger.evaluator;
+package com.github.cameltooling.idea.runner.debugger.ui;
 
 import com.intellij.openapi.ui.ComboBox;
 

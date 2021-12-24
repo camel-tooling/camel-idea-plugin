@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.runner.debugger.evaluator;
+package com.github.cameltooling.idea.runner.debugger.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.xdebugger.impl.DebuggerSupport;
@@ -27,17 +27,17 @@ import org.jetbrains.idea.maven.utils.actions.MavenActionUtil;
 
 import java.util.List;
 
-public class CamelEvaluateAction extends XDebuggerActionBase {
-    private CamelEvaluateActionHandler evaluateActionHandler = new CamelEvaluateActionHandler();
+public class CamelSetValueAction extends XDebuggerActionBase {
+    private CamelSetValueActionHandler setValueActionHandler = new CamelSetValueActionHandler();
 
-    CamelEvaluateAction() {
+    public CamelSetValueAction() {
         super(true);
     }
 
     @Override
     @NotNull
     protected DebuggerActionHandler getHandler(@NotNull final DebuggerSupport debuggerSupport) {
-        return evaluateActionHandler;
+        return setValueActionHandler;
     }
 
     @Override
