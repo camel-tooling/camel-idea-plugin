@@ -20,7 +20,6 @@ import com.github.cameltooling.idea.language.CamelLanguages;
 import com.github.cameltooling.idea.runner.debugger.ui.CamelSetValueDialog;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.AppUIUtil;
 import com.intellij.xdebugger.XDebugSession;
@@ -45,7 +44,6 @@ public class CamelSetValueActionHandler extends XDebuggerActionHandler {
             return;
         }
 
-        Editor editor = CommonDataKeys.EDITOR.getData(dataContext);
         final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(dataContext);
 
         AppUIUtil.invokeOnEdt(() -> showDialog(session, file, editorsProvider, stackFrame, evaluator,
@@ -56,29 +54,6 @@ public class CamelSetValueActionHandler extends XDebuggerActionHandler {
     protected boolean isEnabled(@NotNull XDebugSession session, DataContext dataContext) {
         return session.isSuspended();
     }
-
-//    /**
-//     * The value of resulting Promise can be null
-//     */
-//    @NotNull
-//    public static Promise<String> getExpressionText(@Nullable XDebuggerEvaluator evaluator, @Nullable Project project, @NotNull Editor editor) {
-//        if (project == null || evaluator == null) {
-//            return Promises.resolvedPromise(null);
-//        }
-//
-//        Document document = editor.getDocument();
-//        Promise<ExpressionInfo> expressionInfoPromise = evaluator.getExpressionInfoAtOffsetAsync(project, document, editor.getCaretModel().getOffset(), true);
-//        return expressionInfoPromise.then(expressionInfo -> getExpressionText(expressionInfo, document));
-//    }
-//
-//    @Nullable
-//    public static String getExpressionText(@Nullable ExpressionInfo expressionInfo, @NotNull Document document) {
-//        if (expressionInfo == null) {
-//            return null;
-//        }
-//        String text = expressionInfo.getExpressionText();
-//        return text == null ? document.getText(expressionInfo.getTextRange()) : text;
-//    }
 
     private static void showDialog(@NotNull XDebugSession session,
                                    VirtualFile file,
