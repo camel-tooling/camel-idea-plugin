@@ -16,16 +16,13 @@
  */
 package com.github.cameltooling.idea.runner.debugger.actions;
 
+import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.Project;
 import com.intellij.xdebugger.impl.DebuggerSupport;
 import com.intellij.xdebugger.impl.actions.DebuggerActionHandler;
 import com.intellij.xdebugger.impl.actions.XDebuggerActionBase;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.idea.maven.model.MavenArtifact;
-import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.utils.actions.MavenActionUtil;
-
-import java.util.List;
 
 public class CamelEvaluateAction extends XDebuggerActionBase {
     private CamelEvaluateActionHandler evaluateActionHandler = new CamelEvaluateActionHandler();
@@ -44,17 +41,10 @@ public class CamelEvaluateAction extends XDebuggerActionBase {
     public void update(@NotNull final AnActionEvent event) {
         super.update(event);
         if (event.getPresentation().isEnabledAndVisible()) {
-            //If we are debugging Camel project, this should be enabled - but how do we know it's a Camel project?
-            //Find Maven project and see if there's a Camel dependency
-            MavenProject mavenProject = MavenActionUtil.getMavenProject(event.getDataContext());
-            if (mavenProject != null) {
-                List<MavenArtifact> dependencies = mavenProject.getDependencies();
-
-                boolean isCamel = dependencies.stream().anyMatch(mavenArtifact -> mavenArtifact.getArtifactId().equals("camel-main") || mavenArtifact.getArtifactId().equals("camel-spring-boot"));
-
-                event.getPresentation().setEnabled(isCamel);
-                event.getPresentation().setVisible(isCamel);
-            }
+            final Project project = event.getProject();
+            final CamelService camelService = project.getService(CamelService.class);
+            event.getPresentation().setEnabled(camelService.isCamelPresent());
+            event.getPresentation().setVisible(camelService.isCamelPresent());
         }
     }
 }

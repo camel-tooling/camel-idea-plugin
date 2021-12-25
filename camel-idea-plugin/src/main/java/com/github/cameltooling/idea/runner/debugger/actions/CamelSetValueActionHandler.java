@@ -72,7 +72,7 @@ public class CamelSetValueActionHandler extends XDebuggerActionHandler {
             expression = new XExpressionImpl(expression.getExpression(), CamelLanguages.CONSTANT_LANGUAGE, expression.getCustomInfo(), expression.getMode());
         }
         XSourcePosition position = stackFrame == null ? null : stackFrame.getSourcePosition();
-        new CamelSetValueDialog(session, editorsProvider, expression, position, evaluator.isCodeFragmentEvaluationSupported()).show();
+        new CamelSetValueDialog(session, editorsProvider, expression, evaluator.isCodeFragmentEvaluationSupported()).show();
     }
 
 }

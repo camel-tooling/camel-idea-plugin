@@ -35,17 +35,14 @@ import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebugSessionListener;
 import com.intellij.xdebugger.XDebuggerBundle;
 import com.intellij.xdebugger.XExpression;
-import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.evaluation.EvaluationMode;
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
-import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.impl.breakpoints.XExpressionImpl;
 import com.intellij.xdebugger.impl.evaluate.CodeFragmentInputComponent;
 import com.intellij.xdebugger.impl.evaluate.DebuggerEvaluationStatisticsCollector;
 import com.intellij.xdebugger.impl.evaluate.EvaluationInputComponent;
 import com.intellij.xdebugger.impl.settings.XDebuggerSettingManagerImpl;
 import com.intellij.xdebugger.impl.ui.XDebuggerEditorBase;
-import com.intellij.xdebugger.impl.ui.tree.nodes.EvaluatingExpressionRootNode;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -57,7 +54,6 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
-import javax.swing.tree.TreeNode;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -65,18 +61,15 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.function.Supplier;
 
 public class CamelSetValueDialog extends DialogWrapper {
     public static final DataKey<CamelSetValueDialog> KEY = DataKey.create("CAMEL_SET_VALUE_DIALOG");
     private final JPanel myMainPanel;
     private EvaluationInputComponent myInputComponent;
     private final XDebugSession mySession;
-    private final Supplier<? extends XDebuggerEvaluator> myEvaluatorSupplier;
     private final Project myProject;
     private final XDebuggerEditorsProvider myEditorsProvider;
     private EvaluationMode myMode;
-    private XSourcePosition mySourcePosition;
     private final SwitchModeAction mySwitchModeAction;
     private final boolean myIsCodeFragmentEvaluationSupported;
     private CamelExpressionParameters myCamelExpressionParameters;
@@ -85,24 +78,19 @@ public class CamelSetValueDialog extends DialogWrapper {
     public CamelSetValueDialog(@NotNull XDebugSession session,
                                @NotNull XDebuggerEditorsProvider editorsProvider,
                                @NotNull XExpression text,
-                               @Nullable XSourcePosition sourcePosition,
                                boolean isCodeFragmentEvaluationSupported) {
-        this(session, null, session.getProject(), editorsProvider, text, sourcePosition, isCodeFragmentEvaluationSupported);
+        this(session, session.getProject(), editorsProvider, text, isCodeFragmentEvaluationSupported);
     }
 
     private CamelSetValueDialog(@Nullable XDebugSession session,
-                                @Nullable Supplier<? extends XDebuggerEvaluator> evaluatorSupplier,
                                 @NotNull Project project,
                                 @NotNull XDebuggerEditorsProvider editorsProvider,
                                 @NotNull XExpression text,
-                                @Nullable XSourcePosition sourcePosition,
                                 boolean isCodeFragmentEvaluationSupported) {
         super(project, true);
         mySession = session;
-        myEvaluatorSupplier = evaluatorSupplier;
         myProject = project;
         myEditorsProvider = editorsProvider;
-        mySourcePosition = sourcePosition;
         myIsCodeFragmentEvaluationSupported = isCodeFragmentEvaluationSupported;
         setModal(false);
         setOKButtonText("Set Value");
@@ -142,16 +130,6 @@ public class CamelSetValueDialog extends DialogWrapper {
                 public void sessionStopped() {
                     ApplicationManager.getApplication().invokeLater(() -> close(CANCEL_EXIT_CODE));
                 }
-
-                @Override
-                public void stackFrameChanged() {
-                    updateSourcePosition();
-                }
-
-                @Override
-                public void sessionPaused() {
-                    updateSourcePosition();
-                }
             }, myDisposable);
         }
     }
@@ -161,16 +139,6 @@ public class CamelSetValueDialog extends DialogWrapper {
     protected void dispose() {
         super.dispose();
         myMainPanel.removeAll();
-    }
-
-    private void updateSourcePosition() {
-        if (mySession == null) {
-            return;
-        }
-        ApplicationManager.getApplication().invokeLater(() -> {
-            mySourcePosition = mySession.getCurrentPosition();
-            getInputEditor().setSourcePosition(mySourcePosition);
-        });
     }
 
     @Override
@@ -251,7 +219,7 @@ public class CamelSetValueDialog extends DialogWrapper {
         text = XExpressionImpl.changeMode(text, mode);
         if (mode == EvaluationMode.EXPRESSION) {
             CamelExpressionInputComponent component =
-                    new CamelExpressionInputComponent(myProject, myEditorsProvider, "setValueExpression", mySourcePosition, text, myDisposable,
+                    new CamelExpressionInputComponent(myProject, myEditorsProvider, "setValueExpression", null, text, myDisposable,
                             false);
             component.addExpressionParametersComponent(myCamelExpressionParameters.getMainPanel());
             component.setResultTypeCombo(myCamelExpressionParameters.getResultTypeCombo());
@@ -272,7 +240,7 @@ public class CamelSetValueDialog extends DialogWrapper {
             });
             return component;
         } else {
-            CodeFragmentInputComponent component = new CodeFragmentInputComponent(myProject, myEditorsProvider, mySourcePosition, text,
+            CodeFragmentInputComponent component = new CodeFragmentInputComponent(myProject, myEditorsProvider, null, text,
                     getDimensionServiceKey() + ".splitter", myDisposable);
             component.getInputEditor().addCollapseButton(() -> mySwitchModeAction.actionPerformed(null));
             component.getInputEditor().getLanguageChooser().addPropertyChangeListener(new PropertyChangeListener() {
@@ -314,10 +282,6 @@ public class CamelSetValueDialog extends DialogWrapper {
                 resultType,
                 bodyMediaType,
                 outputMediaType);
-    }
-
-    private static boolean isFirstChild(TreeNode node) {
-        return node.getParent() instanceof EvaluatingExpressionRootNode;
     }
 
     @Override
