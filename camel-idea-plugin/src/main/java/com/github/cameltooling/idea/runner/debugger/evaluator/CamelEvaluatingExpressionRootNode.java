@@ -16,6 +16,7 @@
  */
 package com.github.cameltooling.idea.runner.debugger.evaluator;
 
+import com.github.cameltooling.idea.runner.debugger.ui.CamelDebuggerEvaluationDialog;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.xdebugger.XDebuggerBundle;
 import com.intellij.xdebugger.frame.XCompositeNode;

@@ -46,6 +46,7 @@ public final class ClasspathUtils {
     public static ClasspathUtils getInstance() {
         return classpathUtils;
     }
+
     public static ClassLoader getProjectClassLoader(Project project, ClassLoader parent) throws Exception {
         ClassLoader fullClassLoader = null;
 

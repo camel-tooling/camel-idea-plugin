@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.runner.debugger.evaluator;
+package com.github.cameltooling.idea.runner.debugger.actions;
 
-import com.github.cameltooling.idea.language.DatasonnetLanguage;
-import com.github.cameltooling.idea.language.SimpleLanguage;
+import com.github.cameltooling.idea.language.CamelLanguages;
+import com.github.cameltooling.idea.runner.debugger.ui.CamelDebuggerEvaluationDialog;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Document;
@@ -91,15 +91,14 @@ public class CamelEvaluateActionHandler extends XDebuggerActionHandler {
                                    XDebuggerEvaluator evaluator,
                                    @Nullable XExpression expression) {
         //Hack to register languages before deserialization of stored expressions
-        SimpleLanguage.getInstance();
-        DatasonnetLanguage.getInstance();
+        CamelLanguages.ALL.stream().map(l -> l.getID());
 
         if (expression == null) {
             expression = XExpressionImpl.EMPTY_EXPRESSION;
         }
         if (expression.getLanguage() == null) {
             //Assume Camel Simple by default
-            expression = new XExpressionImpl(expression.getExpression(), SimpleLanguage.getInstance(), expression.getCustomInfo(), expression.getMode());
+            expression = new XExpressionImpl(expression.getExpression(), CamelLanguages.SIMPLE_LANGUAGE, expression.getCustomInfo(), expression.getMode());
         }
         XSourcePosition position = stackFrame == null ? null : stackFrame.getSourcePosition();
         new CamelDebuggerEvaluationDialog(session, editorsProvider, expression, position, evaluator.isCodeFragmentEvaluationSupported()).show();

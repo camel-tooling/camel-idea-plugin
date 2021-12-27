@@ -16,7 +16,7 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
-import com.github.cameltooling.idea.language.DatasonnetLanguage;
+import com.github.cameltooling.idea.language.CamelLanguages;
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpoint;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.github.cameltooling.idea.runner.debugger.util.ClasspathUtils;
@@ -205,6 +205,49 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         return xDebugSession;
     }
 
+    public void setValue(String target,
+                         @Nullable String targetName,
+                         String expression,
+                         String language,
+                         String resultType,
+                         @Nullable String bodyMediaType,
+                         @Nullable String outputMediaType) {
+
+        XSourcePosition xSourcePosition = xDebugSession.getCurrentPosition();
+        XmlTag breakpointTag = IdeaUtils.getService().getXmlTagAt(project, xSourcePosition);
+        String breakpointId = getBreakpointId(breakpointTag);
+
+        //First evaluate expression
+        Map<String, String> params = new HashMap<>();
+        params.put("resultType", resultType);
+        if (!StringUtils.isEmpty(bodyMediaType)) {
+            params.put("bodyMediaType", bodyMediaType);
+        }
+        if (!StringUtils.isEmpty(outputMediaType)) {
+            params.put("outputMediaType", outputMediaType);
+        }
+
+        try {
+            Object value = evaluateExpression(expression, language, params);
+            if (value != null) {
+                if ("Message Header".equals(target)) {
+                    serverConnection.invoke(this.debuggerMBeanObjectName, "setMessageHeaderOnBreakpoint",
+                            new Object[]{breakpointId, targetName, value},
+                            new String[]{"java.lang.String", "java.lang.String", "java.lang.Object"});
+                } else if ("Exchange Property".equals(target)) {
+                    serverConnection.invoke(this.debuggerMBeanObjectName, "setExchangePropertyOnBreakpoint",
+                            new Object[]{breakpointId, targetName, value},
+                            new String[]{"java.lang.String", "java.lang.String", "java.lang.Object"});
+                } else if ("Body".equals(target)) {
+                    serverConnection.invoke(this.debuggerMBeanObjectName, "setMessageBodyOnBreakpoint",
+                            new Object[]{breakpointId, value},
+                            new String[]{"java.lang.String", "java.lang.Object"});
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     public Object evaluateExpression(String script, String language, @Nullable Map<String, String> params) {
         if (isConnected()) {
             XSourcePosition xSourcePosition = xDebugSession.getCurrentPosition();
@@ -223,7 +266,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                     String outputMediaType = params != null && params.containsKey("outputMediaType") ? params.get("outputMediaType") : "application/json";
                     String resultType = params != null && params.containsKey("resultType") ? params.get("resultType") : String.class.getName();
 
-                    if (DatasonnetLanguage.LANGUAGE_ID.equals(language)) {
+                    if (CamelLanguages.DatasonnetLanguage.LANGUAGE_ID.equals(language)) {
                         serverConnection.invoke(this.debuggerMBeanObjectName, "setMessageHeaderOnBreakpoint", new Object[]{breakpointId, "CamelDatasonnetBodyMediaType", bodyMediaType},
                                 new String[]{"java.lang.String", "java.lang.String", "java.lang.Object"});
 
@@ -235,7 +278,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                             new Object[]{breakpointId, language, script, resultType},
                             new String[]{stringClassName, stringClassName, stringClassName, stringClassName});
 
-                    if (DatasonnetLanguage.LANGUAGE_ID.equals(language)) {
+                    if (CamelLanguages.DatasonnetLanguage.LANGUAGE_ID.equals(language)) {
                         serverConnection.invoke(this.debuggerMBeanObjectName, "removeMessageHeaderOnBreakpoint", new Object[]{breakpointId, "CamelDatasonnetBodyMediaType"},
                                 new String[]{"java.lang.String", "java.lang.String"});
 

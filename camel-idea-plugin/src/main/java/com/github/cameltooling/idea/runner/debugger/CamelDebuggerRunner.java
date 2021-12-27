@@ -16,8 +16,8 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
-import com.github.cameltooling.idea.runner.CamelRunConfiguration;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
+import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.debugger.DefaultDebugEnvironment;
 import com.intellij.debugger.engine.DebugProcessImpl;
@@ -29,12 +29,14 @@ import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.configurations.RemoteConnection;
+import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
@@ -68,7 +70,13 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
 
     @Override
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-        return executorId.equals(DefaultDebugExecutor.EXECUTOR_ID) && profile instanceof CamelRunConfiguration;
+        if (profile instanceof RunConfigurationBase) {
+            final RunConfigurationBase base = (RunConfigurationBase) profile;
+            final Project project = base.getProject();
+            final CamelService camelService = project.getService(CamelService.class);
+            return executorId.equals(DefaultDebugExecutor.EXECUTOR_ID) && camelService.isCamelPresent();
+        }
+        return false;
     }
 
     @Override
