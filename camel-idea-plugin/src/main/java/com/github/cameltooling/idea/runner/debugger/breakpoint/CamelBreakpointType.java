@@ -38,36 +38,21 @@ import java.util.Arrays;
 import java.util.List;
 
 public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperties> {
-    private static List<String> parentTagNames = Arrays.asList(new String[] {"setProperty", "setBody", "setHeader", "choice", "validate"});
-    private static List<String> canHaveBreakpointAt = Arrays.asList(
-        new String[] {
-            "bean",
-            "choice",
-            "claimCheck",
-            "convertBodyTo",
-            "delay",
-            "dynamicRouter",
-            "enrich",
-            "filter",
-            "log",
-            "loop",
-            "process",
-            "removeHeader",
-            "removeHeaders",
-            "removeProperty",
-            "removeProperties",
-            "setBody",
-            "setExchangePattern",
-            "setHeader",
-            "setProperty",
-            "throwException",
-            "transform",
-            "to",
-            "toD",
-            "validate",
-            "when",
-            "wireTap",
-        }
+
+    private static List<String> noBreakpointsAt = Arrays.asList(
+            new String[] {
+                "routes",
+                "route",
+                "from",
+                "routeConfiguration",
+                "routeConfigurationId",
+                "exception",
+                "handled",
+                "simple",
+                "constant",
+                "datasonnet",
+                "groovy"
+            }
     );
 
     protected CamelBreakpointType() {
@@ -77,23 +62,26 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
     @Override
     public boolean canPutAt(@NotNull VirtualFile file, int line, @NotNull Project project) {
         XSourcePosition position = XDebuggerUtil.getInstance().createPosition(file, line);
+        String eipName = "";
+
         switch (file.getFileType().getName()) {
             case "XML":
                 XmlTag tag = IdeaUtils.getService().getXmlTagAt(project, position);
-                if (tag != null) {
-                    String parentName = tag.getParentTag() != null ? tag.getParentTag().getLocalName() : tag.getLocalName();
-                    return canHaveBreakpointAt.contains(tag.getLocalName()) && !parentTagNames.contains(parentName);
+                if (tag == null) {
+                    return false;
                 }
+                eipName = tag.getLocalName();
                 break;
             case "JAVA":
                 PsiElement psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
-                if (psiElement != null) {
-                    return canHaveBreakpointAt.contains(psiElement.getText());
+                if (psiElement == null) {
+                    return false;
                 }
+                eipName = psiElement.getText();
                 break;
         }
 
-        return false;
+        return !noBreakpointsAt.contains(eipName);
     }
 
     @Override

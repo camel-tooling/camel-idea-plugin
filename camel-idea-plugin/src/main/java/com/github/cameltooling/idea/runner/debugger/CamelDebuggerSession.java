@@ -482,7 +482,11 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 }
                 for (XLineBreakpoint breakpoint : pendingBreakpointsAdd) {
                     ApplicationManager.getApplication().runReadAction(() -> {
-                        toggleBreakpoint(breakpoint, true);
+                        try {
+                            toggleBreakpoint(breakpoint, true);
+                        } catch (Exception e) {
+                            LOG.error(e);
+                        }
                     });
                 }
                 pendingBreakpointsAdd.clear();
@@ -551,6 +555,8 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             return true;
         }
 
+        //Breakpoint is invalid
+        xDebugSession.setBreakpointInvalid(xBreakpoint, "Camel EIP ID not found");
         return false;
     }
 
@@ -767,7 +773,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
         if (psiElement != null) {
             breakpointId = getBreakpointId(psiElement);
-            breakpointElement = Collections.singletonMap(breakpointId, psiElement);
+            if (breakpointId != null) {
+                breakpointElement = Collections.singletonMap(breakpointId, psiElement);
+            }
         }
 
         return breakpointElement;
