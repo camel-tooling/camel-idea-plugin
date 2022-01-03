@@ -17,13 +17,13 @@
 package com.github.cameltooling.idea.runner.debugger.breakpoint;
 
 import com.github.cameltooling.idea.runner.debugger.CamelDebuggerEditorsProvider;
-import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.xml.XmlTag;
@@ -36,7 +36,32 @@ import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperties> {
+    private static List<String> parentTagNames = Arrays.asList(new String[] {"setProperty", "setBody", "setHeader", "choice"});
+    private static List<String> canBreakpointAt = Arrays.asList(
+        new String[] {
+            "setProperty",
+            "setBody",
+            "setHeader",
+            "log",
+            "to",
+            "toD",
+            "choice",
+            "when",
+            "throwException",
+            "filter",
+            "enrich",
+            "wireTap",
+            "removeHeader",
+            "removeProperty"
+        }
+    );
+
+    //private static List<String> nonFunctionalJavaNames = Arrays.asList(new String[] {"routeConfigurationId","setBody","setProperty","choice"});
+
     protected CamelBreakpointType() {
         super("camel", "Camel Breakpoints");
     }
@@ -47,11 +72,30 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
         if (document != null) {
             final PsiFile psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document);
             if (psiFile != null) {
-                final boolean isCamelAndXml = IdeaUtils.getService().isXmlLanguage(psiFile);
-                if (isCamelAndXml) {
-                    XmlTag tag = IdeaUtils.getXmlTagAt(project, XDebuggerUtil.getInstance().createPosition(file, line));
-                    //The tag must be inside "route" and cannot be "from"
-                    return CamelIdeaUtils.getService().isInsideCamelRoute(tag, true) && !"from".equalsIgnoreCase(tag.getLocalName());
+                final boolean isXml = IdeaUtils.getService().isXmlLanguage(psiFile);
+                final boolean isJava = IdeaUtils.getService().isJavaLanguage(psiFile);
+                XSourcePosition position = XDebuggerUtil.getInstance().createPosition(file, line);
+
+                if (isXml) {
+                    XmlTag tag = IdeaUtils.getService().getXmlTagAt(project, position);
+                    if (tag != null) {
+                        String parentName = tag.getParentTag() != null ? tag.getParentTag().getLocalName() : tag.getLocalName(); //NPE here
+                        //The tag must be inside "route"
+                        // and cannot be "from"
+                        // and cannot be a child of "setBody", "setHeader", "setProperty", or "choice"
+                        return canBreakpointAt.contains(tag.getLocalName()) && !parentTagNames.contains(parentName);
+/*
+                        return CamelIdeaUtils.getService().isInsideCamelRoute(tag, true)
+                                && !"from".equalsIgnoreCase(tag.getLocalName())
+                                && !parentTagNames.contains(parentName);
+*/
+                    }
+                } else if (isJava) {
+                    //Get PsiClass
+                    PsiElement psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
+                    /*return CamelIdeaUtils.getService().isInsideCamelRoute(psiElement, true)
+                            && !psiElement.getText().startsWith("from");*/
+                    return canBreakpointAt.contains(psiElement.getText());
                 }
             }
         }
@@ -75,9 +119,18 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
 
     @Nullable
     @Override
-    public XBreakpointProperties createBreakpointProperties(@NotNull VirtualFile virtualFile, int i) {
+    public XBreakpointProperties createBreakpointProperties(@NotNull VirtualFile virtualFile, int line) {
+        return null;
+
+    }
+/*
+        final PsiFile psiFile = PsiDocumentManager.getInstance(getP).getPsiFile(document);
+        if (psiFile != null) {
+            final boolean isXml = IdeaUtils.getService().isXmlLanguage(psiFile);
+            final boolean isJava = IdeaUtils.getService().isJavaLanguage(psiFile);
         return null;
     }
+*/
 
 
 }

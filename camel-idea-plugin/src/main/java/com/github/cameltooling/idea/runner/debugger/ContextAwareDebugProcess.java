@@ -54,7 +54,6 @@ public class ContextAwareDebugProcess extends XDebugProcess {
         this.defaultContext = defaultContext;
     }
 
-
     public void setContext(String context) {
         this.currentContext = context;
     }
@@ -83,7 +82,7 @@ public class ContextAwareDebugProcess extends XDebugProcess {
 
     @Override
     public void startPausing() {
-        getDefaultDebugProcess().startPausing();
+        getCurrentDebugProcess().startPausing();
     }
 
     @Override
