@@ -16,15 +16,11 @@
  */
 package com.github.cameltooling.idea.service.extension.camel;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Predicate;
-
 import com.github.cameltooling.idea.Constants;
 import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiClass;
@@ -37,7 +33,30 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlToken;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Predicate;
+
 public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
+
+    @Override
+    public boolean isCamelFile(PsiFile file) {
+        final List<String> rootTags = Arrays.asList(
+                new String[] {
+                    "routes",
+                    "routeConfigurations",
+                    "route",
+                    "routeConfiguration"
+                });
+        if (file != null && file.getFileType().equals(XmlFileType.INSTANCE)) {//This is XML file
+            XmlFile xmlFile = (XmlFile) file;
+            XmlTag rootTag = xmlFile.getRootTag();
+            return rootTags.contains(rootTag.getLocalName());
+        }
+
+        return false;
+    }
 
     @Override
     public boolean isCamelRouteStart(PsiElement element) {

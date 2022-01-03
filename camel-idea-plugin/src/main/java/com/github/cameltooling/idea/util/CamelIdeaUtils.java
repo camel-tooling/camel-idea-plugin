@@ -16,30 +16,23 @@
  */
 package com.github.cameltooling.idea.util;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
-import com.github.cameltooling.idea.reference.blueprint.BeanReference;
-import com.github.cameltooling.idea.reference.blueprint.model.ReferenceableBeanId;
-import com.github.cameltooling.idea.reference.blueprint.model.ReferencedClass;
 import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementFactory;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiReference;
-import com.intellij.psi.PsiType;
-import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Utility methods to work with Camel related {@link com.intellij.psi.PsiElement} elements.
@@ -62,6 +55,15 @@ public final class CamelIdeaUtils implements Disposable {
     public static CamelIdeaUtils getService() {
         return ServiceManager.getService(CamelIdeaUtils.class);
     }
+
+    /**
+     * Is the given file a file containing Camel route or route configuration
+     */
+    public boolean isCamelFile(PsiFile file) {
+        return enabledExtensions.stream()
+                .anyMatch(extension -> extension.isCamelFile(file));
+    }
+
 
     /**
      * Is the given element from the start of a Camel route, eg <tt>from</tt>, ot &lt;from&gt;.

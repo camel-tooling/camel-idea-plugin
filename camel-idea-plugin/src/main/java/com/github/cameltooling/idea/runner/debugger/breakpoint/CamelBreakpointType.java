@@ -17,10 +17,14 @@
 package com.github.cameltooling.idea.runner.debugger.breakpoint;
 
 import com.github.cameltooling.idea.runner.debugger.CamelDebuggerEditorsProvider;
+import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -64,6 +68,9 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
         XSourcePosition position = XDebuggerUtil.getInstance().createPosition(file, line);
         String eipName = "";
 
+        final Document document = FileDocumentManager.getInstance().getDocument(file);
+        final PsiFile psiFile = document != null ? PsiDocumentManager.getInstance(project).getPsiFile(document) : null;
+
         switch (file.getFileType().getName()) {
             case "XML":
                 XmlTag tag = IdeaUtils.getService().getXmlTagAt(project, position);
@@ -81,7 +88,7 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
                 break;
         }
 
-        return !noBreakpointsAt.contains(eipName);
+        return !noBreakpointsAt.contains(eipName) && CamelIdeaUtils.getService().isCamelFile(psiFile);
     }
 
     @Override
