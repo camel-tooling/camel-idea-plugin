@@ -33,13 +33,10 @@ import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
-import com.intellij.psi.xml.XmlToken;
-import com.intellij.psi.xml.XmlTokenType;
 import com.intellij.xdebugger.AbstractDebuggerSession;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerUtil;
@@ -560,40 +557,6 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private void checkSuspendedBreakpoints() {
         while (isConnected()) {
             try {
-                //Set<String> suspendedBreakpointIDs = backlogDebugger.getSuspendedBreakpointNodeIds();
-                // this throws exception: javax.management.AttributeNotFoundException: getAttribute failed: ModelMBeanAttributeInfo not found for SuspendedBreakpointNodeIds
-                //  at java.management/javax.management.modelmbean.RequiredModelMBean.getAttribute(RequiredModelMBean.java:1440)
-                //  at java.management/com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.getAttribute(DefaultMBeanServerInterceptor.java:641)
-                //  at java.management/com.sun.jmx.mbeanserver.JmxMBeanServer.getAttribute(JmxMBeanServer.java:678)
-                //  at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doOperation(RMIConnectionImpl.java:1443)
-                //  at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl$PrivilegedOperation.run(RMIConnectionImpl.java:1307)
-                //  at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doPrivilegedOperation(RMIConnectionImpl.java:1399)
-                //  at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.getAttribute(RMIConnectionImpl.java:637)
-                //  at java.base/jdk.internal.reflect.GeneratedMethodAccessor151.invoke(Unknown Source)
-                //  at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-                //  at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-                //  at java.rmi/sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:359)
-                //  at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:200)
-                //  at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:197)
-                //  at java.base/java.security.AccessController.doPrivileged(AccessController.java:689)
-                //  at java.rmi/sun.rmi.transport.Transport.serviceCall(Transport.java:196)
-                //  at java.rmi/sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:562)
-                //  at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:796)
-                //  at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(TCPTransport.java:677)
-                //  at java.base/java.security.AccessController.doPrivileged(AccessController.java:389)
-                //  at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:676)
-                //  at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
-                //  at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
-                //  at java.base/java.lang.Thread.run(Thread.java:835)
-                //  at java.rmi/sun.rmi.transport.StreamRemoteCall.exceptionReceivedFromServer(StreamRemoteCall.java:303)
-                //  at java.rmi/sun.rmi.transport.StreamRemoteCall.executeCall(StreamRemoteCall.java:279)
-                //  at java.rmi/sun.rmi.server.UnicastRef.invoke(UnicastRef.java:164)
-                //  at jdk.remoteref/jdk.jmx.remote.internal.rmi.PRef.invoke(Unknown Source)
-                //  at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl_Stub.getAttribute(Unknown Source)
-                //  at java.management.rmi/javax.management.remote.rmi.RMIConnector$RemoteMBeanServerConnection.getAttribute(RMIConnector.java:904)
-                //  at java.management/javax.management.MBeanServerInvocationHandler.invoke(MBeanServerInvocationHandler.java:273)
-                //  ... 13 more
-
                 Collection<String> suspendedBreakpointIDs = (Collection<String>) serverConnection.invoke(this.debuggerMBeanObjectName, "getSuspendedBreakpointNodeIds", new Object[]{}, new String[]{});
                 if (suspendedBreakpointIDs != null && !suspendedBreakpointIDs.isEmpty()) {
                     //Fire notifications here, we need to display the exchange, stack etc
@@ -694,31 +657,29 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
     private String getBreakpointId(@NotNull PsiElement breakpointTag) {
         String breakpointId = null;
-        boolean isXml = false;
-        boolean isJava = false;
         String sourceLocation = "";
 
         //Obtain file name and line number
         XSourcePosition position = XDebuggerUtil.getInstance().createPositionByElement(breakpointTag);
         int lineNumber = position.getLine() + 1; //Lines in XSourcePosition are 0-based
 
-        final PsiFile psiFile = breakpointTag.getContainingFile();
-        if (psiFile != null) {
-            isXml = IdeaUtils.getService().isXmlLanguage(psiFile);
-            isJava = IdeaUtils.getService().isJavaLanguage(psiFile);
+        final VirtualFile virtualFile = position.getFile();
+
+        switch (virtualFile.getFileType().getName()) {
+            case "XML":
+                sourceLocation = virtualFile.getPresentableUrl();
+                if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
+                    sourceLocation = "file:" + sourceLocation.replace("src/main/resources", "target/classes"); // file:/absolute/path/to/file.xml
+                } else { //Then it must be a Jar
+                    sourceLocation = "classpath:" + sourceLocation.substring(sourceLocation.lastIndexOf("!") + 2);
+                }
+                break;
+            case "JAVA":
+                PsiClass psiClass = PsiTreeUtil.getParentOfType(breakpointTag, PsiClass.class);
+                sourceLocation = psiClass.getQualifiedName();
+                break;
         }
-        if (isXml) {
-            VirtualFile virtualFile = position.getFile();
-            sourceLocation = virtualFile.getPresentableUrl();
-            if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
-                sourceLocation = "file:" + sourceLocation.replace("src/main/resources", "target/classes"); // file:/absolute/path/to/file.xml
-            } else { //Then it must be a Jar
-                sourceLocation = "classpath:" + sourceLocation.substring(sourceLocation.lastIndexOf("!") + 2);
-            }
-        } else if (isJava) {
-            PsiClass psiClass = PsiTreeUtil.getParentOfType(breakpointTag, PsiClass.class);
-            sourceLocation = psiClass.getQualifiedName();
-        }
+
         String path = "//*[@sourceLocation='" + sourceLocation + "' and @sourceLineNumber='" + lineNumber + "']";
 
         try {
@@ -795,55 +756,21 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         PsiElement psiElement = null;
 
         VirtualFile file = position.getFile();
-
-        final PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
-        if (psiFile != null) {
-            final boolean isXml = IdeaUtils.getService().isXmlLanguage(psiFile);
-            final boolean isJava = IdeaUtils.getService().isJavaLanguage(psiFile);
-
-            psiElement =
-                      isXml ? XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, true)  //IdeaUtils.getService().getXmlTagAt(project, position) :
-                    : isJava ? XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false)
-                    : null;
-
-            //Temporary fix for XML
-            if (isXml) {
-                //First find the tag
-                if (!(psiElement instanceof XmlTag)) {
-                    psiElement = PsiTreeUtil.getParentOfType(psiElement, XmlTag.class);
-                }
-                Collection<XmlToken> children = PsiTreeUtil.findChildrenOfType(psiElement, XmlToken.class);
-                PsiElement endTag = children.stream()
-                        .filter(token -> token.getTokenType().equals(XmlTokenType.XML_TAG_END) || token.getTokenType().equals(XmlTokenType.XML_EMPTY_ELEMENT_END))
-                        .findFirst().orElse(null);
-                breakpointId = getBreakpointId(endTag);
-
-            } else {
-                breakpointId = getBreakpointId(psiElement);
-            }
-            breakpointElement = Collections.singletonMap(breakpointId, psiElement);
+        switch (file.getFileType().getName()) {
+            case "XML":
+                psiElement = IdeaUtils.getService().getXmlTagAt(project, position);
+                break;
+            case "JAVA":
+                psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
+                break;
         }
-        return breakpointElement;
-/*
-        Map<String, PsiElement> breakpointElement = null;
-        String breakpointId = null;
-        PsiElement psiElement = getCamelElementAtPosition(position);
+
         if (psiElement != null) {
-            //Temporary fix for XML
-            if (psiElement.getContainingFile() instanceof XmlFile) {
-                Collection<XmlToken> children = PsiTreeUtil.findChildrenOfType(psiElement, XmlToken.class);
-                PsiElement endTag = children.stream()
-                        .filter(token -> token.getTokenType().equals(XmlTokenType.XML_TAG_END) ||
-                                         token.getTokenType().equals(XmlTokenType.XML_EMPTY_ELEMENT_END))
-                        .findFirst().orElse(null);
-                breakpointId = getBreakpointId(endTag);
-            } else {
-                breakpointId = getBreakpointId(psiElement);
-            }
+            breakpointId = getBreakpointId(psiElement);
             breakpointElement = Collections.singletonMap(breakpointId, psiElement);
         }
+
         return breakpointElement;
-*/
     }
 
     @Nullable
@@ -879,6 +806,4 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         }
         return null;
     }
-
-
 }
