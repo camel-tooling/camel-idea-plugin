@@ -56,28 +56,29 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     private static final String JAVA_LANG_STRING = "java.lang.String";
 
+    private static final List<String> JAVA_ROUTE_BUILDERS = Arrays.asList(
+        new String[] {
+            "RouteBuilder",
+            "RoutesBuilder",
+            "RouteConfigurationBuilder",
+            "RouteConfigurationsBuilder",
+            "AdviceWithRouteBuilder",
+            "EndpointRouteBuilder",
+            "EndpointRouteConfigurationBuilder",
+            "SpringRouteBuilder"
+        });
+
     @Override
     public boolean isCamelFile(PsiFile file) {
-        final List<String> builders = Arrays.asList(
-                new String[] {
-                        "RouteBuilder",
-                        "RoutesBuilder",
-                        "RouteConfigurationBuilder",
-                        "RouteConfigurationsBuilder",
-                        "AdviceWithRouteBuilder",
-                        "EndpointRouteBuilder",
-                        "EndpointRouteConfigurationBuilder",
-                        "SpringRouteBuilder"
-                });
-        if (file != null && file.getFileType().equals(JavaFileType.INSTANCE)) {//This is Java file
+        if (file != null && file.getFileType().equals(JavaFileType.INSTANCE)) {
             PsiJavaFile javaFile = (PsiJavaFile) file;
             final PsiClass[] classes = javaFile.getClasses();
             for (PsiClass nextClass : classes) {
                 PsiClassType[] extendsTypes = nextClass.getExtendsListTypes();
                 for (PsiClassType nextType : extendsTypes) {
-                    if (builders.contains(nextType.getClassName())) {
+                    if (JAVA_ROUTE_BUILDERS.contains(nextType.getClassName())) {
                         return true;
-                    };
+                    }
                 }
             }
         }

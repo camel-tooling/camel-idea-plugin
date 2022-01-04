@@ -40,19 +40,20 @@ import java.util.function.Predicate;
 
 public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
 
+    private static final List<String> XML_ROUTES = Arrays.asList(
+        new String[] {
+            "routes",
+            "routeConfigurations",
+            "route",
+            "routeConfiguration"
+        });
+
     @Override
     public boolean isCamelFile(PsiFile file) {
-        final List<String> rootTags = Arrays.asList(
-                new String[] {
-                    "routes",
-                    "routeConfigurations",
-                    "route",
-                    "routeConfiguration"
-                });
-        if (file != null && file.getFileType().equals(XmlFileType.INSTANCE)) {//This is XML file
+        if (file != null && file.getFileType().equals(XmlFileType.INSTANCE)) {
             XmlFile xmlFile = (XmlFile) file;
             XmlTag rootTag = xmlFile.getRootTag();
-            return rootTags.contains(rootTag.getLocalName());
+            return XML_ROUTES.contains(rootTag.getLocalName());
         }
 
         return false;

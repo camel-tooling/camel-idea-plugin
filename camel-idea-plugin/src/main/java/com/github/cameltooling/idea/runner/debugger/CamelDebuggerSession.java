@@ -16,6 +16,29 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
+import javax.management.JMX;
+import javax.management.MBeanException;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import com.github.cameltooling.idea.language.CamelLanguages;
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpoint;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
@@ -51,29 +74,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import javax.management.JMX;
-import javax.management.MBeanException;
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class CamelDebuggerSession implements AbstractDebuggerSession {
     private static final Logger LOG = Logger.getInstance(CamelDebuggerSession.class);
@@ -672,18 +672,19 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         final VirtualFile virtualFile = position.getFile();
 
         switch (virtualFile.getFileType().getName()) {
-            case "XML":
-                sourceLocation = virtualFile.getPresentableUrl();
-                if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
-                    sourceLocation = "file:" + sourceLocation.replace("src/main/resources", "target/classes"); // file:/absolute/path/to/file.xml
-                } else { //Then it must be a Jar
-                    sourceLocation = "classpath:" + sourceLocation.substring(sourceLocation.lastIndexOf("!") + 2);
-                }
-                break;
-            case "JAVA":
-                PsiClass psiClass = PsiTreeUtil.getParentOfType(breakpointTag, PsiClass.class);
-                sourceLocation = psiClass.getQualifiedName();
-                break;
+        case "XML":
+            sourceLocation = virtualFile.getPresentableUrl();
+            if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
+                sourceLocation = "file:" + sourceLocation.replace("src/main/resources", "target/classes"); // file:/absolute/path/to/file.xml
+            } else { //Then it must be a Jar
+                sourceLocation = "classpath:" + sourceLocation.substring(sourceLocation.lastIndexOf("!") + 2);
+            }
+            break;
+        case "JAVA":
+            PsiClass psiClass = PsiTreeUtil.getParentOfType(breakpointTag, PsiClass.class);
+            sourceLocation = psiClass.getQualifiedName();
+            break;
+        default: // noop
         }
 
         String path = "//*[@sourceLocation='" + sourceLocation + "' and @sourceLineNumber='" + lineNumber + "']";
@@ -763,12 +764,13 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
         VirtualFile file = position.getFile();
         switch (file.getFileType().getName()) {
-            case "XML":
-                psiElement = IdeaUtils.getService().getXmlTagAt(project, position);
-                break;
-            case "JAVA":
-                psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
-                break;
+        case "XML":
+            psiElement = IdeaUtils.getService().getXmlTagAt(project, position);
+            break;
+        case "JAVA":
+            psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
+            break;
+        default: // noop
         }
 
         if (psiElement != null) {
@@ -801,7 +803,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             sibling = sibling.getNextSibling();
         }
         if (sibling != null) {
-            return ((Element)sibling).getAttribute("id");
+            return ((Element) sibling).getAttribute("id");
         } else {
             Node parent = tag.getParentNode();
             while (null != parent && parent.getNodeType() != Node.ELEMENT_NODE) {
