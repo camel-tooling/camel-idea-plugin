@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
-  <version>0.7.12</version>
+  <version>0.8.1</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -9,9 +9,9 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.0.8.0
+      v.0.8.1
       <ul>
-        <li>Tech Preview of the new Camel Route Debugger (currently only XML routes)</li>
+        <li>Tech Preview of the new Camel Route Debugger (currently XML and Java routes)</li>
       </ul>
     ]]>
   </change-notes>
