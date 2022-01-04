@@ -21,9 +21,11 @@ import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.xml.XmlTag;
@@ -36,26 +38,57 @@ import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperties> {
+
+    private static List<String> noBreakpointsAt = Arrays.asList(
+            new String[] {
+                "routes",
+                "route",
+                "from",
+                "routeConfiguration",
+                "routeConfigurationId",
+                "exception",
+                "handled",
+                "simple",
+                "constant",
+                "datasonnet",
+                "groovy"
+            }
+    );
+
     protected CamelBreakpointType() {
         super("camel", "Camel Breakpoints");
     }
 
     @Override
     public boolean canPutAt(@NotNull VirtualFile file, int line, @NotNull Project project) {
+        XSourcePosition position = XDebuggerUtil.getInstance().createPosition(file, line);
+        String eipName = "";
+
         final Document document = FileDocumentManager.getInstance().getDocument(file);
-        if (document != null) {
-            final PsiFile psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document);
-            if (psiFile != null) {
-                final boolean isCamelAndXml = IdeaUtils.getService().isXmlLanguage(psiFile);
-                if (isCamelAndXml) {
-                    XmlTag tag = IdeaUtils.getXmlTagAt(project, XDebuggerUtil.getInstance().createPosition(file, line));
-                    //The tag must be inside "route" and cannot be "from"
-                    return CamelIdeaUtils.getService().isInsideCamelRoute(tag, true) && !"from".equalsIgnoreCase(tag.getLocalName());
+        final PsiFile psiFile = document != null ? PsiDocumentManager.getInstance(project).getPsiFile(document) : null;
+
+        switch (file.getFileType().getName()) {
+            case "XML":
+                XmlTag tag = IdeaUtils.getService().getXmlTagAt(project, position);
+                if (tag == null) {
+                    return false;
                 }
-            }
+                eipName = tag.getLocalName();
+                break;
+            case "JAVA":
+                PsiElement psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
+                if (psiElement == null) {
+                    return false;
+                }
+                eipName = psiElement.getText();
+                break;
         }
-        return false;
+
+        return !noBreakpointsAt.contains(eipName) && CamelIdeaUtils.getService().isCamelFile(psiFile);
     }
 
     @Override
@@ -75,9 +108,29 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
 
     @Nullable
     @Override
-    public XBreakpointProperties createBreakpointProperties(@NotNull VirtualFile virtualFile, int i) {
-        return null;
+    public XBreakpointProperties createBreakpointProperties(@NotNull VirtualFile virtualFile, int line) {
+        return new CamelBreakpointProperties(virtualFile.getFileType());
     }
 
+    class CamelBreakpointProperties extends XBreakpointProperties<CamelBreakpointProperties> {
+        private FileType myFileType;
 
+        CamelBreakpointProperties(FileType fileType) {
+            myFileType = fileType;
+        }
+
+        @Override
+        public @Nullable CamelBreakpointProperties getState() {
+            return this;
+        }
+
+        @Override
+        public void loadState(@NotNull CamelBreakpointProperties state) {
+            myFileType = state.myFileType;
+        }
+
+        public FileType getFileType() {
+            return myFileType;
+        }
+    }
 }

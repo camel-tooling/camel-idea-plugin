@@ -16,15 +16,15 @@
  */
 package com.github.cameltooling.idea.runner.debugger.breakpoint;
 
-import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.PsiElement;
 import com.intellij.xdebugger.XSourcePosition;
 
 public class CamelBreakpoint {
     private String breakpointId;
-    private XmlTag breakpointTag;
+    private PsiElement breakpointTag;
     private XSourcePosition position;
 
-    public CamelBreakpoint(String breakpointId, XmlTag breakpointTag, XSourcePosition position) {
+    public CamelBreakpoint(String breakpointId, PsiElement breakpointTag, XSourcePosition position) {
         this.breakpointId = breakpointId;
         this.breakpointTag = breakpointTag;
         this.position = position;
@@ -38,11 +38,11 @@ public class CamelBreakpoint {
         this.breakpointId = breakpointId;
     }
 
-    public XmlTag getBreakpointTag() {
+    public PsiElement getBreakpointTag() {
         return breakpointTag;
     }
 
-    public void setBreakpointTag(XmlTag breakpointTag) {
+    public void setBreakpointTag(PsiElement breakpointTag) {
         this.breakpointTag = breakpointTag;
     }
 

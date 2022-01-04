@@ -25,39 +25,32 @@ import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.execution.process.OSProcessUtil;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessInfo;
-import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ProjectFileIndex;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.pom.Navigatable;
-import com.intellij.pom.NonNavigatable;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.SmartPointerManager;
-import com.intellij.psi.SmartPsiElementPointer;
-import com.intellij.psi.search.FileTypeIndex;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.xdebugger.AbstractDebuggerSession;
 import com.intellij.xdebugger.XDebugSession;
+import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.XExpression;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint;
-import com.intellij.xdebugger.impl.XSourcePositionImpl;
 import com.sun.tools.attach.VirtualMachine;
 import org.apache.camel.api.management.mbean.ManagedBacklogDebuggerMBean;
 import org.apache.camel.api.management.mbean.ManagedCamelContextMBean;
-import org.intellij.plugins.xpathView.support.XPathSupport;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import javax.management.JMX;
 import javax.management.MBeanException;
@@ -70,6 +63,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -82,6 +76,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class CamelDebuggerSession implements AbstractDebuggerSession {
+    private static final Logger LOG = Logger.getInstance(CamelDebuggerSession.class);
 
     private static final int MAX_RETRIES = 30;
     private static final String BACKLOG_DEBUGGER_LOGGING_LEVEL = "TRACE";
@@ -103,10 +98,13 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private ObjectName debuggerMBeanObjectName;
 
     private org.w3c.dom.Document routesDOMDocument;
+    //private org.w3c.dom.Document locationsDOMDocument;
 
     private String temporaryBreakpointId;
 
     private XDebugSession xDebugSession;
+
+    private String locations;
 
     public boolean isConnected() {
         boolean isConnected = false;
@@ -213,9 +211,14 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                          @Nullable String bodyMediaType,
                          @Nullable String outputMediaType) {
 
-        XSourcePosition xSourcePosition = xDebugSession.getCurrentPosition();
-        XmlTag breakpointTag = IdeaUtils.getService().getXmlTagAt(project, xSourcePosition);
-        String breakpointId = getBreakpointId(breakpointTag);
+        XSourcePosition position = xDebugSession.getCurrentPosition();
+        Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
+
+        if (breakpointElement == null) {
+            //TODO Log warning
+            return;
+        }
+        String breakpointId = breakpointElement.keySet().iterator().next();
 
         //First evaluate expression
         Map<String, String> params = new HashMap<>();
@@ -248,11 +251,17 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             e.printStackTrace();
         }
     }
+
     public Object evaluateExpression(String script, String language, @Nullable Map<String, String> params) {
         if (isConnected()) {
-            XSourcePosition xSourcePosition = xDebugSession.getCurrentPosition();
-            XmlTag breakpointTag = IdeaUtils.getService().getXmlTagAt(project, xSourcePosition);
-            String breakpointId = getBreakpointId(breakpointTag);
+            XSourcePosition position = xDebugSession.getCurrentPosition();
+            Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
+
+            if (breakpointElement == null) {
+                //TODO Log warning
+                return null;
+            }
+            String breakpointId = breakpointElement.keySet().iterator().next();
 
             String stringClassName = String.class.getName();
             try {
@@ -308,8 +317,14 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
     public void stepOut(XSourcePosition position) {
         try {
-            XmlTag currentTag = IdeaUtils.getService().getXmlTagAt(project, position);
-            String breakpointId = getBreakpointId(currentTag);
+            Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
+
+            if (breakpointElement == null) {
+                //TODO Log warning
+                return;
+            }
+            String breakpointId = breakpointElement.keySet().iterator().next();
+
             //Get the route of the current tag
             Element routeElement = getParentRouteId(breakpointId);
             String routeId = routeElement.getAttribute("id");
@@ -322,11 +337,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             if (callerStackFrame == null) { //This is the top route
                 resume();
             } else {
-                //Find breakpoint tag
-                XmlTag nextTag = PsiTreeUtil.getNextSiblingOfType(callerStackFrame.getTag(), XmlTag.class);
-                if (nextTag != null) {
+                String newTemporaryBreakpointId = getSiblingId(callerStackFrame.getProcessorId());
+                if (newTemporaryBreakpointId != null) {
                     //Add temporary breakpoint
-                    String newTemporaryBreakpointId = getBreakpointId(nextTag);
                     backlogDebugger.addBreakpoint(newTemporaryBreakpointId);
                     //Run to that breakpoint
                     backlogDebugger.resumeBreakpoint(breakpointId);
@@ -347,19 +360,17 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     public void runToPosition(XSourcePosition fromPosition, XSourcePosition toPosition) {
+        Map<String, PsiElement> fromBreakpointElement = createBreakpointElementFromPosition(fromPosition);
+        Map<String, PsiElement> toBreakpointElement = createBreakpointElementFromPosition(toPosition);
 
-        XmlTag toBreakpointTag = IdeaUtils.getService().getXmlTagAt(project, toPosition);
-        if (toBreakpointTag == null) { //this is not a tag
+        if (toBreakpointElement == null) { //this is not a tag
             return;
         }
-        String toBreakpointId = getBreakpointId(toBreakpointTag);
-        if (toBreakpointId == null) { //this is not a tag
-            return;
-        }
-        XmlTag fromBreakpointTag = IdeaUtils.getService().getXmlTagAt(project, fromPosition);
-        String fromBreakpointId = getBreakpointId(fromBreakpointTag);
 
-        breakpoints.put(toBreakpointId, new CamelBreakpoint(toBreakpointId, toBreakpointTag, toPosition));
+        String toBreakpointId = toBreakpointElement.keySet().iterator().next();
+        String fromBreakpointId = fromBreakpointElement.keySet().iterator().next();
+
+        breakpoints.put(toBreakpointId, new CamelBreakpoint(toBreakpointId, toBreakpointElement.get(toBreakpointId), toPosition));
 
         backlogDebugger.addBreakpoint(toBreakpointId);
         //Run to that breakpoint
@@ -371,15 +382,22 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     private void nextStep(XSourcePosition position, boolean isOver) {
-        XmlTag breakpointTag = IdeaUtils.getService().getXmlTagAt(project, position);
-        String breakpointId = getBreakpointId(breakpointTag);
+        Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
+
+        if (breakpointElement == null) {
+            //TODO Log warning
+            return;
+        }
+        String breakpointId = breakpointElement.keySet().iterator().next();
+        PsiElement breakpointTag = breakpointElement.get(breakpointId);
         breakpoints.put(breakpointId, new CamelBreakpoint(breakpointId, breakpointTag, position));
 
-        if (isOver && ("to".equals(breakpointTag.getLocalName()) || "toD".equals(breakpointTag.getLocalName()))) {
-            XmlTag nextTag = PsiTreeUtil.getNextSiblingOfType(breakpointTag, XmlTag.class);
-            if (nextTag != null) {
+        String name = breakpointTag instanceof XmlTag ? ((XmlTag) breakpointTag).getLocalName() : breakpointTag.getText();
+
+        if (isOver && ("to".equals(name) || "toD".equals(name))) {
+            String newTemporaryBreakpointId = getSiblingId(breakpointId);
+            if (newTemporaryBreakpointId != null) {
                 //Add temporary breakpoint
-                String newTemporaryBreakpointId = getBreakpointId(nextTag);
                 backlogDebugger.addBreakpoint(newTemporaryBreakpointId);
                 //Run to that breakpoint
                 backlogDebugger.resumeBreakpoint(breakpointId);
@@ -393,6 +411,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 resume();
             }
         } else {
+//            backlogDebugger.step();
             backlogDebugger.stepBreakpoint(breakpointId);
         }
     }
@@ -440,23 +459,34 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                     ObjectName mbeanName = names.iterator().next();
                     camelContext = JMX.newMBeanProxy(serverConnection, mbeanName, ManagedCamelContextMBean.class);
 
-                    //Init DOM Document
+                    while (!"Started".equals(camelContext.getState())) {
+                        LOG.debug("Waiting for the context to start");
+                    }
+
+                    //Init DOM Documents
                     String routes = getCamelContext().dumpRoutesAsXml(false, true);
                     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
                     DocumentBuilder documentBuilder = dbf.newDocumentBuilder();
                     InputStream targetStream = new ByteArrayInputStream(routes.getBytes());
                     this.routesDOMDocument = documentBuilder.parse(targetStream);
+
+                    //TODO get list of loaded expression languages
+
                 }
 
                 //Toggle all pending breakpoints
-                for (XLineBreakpoint breakpoint : pendingBreakpointsAdd) {
-                    ApplicationManager.getApplication().runReadAction(() -> {
-                        toggleBreakpoint(breakpoint, true);
-                    });
-                }
                 for (XLineBreakpoint breakpoint : pendingBreakpointsRemove) {
                     ApplicationManager.getApplication().runReadAction(() -> {
                         toggleBreakpoint(breakpoint, false);
+                    });
+                }
+                for (XLineBreakpoint breakpoint : pendingBreakpointsAdd) {
+                    ApplicationManager.getApplication().runReadAction(() -> {
+                        try {
+                            toggleBreakpoint(breakpoint, true);
+                        } catch (Exception e) {
+                            LOG.error(e);
+                        }
                     });
                 }
                 pendingBreakpointsAdd.clear();
@@ -500,31 +530,13 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         return null;
     }
 
-    private String getBreakpointId(XmlTag breakpointTag) {
-        String breakpointId = null;
-        String path = "/routes" + getXPathOfTheXMLTag(breakpointTag);
-
-        try {
-            XPath xPath = XPathFactory.newInstance().newXPath();
-            Node breakpointTagFromContext = (Node) xPath.compile(path).evaluate(routesDOMDocument, XPathConstants.NODE);
-            if (breakpointTagFromContext != null) {
-                breakpointId = breakpointTagFromContext.getAttributes().getNamedItem("id").getTextContent();
-            }
-        } catch (Exception e) {
-            breakpointId = null;
-            e.printStackTrace();
-        }
-        return breakpointId;
-    }
-
     private boolean toggleBreakpoint(@NotNull XLineBreakpoint<XBreakpointProperties> xBreakpoint, boolean toggleOn) {
-
         XSourcePosition position = xBreakpoint.getSourcePosition();
+        Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
 
-        XmlTag breakpointTag = IdeaUtils.getService().getXmlTagAt(project, position);
-        String breakpointId = getBreakpointId(breakpointTag);
-
-        if (breakpointId != null) {
+        if (breakpointElement != null) {
+            String breakpointId = breakpointElement.keySet().iterator().next();
+            PsiElement psiElement = breakpointElement.get(breakpointId);
             if (toggleOn) {
                 XExpression condition = xBreakpoint.getConditionExpression();
                 if (condition == null) {
@@ -538,51 +550,19 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 explicitBreakpointIDs.remove(breakpointId);
             }
 
-            breakpoints.put(breakpointId, new CamelBreakpoint(breakpointId, breakpointTag, position));
+            breakpoints.put(breakpointId, new CamelBreakpoint(breakpointId, psiElement, position));
 
             return true;
         }
 
+        //Breakpoint is invalid
+        xDebugSession.setBreakpointInvalid(xBreakpoint, "Camel EIP ID not found");
         return false;
     }
 
     private void checkSuspendedBreakpoints() {
         while (isConnected()) {
             try {
-                //Set<String> suspendedBreakpointIDs = backlogDebugger.getSuspendedBreakpointNodeIds();
-                // this throws exception: javax.management.AttributeNotFoundException: getAttribute failed: ModelMBeanAttributeInfo not found for SuspendedBreakpointNodeIds
-                //  at java.management/javax.management.modelmbean.RequiredModelMBean.getAttribute(RequiredModelMBean.java:1440)
-                //  at java.management/com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.getAttribute(DefaultMBeanServerInterceptor.java:641)
-                //  at java.management/com.sun.jmx.mbeanserver.JmxMBeanServer.getAttribute(JmxMBeanServer.java:678)
-                //  at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doOperation(RMIConnectionImpl.java:1443)
-                //  at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl$PrivilegedOperation.run(RMIConnectionImpl.java:1307)
-                //  at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.doPrivilegedOperation(RMIConnectionImpl.java:1399)
-                //  at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl.getAttribute(RMIConnectionImpl.java:637)
-                //  at java.base/jdk.internal.reflect.GeneratedMethodAccessor151.invoke(Unknown Source)
-                //  at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-                //  at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-                //  at java.rmi/sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:359)
-                //  at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:200)
-                //  at java.rmi/sun.rmi.transport.Transport$1.run(Transport.java:197)
-                //  at java.base/java.security.AccessController.doPrivileged(AccessController.java:689)
-                //  at java.rmi/sun.rmi.transport.Transport.serviceCall(Transport.java:196)
-                //  at java.rmi/sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:562)
-                //  at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:796)
-                //  at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(TCPTransport.java:677)
-                //  at java.base/java.security.AccessController.doPrivileged(AccessController.java:389)
-                //  at java.rmi/sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:676)
-                //  at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
-                //  at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
-                //  at java.base/java.lang.Thread.run(Thread.java:835)
-                //  at java.rmi/sun.rmi.transport.StreamRemoteCall.exceptionReceivedFromServer(StreamRemoteCall.java:303)
-                //  at java.rmi/sun.rmi.transport.StreamRemoteCall.executeCall(StreamRemoteCall.java:279)
-                //  at java.rmi/sun.rmi.server.UnicastRef.invoke(UnicastRef.java:164)
-                //  at jdk.remoteref/jdk.jmx.remote.internal.rmi.PRef.invoke(Unknown Source)
-                //  at java.management.rmi/javax.management.remote.rmi.RMIConnectionImpl_Stub.getAttribute(Unknown Source)
-                //  at java.management.rmi/javax.management.remote.rmi.RMIConnector$RemoteMBeanServerConnection.getAttribute(RMIConnector.java:904)
-                //  at java.management/javax.management.MBeanServerInvocationHandler.invoke(MBeanServerInvocationHandler.java:273)
-                //  ... 13 more
-
                 Collection<String> suspendedBreakpointIDs = (Collection<String>) serverConnection.invoke(this.debuggerMBeanObjectName, "getSuspendedBreakpointNodeIds", new Object[]{}, new String[]{});
                 if (suspendedBreakpointIDs != null && !suspendedBreakpointIDs.isEmpty()) {
                     //Fire notifications here, we need to display the exchange, stack etc
@@ -630,144 +610,6 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         }
     }
 
-    @Nullable
-    private CamelBreakpoint getCamelBreakpointById(String id) throws Exception {
-        String path = "//*[@id='" + id + "']";
-        //Find node with this ID in the document
-        XPath xPath = XPathFactory.newInstance().newXPath();
-        Node tagNode = (Node) xPath.compile(path).evaluate(routesDOMDocument, XPathConstants.NODE);
-        if (tagNode == null) {
-            return null;
-        }
-        Element tag = (Element) tagNode;
-        //Find XPath of this tag that we can use to locate it in the source code
-        String camelXPath = getXPathOfTheElement(tag);
-
-        final XPathSupport support = XPathSupport.getInstance();
-
-        final Collection<VirtualFile> files = FileTypeIndex.getFiles(XmlFileType.INSTANCE, GlobalSearchScope.projectScope(project));
-        for (VirtualFile file : files) {
-            ProjectFileIndex index = ProjectFileIndex.SERVICE.getInstance(project);
-            if (index.getSourceRootForFile(file) != null || index.getClassRootForFile(file) != null) { //Only in source root or classpath
-                final XmlFile xmlFile = (XmlFile) PsiManager.getInstance(project).findFile(file);
-                final org.jaxen.XPath nextXpath = support.createXPath(xmlFile, camelXPath);
-                final Object result = nextXpath.evaluate(xmlFile.getRootTag());
-                if (result != null && result instanceof List<?>) {
-                    final List<?> list = (List<?>) result;
-                    if (!((List<?>) result).isEmpty()) {
-                        XmlTag xmlTag = (XmlTag) list.get(0);
-                        final SmartPsiElementPointer<PsiElement> pointer =
-                                SmartPointerManager.getInstance(xmlTag.getProject()).createSmartPsiElementPointer(xmlTag);
-                        XSourcePosition position = new XSourcePosition() {
-                            private volatile XSourcePosition myDelegate;
-
-                            private XSourcePosition getDelegate() {
-                                if (myDelegate == null) {
-                                    myDelegate = ApplicationManager.getApplication().runReadAction(new Computable<XSourcePosition>() {
-                                        @Override
-                                        public XSourcePosition compute() {
-                                            PsiElement elem = pointer.getElement();
-                                            return XSourcePositionImpl.createByOffset(pointer.getVirtualFile(), elem != null ? elem.getTextOffset() : -1);
-                                        }
-                                    });
-                                }
-                                return myDelegate;
-                            }
-
-                            @Override
-                            public int getLine() {
-                                return getDelegate().getLine();
-                            }
-
-                            @Override
-                            public int getOffset() {
-                                return getDelegate().getOffset();
-                            }
-
-                            @NotNull
-                            @Override
-                            public VirtualFile getFile() {
-                                return file;
-                            }
-
-                            @NotNull
-                            @Override
-                            public Navigatable createNavigatable(@NotNull Project project) {
-                                // no need to create delegate here, it may be expensive
-                                if (myDelegate != null) {
-                                    return myDelegate.createNavigatable(project);
-                                }
-                                PsiElement elem = pointer.getElement();
-                                if (elem instanceof Navigatable) {
-                                    return (Navigatable) elem;
-                                }
-                                return NonNavigatable.INSTANCE;
-                            }
-                        };
-                        return new CamelBreakpoint(id, xmlTag, position);
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private String getXPathOfTheXMLTag(XmlTag tag) {
-        String path = tag.getName();
-        if ("route".equals(path)) {
-            //First try to obtain ID
-            String id = tag.getAttributeValue("id");
-            if (!StringUtils.isEmpty(id)) {
-                path = path + "[@id='" + id + "']";
-            } else { //Get the from tag and extract its uri attribute
-                XmlTag from = tag.findFirstSubTag("from");
-                String fromUri = from.getAttributeValue("uri");
-                path = path + "[from[attribute::uri = '" + fromUri + "']]";
-            }
-            return "/" + path;
-        } else {
-            XmlTag parent = tag.getParentTag();
-            XmlTag[] siblings = parent.findSubTags(tag.getName());
-            for (int i = 0; i < siblings.length; i++) {
-                if (tag.equals(siblings[i])) {
-                    path = path + "[" + String.valueOf(i + 1) + "]";
-                    break;
-                }
-            }
-            path = getXPathOfTheXMLTag(parent) + "/" + path;
-        }
-        return path;
-    }
-
-    private String getXPathOfTheElement(Element element) {
-        String path = element.getTagName();
-        if ("route".equals(path)) {
-            //Get the from tag and extract its uri attribute
-            Element from = (Element) element.getElementsByTagName("from").item(0);
-            String fromUri = from.getAttribute("uri");
-            path = path + "[from[attribute::uri = '" + fromUri + "']]";
-            return "//" + path;
-        } else {
-            Element parent = (Element) element.getParentNode();
-            int index = 0;
-            NodeList children = parent.getChildNodes();
-            for (int i = 0; i < children.getLength(); i++) {
-                Node nextChild = children.item(i);
-                if (nextChild instanceof Element && element.getTagName().equals(((Element) nextChild).getTagName())) {
-                    index++;
-                    if (element.equals((Element) nextChild)) {
-                        path = path + "[" + String.valueOf(index) + "]";
-                        break;
-                    }
-                }
-            }
-
-            path = getXPathOfTheElement(parent) + "/" + path;
-        }
-        return path;
-    }
-
     private Element getParentRouteId(String id) throws Exception {
         String path = "//route[*[attribute::id = '" + id + "']]";
         XPath xPath = XPathFactory.newInstance().newXPath();
@@ -790,24 +632,28 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             String separator = System.getProperty("line.separator");
             String[] lines = messageHistory.split(separator);
             for (int i = 4; i < lines.length; i++) {
-                String[] cols = lines[i].split("\\] \\[");
-                String routeId = cols[0].substring(1).trim();
-                String processorId = cols[1].trim();
-                String processor = cols[2].trim();
-                CamelBreakpoint breakpoint = breakpoints.get(processorId);
-                if (breakpoint == null) {
-                    //find tag and source position based on ID
-                    breakpoint = getCamelBreakpointById(processorId);
-                    breakpoints.put(processorId, breakpoint);
-                }
-                CamelMessageInfo info = new CamelMessageInfo(suspendedMessage, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag(), routeId, processorId, processor, null);
+                if (lines[i].startsWith("[")) {
+                    String[] cols = lines[i].split("\\] \\[");
+                    String routeId = cols[0].substring(1).trim();
+                    String processorId = cols[1].trim();
+                    String processor = cols[2].trim();
+                    CamelBreakpoint breakpoint = breakpoints.get(processorId);
+                    if (breakpoint == null) {
+                        //find tag and source position based on ID
+                        breakpoint = getCamelBreakpointById(processorId);
+                    }
+                    if (breakpoint != null) {
+                        breakpoints.put(processorId, breakpoint);
+                        CamelMessageInfo info = new CamelMessageInfo(suspendedMessage, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag(), routeId, processorId, processor, null);
 /*
                 Map<String, String> stackEntry = new HashMap<>();
                 stackEntry.put("routeId", cols[0].substring(1).trim());
                 stackEntry.put("processorId", cols[1].trim());
                 stackEntry.put("processor", cols[2].trim());
 */
-                stack.add(info);
+                        stack.add(info);
+                    }
+                }
             }
         }
 
@@ -815,4 +661,157 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         return stack;
     }
 
+    private String getBreakpointId(@NotNull PsiElement breakpointTag) {
+        String breakpointId = null;
+        String sourceLocation = "";
+
+        //Obtain file name and line number
+        XSourcePosition position = XDebuggerUtil.getInstance().createPositionByElement(breakpointTag);
+        int lineNumber = position.getLine() + 1; //Lines in XSourcePosition are 0-based
+
+        final VirtualFile virtualFile = position.getFile();
+
+        switch (virtualFile.getFileType().getName()) {
+            case "XML":
+                sourceLocation = virtualFile.getPresentableUrl();
+                if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
+                    sourceLocation = "file:" + sourceLocation.replace("src/main/resources", "target/classes"); // file:/absolute/path/to/file.xml
+                } else { //Then it must be a Jar
+                    sourceLocation = "classpath:" + sourceLocation.substring(sourceLocation.lastIndexOf("!") + 2);
+                }
+                break;
+            case "JAVA":
+                PsiClass psiClass = PsiTreeUtil.getParentOfType(breakpointTag, PsiClass.class);
+                sourceLocation = psiClass.getQualifiedName();
+                break;
+        }
+
+        String path = "//*[@sourceLocation='" + sourceLocation + "' and @sourceLineNumber='" + lineNumber + "']";
+
+        try {
+            XPath xPath = XPathFactory.newInstance().newXPath();
+            Node breakpointTagFromContext = (Node) xPath.evaluate(path, routesDOMDocument, XPathConstants.NODE);
+            if (breakpointTagFromContext != null) {
+                breakpointId = breakpointTagFromContext.getAttributes().getNamedItem("id").getTextContent();
+            }
+        } catch (Exception e) {
+            breakpointId = null;
+            e.printStackTrace();
+        }
+
+        return breakpointId;
+    }
+
+    @Nullable
+    private CamelBreakpoint getCamelBreakpointById(String id) throws Exception {
+        String path = "//*[@id='" + id + "']";
+        //Find node with this ID in the document
+        XPath xPath = XPathFactory.newInstance().newXPath();
+        Node tagNode = (Node) xPath.evaluate(path, routesDOMDocument, XPathConstants.NODE);
+        if (tagNode == null) {
+            return null;
+        }
+        Element tag = (Element) tagNode;
+        String filePath = tag.getAttribute("sourceLocation");
+        String lineNumber = tag.getAttribute("sourceLineNumber");
+
+        if (StringUtils.isEmpty(filePath)) {
+            return null;
+        }
+        if (StringUtils.isEmpty(lineNumber) || "-1".equals(lineNumber.trim())) {
+            return null;
+        }
+
+        String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+
+        if (!filePath.startsWith("file:") && !filePath.startsWith("classpath:")) { //This is Java class
+            PsiClass psiClass = JavaPsiFacade.getInstance(project).findClass(fileName, GlobalSearchScope.everythingScope(project));
+            VirtualFile virtualFile = psiClass.getContainingFile().getVirtualFile();
+            XSourcePosition position = XDebuggerUtil.getInstance().createPosition(virtualFile, new Integer(lineNumber) - 1);
+            Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
+            return new CamelBreakpoint(id, breakpointElement.get(id), position);
+        } else {
+            PsiFile[] psiFiles = FilenameIndex.getFilesByName(project, fileName, GlobalSearchScope.everythingScope(project));
+            if (psiFiles == null || psiFiles.length < 1) {
+                return null;
+            }
+            for (PsiFile psiFile : psiFiles) {
+                VirtualFile virtualFile = psiFile.getVirtualFile();
+                String url = virtualFile.getPresentableUrl();
+                if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
+                    url = "file:" + url.replace("src/main/resources", "target/classes"); // file:/absolute/path/to/file.xml
+                } else { //Then it must be a Jar
+                    url = "classpath:" + url.substring(url.lastIndexOf("!") + 2);
+                }
+                if (filePath.equals(url)) {
+                    //We found our file, let's get a source position
+                    XSourcePosition position = XDebuggerUtil.getInstance().createPosition(virtualFile, new Integer(lineNumber) - 1);
+                    Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
+                    return new CamelBreakpoint(id, breakpointElement.get(id), position);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    private Map<String, PsiElement> createBreakpointElementFromPosition(XSourcePosition position) {
+        Map<String, PsiElement> breakpointElement = null;
+        String breakpointId = null;
+        PsiElement psiElement = null;
+
+        VirtualFile file = position.getFile();
+        switch (file.getFileType().getName()) {
+            case "XML":
+                psiElement = IdeaUtils.getService().getXmlTagAt(project, position);
+                break;
+            case "JAVA":
+                psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
+                break;
+        }
+
+        if (psiElement != null) {
+            breakpointId = getBreakpointId(psiElement);
+            if (breakpointId != null) {
+                breakpointElement = Collections.singletonMap(breakpointId, psiElement);
+            }
+        }
+
+        return breakpointElement;
+    }
+
+    @Nullable
+    private String getSiblingId(String id) {
+        //locate node in XML routes dump and get the next sibling
+        String path = "//*[@id='" + id + "']";
+        XPath xPath = XPathFactory.newInstance().newXPath();
+        Node tagNode;
+        try {
+            tagNode = (Node) xPath.evaluate(path, routesDOMDocument, XPathConstants.NODE);
+        } catch (XPathExpressionException e) {
+            tagNode = null;
+        }
+        if (tagNode == null) {
+            return null;
+        }
+        Element tag = (Element) tagNode;
+        Node sibling = tag.getNextSibling();
+        while (null != sibling && sibling.getNodeType() != Node.ELEMENT_NODE) {
+            sibling = sibling.getNextSibling();
+        }
+        if (sibling != null) {
+            return ((Element)sibling).getAttribute("id");
+        } else {
+            Node parent = tag.getParentNode();
+            while (null != parent && parent.getNodeType() != Node.ELEMENT_NODE) {
+                parent = parent.getNextSibling();
+            }
+            if (parent != null && !parent.getNodeName().equals("route")) {
+                Element parentElement = (Element) parent;
+                return getSiblingId(parentElement.getAttribute("id"));
+            }
+        }
+        return null;
+    }
 }

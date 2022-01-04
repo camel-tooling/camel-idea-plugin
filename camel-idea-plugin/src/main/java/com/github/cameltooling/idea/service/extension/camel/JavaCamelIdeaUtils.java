@@ -20,17 +20,20 @@ import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.JavaClassUtils;
 import com.github.cameltooling.idea.util.StringUtils;
+import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
+import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiLiteral;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
@@ -54,6 +57,35 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     private static final String JAVA_LANG_STRING = "java.lang.String";
 
     @Override
+    public boolean isCamelFile(PsiFile file) {
+        final List<String> builders = Arrays.asList(
+                new String[] {
+                        "RouteBuilder",
+                        "RoutesBuilder",
+                        "RouteConfigurationBuilder",
+                        "RouteConfigurationsBuilder",
+                        "AdviceWithRouteBuilder",
+                        "EndpointRouteBuilder",
+                        "EndpointRouteConfigurationBuilder",
+                        "SpringRouteBuilder"
+                });
+        if (file != null && file.getFileType().equals(JavaFileType.INSTANCE)) {//This is Java file
+            PsiJavaFile javaFile = (PsiJavaFile) file;
+            final PsiClass[] classes = javaFile.getClasses();
+            for (PsiClass nextClass : classes) {
+                PsiClassType[] extendsTypes = nextClass.getExtendsListTypes();
+                for (PsiClassType nextType : extendsTypes) {
+                    if (builders.contains(nextType.getClassName())) {
+                        return true;
+                    };
+                }
+            }
+        }
+
+        return false;
+    }
+
+    @Override
     public boolean isCamelRouteStart(PsiElement element) {
         return getIdeaUtils().isFromJavaMethodCall(element, true, ROUTE_START);
     }
@@ -61,7 +93,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     @Override
     public boolean isCamelRouteStartExpression(PsiElement element) {
         PsiElement routeStartParent = getIdeaUtils().findFirstParent(element, false,
-            this::isCamelRouteStart, e -> e instanceof PsiFile);
+                this::isCamelRouteStart, e -> e instanceof PsiFile);
         return routeStartParent != null;
     }
 
@@ -247,7 +279,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             final PsiExpressionList expressionList = PsiTreeUtil.getParentOfType(element, PsiExpressionList.class);
             if (expressionList != null) {
                 final PsiIdentifier identifier = PsiTreeUtil.getChildOfType(expressionList.getPrevSibling(), PsiIdentifier.class);
-                if (identifier != null && identifier.getNextSibling() == null && ("method" .equals(identifier.getText()) || "bean" .equals(identifier.getText()))) {
+                if (identifier != null && identifier.getNextSibling() == null && ("method".equals(identifier.getText()) || "bean".equals(identifier.getText()))) {
                     return expressionList;
                 }
             }
@@ -274,7 +306,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     public boolean isPlaceForEndpointUri(PsiElement location) {
         PsiLiteralExpression expression = PsiTreeUtil.getParentOfType(location, PsiLiteralExpression.class, false);
         return expression != null
-            && isInsideCamelRoute(expression, false);
+                && isInsideCamelRoute(expression, false);
     }
 
     /**
@@ -282,8 +314,8 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
      */
     private Optional<PsiClass> searchForMatchingBeanClass(String beanName, Project project) {
         return getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Component", project).map(Optional::of)
-            .orElseGet(() -> getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Service", project)).map(Optional::of)
-            .orElseGet(() -> getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Repository", project));
+                .orElseGet(() -> getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Service", project)).map(Optional::of)
+                .orElseGet(() -> getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Repository", project));
     }
 
     private List<PsiElement> findEndpoints(Module module, Predicate<String> uriCondition, Predicate<PsiLiteral> elementCondition) {
@@ -294,7 +326,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         List<PsiElement> results = new ArrayList<>();
         if (routeBuilderClass != null) {
             Collection<PsiClass> routeBuilders = ClassInheritorsSearch.search(routeBuilderClass, module.getModuleScope(), true)
-                .findAll();
+                    .findAll();
             for (PsiClass routeBuilder : routeBuilders) {
                 Collection<PsiLiteralExpression> literals = PsiTreeUtil.findChildrenOfType(routeBuilder, PsiLiteralExpression.class);
                 for (PsiLiteralExpression literal : literals) {

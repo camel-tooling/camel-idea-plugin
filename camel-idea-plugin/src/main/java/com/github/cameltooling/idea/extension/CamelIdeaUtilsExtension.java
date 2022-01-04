@@ -16,12 +16,14 @@
  */
 package com.github.cameltooling.idea.extension;
 
-import java.util.List;
-import java.util.function.Predicate;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+
+import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Extension point for camelIdeaUtils for handling specific plugin language elements
@@ -29,6 +31,13 @@ import com.intellij.psi.PsiElement;
 public interface CamelIdeaUtilsExtension {
 
     ExtensionPointName<CamelIdeaUtilsExtension> EP_NAME = ExtensionPointName.create("org.apache.camel.camelIdeaUtilsSupport");
+
+    /**
+     * Is the given file a file containing Camel route or route configuration
+     *
+     * @param file the file
+     */
+    boolean isCamelFile(PsiFile file);
 
     /**
      * Is the given element from the start of a Camel route, eg <tt>from</tt>, ot &lt;from&gt;.

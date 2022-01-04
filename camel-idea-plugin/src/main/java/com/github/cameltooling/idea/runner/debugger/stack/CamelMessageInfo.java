@@ -17,7 +17,7 @@
 package com.github.cameltooling.idea.runner.debugger.stack;
 
 import com.github.cameltooling.idea.util.StringUtils;
-import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.PsiElement;
 import com.intellij.util.ArrayUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import org.jetbrains.annotations.NotNull;
@@ -46,7 +46,7 @@ public class CamelMessageInfo {
     private final DocumentBuilder documentBuilder;
 
     private XSourcePosition position;
-    private XmlTag tag;
+    private PsiElement tag;
 
     private String routeId;
     private String processorId;
@@ -56,7 +56,7 @@ public class CamelMessageInfo {
 
     public CamelMessageInfo(@NotNull String messageInfoAsXML,
                             XSourcePosition position,
-                            XmlTag tag,
+                            PsiElement tag,
                             String routeId,
                             String processorId,
                             String processor,
@@ -148,7 +148,7 @@ public class CamelMessageInfo {
         return this.position;
     }
 
-    public XmlTag getTag() {
+    public PsiElement getTag() {
         return tag;
     }
 

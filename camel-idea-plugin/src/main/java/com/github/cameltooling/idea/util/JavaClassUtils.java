@@ -16,7 +16,6 @@
  */
 package com.github.cameltooling.idea.util;
 
-import com.intellij.lang.jvm.annotation.JvmAnnotationAttribute;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
