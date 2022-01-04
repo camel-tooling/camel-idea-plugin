@@ -16,16 +16,6 @@
  */
 package com.github.cameltooling.idea.util;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import com.github.cameltooling.idea.extension.IdeaUtilsExtension;
 import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.ide.highlighter.XmlFileType;
@@ -58,6 +48,7 @@ import com.intellij.psi.PsiPolyadicExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.impl.source.tree.JavaDocElementType;
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.java.IJavaDocElementType;
@@ -67,10 +58,28 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xml.util.XmlUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLMapping;
+import org.jetbrains.yaml.psi.YAMLSequence;
+import org.jetbrains.yaml.psi.YAMLSequenceItem;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 import static com.intellij.xml.CommonXmlStrings.QUOT;
 
 /**
@@ -570,5 +579,32 @@ public final class IdeaUtils implements Disposable {
         final int offset = tag.getTextOffset();
         final Document document = FileDocumentManager.getInstance().getDocument(file);
         return offset < document.getTextLength() ? document.getLineNumber(offset) : -1;
+    }
+
+    public static YAMLKeyValue getYamlKeyValueAt(Project project, XSourcePosition position) {
+        VirtualFile file = position.getFile();
+        YAMLKeyValue keyValue = null;
+        PsiElement psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
+
+        //This must be indent element because the position is at the beginning of the line
+        if (psiElement != null && psiElement instanceof LeafPsiElement && "indent".equals(((LeafPsiElement) psiElement).getElementType().getDebugName())) {
+            psiElement = psiElement.getNextSibling(); //This must be sequence item
+            Collection<YAMLKeyValue> keyValues = null;
+            if (psiElement instanceof YAMLSequence) { //This is the beginning of sequence, get first item
+                psiElement = ((YAMLSequence) psiElement).getItems().get(0);
+                keyValues = ((YAMLSequenceItem) psiElement).getKeysValues();
+            } else if (psiElement instanceof YAMLSequenceItem) {
+                keyValues = ((YAMLSequenceItem) psiElement).getKeysValues();
+            } else if (psiElement instanceof YAMLKeyValue) {
+                keyValue = (YAMLKeyValue) psiElement;
+            } else if (psiElement instanceof YAMLMapping) {
+                keyValues = ((YAMLMapping) psiElement).getKeyValues();
+            }
+            if (keyValues != null && !keyValues.isEmpty()) {
+                keyValue = keyValues.iterator().next();
+            }
+        }
+
+        return keyValue;
     }
 }

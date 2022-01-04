@@ -70,7 +70,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public boolean isCamelFile(PsiFile file) {
-        if (file != null && file.getFileType().equals(JavaFileType.INSTANCE)) {
+        if (file != null && JavaFileType.INSTANCE.equals(file.getFileType())) {
             PsiJavaFile javaFile = (PsiJavaFile) file;
             final PsiClass[] classes = javaFile.getClasses();
             for (PsiClass nextClass : classes) {

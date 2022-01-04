@@ -50,6 +50,7 @@
 
     <camelIdeaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.camel.JavaCamelIdeaUtils" />
     <camelIdeaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.camel.XmlCamelIdeaUtils" />
+    <camelIdeaUtilsSupport implementation="com.github.cameltooling.idea.service.extension.camel.YamlCamelIdeaUtils" />
   </extensions>
 
   <extensionPoints>

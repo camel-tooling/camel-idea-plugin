@@ -50,7 +50,7 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
 
     @Override
     public boolean isCamelFile(PsiFile file) {
-        if (file != null && file.getFileType().equals(XmlFileType.INSTANCE)) {
+        if (file != null && XmlFileType.INSTANCE.equals(file.getFileType())) {
             XmlFile xmlFile = (XmlFile) file;
             XmlTag rootTag = xmlFile.getRootTag();
             return XML_ROUTES.contains(rootTag.getLocalName());
