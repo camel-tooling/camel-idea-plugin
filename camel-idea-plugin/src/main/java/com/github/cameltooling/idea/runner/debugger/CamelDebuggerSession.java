@@ -622,29 +622,34 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         if (!StringUtils.isEmpty(messageHistory)) {
             String separator = System.getProperty("line.separator");
             String[] lines = messageHistory.split(separator);
+
+            String headersLine = lines[3];
+            int routeIdIndex = headersLine.indexOf("RouteId");
+            int processorIdIndex = headersLine.indexOf("ProcessorId");
+            int processorIndex = headersLine.indexOf("Processor ");
+            int elapsedIndex = headersLine.indexOf("Elapsed");
+
             for (int i = 4; i < lines.length; i++) {
-                if (lines[i].startsWith("[")) {
-                    String[] cols = lines[i].split("\\] \\[");
-                    String routeId = cols[0].substring(1).trim();
-                    String processorId = cols[1].trim();
-                    String processor = cols[2].trim();
-                    CamelBreakpoint breakpoint = breakpoints.get(processorId);
-                    if (breakpoint == null) {
-                        //find tag and source position based on ID
-                        breakpoint = getCamelBreakpointById(processorId);
-                    }
-                    if (breakpoint != null) {
-                        breakpoints.put(processorId, breakpoint);
-                        CamelMessageInfo info = new CamelMessageInfo(suspendedMessage, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag(), routeId, processorId, processor, null);
+                String routeId = lines[i].substring(routeIdIndex, processorIdIndex).trim();
+                String processorId = lines[i].substring(processorIdIndex, processorIndex).trim();
+                String processor = lines[i].substring(processorIndex, elapsedIndex).trim();
+                CamelBreakpoint breakpoint = breakpoints.get(processorId);
+                if (breakpoint == null) {
+                    //find tag and source position based on ID
+                    breakpoint = getCamelBreakpointById(processorId);
+                }
+                if (breakpoint != null) {
+                    breakpoints.put(processorId, breakpoint);
+                    CamelMessageInfo info = new CamelMessageInfo(suspendedMessage, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag(), routeId, processorId, processor, null);
 /*
                 Map<String, String> stackEntry = new HashMap<>();
                 stackEntry.put("routeId", cols[0].substring(1).trim());
                 stackEntry.put("processorId", cols[1].trim());
                 stackEntry.put("processor", cols[2].trim());
 */
-                        stack.add(info);
-                    }
+                    stack.add(info);
                 }
+
             }
         }
 
@@ -765,7 +770,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             case "YAML":
                 psiElement = IdeaUtils.getYamlKeyValueAt(project, position);
                 if (psiElement != null) {
-                    psiElement = ((YAMLKeyValue)psiElement).getKey();
+                    psiElement = ((YAMLKeyValue) psiElement).getKey();
                 }
             default: // noop
         }

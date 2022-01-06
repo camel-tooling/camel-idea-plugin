@@ -29,28 +29,43 @@ import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.configurations.RemoteConnection;
+import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
+import com.intellij.notification.NotificationGroupManager;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.MessageType;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.intellij.xdebugger.impl.XDebugSessionImpl;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.idea.maven.execution.MavenRunConfiguration;
+import org.jetbrains.idea.maven.model.MavenArtifact;
+import org.jetbrains.idea.maven.project.MavenProject;
+import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class CamelDebuggerRunner extends GenericDebuggerRunner {
+    private static final Logger LOG = Logger.getInstance(CamelDebuggerRunner.class);
+
+    private static final String MIN_CAMEL_VERSION = "3.15.0-SNAPSHOT";
 
     public static final String JAVA_CONTEXT = "Java";
     public static final String CAMEL_CONTEXT = "Camel";
@@ -71,12 +86,28 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
     @Override
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
         if (profile instanceof RunConfigurationBase) {
-            final RunConfigurationBase base = (RunConfigurationBase) profile;
-            final Project project = base.getProject();
-            final CamelService camelService = project.getService(CamelService.class);
-            return executorId.equals(DefaultDebugExecutor.EXECUTOR_ID) && camelService.isCamelPresent();
+            try {
+                final RunConfigurationBase base = (RunConfigurationBase) profile;
+                final Project project = base.getProject();
+                final CamelService camelService = project.getService(CamelService.class);
+                if (camelService != null) {
+                    boolean canRun = executorId.equals(DefaultDebugExecutor.EXECUTOR_ID) && camelService.isCamelPresent();
+                    LOG.debug("Executor ID is " + executorId + " ; Camel present = " + camelService.isCamelPresent() + " ; canRun is " + canRun);
+                    return canRun;
+                }
+            } catch (Exception e) {
+                LOG.debug("Camel Debugger cannot run", e);
+                return false;
+            }
         }
+        LOG.debug("Camel Debugger cannot run, profile is not RunConfiguration");
         return false;
+    }
+
+    @Override
+    public void execute(@NotNull ExecutionEnvironment environment) throws ExecutionException {
+        checkConfiguration(environment.getRunnerAndConfigurationSettings().getConfiguration());
+        super.execute(environment);
     }
 
     @Override
@@ -101,6 +132,7 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
 
     private RunContentDescriptor attachVM(final RunProfileState state, final @NotNull ExecutionEnvironment env, RemoteConnection connection, boolean pollConnection)
             throws ExecutionException {
+        LOG.debug("Attaching VM...");
         DefaultDebugEnvironment environment = new DefaultDebugEnvironment(env, state, connection, pollConnection);
         final DebuggerSession debuggerSession = DebuggerManagerEx.getInstanceEx(env.getProject()).attachVirtualMachine(environment);
         final CamelDebuggerSession camelDebuggerSession = new CamelDebuggerSession();
@@ -164,6 +196,40 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
                 debuggerSession.dispose();
                 camelDebuggerSession.dispose();
                 return null;
+            }
+        }
+    }
+
+    private void checkConfiguration(RunConfiguration configuration) {
+        if (configuration instanceof MavenRunConfiguration) {
+            MavenRunConfiguration mavenConfiguration = (MavenRunConfiguration) configuration;
+            final VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(mavenConfiguration.getRunnerParameters().getWorkingDirPath() + "/pom.xml");
+            if (virtualFile != null) {
+                MavenProject mavenProject = MavenProjectsManager.getInstance(configuration.getProject()).findProject(virtualFile);
+                if (mavenProject != null) {
+                    //Find Camel Version
+                    List<MavenArtifact> dependencies = mavenProject.getDependencies();
+                    MavenArtifact camelArtifact = dependencies.stream().filter(mavenArtifact -> mavenArtifact.getArtifactId().equals("camel-main")
+                            || mavenArtifact.getArtifactId().equals("camel-spring-boot")).findFirst().orElse(null);
+                    if (camelArtifact != null) {
+                        String camelVersion = camelArtifact.getBaseVersion();
+                        ComparableVersion version = new ComparableVersion(camelVersion);
+                        if (version.compareTo(new ComparableVersion(MIN_CAMEL_VERSION)) < 0) { //This is an older version of Camel, debugger is not supported
+                            NotificationGroupManager.getInstance()
+                                    .getNotificationGroup("Debugger messages")
+                                    .createNotification("Camel version is " + version.toString() + " ; minimum required version for debugger is 3.15.0",
+                                            MessageType.WARNING).notify(mavenConfiguration.getProject());
+                        }
+                    }
+                    MavenArtifact camelDebugArtifact = dependencies.stream().filter(mavenArtifact -> mavenArtifact.getArtifactId().equals("camel-debug")
+                            || mavenArtifact.getArtifactId().equals("camel-debug-starter")).findFirst().orElse(null);
+                    if (camelDebugArtifact == null) {
+                        NotificationGroupManager.getInstance()
+                                .getNotificationGroup("Debugger messages")
+                                .createNotification("Camel Debugger is not found in classpath!\nPlease add \"camel-debug\" or \"camel-debug-starter\" artifact to your project classpath and/or dependencies.",
+                                        MessageType.WARNING).notify(mavenConfiguration.getProject());
+                    }
+                }
             }
         }
     }
