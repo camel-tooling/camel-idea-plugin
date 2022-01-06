@@ -91,7 +91,9 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
                 final Project project = base.getProject();
                 final CamelService camelService = project.getService(CamelService.class);
                 if (camelService != null) {
-                    boolean canRun = executorId.equals(DefaultDebugExecutor.EXECUTOR_ID) && camelService.isCamelPresent();
+                    boolean isDebug = executorId.equals(DefaultDebugExecutor.EXECUTOR_ID);
+                    boolean isCamelPresent = camelService.isCamelPresent();
+                    boolean canRun = isDebug && isCamelPresent;
                     LOG.debug("Executor ID is " + executorId + " ; Camel present = " + camelService.isCamelPresent() + " ; canRun is " + canRun);
                     return canRun;
                 }

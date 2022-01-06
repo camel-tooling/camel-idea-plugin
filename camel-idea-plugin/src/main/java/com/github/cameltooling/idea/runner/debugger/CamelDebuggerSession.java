@@ -50,8 +50,10 @@ import org.apache.camel.api.management.mbean.ManagedCamelContextMBean;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.management.JMX;
 import javax.management.MBeanException;
@@ -454,6 +456,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                         LOG.debug("Waiting for the context to start");
                     }
 
+                    //Enable message history
+                    //serverConnection.setAttribute(mbeanName, new Attribute("MessageHistory", Boolean.TRUE));
+
                     //Init DOM Documents
                     String routes = camelContext.dumpRoutesAsXml(false, true);
                     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -614,42 +619,29 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
     private List<CamelMessageInfo> getStack(String breakpointId, String suspendedMessage) throws Exception {
         List<CamelMessageInfo> stack = new ArrayList<>();
+        //Use new operation to retrieve message history
+        String messageHistory = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "messageHistoryOnBreakpointAsXml",
+                new Object[]{breakpointId},
+                new String[]{"java.lang.String"});
 
-        String messageHistory = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "evaluateExpressionAtBreakpoint",
-                new Object[]{breakpointId, "simple", "${messageHistory(false)}", "java.lang.String"},
-                new String[]{"java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String"});
+        InputStream targetStream = new ByteArrayInputStream(messageHistory.getBytes());
+        Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(targetStream);
+        NodeList historyEntries = document.getElementsByTagName("messageHistoryEntry");
 
-        if (!StringUtils.isEmpty(messageHistory)) {
-            String separator = System.getProperty("line.separator");
-            String[] lines = messageHistory.split(separator);
-
-            String headersLine = lines[3];
-            int routeIdIndex = headersLine.indexOf("RouteId");
-            int processorIdIndex = headersLine.indexOf("ProcessorId");
-            int processorIndex = headersLine.indexOf("Processor ");
-            int elapsedIndex = headersLine.indexOf("Elapsed");
-
-            for (int i = 4; i < lines.length; i++) {
-                String routeId = lines[i].substring(routeIdIndex, processorIdIndex).trim();
-                String processorId = lines[i].substring(processorIdIndex, processorIndex).trim();
-                String processor = lines[i].substring(processorIndex, elapsedIndex).trim();
-                CamelBreakpoint breakpoint = breakpoints.get(processorId);
-                if (breakpoint == null) {
-                    //find tag and source position based on ID
-                    breakpoint = getCamelBreakpointById(processorId);
-                }
-                if (breakpoint != null) {
-                    breakpoints.put(processorId, breakpoint);
-                    CamelMessageInfo info = new CamelMessageInfo(suspendedMessage, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag(), routeId, processorId, processor, null);
-/*
-                Map<String, String> stackEntry = new HashMap<>();
-                stackEntry.put("routeId", cols[0].substring(1).trim());
-                stackEntry.put("processorId", cols[1].trim());
-                stackEntry.put("processor", cols[2].trim());
-*/
-                    stack.add(info);
-                }
-
+        for (int i = 0; i < historyEntries.getLength(); i++) {
+            Element nextEntry = (Element) historyEntries.item(i);
+            String routeId = nextEntry.getAttribute("routeId");
+            String processorId = nextEntry.getAttribute("processorId");
+            String processor = nextEntry.getAttribute("processor");
+            CamelBreakpoint breakpoint = breakpoints.get(processorId);
+            if (breakpoint == null) {
+                //find tag and source position based on ID
+                breakpoint = getCamelBreakpointById(processorId);
+            }
+            if (breakpoint != null) {
+                breakpoints.put(processorId, breakpoint);
+                CamelMessageInfo info = new CamelMessageInfo(suspendedMessage, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag(), routeId, processorId, processor, null);
+                stack.add(info);
             }
         }
 
