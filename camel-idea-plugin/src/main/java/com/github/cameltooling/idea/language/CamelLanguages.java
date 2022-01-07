@@ -60,10 +60,8 @@ public final class CamelLanguages {
 
         @Override
         public LanguageFileType getAssociatedFileType() {
-            //TODO Do we need file type?
             return PlainTextFileType.INSTANCE;
         }
-
     }
 
     public static class SimpleLanguage extends Language {
@@ -86,7 +84,6 @@ public final class CamelLanguages {
 
         @Override
         public LanguageFileType getAssociatedFileType() {
-            //TODO Do we need file type?
             return PlainTextFileType.INSTANCE;
         }
     }
@@ -111,7 +108,6 @@ public final class CamelLanguages {
 
         @Override
         public LanguageFileType getAssociatedFileType() {
-            //TODO Do we need file type?
             return PlainTextFileType.INSTANCE;
         }
     }
