@@ -38,13 +38,14 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
+
     private static final List<String> YAML_ROUTES = Arrays.asList(
-            new String[] {
-                    "routes",
-                    "routeConfigurations",
-                    "route",
-                    "routeConfiguration"
-            });
+        new String[] {
+            "routes",
+            "routeConfigurations",
+            "route",
+            "routeConfiguration"
+        });
 
     @Override
     public boolean isCamelFile(PsiFile file) {
@@ -53,17 +54,17 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             List<YAMLDocument> yamlDocuments = yamlFile.getDocuments();
             return yamlDocuments.stream().anyMatch(document -> {
                 YAMLValue value = document.getTopLevelValue();
-                if (value == null ||!(value instanceof YAMLSequence)) {
+                if (!(value instanceof YAMLSequence)) {
                     return false;
                 }
                 YAMLSequence sequence = (YAMLSequence) value;
                 List<YAMLSequenceItem> sequenceItems = sequence.getItems();
-                if (sequenceItems == null || sequenceItems.isEmpty()) {
+                if (sequenceItems.isEmpty()) {
                     return false;
                 }
                 YAMLSequenceItem firstItem = sequenceItems.get(0);
                 Collection<YAMLKeyValue> keysValues = firstItem.getKeysValues();
-                if (keysValues == null || keysValues.isEmpty()) {
+                if (keysValues.isEmpty()) {
                     return false;
                 }
                 YAMLKeyValue firstKeyValue = keysValues.iterator().next();

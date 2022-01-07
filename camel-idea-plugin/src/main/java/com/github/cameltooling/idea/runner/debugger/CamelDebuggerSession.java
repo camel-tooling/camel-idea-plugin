@@ -660,20 +660,20 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         final VirtualFile virtualFile = position.getFile();
 
         switch (virtualFile.getFileType().getName()) {
-            case "XML":
-            case "YAML":
-                sourceLocation = virtualFile.getPresentableUrl();
-                if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
-                    sourceLocation = "file:" + sourceLocation.replace("src/main/resources", "target/classes"); // file:/absolute/path/to/file.xml
-                } else { //Then it must be a Jar
-                    sourceLocation = "classpath:" + sourceLocation.substring(sourceLocation.lastIndexOf("!") + 2);
-                }
-                break;
-            case "JAVA":
-                PsiClass psiClass = PsiTreeUtil.getParentOfType(breakpointTag, PsiClass.class);
-                sourceLocation = psiClass.getQualifiedName();
-                break;
-            default: // noop
+        case "XML":
+        case "YAML":
+            sourceLocation = virtualFile.getPresentableUrl();
+            if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
+                sourceLocation = "file:" + sourceLocation.replace("src/main/resources", "target/classes"); // file:/absolute/path/to/file.xml
+            } else { //Then it must be a Jar
+                sourceLocation = "classpath:" + sourceLocation.substring(sourceLocation.lastIndexOf("!") + 2);
+            }
+            break;
+        case "JAVA":
+            PsiClass psiClass = PsiTreeUtil.getParentOfType(breakpointTag, PsiClass.class);
+            sourceLocation = psiClass.getQualifiedName();
+            break;
+        default: // noop
         }
 
         String path = "//*[@sourceLocation='" + sourceLocation + "' and @sourceLineNumber='" + lineNumber + "']";
@@ -753,18 +753,19 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
         VirtualFile file = position.getFile();
         switch (file.getFileType().getName()) {
-            case "XML":
-                psiElement = IdeaUtils.getService().getXmlTagAt(project, position);
-                break;
-            case "JAVA":
-                psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
-                break;
-            case "YAML":
-                psiElement = IdeaUtils.getYamlKeyValueAt(project, position);
-                if (psiElement != null) {
-                    psiElement = ((YAMLKeyValue) psiElement).getKey();
-                }
-            default: // noop
+        case "XML":
+            psiElement = IdeaUtils.getService().getXmlTagAt(project, position);
+            break;
+        case "JAVA":
+            psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
+            break;
+        case "YAML":
+            psiElement = IdeaUtils.getYamlKeyValueAt(project, position);
+            if (psiElement != null) {
+                psiElement = ((YAMLKeyValue) psiElement).getKey();
+            }
+            break;
+        default: // noop
         }
 
         if (psiElement != null) {

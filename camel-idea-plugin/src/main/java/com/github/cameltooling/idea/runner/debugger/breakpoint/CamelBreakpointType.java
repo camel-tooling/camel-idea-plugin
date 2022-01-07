@@ -77,27 +77,27 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
         final PsiFile psiFile = document != null ? PsiDocumentManager.getInstance(project).getPsiFile(document) : null;
 
         switch (file.getFileType().getName()) {
-            case "XML":
-                XmlTag tag = IdeaUtils.getService().getXmlTagAt(project, position);
-                if (tag == null) {
-                    return false;
-                }
-                eipName = tag.getLocalName();
-                break;
-            case "JAVA":
-                PsiElement psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
-                if (psiElement == null) {
-                    return false;
-                }
-                eipName = psiElement.getText();
-                break;
-            case "YAML":
-                YAMLKeyValue keyValue = IdeaUtils.getService().getYamlKeyValueAt(project, position);
-                if (keyValue != null) {
-                    eipName = keyValue.getKeyText();
-                }
-                break;
-            default: // noop
+        case "XML":
+            XmlTag tag = IdeaUtils.getService().getXmlTagAt(project, position);
+            if (tag == null) {
+                return false;
+            }
+            eipName = tag.getLocalName();
+            break;
+        case "JAVA":
+            PsiElement psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
+            if (psiElement == null) {
+                return false;
+            }
+            eipName = psiElement.getText();
+            break;
+        case "YAML":
+            YAMLKeyValue keyValue = IdeaUtils.getService().getYamlKeyValueAt(project, position);
+            if (keyValue != null) {
+                eipName = keyValue.getKeyText();
+            }
+            break;
+        default: // noop
         }
 
         return !NO_BREAKPOINTS_AT.contains(eipName) && CamelIdeaUtils.getService().isCamelFile(psiFile);

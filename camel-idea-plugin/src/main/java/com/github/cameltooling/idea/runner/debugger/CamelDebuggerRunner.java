@@ -16,6 +16,11 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.debugger.DebuggerManagerEx;
@@ -57,19 +62,13 @@ import org.jetbrains.idea.maven.model.MavenArtifact;
 import org.jetbrains.idea.maven.project.MavenProject;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
 public class CamelDebuggerRunner extends GenericDebuggerRunner {
-    private static final Logger LOG = Logger.getInstance(CamelDebuggerRunner.class);
-
-    private static final String MIN_CAMEL_VERSION = "3.15.0-SNAPSHOT";
 
     public static final String JAVA_CONTEXT = "Java";
     public static final String CAMEL_CONTEXT = "Camel";
 
+    private static final Logger LOG = Logger.getInstance(CamelDebuggerRunner.class);
+    private static final String MIN_CAMEL_VERSION = "3.15.0-SNAPSHOT";
     @NonNls
     private static final String ID = "CamelDebuggerRunner";
 
@@ -219,7 +218,7 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
                         if (version.compareTo(new ComparableVersion(MIN_CAMEL_VERSION)) < 0) { //This is an older version of Camel, debugger is not supported
                             NotificationGroupManager.getInstance()
                                     .getNotificationGroup("Debugger messages")
-                                    .createNotification("Camel version is " + version.toString() + " ; minimum required version for debugger is 3.15.0",
+                                    .createNotification("Camel version is " + version + ". Minimum required version for debugger is 3.15.0",
                                             MessageType.WARNING).notify(mavenConfiguration.getProject());
                         }
                     }
@@ -228,7 +227,8 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
                     if (camelDebugArtifact == null) {
                         NotificationGroupManager.getInstance()
                                 .getNotificationGroup("Debugger messages")
-                                .createNotification("Camel Debugger is not found in classpath!\nPlease add \"camel-debug\" or \"camel-debug-starter\" artifact to your project classpath and/or dependencies.",
+                                .createNotification("Camel Debugger is not found in classpath. \nPlease add camel-debug or camel-debug-starter"
+                                                + " JAR to your project dependencies.",
                                         MessageType.WARNING).notify(mavenConfiguration.getProject());
                     }
                 }
