@@ -32,6 +32,7 @@ import org.jetbrains.yaml.psi.YAMLSequence;
 import org.jetbrains.yaml.psi.YAMLSequenceItem;
 import org.jetbrains.yaml.psi.YAMLValue;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -146,12 +147,12 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public List<PsiElement> findEndpointUsages(Module module, Predicate<String> uriCondition) {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
     public List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition) {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
