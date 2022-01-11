@@ -1,0 +1,10 @@
+<LanguageInjectionConfiguration>
+    <injection language="Datasonnet" injector-id="xml">
+        <display-name>DataSonnet</display-name>
+        <place><![CDATA[xmlTag().withLocalName(string().equalTo("datasonnet"))]]></place>
+<!--
+        <prefix>&lt;![CDATA[</prefix>
+        <suffix>]]&gt;</suffix>
+-->
+    </injection>
+</LanguageInjectionConfiguration>

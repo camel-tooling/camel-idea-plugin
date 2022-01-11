@@ -1,0 +1,5 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="org.intellij.intelliLang">
+        <injectionConfig config="META-INF/dataSonnetInjections.xml"/>
+    </extensions>
+</idea-plugin>
