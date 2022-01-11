@@ -230,25 +230,7 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
                     .createNotification("Camel Debugger is not found in classpath. \nPlease add camel-debug or camel-debug-starter"
                                     + " JAR to your project dependencies.",
                             MessageType.WARNING).notify(module.getProject());
-
-/*
-            WriteAction.run(() -> {
-                final ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
-                final ModifiableRootModel modifiableModel = rootManager.getModifiableModel();
-                LibraryTable libraryTable = modifiableModel.getModuleLibraryTable();
-                Library debugLibrary = libraryTable.createLibrary("Camel Debug");
-                Library.ModifiableModel libraryModel = debugLibrary.getModifiableModel();
-                    //TODO TEST ONLY
-                    String url = VirtualFileManager.constructUrl(JarFileSystem.PROTOCOL, "/Users/eberman/.m2/repository/org/apache/camel/camel-debug/3.15.0-SNAPSHOT/camel-debug-3.15.0-SNAPSHOT.jar");
-                    VirtualFile debuggerFile = VirtualFileManager.getInstance().findFileByUrl(url + JarFileSystem.JAR_SEPARATOR);
-                libraryModel.addRoot(debuggerFile, OrderRootType.CLASSES);
-                libraryModel.commit();
-                modifiableModel.commit();
-            });
-*/
         }
-
-
     }
 
     private boolean isDebuggerDependency(OrderEntry entry) {
