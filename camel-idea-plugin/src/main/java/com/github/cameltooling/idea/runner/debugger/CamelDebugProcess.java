@@ -167,6 +167,7 @@ public class CamelDebugProcess extends XDebugProcess {
 
         AnAction evaluate = ActionManager.getInstance().getAction("EvaluateExpression");
         topToolbar.remove(evaluate);
+        //XDebugger.SetValue
 
     }
 }

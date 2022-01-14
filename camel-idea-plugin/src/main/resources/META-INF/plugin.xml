@@ -33,6 +33,8 @@
 
   <depends>org.jetbrains.idea.maven</depends>
 
+  <depends optional="true" config-file="org.apache.camel-intelliLang.xml">org.intellij.intelliLang</depends>
+
   <!-- main listener to trigger Camel IDEA plugin to detect if Camel is present or not in the project -->
   <applicationListeners>
     <listener class="com.github.cameltooling.idea.CamelPluginStartup" topic="com.intellij.openapi.project.ProjectManagerListener"/>
@@ -40,6 +42,10 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <notificationGroup id="Apache Camel" displayType="BALLOON"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="org.intellij.intelliLang">
+    <injectionConfig config="META-INF/dataSonnetInjections.xml"/>
   </extensions>
 
   <extensions defaultExtensionNs="org.apache.camel">

@@ -16,12 +16,8 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
+import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.debugger.DefaultDebugEnvironment;
@@ -34,7 +30,6 @@ import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.configurations.RemoteConnection;
-import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
@@ -44,10 +39,12 @@ import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.LibraryOrderEntry;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.ui.MessageType;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
@@ -57,10 +54,12 @@ import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.idea.maven.execution.MavenRunConfiguration;
-import org.jetbrains.idea.maven.model.MavenArtifact;
-import org.jetbrains.idea.maven.project.MavenProject;
-import org.jetbrains.idea.maven.project.MavenProjectsManager;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class CamelDebuggerRunner extends GenericDebuggerRunner {
 
@@ -107,7 +106,10 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
 
     @Override
     public void execute(@NotNull ExecutionEnvironment environment) throws ExecutionException {
-        checkConfiguration(environment.getRunnerAndConfigurationSettings().getConfiguration());
+        Module module = (Module) environment.getDataContext().getData("module");
+        if (module != null) {
+            checkConfiguration(module);
+        }
         super.execute(environment);
     }
 
@@ -201,38 +203,58 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
         }
     }
 
-    private void checkConfiguration(RunConfiguration configuration) {
-        if (configuration instanceof MavenRunConfiguration) {
-            MavenRunConfiguration mavenConfiguration = (MavenRunConfiguration) configuration;
-            final VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(mavenConfiguration.getRunnerParameters().getWorkingDirPath() + "/pom.xml");
-            if (virtualFile != null) {
-                MavenProject mavenProject = MavenProjectsManager.getInstance(configuration.getProject()).findProject(virtualFile);
-                if (mavenProject != null) {
-                    //Find Camel Version
-                    List<MavenArtifact> dependencies = mavenProject.getDependencies();
-                    MavenArtifact camelArtifact = dependencies.stream().filter(mavenArtifact -> mavenArtifact.getArtifactId().equals("camel-main")
-                            || mavenArtifact.getArtifactId().equals("camel-spring-boot")).findFirst().orElse(null);
-                    if (camelArtifact != null) {
-                        String camelVersion = camelArtifact.getBaseVersion();
-                        ComparableVersion version = new ComparableVersion(camelVersion);
-                        if (version.compareTo(new ComparableVersion(MIN_CAMEL_VERSION)) < 0) { //This is an older version of Camel, debugger is not supported
-                            NotificationGroupManager.getInstance()
-                                    .getNotificationGroup("Debugger messages")
-                                    .createNotification("Camel version is " + version + ". Minimum required version for debugger is 3.15.0",
-                                            MessageType.WARNING).notify(mavenConfiguration.getProject());
-                        }
-                    }
-                    MavenArtifact camelDebugArtifact = dependencies.stream().filter(mavenArtifact -> mavenArtifact.getArtifactId().equals("camel-debug")
-                            || mavenArtifact.getArtifactId().equals("camel-debug-starter")).findFirst().orElse(null);
-                    if (camelDebugArtifact == null) {
-                        NotificationGroupManager.getInstance()
-                                .getNotificationGroup("Debugger messages")
-                                .createNotification("Camel Debugger is not found in classpath. \nPlease add camel-debug or camel-debug-starter"
-                                                + " JAR to your project dependencies.",
-                                        MessageType.WARNING).notify(mavenConfiguration.getProject());
-                    }
+    private void checkConfiguration(@NotNull Module module) {
+        String currentVersion = null;
+        CamelService camelService = module.getProject().getService(CamelService.class);
+        if (camelService != null) {
+            CamelCatalogService camelCatalogService = module.getProject().getService(CamelCatalogService.class);
+            if (camelCatalogService != null) {
+                currentVersion = camelCatalogService.get().getLoadedVersion();
+                ComparableVersion version = new ComparableVersion(currentVersion);
+                if (version.compareTo(new ComparableVersion(MIN_CAMEL_VERSION)) < 0) { //This is an older version of Camel, debugger is not supported
+                    NotificationGroupManager.getInstance()
+                            .getNotificationGroup("Debugger messages")
+                            .createNotification("Camel version is " + version + ". Minimum required version for debugger is 3.15.0",
+                                    MessageType.WARNING).notify(module.getProject());
                 }
             }
         }
+
+        List<OrderEntry> entries = Arrays.asList(ModuleRootManager.getInstance(module).getOrderEntries());
+        long debuggerDependenciesCount = entries.stream()
+                .filter(entry -> isDebuggerDependency(entry))
+                .count();
+        if (debuggerDependenciesCount <= 0) {
+            NotificationGroupManager.getInstance()
+                    .getNotificationGroup("Debugger messages")
+                    .createNotification("Camel Debugger is not found in classpath. \nPlease add camel-debug or camel-debug-starter"
+                                    + " JAR to your project dependencies.",
+                            MessageType.WARNING).notify(module.getProject());
+        }
+    }
+
+    private boolean isDebuggerDependency(OrderEntry entry) {
+        if (!(entry instanceof LibraryOrderEntry)) {
+            return false;
+        }
+        LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
+
+        String name = libraryOrderEntry.getPresentableName().toLowerCase();
+
+        String[] split = name.split(":");
+        if (split.length < 3) {
+            return false;
+        }
+        int startIdx = 0;
+        if (split[0].equalsIgnoreCase("maven")
+                || split[0].equalsIgnoreCase("gradle")
+                || split[0].equalsIgnoreCase("sbt")) {
+            startIdx = 1;
+        }
+
+        String groupId = split[startIdx++].trim();
+        String artifactId = split[startIdx++].trim().toLowerCase();
+
+        return artifactId != null && ("camel-debug".equals(artifactId) || "camel-debug-starter".equals(artifactId));
     }
 }
