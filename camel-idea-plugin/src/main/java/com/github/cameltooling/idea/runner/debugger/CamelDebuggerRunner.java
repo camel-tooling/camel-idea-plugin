@@ -67,7 +67,7 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
     public static final String CAMEL_CONTEXT = "Camel";
 
     private static final Logger LOG = Logger.getInstance(CamelDebuggerRunner.class);
-    private static final String MIN_CAMEL_VERSION = "3.15.0-SNAPSHOT";
+    private static final String MIN_CAMEL_VERSION = "3.15.0";
     @NonNls
     private static final String ID = "CamelDebuggerRunner";
 
