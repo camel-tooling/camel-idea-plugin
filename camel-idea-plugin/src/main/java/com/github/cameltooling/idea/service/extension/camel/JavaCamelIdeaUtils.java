@@ -24,32 +24,13 @@ import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiExpression;
-import com.intellij.psi.PsiExpressionList;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiIdentifier;
-import com.intellij.psi.PsiJavaCodeReferenceElement;
-import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiLiteral;
-import com.intellij.psi.PsiLiteralExpression;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.PsiReferenceExpression;
-import com.intellij.psi.PsiType;
+import com.intellij.psi.*;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.util.ClassUtil;
+import com.intellij.psi.util.InheritanceUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
@@ -58,14 +39,12 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     private static final List<String> JAVA_ROUTE_BUILDERS = Arrays.asList(
         new String[] {
-            "RouteBuilder",
-            "RoutesBuilder",
-            "RouteConfigurationBuilder",
-            "RouteConfigurationsBuilder",
-            "AdviceWithRouteBuilder",
-            "EndpointRouteBuilder",
-            "EndpointRouteConfigurationBuilder",
-            "SpringRouteBuilder"
+            "org.apache.camel.builder.RouteBuilder",
+            "org.apache.camel.RoutesBuilder",
+            "org.apache.camel.builder.RouteConfigurationBuilder",
+            "org.apache.camel.RouteConfigurationsBuilder",
+            "org.apache.camel.builder.AdviceWithRouteBuilder",
+            "org.apache.camel.spring.SpringRouteBuilder"
         });
 
     @Override
@@ -74,9 +53,8 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             PsiJavaFile javaFile = (PsiJavaFile) file;
             final PsiClass[] classes = javaFile.getClasses();
             for (PsiClass nextClass : classes) {
-                PsiClassType[] extendsTypes = nextClass.getExtendsListTypes();
-                for (PsiClassType nextType : extendsTypes) {
-                    if (JAVA_ROUTE_BUILDERS.contains(nextType.getClassName())) {
+                for (String nextBaseName : JAVA_ROUTE_BUILDERS) {
+                    if (InheritanceUtil.isInheritor(nextClass, nextBaseName)) {
                         return true;
                     }
                 }
