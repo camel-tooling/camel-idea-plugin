@@ -16,8 +16,6 @@
  */
 package com.github.cameltooling.idea.preference.editorsettings;
 
-import java.awt.*;
-import javax.swing.*;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.options.BaseConfigurable;
@@ -30,11 +28,15 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
+import java.awt.*;
+
 public class CamelEditorSettingsPage extends BaseConfigurable implements SearchableConfigurable, Configurable.NoScroll {
 
     private JBCheckBox downloadCatalogCheckBox;
     private JBCheckBox scanThirdPartyComponentsCatalogCheckBox;
     private JBCheckBox camelIconInGutterCheckBox;
+    private JBCheckBox enableDebuggerCheckBox;
 
     @Nullable
     @Override
@@ -42,6 +44,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         downloadCatalogCheckBox = new JBCheckBox("Allow downloading camel-catalog over the internet");
         scanThirdPartyComponentsCatalogCheckBox = new JBCheckBox("Scan classpath for third party Camel components");
         camelIconInGutterCheckBox = new JBCheckBox("Show Camel icon in gutter");
+        enableDebuggerCheckBox = new JBCheckBox("Enable Camel Debugger");
 
         // use mig layout which is like a spread-sheet with 2 columns, which we can span if we only have one element
         JPanel panel = new JPanel(new MigLayout("fillx,wrap 2", "[left]rel[grow,fill]"));
@@ -50,6 +53,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         panel.add(downloadCatalogCheckBox, "span 2");
         panel.add(scanThirdPartyComponentsCatalogCheckBox, "span 2");
         panel.add(camelIconInGutterCheckBox, "span 2");
+        panel.add(enableDebuggerCheckBox, "span 2");
 
         JPanel result = new JPanel(new BorderLayout());
         result.add(panel, BorderLayout.NORTH);
@@ -62,6 +66,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         getCamelPreferenceService().setDownloadCatalog(downloadCatalogCheckBox.isSelected());
         getCamelPreferenceService().setScanThirdPartyComponents(scanThirdPartyComponentsCatalogCheckBox.isSelected());
         getCamelPreferenceService().setShowCamelIconInGutter(camelIconInGutterCheckBox.isSelected());
+        getCamelPreferenceService().setEnableCamelDebugger(enableDebuggerCheckBox.isSelected());
     }
 
     @Override
@@ -69,7 +74,8 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         // check boxes
         boolean b1 = getCamelPreferenceService().isDownloadCatalog() != downloadCatalogCheckBox.isSelected()
                 || getCamelPreferenceService().isScanThirdPartyComponents() != scanThirdPartyComponentsCatalogCheckBox.isSelected()
-                || getCamelPreferenceService().isShowCamelIconInGutter() != camelIconInGutterCheckBox.isSelected();
+                || getCamelPreferenceService().isShowCamelIconInGutter() != camelIconInGutterCheckBox.isSelected()
+                || getCamelPreferenceService().isEnableCamelDebugger() != enableDebuggerCheckBox.isSelected();
         return b1;
     }
 
@@ -78,6 +84,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         downloadCatalogCheckBox.setSelected(getCamelPreferenceService().isDownloadCatalog());
         scanThirdPartyComponentsCatalogCheckBox.setSelected(getCamelPreferenceService().isScanThirdPartyComponents());
         camelIconInGutterCheckBox.setSelected(getCamelPreferenceService().isShowCamelIconInGutter());
+        enableDebuggerCheckBox.setSelected(getCamelPreferenceService().isEnableCamelDebugger());
     }
 
     @NotNull
@@ -106,5 +113,9 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
 
     JBCheckBox getCamelIconInGutterCheckBox() {
         return camelIconInGutterCheckBox;
+    }
+
+    public JBCheckBox getEnableDebuggerCheckBox() {
+        return enableDebuggerCheckBox;
     }
 }
