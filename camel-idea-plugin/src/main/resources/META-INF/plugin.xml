@@ -11,6 +11,7 @@
   <change-notes><![CDATA[
       v.0.8.4
       <ul>
+        <li>Upgraded to Camel 3.16.0</li>
         <li>Tech Preview of the new Camel Route Debugger (currently XML, YAML and Java routes)</li>
       </ul>
     ]]>
