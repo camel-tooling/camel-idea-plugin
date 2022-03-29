@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
-  <version>0.8.5</version>
+  <version>0.8.6</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -9,11 +9,9 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.0.8.5
+      v.0.8.6
       <ul>
-        <li>Tech Preview of the new Camel Route Debugger (currently XML, YAML and Java routes)</li>
         <li>Bug fixes</li>
-        <li>Removed notification about Camel Debugger is not found in classpath</li>
       </ul>
     ]]>
   </change-notes>
