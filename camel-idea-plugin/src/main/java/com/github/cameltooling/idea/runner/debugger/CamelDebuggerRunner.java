@@ -114,7 +114,9 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
     public void execute(@NotNull ExecutionEnvironment environment) throws ExecutionException {
         Module module = (Module) environment.getDataContext().getData("module");
         if (module != null) {
-            checkConfiguration(module);
+            // TODO: disable notification as it causes pain for users
+            // https://github.com/camel-tooling/camel-idea-plugin/issues/666
+            // checkConfiguration(module);
         }
         super.execute(environment);
     }
