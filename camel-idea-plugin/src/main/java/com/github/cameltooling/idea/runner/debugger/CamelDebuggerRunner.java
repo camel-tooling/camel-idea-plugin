@@ -18,6 +18,7 @@ package com.github.cameltooling.idea.runner.debugger;
 
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.github.cameltooling.idea.service.CamelCatalogService;
+import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.debugger.DefaultDebugEnvironment;
@@ -38,6 +39,7 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -83,6 +85,10 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
 
     @Override
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
+        CamelPreferenceService preferenceService = ServiceManager.getService(CamelPreferenceService.class);
+        if (!preferenceService.isEnableCamelDebugger()) {
+            return false;
+        }
         if (profile instanceof RunConfigurationBase) {
             try {
                 final RunConfigurationBase base = (RunConfigurationBase) profile;
@@ -108,7 +114,9 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
     public void execute(@NotNull ExecutionEnvironment environment) throws ExecutionException {
         Module module = (Module) environment.getDataContext().getData("module");
         if (module != null) {
-            checkConfiguration(module);
+            // TODO: disable notification as it causes pain for users
+            // https://github.com/camel-tooling/camel-idea-plugin/issues/666
+            // checkConfiguration(module);
         }
         super.execute(environment);
     }

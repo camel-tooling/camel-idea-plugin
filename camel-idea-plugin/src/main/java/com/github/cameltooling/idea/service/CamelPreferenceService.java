@@ -16,11 +16,6 @@
  */
 package com.github.cameltooling.idea.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import javax.swing.Icon;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.ServiceManager;
@@ -30,6 +25,12 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Transient;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Service for holding preference for this plugin.
@@ -66,6 +67,7 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     private boolean downloadCatalog = true;
     private boolean scanThirdPartyComponents = true;
     private boolean showCamelIconInGutter = true;
+    private boolean enableCamelDebugger = true;
     private List<String> ignorePropertyList = new ArrayList<>();
     private List<String> excludePropertyFiles = new ArrayList<>();
 
@@ -137,6 +139,14 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
 
     public void setShowCamelIconInGutter(boolean showCamelIconInGutter) {
         this.showCamelIconInGutter = showCamelIconInGutter;
+    }
+
+    public boolean isEnableCamelDebugger() {
+        return enableCamelDebugger;
+    }
+
+    public void setEnableCamelDebugger(boolean enableCamelDebugger) {
+        this.enableCamelDebugger = enableCamelDebugger;
     }
 
     public List<String> getIgnorePropertyList() {
