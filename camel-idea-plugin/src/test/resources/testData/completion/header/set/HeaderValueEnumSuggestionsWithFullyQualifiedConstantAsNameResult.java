@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,20 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea;
 
-public final class Constants {
+import org.apache.camel.builder.RouteBuilder;
 
-    public static final String OSGI_BLUEPRINT_NAMESPACE = "http://www.osgi.org/xmlns/blueprint/v1.0.0";
-    public static final String CAMEL_NAMESPACE = "http://camel.apache.org/schema/spring";
-    public static final String[] ACCEPTED_NAMESPACES = new String[]{
-        CAMEL_NAMESPACE,
-        "http://camel.apache.org/schema/blueprint",
-        "http://www.springframework.org/schema/beans",
-        OSGI_BLUEPRINT_NAMESPACE
-    };
+public final class HeaderValueEnumSuggestionsWithFullyQualifiedConstantAsName extends RouteBuilder {
 
-    private Constants() {
+    @Override
+    public void configure() {
+        from("jms:queue")
+            .setHeader(org.apache.camel.component.cmis.CamelCMISConstants.CMIS_ACTION, constant(org.apache.camel.component.cmis.CamelCMISActions.CREATE))
+            .to("cmis://label");
     }
-
 }
