@@ -20,12 +20,21 @@ import com.github.cameltooling.idea.completion.extension.BeanReferenceCompletion
 import com.github.cameltooling.idea.completion.extension.BlueprintPropertyNameCompletionExtension;
 import com.github.cameltooling.idea.completion.extension.CamelEndpointNameCompletionExtension;
 import com.github.cameltooling.idea.completion.extension.CamelEndpointSmartCompletionExtension;
+import com.github.cameltooling.idea.completion.header.CamelHeaderEndpointSource;
+import com.github.cameltooling.idea.completion.header.CamelXmlHeaderNameCompletion;
+import com.github.cameltooling.idea.completion.header.CamelXmlHeaderValueCompletion;
 import com.intellij.codeInsight.completion.CompletionType;
+import com.intellij.patterns.StandardPatterns;
+import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlText;
+
+import static com.github.cameltooling.idea.Constants.CAMEL_NAMESPACE;
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
- * Plugin to hook into the IDEA XML language, to setup Camel smart completion for editing XML source code.
+ * Plugin to hook into the IDEA XML language, to set up Camel smart completion for editing XML source code.
  */
 public class CamelXmlReferenceContributor extends CamelContributor {
 
@@ -37,6 +46,52 @@ public class CamelXmlReferenceContributor extends CamelContributor {
         extend(CompletionType.BASIC,
                 psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("xml"))),
                 new EndpointCompletion(getCamelCompletionExtensions())
+        );
+        final String setHeaderTagName = "setHeader";
+        // The name of the header corresponding to the attribute "name" of the tag "setHeader"
+        extend(CompletionType.BASIC,
+            psiElement().withParent(
+                psiElement(XmlAttributeValue.class).withParent(
+                    XmlPatterns.xmlAttribute().withName("name").withParent(
+                        XmlPatterns.xmlTag()
+                            .withName(setHeaderTagName)
+                            .withNamespace(CAMEL_NAMESPACE)
+                    )
+                )
+            ),
+            new CamelXmlHeaderNameCompletion(CamelHeaderEndpointSource.PRODUCER_ONLY)
+        );
+        // The value of the header corresponding to the text content of the tag "setHeader" or the staring tag
+        // inside the tag "setHeader"
+        extend(CompletionType.BASIC,
+            StandardPatterns.or(
+                psiElement().withParent(
+                    psiElement(XmlText.class).withParent(
+                        XmlPatterns.xmlTag()
+                            .withName(setHeaderTagName)
+                            .withNamespace(CAMEL_NAMESPACE)
+                    )
+                ),
+                psiElement().withParent(
+                    XmlPatterns.xmlTag().withParent(
+                        XmlPatterns.xmlTag()
+                            .withName(setHeaderTagName)
+                            .withNamespace(CAMEL_NAMESPACE)
+                    )
+                )
+            ),
+            new CamelXmlHeaderValueCompletion()
+        );
+        // The name of the header corresponding to the text content of the tag "header"
+        extend(CompletionType.BASIC,
+            psiElement().withParent(
+                psiElement(XmlText.class).withParent(
+                    XmlPatterns.xmlTag()
+                        .withName("header")
+                        .withNamespace(CAMEL_NAMESPACE)
+                )
+            ),
+            new CamelXmlHeaderNameCompletion(CamelHeaderEndpointSource.ALL)
         );
     }
 

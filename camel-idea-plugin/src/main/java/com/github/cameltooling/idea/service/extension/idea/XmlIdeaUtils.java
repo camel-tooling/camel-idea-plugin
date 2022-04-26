@@ -26,6 +26,7 @@ import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlText;
 import com.intellij.psi.xml.XmlToken;
+import com.intellij.psi.xml.XmlTokenType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import static com.intellij.xml.CommonXmlStrings.QUOT;
@@ -46,6 +47,13 @@ public class XmlIdeaUtils implements IdeaUtilsExtension {
                     return Optional.ofNullable(getInnerText(xml.getValue()));
                 }
             } else {
+                final XmlToken token = (XmlToken) element;
+                // Empty tag
+                if (token.getTokenType() == XmlTokenType.XML_END_TAG_START
+                    && token.getPrevSibling() instanceof XmlToken
+                    && ((XmlToken)token.getPrevSibling()).getTokenType() == XmlTokenType.XML_TAG_END) {
+                    return Optional.of("");
+                }
                 String returnText = element.getText();
                 final PsiElement prevSibling = element.getPrevSibling();
                 if (prevSibling != null && prevSibling.getText().equalsIgnoreCase("&amp;")) {
