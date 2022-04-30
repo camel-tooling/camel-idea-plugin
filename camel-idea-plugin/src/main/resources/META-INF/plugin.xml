@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
-  <version>0.8.7</version>
+  <version>0.8.8</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -9,10 +9,9 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.0.8.7
+      v.0.8.8
       <ul>
-        <li>Support for IDEA 2022.1</li>
-        <li>Code completion for component headers (requires Camel 3.17)</li>
+        <li>Bug fixes</li>
       </ul>
     ]]>
   </change-notes>
