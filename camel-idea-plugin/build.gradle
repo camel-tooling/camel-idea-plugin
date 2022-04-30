@@ -29,15 +29,15 @@ intellij {
     plugins = ['java', 'java-i18n', 'properties', 'yaml', 'maven', 'xpath']
 }
 
-// to support IDEA 2020 onwards
+// to support IDEA 2021 onwards
 // http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
 patchPluginXml {
     sinceBuild = "212"
-    untilBuild = "213.*"
+    untilBuild = "221.*"
 }
 
 runPluginVerifier {
-    ideVersions = [ "2021.2", "2021.3" ]
+    ideVersions = [ "2021.2", "2021.3", "2022.1" ]
 }
 
 // publishPlugin {

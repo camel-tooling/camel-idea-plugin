@@ -11,7 +11,8 @@
   <change-notes><![CDATA[
       v.0.8.6
       <ul>
-        <li>Bug fixes</li>
+        <li>Support for IDEA 2022.1</li>
+        <li>Code completion for component headers (requires Camel 3.17)</li>
       </ul>
     ]]>
   </change-notes>
