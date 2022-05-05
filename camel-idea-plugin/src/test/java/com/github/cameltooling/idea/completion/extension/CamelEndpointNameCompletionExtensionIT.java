@@ -44,6 +44,12 @@ public class CamelEndpointNameCompletionExtensionIT extends CamelLightCodeInsigh
         doTestCompletion();
     }
 
+    public void testDirectEndpointNameCompletionInYaml() {
+        myFixture.configureByFiles("CompleteDirectEndpointNameTestData.yaml");
+        myFixture.complete(CompletionType.BASIC);
+        doTestCompletion();
+    }
+
     public void testDirectEndpointNameCompletionInJavaAtInvalidPlace() {
         myFixture.configureByFiles("CompleteDirectEndpointNameAtInvalidPlace.java");
         doTestCompletionAtInvalidPlace();
@@ -54,13 +60,23 @@ public class CamelEndpointNameCompletionExtensionIT extends CamelLightCodeInsigh
         doTestCompletionAtInvalidPlace();
     }
 
+    public void testDirectEndpointNameCompletionInYamlAtInvalidPlace() {
+        myFixture.configureByFiles("CompleteDirectEndpointNameAtInvalidPlace.yaml");
+        doTestCompletionAtInvalidPlace();
+    }
+
     public void testDirectEndpointNameCompletionInNonUriAttribute() {
         myFixture.configureByFiles("CompleteDirectEndpointNameInNonUriAttribute.xml");
         doTestCompletionAtInvalidPlace();
     }
 
-    public void testDirectEndpointNameCompletionInRouteStart() {
+    public void testDirectEndpointNameCompletionInXmlInRouteStart() {
         myFixture.configureByFiles("CompleteDirectEndpointNameInRouteStart.xml");
+        doTestCompletionAtInvalidPlace();
+    }
+
+    public void testDirectEndpointNameCompletionInYamlInRouteStart() {
+        myFixture.configureByFiles("CompleteDirectEndpointNameInRouteStart.yaml");
         doTestCompletionAtInvalidPlace();
     }
 

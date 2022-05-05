@@ -33,6 +33,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlElement;
 import com.intellij.psi.xml.XmlElementType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 /**
  * Validate if the URI contains a know Camel component and call the validateEndpoint method
@@ -88,6 +89,8 @@ abstract class AbstractCamelAnnotator implements Annotator {
         // skip java doc noise
         if (JavaDocElementType.ALL_JAVADOC_ELEMENTS.contains(type)) {
             return false;
+        } else if (element instanceof YAMLKeyValue || element.getParent() instanceof YAMLKeyValue) {
+            return true;
         }
 
         boolean accept = false;

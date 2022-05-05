@@ -38,6 +38,8 @@ import com.intellij.psi.xml.XmlToken;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.EndpointValidationResult;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.psi.YAMLQuotedText;
+
 import static com.github.cameltooling.idea.util.StringUtils.isEmpty;
 
 /**
@@ -146,7 +148,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 int propertyIdx = fromElement.indexOf(propertyValue, startIdxQueryParameters);
                 int propertyLength = propertyValue.length();
 
-                propertyIdx = getIdeaUtils().isJavaLanguage(element) || getIdeaUtils().isXmlLanguage(element)  ? propertyIdx + 1  : propertyIdx;
+                propertyIdx = useNormalIndex(element)  ? propertyIdx + 1 : propertyIdx;
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + propertyIdx,
                     element.getTextRange().getStartOffset() + propertyIdx + propertyLength);
@@ -187,7 +189,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 propertyLength = element instanceof XmlToken ? propertyLength - 1 : propertyLength;
 
                 startIdx = propertyValue.isEmpty() ? propertyIdx + 1 : fromElement.indexOf(propertyValue, startIdx) + 1;
-                startIdx = getIdeaUtils().isJavaLanguage(element) || getIdeaUtils().isXmlLanguage(element) ? startIdx  : startIdx - 1;
+                startIdx = useNormalIndex(element) ? startIdx  : startIdx - 1;
 
                 TextRange range = new TextRange(element.getTextRange().getStartOffset() + startIdx,
                     element.getTextRange().getStartOffset() + startIdx + propertyLength);
@@ -195,6 +197,16 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                         .range(range).create();
             }
         }
+    }
+
+    /**
+     * Indicates whether the index to use should be normal or shifted.
+     * @param element the element to test
+     * @return {@code true} if the index to use should be the normal one, {@code false} otherwise.
+     */
+    private boolean useNormalIndex(@NotNull PsiElement element) {
+        return getIdeaUtils().isJavaLanguage(element) || getIdeaUtils().isXmlLanguage(element) ||
+            getIdeaUtils().isYamlLanguage(element) && element instanceof YAMLQuotedText;
     }
 
     private static class BooleanErrorMsg implements CamelAnnotatorEndpointMessage<Map.Entry<String, String>> {

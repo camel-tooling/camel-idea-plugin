@@ -19,7 +19,7 @@ package com.github.cameltooling.idea.inspection;
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
 import com.intellij.testFramework.JavaInspectionTestCase;
 
-public class CamelInspectXmlEndpointTestIT extends JavaInspectionTestCase {
+public class CamelInspectYamlEndpointTestIT extends JavaInspectionTestCase {
 
     @Override
     protected String getTestDataPath() {
@@ -30,7 +30,7 @@ public class CamelInspectXmlEndpointTestIT extends JavaInspectionTestCase {
         // force Camel enabled so the inspection test can run
         CamelInspection inspection = new CamelInspection(true);
 
-        doTest("testData/inspectionxml/", new LocalInspectionToolWrapper(inspection));
+        doTest("testData/inspectionyaml/", new LocalInspectionToolWrapper(inspection));
     }
 
 }

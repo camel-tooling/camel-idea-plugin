@@ -212,7 +212,8 @@ public class JavaHeaderValueCompletionTestIT extends CamelLightCodeInsightFixtur
 
     enum TestType {
         JAVA,
-        XML;
+        XML,
+        YAML;
 
         public String getFilePath(String fileName) {
             return String.format("%s.%s", fileName, name().toLowerCase());

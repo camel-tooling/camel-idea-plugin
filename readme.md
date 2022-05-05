@@ -8,11 +8,11 @@ Plugin for Intellij IDEA to provide a set of Apache Camel related capabilities t
 
 The plugin includes:
 
-- Code completion for Camel endpoints in Java, XML, properties or yaml files (`ctrl + space`)
-- Code completion for Camel message headers (available `setHeader` and `header`) in Java and XML files (`ctrl + space`)
+- Code completion for Camel endpoints in Java, XML, properties or YAML files (`ctrl + space`)
+- Code completion for Camel message headers (available `setHeader` and `header`) in Java, XML and YAML files (`ctrl + space`)
 - Code completion for Camel property placeholders (cursor after `{{`)
-- Real time validation for Camel endpoints in Java, XML (underline errors in red)
-- Real time validation for Camel simple language in Java, XML (underline errors in red)
+- Real time validation for Camel endpoints in Java, XML, YAML (underline errors in red)
+- Real time validation for Camel simple language in Java, XML, YAML (underline errors in red)
 - Endpoint options filtered to only include applicable options when used as consumer vs producer only mode
 - Quick navigation to other Camel routes routing to this route by clicking the Camel icon in the gutter
 - Intention to add new Camel endpoint (`alt + enter` in empty string)
@@ -20,7 +20,7 @@ The plugin includes:
 - Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders
 - Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)
 - Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)
-- Inspection (analyze code) to validate Camel endpoints in Java, XML
+- Inspection (analyze code) to validate Camel endpoints in Java, XML, YAML
 - Camel icon in gutter can be customized by choosing one of the three provided icons
 - Supports loading camel-catalog from third party Maven repositories define in the project Maven pom.xml file 
 

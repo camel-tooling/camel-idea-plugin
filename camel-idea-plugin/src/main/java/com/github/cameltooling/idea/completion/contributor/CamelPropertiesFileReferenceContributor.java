@@ -22,15 +22,15 @@ import com.intellij.psi.PsiFile;
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
- * Plugin to hook into the IDEA completion system, to setup Camel smart completion for editing properties or yaml files.
+ * Plugin to hook into the IDEA completion system, to set up Camel smart completion for editing properties.
  */
-public class CamelPropertiesOrYamlFileReferenceContributor extends CamelContributor {
+public class CamelPropertiesFileReferenceContributor extends CamelContributor {
 
-    public CamelPropertiesOrYamlFileReferenceContributor() {
-        // also allow to setup camel endpoints in properties files
+    public CamelPropertiesFileReferenceContributor() {
+        // also allow to set up camel endpoints in properties files
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
         extend(CompletionType.BASIC,
-                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("properties", "yaml", "yml"))),
+                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("properties"))),
                 new EndpointCompletion(getCamelCompletionExtensions())
         );
     }

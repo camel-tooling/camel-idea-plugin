@@ -83,12 +83,14 @@
     <completion.contributor language="XML" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelXmlReferenceContributor"/>
     <!-- TODO: work in progress -->
 <!--    <completion.contributor language="Properties" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertiesContributor"/>-->
-    <completion.contributor language="any" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertiesOrYamlFileReferenceContributor" order="before javaClassReference"/>
+    <completion.contributor language="Properties" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertiesFileReferenceContributor" order="before javaClassReference"/>
+    <completion.contributor language="yaml" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelYamlFileReferenceContributor" order="before javaClassReference"/>
 
     <!-- puts the Camel icon in the gutter for each line that starts a Camel route -->
     <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.github.cameltooling.idea.gutter.CamelRouteLineMarkerProvider"/>
     <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.github.cameltooling.idea.gutter.BeanInjectLineMarkerProvider"/>
     <codeInsight.lineMarkerProvider language="XML" implementationClass="com.github.cameltooling.idea.gutter.CamelRouteLineMarkerProvider"/>
+    <codeInsight.lineMarkerProvider language="yaml" implementationClass="com.github.cameltooling.idea.gutter.CamelRouteLineMarkerProvider"/>
 
     <!-- code completion of Camel property placeholders, eg {{foo}} style -->
     <completion.contributor language="any" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertyPlaceholderReferenceContributor"/>
@@ -117,9 +119,11 @@
     <!-- annotator to validate simple language -->
     <annotator language="JAVA" implementationClass="com.github.cameltooling.idea.annotator.CamelSimpleAnnotator"/>
     <annotator language="XML" implementationClass="com.github.cameltooling.idea.annotator.CamelSimpleAnnotator"/>
+    <annotator language="yaml" implementationClass="com.github.cameltooling.idea.annotator.CamelSimpleAnnotator"/>
     <!-- annotator to validate jsonpath language -->
     <annotator language="JAVA" implementationClass="com.github.cameltooling.idea.annotator.CamelJSonPathAnnotator"/>
     <annotator language="XML" implementationClass="com.github.cameltooling.idea.annotator.CamelJSonPathAnnotator"/>
+    <annotator language="yaml" implementationClass="com.github.cameltooling.idea.annotator.CamelJSonPathAnnotator"/>
     <!-- annotator to validate bean references by type -->
     <annotator language="JAVA" implementationClass="com.github.cameltooling.idea.annotator.BeanReferenceTypeAnnotator"/>
     <annotator language="XML" implementationClass="com.github.cameltooling.idea.annotator.BeanReferenceTypeAnnotator"/>
