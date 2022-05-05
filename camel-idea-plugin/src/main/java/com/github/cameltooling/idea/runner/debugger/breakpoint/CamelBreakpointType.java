@@ -19,9 +19,12 @@ package com.github.cameltooling.idea.runner.debugger.breakpoint;
 import com.github.cameltooling.idea.runner.debugger.CamelDebuggerEditorsProvider;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
+import com.intellij.openapi.application.ApplicationNamesInfo;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.project.DumbService;
+import com.intellij.openapi.project.IndexNotReadyException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
@@ -100,7 +103,12 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
         default: // noop
         }
 
-        return !NO_BREAKPOINTS_AT.contains(eipName) && CamelIdeaUtils.getService().isCamelFile(psiFile);
+        try {
+            return !NO_BREAKPOINTS_AT.contains(eipName) && CamelIdeaUtils.getService().isCamelFile(psiFile);
+        } catch (IndexNotReadyException e) {
+            DumbService.getInstance(project).showDumbModeNotification("Toggling breakpoints is disabled while " + ApplicationNamesInfo.getInstance().getProductName() + " is updating indices");
+            return false;
+        }
     }
 
     @Override
