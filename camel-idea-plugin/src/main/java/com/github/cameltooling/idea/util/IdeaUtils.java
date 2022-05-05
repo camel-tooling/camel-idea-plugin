@@ -16,6 +16,18 @@
  */
 package com.github.cameltooling.idea.util;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 import com.github.cameltooling.idea.extension.IdeaUtilsExtension;
 import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.ide.highlighter.XmlFileType;
@@ -63,22 +75,13 @@ import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xml.util.XmlUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLFileType;
+import org.jetbrains.yaml.YAMLLanguage;
+import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLMapping;
 import org.jetbrains.yaml.psi.YAMLSequence;
 import org.jetbrains.yaml.psi.YAMLSequenceItem;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import static com.intellij.xml.CommonXmlStrings.QUOT;
 
@@ -185,6 +188,13 @@ public final class IdeaUtils implements Disposable {
      */
     public boolean isXmlLanguage(PsiElement element) {
         return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).is(XMLLanguage.INSTANCE);
+    }
+
+    /**
+     * Is the element from YAML language
+     */
+    public boolean isYamlLanguage(PsiElement element) {
+        return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).is(YAMLLanguage.INSTANCE);
     }
 
     /**
@@ -372,6 +382,40 @@ public final class IdeaUtils implements Disposable {
     }
 
     /**
+     * Indicates whether the given YAML key-value pair matches with the uri of one of the given {@code eips}.
+     *
+     * @param keyValue  the YAML key-value pair to test
+     * @param eips  the name of the EIP to test
+     * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
+     */
+    public boolean isURIYAMLKeyValue(@NotNull YAMLKeyValue keyValue, @NotNull String... eips) {
+        final String key = keyValue.getKeyText();
+        if (key.equals("uri") || key.equals("dead-letter-uri")) {
+            final YAMLKeyValue parent = PsiTreeUtil.getParentOfType(keyValue, YAMLKeyValue.class);
+            return parent != null && Arrays.asList(eips).contains(parent.getKeyText());
+        }
+        return Arrays.asList(eips).contains(keyValue.getKeyText()) && keyValue.getValue() != null;
+    }
+
+    /**
+     * Indicates whether the given YAML key-value pair has for parent one of the given {@code eips}.
+     *
+     * @param keyValue  the YAML key-value pair to test
+     * @param eips  the name of the EIP to test
+     * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
+     */
+    public boolean hasParentYAMLKeyValue(@NotNull YAMLKeyValue keyValue, @NotNull String... eips) {
+        YAMLKeyValue parent = PsiTreeUtil.getParentOfType(keyValue, YAMLKeyValue.class);
+        if (parent == null) {
+            return false;
+        } else if (Arrays.asList(eips).contains(parent.getKeyText())) {
+            return true;
+        }
+        parent = PsiTreeUtil.getParentOfType(keyValue, YAMLKeyValue.class);
+        return parent != null && Arrays.asList(eips).contains(parent.getKeyText());
+    }
+
+    /**
      * Is the given element from a XML tag with the parent and is of any of the given tag names
      *
      * @param xml  the xml tag
@@ -381,6 +425,27 @@ public final class IdeaUtils implements Disposable {
      */
     public boolean hasParentAndFromXmlTag(@NotNull XmlTag xml, @NotNull String parentTag, @NotNull String... methods) {
         return hasParentXmlTag(xml, parentTag) && isFromFileType(xml, methods);
+    }
+
+    /**
+     * Calls the given consumer for each Yaml file that could be found in the given module.
+     * @param module the module in which Yaml files should be found.
+     * @param yamlFileConsumer the consumer to call anytime a Yaml has been found.
+     */
+    public void iterateYamlFiles(Module module, Consumer<YAMLFile> yamlFileConsumer) {
+        final GlobalSearchScope moduleScope = module.getModuleContentScope();
+        final GlobalSearchScope yamlFiles = GlobalSearchScope.getScopeRestrictedByFileTypes(moduleScope, YAMLFileType.YML);
+
+        ModuleFileIndex fileIndex = ModuleRootManager.getInstance(module).getFileIndex();
+        fileIndex.iterateContent(f -> {
+            if (yamlFiles.contains(f)) {
+                PsiFile file = PsiManager.getInstance(module.getProject()).findFile(f);
+                if (file instanceof YAMLFile) {
+                    yamlFileConsumer.accept((YAMLFile) file);
+                }
+            }
+            return true;
+        });
     }
 
     public void iterateXmlDocumentRoots(Module module, Consumer<XmlTag> rootTag) {

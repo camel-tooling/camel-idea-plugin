@@ -249,6 +249,18 @@ public class JavaHeaderNameCompletionTestIT extends CamelLightCodeInsightFixture
             public boolean accept(String suggestion) {
                 return !suggestion.contains(",");
             }
+        },
+        SET_HEADER_YAML("set", FileType.YAML) {
+            @Override
+            public boolean accept(String suggestion) {
+                return !suggestion.contains(",");
+            }
+        },
+        HEADER_YAML("get", FileType.YAML) {
+            @Override
+            public boolean accept(String suggestion) {
+                return !suggestion.contains(",");
+            }
         };
 
         private final String folder;
@@ -294,6 +306,17 @@ public class JavaHeaderNameCompletionTestIT extends CamelLightCodeInsightFixture
             }
         },
         XML(false, false) {
+            @Override
+            public boolean isFileHeader(String suggestion) {
+                return suggestion.startsWith("CamelFile");
+            }
+
+            @Override
+            public boolean isFtpHeader(String suggestion) {
+                return suggestion.startsWith("CamelFtp");
+            }
+        },
+        YAML(false, false) {
             @Override
             public boolean isFileHeader(String suggestion) {
                 return suggestion.startsWith("CamelFile");

@@ -1,0 +1,211 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.github.cameltooling.idea.util;
+
+import java.util.Arrays;
+
+import com.intellij.lang.ASTNode;
+import com.intellij.patterns.ElementPattern;
+import com.intellij.patterns.PatternCondition;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.tree.IElementType;
+import com.intellij.util.ProcessingContext;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * A utility call to define special pattern conditions used to build element pattern for Yaml content.
+ */
+public final class YamlPatternConditions {
+
+    private YamlPatternConditions() {}
+
+    /**
+     * @param texts all the possible text contents that are accepted.
+     * @return a {@code PatternCondition} that accepts elements that have for text content one of the provided
+     * text contents.
+     */
+    public static <T extends PsiElement> PatternCondition<T> withText(String @NotNull ... texts) {
+        return new TextPatternCondition<>(texts);
+    }
+
+    /**
+     * @param types all the possible element types that are accepted.
+     * @return a {@code PatternCondition} that accepts elements that have for element type one of the provided
+     * element types.
+     */
+    public static <T extends PsiElement> PatternCondition<T> withElementType(IElementType @NotNull ... types) {
+        return new ElementTypePatternCondition<>(types);
+    }
+
+    /**
+     * @param patterns all the possible element patterns that are accepted.
+     * @return a {@code PatternCondition} that accepts elements that are accepted by at least one of the provided
+     * element patterns.
+     */
+    public static <T extends PsiElement> PatternCondition<T> or(ElementPattern<T> @NotNull ... patterns) {
+        return new OrPatternCondition<>(patterns);
+    }
+
+    /**
+     * @param pattern the pattern to validate against the first child.
+     * @return a {@code PatternCondition} that accepts elements whose first child matches with the given pattern.
+     */
+    public static <T extends PsiElement> PatternCondition<T> withFirstChild(@NotNull ElementPattern<T> pattern) {
+        return new FirstChildPatternCondition<>(pattern);
+    }
+
+    /**
+     * @param pattern the pattern to validate against the last child.
+     * @return a {@code PatternCondition} that accepts elements whose last child matches with the given pattern.
+     */
+    public static <T extends PsiElement> PatternCondition<T> withLastChild(@NotNull ElementPattern<T> pattern) {
+        return new LastChildPatternCondition<>(pattern);
+    }
+
+    /**
+     * {@code FirstChildPatternCondition} is a {@link PatternCondition} allowing to identify elements whose
+     * first child matches with a specific pattern.
+     */
+    private static class FirstChildPatternCondition<T extends PsiElement> extends PatternCondition<T> {
+
+        /**
+         * The pattern to validate against the first child.
+         */
+        private final ElementPattern<T> pattern;
+
+        /**
+         * Construct a {@code FirstChildPatternCondition} with the given pattern.
+         * @param pattern the pattern to validate against the first child.
+         */
+        FirstChildPatternCondition(@NotNull ElementPattern<T> pattern) {
+            super("withFirstChild");
+            this.pattern = pattern;
+        }
+
+        @Override
+        public boolean accepts(@NotNull T t, ProcessingContext context) {
+            final PsiElement firstChild = t.getFirstChild();
+            return firstChild != null && pattern.accepts(firstChild);
+        }
+    }
+
+    /**
+     * {@code LastChildPatternCondition} is a {@link PatternCondition} allowing to identify elements whose
+     * last child matches with a specific pattern.
+     */
+    private static class LastChildPatternCondition<T extends PsiElement> extends PatternCondition<T> {
+
+        /**
+         * The pattern to validate against the last child.
+         */
+        private final ElementPattern<T> pattern;
+
+        /**
+         * Construct a {@code LastChildPatternCondition} with the given pattern.
+         * @param pattern the pattern to validate against the last child.
+         */
+        LastChildPatternCondition(@NotNull ElementPattern<T> pattern) {
+            super("withLastChild");
+            this.pattern = pattern;
+        }
+
+        @Override
+        public boolean accepts(@NotNull T t, ProcessingContext context) {
+            final PsiElement lastChild = t.getLastChild();
+            return lastChild != null && pattern.accepts(lastChild);
+        }
+    }
+
+    /**
+     * {@code OrPatternCondition} is a {@link PatternCondition} allowing to identify elements which match
+     * with at least one of the given patterns.
+     */
+    private static class OrPatternCondition<T extends PsiElement> extends PatternCondition<T> {
+
+        /**
+         * All the possible element patterns that are accepted.
+         */
+        private final ElementPattern[] patterns;
+
+        /**
+         * Construct a {@code OrPatternCondition} with the given patterns.
+         * @param patterns all the possible element patterns that are accepted.
+         */
+        OrPatternCondition(@NotNull ElementPattern<T> @NotNull ... patterns) {
+            super("withOr");
+            this.patterns = patterns;
+        }
+
+        @Override
+        public boolean accepts(@NotNull T t, ProcessingContext context) {
+            return Arrays.stream(patterns).anyMatch(pattern -> pattern.accepts(t));
+        }
+    }
+
+    /**
+     * {@code ElementTypePatternCondition} is a {@link PatternCondition} allowing to identify elements whose
+     * element type matches with one of the given element types.
+     */
+    private static class ElementTypePatternCondition<T extends PsiElement> extends PatternCondition<T> {
+
+        /**
+         * All the possible element types that are accepted.
+         */
+        private final IElementType[] types;
+
+        /**
+         * Construct a {@code ElementTypePatternCondition} with the given types.
+         * @param types all the possible element types that are accepted.
+         */
+        ElementTypePatternCondition(IElementType @NotNull ... types) {
+            super("withElementType");
+            this.types = types;
+        }
+
+        @Override
+        public boolean accepts(@NotNull T t, ProcessingContext context) {
+            ASTNode node = t.getNode();
+            return node != null && Arrays.stream(types).anyMatch(c -> c.equals(node.getElementType()));
+        }
+    }
+
+    /**
+     * {@code TextPatternCondition} is a {@link PatternCondition} allowing to identify elements whose
+     * text content matches with one of the given text contents.
+     */
+    private static class TextPatternCondition<T extends PsiElement> extends PatternCondition<T> {
+
+        /**
+         * All the possible text contents that are accepted.
+         */
+        private final String[] texts;
+
+        /**
+         * Construct a {@code TextPatternCondition} with the given text contents.
+         * @param texts all the possible text contents that are accepted.
+         */
+        TextPatternCondition(String @NotNull ... texts) {
+            super("withText");
+            this.texts = texts;
+        }
+
+        @Override
+        public boolean accepts(@NotNull T t, ProcessingContext context) {
+            return Arrays.stream(texts).anyMatch(c -> c.equals(t.getText()));
+        }
+    }
+}

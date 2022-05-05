@@ -50,7 +50,7 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context,
                                   @NotNull CompletionResultSet resultSet) {
-        final PsiElement element = parameters.getOriginalPosition();
+        final PsiElement element = getCompletionPosition(parameters);
         if (element == null) {
             return;
         }
@@ -78,7 +78,8 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
                     answer.sort((o1, o2) -> o1
                         .getLookupString()
                         .compareToIgnoreCase(o2.getLookupString()));
-                    resultSet.addAllElements(answer);
+                    resultSet.withPrefixMatcher(getPrefix(element, resultSet.getPrefixMatcher().getPrefix()))
+                        .addAllElements(answer);
                 }
                 return;
             }
@@ -208,6 +209,28 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
      */
     private static LookupElement asPrioritizedLookupElement(LookupElement element) {
         return PrioritizedLookupElement.withPriority(element, 200.0);
+    }
+
+    /**
+     * Gives the leaf PSI element corresponding to the position where the completion has been
+     * requested.
+     * @param parameters the completion parameters from which the current element is retrieved.
+     * @return a {@link PsiElement} corresponding to the current position.
+     * {@link CompletionParameters#getOriginalPosition()} by default.
+     */
+    protected @Nullable PsiElement getCompletionPosition(@NotNull CompletionParameters parameters) {
+        return parameters.getOriginalPosition();
+    }
+
+    /**
+     * Gives the prefix to use for the completion.
+     *
+     * @param element the element from which the new prefix is extracted.
+     * @param defaultPrefix the default prefix
+     * @return the prefix to use for the completion according to the context.
+     */
+    protected @NotNull String getPrefix(@NotNull PsiElement element, @NotNull String defaultPrefix) {
+        return defaultPrefix;
     }
 
     /**

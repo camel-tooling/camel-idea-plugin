@@ -21,7 +21,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+
 import javax.swing.*;
+
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
@@ -29,6 +31,7 @@ import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
+import com.intellij.lang.ASTNode;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
@@ -53,6 +56,10 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlToken;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.yaml.YAMLTokenTypes;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLMapping;
+import org.jetbrains.yaml.psi.YAMLPsiElement;
 
 
 /**
@@ -62,8 +69,9 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
 
     private static final Logger LOG = Logger.getInstance(CamelRouteLineMarkerProvider.class);
 
-    private static final String[] JAVA_ROUTE_CALL = new String[]{"to", "toF", "toD", "enrich", "wireTap"};
-    private static final String[] XML_ROUTE_CALL = new String[]{"to", "toD", "enrich", "wireTap"};
+    private static final String[] JAVA_ROUTE_CALL = {"to", "toF", "toD", "enrich", "wireTap"};
+    private static final String[] XML_ROUTE_CALL = {"to", "toD", "enrich", "wireTap"};
+    private static final String[] YAML_ROUTE_CALL = {"to", "tod", "toD", "to-d", "enrich", "wireTap", "wire-tap"};
 
     private IdeaUtils getIdeaUtils() {
         return ServiceManager.getService(IdeaUtils.class);
@@ -75,6 +83,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         //TODO: remove this when IdeaUtils.isFromJavaMethodCall will be fixed
         if (isJavaTokenLiteralExpression(element)
             || isXmlTokenLiteralExpression(element)
+            || isYamlKey(element)
             || isCamelRouteStartIdentifierExpression(element)) {
             boolean showIcon = getCamelPreferenceService().isShowCamelIconInGutter();
             boolean camelPresent = ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent();
@@ -138,11 +147,20 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
     }
 
     private boolean isXmlTokenLiteralExpression(@NotNull PsiElement element) {
-        return element instanceof XmlToken && (element.getParent() instanceof XmlTag);
+        return element instanceof XmlToken && element.getParent() instanceof XmlTag;
     }
 
     private boolean isJavaTokenLiteralExpression(@NotNull PsiElement element) {
-        return element instanceof PsiJavaToken && (element.getParent() instanceof PsiLiteralExpression);
+        return element instanceof PsiJavaToken && element.getParent() instanceof PsiLiteralExpression;
+    }
+
+    /**
+     * @param element the element to test.
+     * @return {@code true} if the given element is a scalar key, {@code false} otherwise.
+     */
+    private boolean isYamlKey(@NotNull PsiElement element) {
+        final ASTNode node = element.getNode();
+        return node != null && node.getElementType() == YAMLTokenTypes.SCALAR_KEY;
     }
 
     /**
@@ -195,14 +213,20 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
      * Returns the Camel route from a PsiElement
      *
      * @param element the element
-     * @return the String route or null if there nothing can be found
+     * @return the String route or null if nothing could be found
      */
     private String findRouteFromElement(PsiElement element) {
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (xml != null) {
             return ((XmlTagImpl) element.getParent()).getAttributeValue("uri");
         }
-
+        // In case of Yaml extract the uri from its child
+        YAMLMapping yamlMapping = PsiTreeUtil.getChildOfType(element.getParent(), YAMLMapping.class);
+        if (yamlMapping != null) {
+            return Optional.ofNullable(yamlMapping.getKeyValueByKey("uri"))
+                .map(YAMLKeyValue::getValueText)
+                .orElse(null);
+        }
 
         if (element instanceof PsiIdentifier) {
             PsiIdentifier id = (PsiIdentifier) element;
@@ -272,11 +296,39 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                     if (javaElement != null) {
                         psiElements.add(javaElement);
                     }
+                } else if (psiElement instanceof YAMLKeyValue) {
+                    PsiElement yamlElement = findYamlElement(route, (YAMLKeyValue) psiElement);
+                    if (yamlElement != null) {
+                        psiElements.add(psiElement);
+                    }
                 }
                 return true;
             }, new CamelRouteSearchScope(), componentName, UsageSearchContext.ANY, false);
         }
         return psiElements;
+    }
+
+    /**
+     * Further refine search in order to match the exact YAML Camel route.
+     *
+     * @param route      the complete Camel route to search for
+     * @param keyValue the {@link YAMLKeyValue} that might contain the complete route definition
+     * @return the {@link PsiElement} that contains the exact match of the Camel route
+     */
+    private PsiElement findYamlElement(String route, YAMLKeyValue keyValue) {
+        if (Arrays.stream(YAML_ROUTE_CALL).anyMatch(s -> s.equals(keyValue.getKeyText()))) {
+            if (route.equals(keyValue.getValueText())) {
+                return keyValue;
+            }
+            final YAMLMapping mapping = PsiTreeUtil.getChildOfType(keyValue, YAMLMapping.class);
+            if (mapping != null) {
+                final YAMLKeyValue value = mapping.getKeyValueByKey("uri");
+                if (value != null && route.equals(value.getValueText())) {
+                    return keyValue;
+                }
+            }
+        }
+        return null;
     }
 
     /**
