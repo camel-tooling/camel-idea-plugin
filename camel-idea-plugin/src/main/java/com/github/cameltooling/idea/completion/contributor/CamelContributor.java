@@ -147,16 +147,13 @@ public abstract class CamelContributor extends CompletionContributor {
     }
 
     /**
-     * Checks if its a file of expect type
+     * Checks if it is a file with the expected type
      */
     static PsiFilePattern.Capture<PsiFile> matchFileType(final String... extensions) {
-        return new PsiFilePattern.Capture<>(new InitialPatternCondition<PsiFile>(PsiFile.class) {
+        return new PsiFilePattern.Capture<>(new InitialPatternCondition<>(PsiFile.class) {
             @Override
             public boolean accepts(@Nullable Object o, ProcessingContext context) {
-                    if (o instanceof PsiFile) {
-                    return getIdeaUtils().isFromFileType((PsiElement) o, extensions);
-                }
-                return false;
+                return o instanceof PsiFile && getIdeaUtils().isFromFileType((PsiElement) o, extensions);
             }
         });
     }

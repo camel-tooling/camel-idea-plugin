@@ -11,6 +11,7 @@ The plugin includes:
 - Code completion for Camel endpoints in Java, XML, properties or YAML files (`ctrl + space`)
 - Code completion for Camel message headers (available `setHeader` and `header`) in Java, XML and YAML files (`ctrl + space`)
 - Code completion for Camel property placeholders (cursor after `{{`)
+- Code completion for Camel options' key and value in properties files (`ctrl + space`)
 - Real time validation for Camel endpoints in Java, XML, YAML (underline errors in red)
 - Real time validation for Camel simple language in Java, XML, YAML (underline errors in red)
 - Endpoint options filtered to only include applicable options when used as consumer vs producer only mode

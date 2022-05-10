@@ -17,8 +17,13 @@
 package com.github.cameltooling.idea.completion.contributor;
 
 import com.github.cameltooling.idea.completion.extension.CamelEndpointSmartCompletionExtension;
+import com.github.cameltooling.idea.completion.property.CamelPropertyKeyCompletion;
+import com.github.cameltooling.idea.completion.property.CamelPropertyValueCompletion;
 import com.intellij.codeInsight.completion.CompletionType;
+import com.intellij.lang.properties.parsing.PropertiesTokenTypes;
+import com.intellij.patterns.PsiFilePattern;
 import com.intellij.psi.PsiFile;
+
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 /**
@@ -29,9 +34,25 @@ public class CamelPropertiesFileReferenceContributor extends CamelContributor {
     public CamelPropertiesFileReferenceContributor() {
         // also allow to set up camel endpoints in properties files
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
+        // To match with file with "properties" as extension
+        final PsiFilePattern.Capture<PsiFile> filePattern = matchFileType("properties");
         extend(CompletionType.BASIC,
-                psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("properties"))),
+                psiElement().and(psiElement().inside(PsiFile.class).inFile(filePattern)),
                 new EndpointCompletion(getCamelCompletionExtensions())
+        );
+        // The key of the property corresponding to key characters in a properties file
+        extend(CompletionType.BASIC,
+            psiElement(PropertiesTokenTypes.KEY_CHARACTERS)
+                .inside(PsiFile.class)
+                .inFile(filePattern),
+            new CamelPropertyKeyCompletion()
+        );
+        // The value of the property corresponding to value characters in a properties file
+        extend(CompletionType.BASIC,
+            psiElement(PropertiesTokenTypes.VALUE_CHARACTERS)
+                .inside(PsiFile.class)
+                .inFile(filePattern),
+            new CamelPropertyValueCompletion()
         );
     }
 

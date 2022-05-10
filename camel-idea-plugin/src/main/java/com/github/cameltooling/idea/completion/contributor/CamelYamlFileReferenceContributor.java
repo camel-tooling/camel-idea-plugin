@@ -45,7 +45,7 @@ public class CamelYamlFileReferenceContributor extends CamelContributor {
             new EndpointCompletion(getCamelCompletionExtensions())
         );
         final String[] setHeaderTagNames = {"set-header", "setHeader"};
-        // The name of the header corresponding to the value of the key "name" in the dictionnay
+        // The name of the header corresponding to the value of the key "name" in the dictionary
         // set-header or setHeader
         extend(CompletionType.BASIC,
             psiElement()
@@ -81,9 +81,9 @@ public class CamelYamlFileReferenceContributor extends CamelContributor {
             ,
             new CamelYamlHeaderNameCompletion(CamelHeaderEndpointSource.PRODUCER_ONLY)
         );
-        // The value of the header corresponding to the value of the key "expression" in the dictionnary
-        // set-header or setHeader or to the pattern "expression:" (to be able to get the completion witout the
-        // space after the colon) in the dictionnary set-header or setHeader
+        // The value of the header corresponding to the value of the key "expression" in the dictionary
+        // set-header or setHeader or to the pattern "expression:" (to be able to get the completion without the
+        // space after the colon) in the dictionary set-header or setHeader
         //noinspection unchecked
         extend(CompletionType.BASIC,
             psiElement()
