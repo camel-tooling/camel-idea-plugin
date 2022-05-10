@@ -58,11 +58,11 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
         if (headerName == null) {
             return;
         }
-        final Project project = parameters.getOriginalFile().getManager().getProject();
         final Predicate<ComponentModel.EndpointHeaderModel> predicate = predicate(headerName);
+        final CamelCatalog camelCatalog = getCamelCatalog(element.getProject());
         for (CamelHeaderEndpoint endpoint : PRODUCER_ONLY.getEndpoints(element)) {
             // it is a known Camel component
-            final String json = getCamelCatalog(project).componentJSonSchema(endpoint.getComponentName());
+            final String json = camelCatalog.componentJSonSchema(endpoint.getComponentName());
             if (json == null) {
                 continue;
             }
@@ -79,6 +79,7 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
                         .getLookupString()
                         .compareToIgnoreCase(o2.getLookupString()));
                     resultSet.withPrefixMatcher(getPrefix(element, resultSet.getPrefixMatcher().getPrefix()))
+                        .caseInsensitive()
                         .addAllElements(answer);
                 }
                 return;
@@ -87,7 +88,7 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
     }
 
     /**
-     * Gives all the possible suggestions of name of header for the given endpoint.
+     * Gives all the possible suggestions of values for the given header.
      * @param element the element into which the value of header should be injected.
      * @param header the header for which we expect value suggestions.
      * @return a list of {@link LookupElement} corresponding to the possible suggestions.

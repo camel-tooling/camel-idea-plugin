@@ -67,10 +67,10 @@ abstract class CamelHeaderNameCompletion extends CompletionProvider<CompletionPa
         }
 
         final List<LookupElement> answer = new ArrayList<>();
-        final Project project = parameters.getOriginalFile().getManager().getProject();
+        final CamelCatalog camelCatalog = getCamelCatalog(element.getProject());
         for (CamelHeaderEndpoint endpoint : source.getEndpoints(element)) {
             // it is a known Camel component
-            final String json = getCamelCatalog(project).componentJSonSchema(endpoint.getComponentName());
+            final String json = camelCatalog.componentJSonSchema(endpoint.getComponentName());
             if (json == null) {
                 continue;
             }
