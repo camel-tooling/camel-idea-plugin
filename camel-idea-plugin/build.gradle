@@ -64,3 +64,11 @@ dependencies {
 }
 
 description = 'Apache Camel IDE :: IDEA Plugin'
+
+tasks.register('prepareTest') {
+    doFirst {
+        project.file('build/mockJDK-11').mkdirs()
+    }
+}
+
+tasks.test.dependsOn("prepareTest")
