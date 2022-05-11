@@ -106,13 +106,14 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
      * <p>
      *   The method take a String arrays off "G:A:P:C:?" "org.apache.camel:camel-core:2.22.0"
      * </p>
-     * @param mavneAritfiact - Array of maven artifact to resolve
+     * @param mavenArtifact - Array of maven artifact to resolve
      * @return Array of artifact files
      * @throws IOException
      */
-    protected static File[] getMavenArtifacts(String... mavneAritfiact) throws IOException {
-        File[] libs = Maven.resolver()
-            .resolve(mavneAritfiact)
+    protected static File[] getMavenArtifacts(String... mavenArtifact) throws IOException {
+        File[] libs = Maven.configureResolver()
+            .withRemoteRepo("snapshot", "https://repository.apache.org/snapshots/", "default")
+            .resolve(mavenArtifact)
             .withoutTransitivity().asFile();
 
         return libs;
