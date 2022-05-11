@@ -196,7 +196,7 @@ abstract class CamelHeaderNameCompletion extends CompletionProvider<CompletionPa
             return builder.withIcon(AllIcons.Nodes.Enum);
         } else if ("object".equalsIgnoreCase(header.getType()) || "java.lang.object".equalsIgnoreCase(header.getType())) {
             return builder.withIcon(AllIcons.Nodes.Class);
-        } else if (!isStringLiteralExpected(element)){
+        } else if (!isStringLiteralExpected(element)) {
             return builder.withIcon(AllIcons.Nodes.Field);
         }
         return builder;

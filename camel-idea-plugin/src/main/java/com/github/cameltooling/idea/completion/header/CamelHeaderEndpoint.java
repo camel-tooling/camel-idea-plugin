@@ -21,7 +21,7 @@ import java.util.Objects;
 /**
  * Defines a type of endpoints.
  */
-class CamelHeaderEndpoint {
+final class CamelHeaderEndpoint {
 
     /**
      * The name of the component corresponding to the endpoint.
@@ -52,25 +52,25 @@ class CamelHeaderEndpoint {
      * @param componentName the name of the component corresponding to the endpoint
      * @return an instance of {@code CamelHeaderEndpoint} representing an endpoint that can only be a consumer.
      */
-   static CamelHeaderEndpoint consumerOnly(String componentName) {
+    static CamelHeaderEndpoint consumerOnly(String componentName) {
         return new CamelHeaderEndpoint(componentName, true, false);
-   }
+    }
 
     /**
      * @param componentName the name of the component corresponding to the endpoint
      * @return an instance of {@code CamelHeaderEndpoint} representing an endpoint that can only be a producer.
      */
-   static CamelHeaderEndpoint producerOnly(String componentName) {
+    static CamelHeaderEndpoint producerOnly(String componentName) {
         return new CamelHeaderEndpoint(componentName, false, true);
-   }
+    }
 
     /**
      * @param componentName the name of the component corresponding to the endpoint
      * @return an instance of {@code CamelHeaderEndpoint} representing an endpoint that can be a consumer or a producer.
      */
-   static CamelHeaderEndpoint both(String componentName) {
+    static CamelHeaderEndpoint both(String componentName) {
         return new CamelHeaderEndpoint(componentName, false, false);
-   }
+    }
 
     /**
      * @return the name of the component corresponding to the endpoint
@@ -95,8 +95,12 @@ class CamelHeaderEndpoint {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         CamelHeaderEndpoint endpoint = (CamelHeaderEndpoint) o;
         return consumerOnly == endpoint.consumerOnly && producerOnly == endpoint.producerOnly && Objects.equals(componentName, endpoint.componentName);
     }

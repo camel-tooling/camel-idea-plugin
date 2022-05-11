@@ -77,8 +77,7 @@ public class CamelYamlFileReferenceContributor extends CamelContributor {
                                         )
                                 )
                         )
-                )
-            ,
+                ),
             new CamelYamlHeaderNameCompletion(CamelHeaderEndpointSource.PRODUCER_ONLY)
         );
         // The value of the header corresponding to the value of the key "expression" in the dictionary
@@ -144,8 +143,7 @@ public class CamelYamlFileReferenceContributor extends CamelContributor {
                             )
                         )
 
-                )
-            ,
+                ),
             new CamelYamlHeaderValueCompletion()
         );
         // The name of the header corresponding to the value of the key "header"
@@ -167,8 +165,7 @@ public class CamelYamlFileReferenceContributor extends CamelContributor {
                                     )
                                 )
                         )
-                )
-            ,
+                ),
             new CamelYamlHeaderNameCompletion(CamelHeaderEndpointSource.ALL)
         );
     }

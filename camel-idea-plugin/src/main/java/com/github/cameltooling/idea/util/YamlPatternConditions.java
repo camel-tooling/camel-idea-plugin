@@ -31,14 +31,15 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class YamlPatternConditions {
 
-    private YamlPatternConditions() {}
+    private YamlPatternConditions() {
+    }
 
     /**
      * @param texts all the possible text contents that are accepted.
      * @return a {@code PatternCondition} that accepts elements that have for text content one of the provided
      * text contents.
      */
-    public static <T extends PsiElement> PatternCondition<T> withText(String @NotNull ... texts) {
+    public static <T extends PsiElement> PatternCondition<T> withText(String... texts) {
         return new TextPatternCondition<>(texts);
     }
 
@@ -47,7 +48,7 @@ public final class YamlPatternConditions {
      * @return a {@code PatternCondition} that accepts elements that have for element type one of the provided
      * element types.
      */
-    public static <T extends PsiElement> PatternCondition<T> withElementType(IElementType @NotNull ... types) {
+    public static <T extends PsiElement> PatternCondition<T> withElementType(IElementType... types) {
         return new ElementTypePatternCondition<>(types);
     }
 
@@ -56,7 +57,7 @@ public final class YamlPatternConditions {
      * @return a {@code PatternCondition} that accepts elements that are accepted by at least one of the provided
      * element patterns.
      */
-    public static <T extends PsiElement> PatternCondition<T> or(ElementPattern<T> @NotNull ... patterns) {
+    public static <T extends PsiElement> PatternCondition<T> or(ElementPattern<T>... patterns) {
         return new OrPatternCondition<>(patterns);
     }
 
@@ -145,7 +146,7 @@ public final class YamlPatternConditions {
          * Construct a {@code OrPatternCondition} with the given patterns.
          * @param patterns all the possible element patterns that are accepted.
          */
-        OrPatternCondition(@NotNull ElementPattern<T> @NotNull ... patterns) {
+        OrPatternCondition(@NotNull ElementPattern<T>... patterns) {
             super("withOr");
             this.patterns = patterns;
         }
@@ -171,7 +172,7 @@ public final class YamlPatternConditions {
          * Construct a {@code ElementTypePatternCondition} with the given types.
          * @param types all the possible element types that are accepted.
          */
-        ElementTypePatternCondition(IElementType @NotNull ... types) {
+        ElementTypePatternCondition(IElementType... types) {
             super("withElementType");
             this.types = types;
         }
@@ -198,7 +199,7 @@ public final class YamlPatternConditions {
          * Construct a {@code TextPatternCondition} with the given text contents.
          * @param texts all the possible text contents that are accepted.
          */
-        TextPatternCondition(String @NotNull ... texts) {
+        TextPatternCondition(String... texts) {
             super("withText");
             this.texts = texts;
         }
