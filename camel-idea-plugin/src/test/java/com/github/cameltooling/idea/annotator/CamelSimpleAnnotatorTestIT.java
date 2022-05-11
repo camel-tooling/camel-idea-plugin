@@ -17,7 +17,6 @@
 package com.github.cameltooling.idea.annotator;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
-import org.junit.Ignore;
 
 /**
  * Test Camel simple validation and the expected value is highlighted
@@ -26,7 +25,7 @@ import org.junit.Ignore;
  * is incorrect.
  *
  * So far we have been able to avoid pointing the -Didea.home.path=<location of Intellij CI source code>
- * because it's didn't really matter it could not resolve JDK classes when testing highlight. If you need
+ * because it didn't really matter it could not resolve JDK classes when testing highlight. If you need
  * to resolve the JDK classes you will have to point the idea.home.path to the right location
  */
 public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
@@ -36,62 +35,71 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
         return "src/test/resources/testData/annotator";
     }
 
-    public void testAnnotatorSimpleValidation() {
-        myFixture.configureByText("AnnotatorTestData.java", getJavaWithSimple());
-        myFixture.checkHighlighting(false, false, true, true);
-    }
+//    @Ignore
+//    public void testAnnotatorSimpleValidation() {
+//        myFixture.configureByText("AnnotatorTestData.java", getJavaWithSimple());
+//        myFixture.checkHighlighting(false, false, true, true);
+//    }
 
-    public void testAnnotatorLogValidation() {
-        myFixture.configureByText("AnnotatorTestData.java", getJavaWithLog());
-        myFixture.checkHighlighting(false, false, true, true);
-    }
+//    @Ignore
+//    public void testAnnotatorLogValidation() {
+//        myFixture.configureByText("AnnotatorTestData.java", getJavaWithLog());
+//        myFixture.checkHighlighting(false, false, true, true);
+//    }
 
     public void testAnnotatorLogValidation2() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaWithFilterAndLog());
         myFixture.checkHighlighting(false, false, true, true);
     }
 
-    public void testAnnotatorOpenBracketSimpleValidation() {
-        myFixture.configureByText("AnnotatorTestData.java", getJavaOpenBracketWithSimple());
-        myFixture.checkHighlighting(false, false, true, true);
-    }
+//    @Ignore
+//    public void testAnnotatorOpenBracketSimpleValidation() {
+//        myFixture.configureByText("AnnotatorTestData.java", getJavaOpenBracketWithSimple());
+//        myFixture.checkHighlighting(false, false, true, true);
+//    }
 
-    public void testAnnotatorMultipleOpenBracketSimpleValidation() {
-        myFixture.configureByText("AnnotatorTestData.java", getJavaMutlipleOpenBracketWithSimple());
-        myFixture.checkHighlighting(false, false, true, true);
-    }
+//    @Ignore
+//    public void testAnnotatorMultipleOpenBracketSimpleValidation() {
+//        myFixture.configureByText("AnnotatorTestData.java", getJavaMutlipleOpenBracketWithSimple());
+//        myFixture.checkHighlighting(false, false, true, true);
+//    }
 
-    @Ignore
-    public void testAnnotatorCamelPredicateValidation() {
-        myFixture.configureByText("AnnotatorTestData.java", getJavaWithCamelPredicate());
-        myFixture.checkHighlighting(false, false, false, true);
-    }
+//    @Ignore
+//    public void testAnnotatorCamelPredicateValidation() {
+//        myFixture.configureByText("AnnotatorTestData.java", getJavaWithCamelPredicate());
+//        myFixture.checkHighlighting(false, false, false, true);
+//    }
 
-    public void testAnnotatorJavaMultilinePredicateValidation() {
-        myFixture.configureByText("AnnotatorTestData.java", getJavaMultilinePredicate());
-        myFixture.checkHighlighting(false, false, false, true);
-    }
+//    @Ignore
+//    public void testAnnotatorJavaMultilinePredicateValidation() {
+//        myFixture.configureByText("AnnotatorTestData.java", getJavaMultilinePredicate());
+//        myFixture.checkHighlighting(false, false, false, true);
+//    }
 
-    public void testAnnotatorCamelPredicateValidation2() {
-        myFixture.configureByText("AnnotatorTestData.java", getJavaWithCamelPredicate2());
-        myFixture.checkHighlighting(false, false, false, true);
-    }
+//    @Ignore
+//    public void testAnnotatorCamelPredicateValidation2() {
+//        myFixture.configureByText("AnnotatorTestData.java", getJavaWithCamelPredicate2());
+//        myFixture.checkHighlighting(false, false, false, true);
+//    }
 
-    public void testXmlAnnotatorSimpleValidation2() {
-        myFixture.configureByText("AnnotatorTestData.xml", getXmlWithSimple());
-        myFixture.checkHighlighting(false, false, false, true);
-    }
+//    @Ignore
+//    public void testXmlAnnotatorSimpleValidation2() {
+//        myFixture.configureByText("AnnotatorTestData.xml", getXmlWithSimple());
+//        myFixture.checkHighlighting(false, false, false, true);
+//    }
 
-    public void testXmlAnnotatorPredicateValidation2() {
-        // TODO: A problem with IDEA not installed XSD schema for camel-spring.xsd which causes a highlight error
-        // myFixture.configureByText("AnnotatorTestData.xml", getXmlWithPredicate());
-        // myFixture.checkHighlighting(false, false, false, true);
-    }
+//    @Ignore
+//    public void testXmlAnnotatorPredicateValidation2() {
+//        // TODO: A problem with IDEA not installed XSD schema for camel-spring.xsd which causes a highlight error
+//         myFixture.configureByText("AnnotatorTestData.xml", getXmlWithPredicate());
+//         myFixture.checkHighlighting(false, false, false, true);
+//    }
 
-    public void testXmlAnnotatorWithLogValidation() {
-        myFixture.configureByText("AnnotatorTestData.xml", getXmlWithLog());
-        myFixture.checkHighlighting(false, false, false, true);
-    }
+//    @Ignore
+//    public void testXmlAnnotatorWithLogValidation() {
+//        myFixture.configureByText("AnnotatorTestData.xml", getXmlWithLog());
+//        myFixture.checkHighlighting(false, false, false, true);
+//    }
 
     private String getJavaWithSimple() {
         return "import org.apache.camel.builder.RouteBuilder;\n"

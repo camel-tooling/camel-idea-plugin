@@ -21,7 +21,6 @@ import java.util.List;
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
 import com.intellij.lang.annotation.HighlightSeverity;
-import org.junit.Ignore;
 
 /**
  * Test Camel URI validation and the expected value is highlighted
@@ -68,21 +67,22 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         myFixture.checkHighlighting(false, false, true, true);
     }
 
-    @Ignore
-    public void testAnnotatorWithTheSameWordTwiceValidation() {
-        myFixture.configureByText("AnnotatorTestData.java", getJavaWithSameWordTwiceTestData());
-        myFixture.checkHighlighting(false, false, true, true);
-    }
+//    @Ignore
+//    public void testAnnotatorWithTheSameWordTwiceValidation() {
+//        myFixture.configureByText("AnnotatorTestData.java", getJavaWithSameWordTwiceTestData());
+//        myFixture.checkHighlighting(false, false, true, true);
+//    }
 
     public void testAnnotatorUnknownOptionWithPAthValidation() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaUnknownOptionsWithPathConsumerTestData());
         myFixture.checkHighlighting(false, false, true, true);
     }
 
-    public void testExpectedSymbolFunctionEndButWasEOL() {
-        myFixture.configureByText("AnnotatorTestData.java", getJavaExpectedSymbolFunctionEndTestData());
-        myFixture.checkHighlighting(false, false, true, true);
-    }
+//    @Ignore
+//    public void testExpectedSymbolFunctionEndButWasEOL() {
+//        myFixture.configureByText("AnnotatorTestData.java", getJavaExpectedSymbolFunctionEndTestData());
+//        myFixture.checkHighlighting(false, false, true, true);
+//    }
 
     public void testAnnotatorUnknownOptionWithConsumerAnnotationValidation() {
         //assertTrue("Ignored until we fix the issue with running the test with SDK", true);
@@ -100,17 +100,17 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         myFixture.checkHighlighting(false, false, true, true);
     }
 
-    @Ignore
-    public void testAnnotatorIntegerPropertyValidation() {
-        myFixture.configureByText("AnnotatorTestData.java", getJavaInvalidIntegerPropertyTestData());
-        myFixture.checkHighlighting(false, false, true, true);
-    }
+//    @Ignore
+//    public void testAnnotatorIntegerPropertyValidation() {
+//        myFixture.configureByText("AnnotatorTestData.java", getJavaInvalidIntegerPropertyTestData());
+//        myFixture.checkHighlighting(false, false, true, true);
+//    }
 
-    @Ignore
-    public void testXmlAnnotatorIntegerPropertyValidation() {
-        myFixture.configureByText("AnnotatorTestData.xml", getXmlInvalidIntegerPropertyTestData());
-        myFixture.checkHighlighting(false, false, true, true);
-    }
+//    @Ignore
+//    public void testXmlAnnotatorIntegerPropertyValidation() {
+//        myFixture.configureByText("AnnotatorTestData.xml", getXmlInvalidIntegerPropertyTestData());
+//        myFixture.checkHighlighting(false, false, true, true);
+//    }
 
     public void testXmlAnnotatorWithCommentValidation() {
         myFixture.configureByText("AnnotatorTestData.xml", getXmlWithCommentTestData());

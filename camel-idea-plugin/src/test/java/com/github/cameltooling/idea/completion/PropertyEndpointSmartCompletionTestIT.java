@@ -21,7 +21,6 @@ import java.util.List;
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.completion.CompletionType;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
 
 import static org.junit.Assert.assertThat;
 
@@ -72,25 +71,25 @@ public class PropertyEndpointSmartCompletionTestIT extends CamelLightCodeInsight
         return "TIME=timer:trigger?repeatCount=10&<caret>";
     }
 
-    @Ignore
-    public void testAfterAmpCompletion() {
-        myFixture.configureByText("TestData.properties", getfterAmpOptionsTestData());
-        myFixture.complete(CompletionType.BASIC, 1);
-        List<String> strings = myFixture.getLookupElementStrings();
-        assertThat(strings, Matchers.not(Matchers.contains("timer:trigger?repeatCount=10")));
-        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&bridgeErrorHandler",
-            "timer:trigger?repeatCount=10&daemon",
-            "timer:trigger?repeatCount=10&delay",
-            "timer:trigger?repeatCount=10&exceptionHandler",
-            "timer:trigger?repeatCount=10&exchangePattern",
-            "timer:trigger?repeatCount=10&fixedRate",
-            "timer:trigger?repeatCount=10&pattern",
-            "timer:trigger?repeatCount=10&period",
-            "timer:trigger?repeatCount=10&synchronous",
-            "timer:trigger?repeatCount=10&time",
-            "timer:trigger?repeatCount=10&timer"));
-        assertTrue("There is less options", strings.size() < 13);
-    }
+//    @Ignore
+//    public void testAfterAmpCompletion() {
+//        myFixture.configureByText("TestData.properties", getfterAmpOptionsTestData());
+//        myFixture.complete(CompletionType.BASIC, 1);
+//        List<String> strings = myFixture.getLookupElementStrings();
+//        assertThat(strings, Matchers.not(Matchers.contains("timer:trigger?repeatCount=10")));
+//        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&bridgeErrorHandler",
+//            "timer:trigger?repeatCount=10&daemon",
+//            "timer:trigger?repeatCount=10&delay",
+//            "timer:trigger?repeatCount=10&exceptionHandler",
+//            "timer:trigger?repeatCount=10&exchangePattern",
+//            "timer:trigger?repeatCount=10&fixedRate",
+//            "timer:trigger?repeatCount=10&pattern",
+//            "timer:trigger?repeatCount=10&period",
+//            "timer:trigger?repeatCount=10&synchronous",
+//            "timer:trigger?repeatCount=10&time",
+//            "timer:trigger?repeatCount=10&timer"));
+//        assertTrue("There is less options", strings.size() < 13);
+//    }
 
     private String getInTheMiddleOfResolvedOptionsData() {
         return "TIMER=timer:trigger?repeatCount=10&fixed<caret>Rate=false";
