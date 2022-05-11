@@ -117,8 +117,7 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                         PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY)
                             .withText("uri")
                     )
-                )
-            ,
+                ),
             PlatformPatterns.psiElement(YAMLKeyValue.class)
                 .with(
                     YamlPatternConditions.withFirstChild(
@@ -161,8 +160,7 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                         PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY)
                             .with(YamlPatternConditions.withText(PRODUCERS_URI))
                     )
-                )
-            ,
+                ),
             PlatformPatterns.psiElement(YAMLKeyValue.class)
                 .with(
                     YamlPatternConditions.withFirstChild(

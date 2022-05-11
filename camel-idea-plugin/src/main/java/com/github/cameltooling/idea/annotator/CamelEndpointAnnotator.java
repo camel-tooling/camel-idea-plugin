@@ -205,8 +205,8 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
      * @return {@code true} if the index to use should be the normal one, {@code false} otherwise.
      */
     private boolean useNormalIndex(@NotNull PsiElement element) {
-        return getIdeaUtils().isJavaLanguage(element) || getIdeaUtils().isXmlLanguage(element) ||
-            getIdeaUtils().isYamlLanguage(element) && element instanceof YAMLQuotedText;
+        return getIdeaUtils().isJavaLanguage(element) || getIdeaUtils().isXmlLanguage(element)
+            || getIdeaUtils().isYamlLanguage(element) && element instanceof YAMLQuotedText;
     }
 
     private static class BooleanErrorMsg implements CamelAnnotatorEndpointMessage<Map.Entry<String, String>> {

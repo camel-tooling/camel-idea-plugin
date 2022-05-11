@@ -122,20 +122,20 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
                 return suggestGroups(camelCatalog);
             }
             switch (keys[1]) {
-                case COMPONENT_KEY_NAME:
-                    return suggest(
-                        camelCatalog, fullKey, keys, this::suggestComponents, this::suggestComponentOptions
-                    );
-                case DATA_FORMAT_KEY_NAME:
-                    return suggest(
-                        camelCatalog, fullKey, keys, this::suggestDataFormats, this::suggestDataFormatOptions
-                    );
-                case LANGUAGE_KEY_NAME:
-                    return suggest(
-                        camelCatalog, fullKey, keys, this::suggestLanguages, this::suggestLanguageOptions
-                    );
-                default:
-                    return suggestMainOptions(camelCatalog);
+            case COMPONENT_KEY_NAME:
+                return suggest(
+                    camelCatalog, fullKey, keys, this::suggestComponents, this::suggestComponentOptions
+                );
+            case DATA_FORMAT_KEY_NAME:
+                return suggest(
+                    camelCatalog, fullKey, keys, this::suggestDataFormats, this::suggestDataFormatOptions
+                );
+            case LANGUAGE_KEY_NAME:
+                return suggest(
+                    camelCatalog, fullKey, keys, this::suggestLanguages, this::suggestLanguageOptions
+                );
+            default:
+                return suggestMainOptions(camelCatalog);
             }
         }
         return List.of();
