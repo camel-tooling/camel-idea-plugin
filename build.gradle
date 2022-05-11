@@ -35,6 +35,15 @@ subprojects {
         mavenLocal()
         maven {
             url = 'https://repo.maven.apache.org/maven2'
+            mavenContent {
+                releasesOnly()
+            }
+        }
+        maven {
+            url "https://repository.apache.org/snapshots/"
+            mavenContent {
+                snapshotsOnly()
+            }
         }
     }
 
