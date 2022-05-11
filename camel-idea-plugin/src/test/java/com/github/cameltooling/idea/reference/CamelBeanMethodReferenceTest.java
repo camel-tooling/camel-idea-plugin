@@ -27,7 +27,6 @@ import com.intellij.psi.PsiPolyVariantReference;
 import com.intellij.psi.ResolveResult;
 import com.intellij.testFramework.PsiTestUtil;
 import com.intellij.usageView.UsageInfo;
-import org.junit.Ignore;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
@@ -59,25 +58,25 @@ public class CamelBeanMethodReferenceTest extends CamelLightCodeInsightFixtureTe
         return "src/test/resources/testData/completion/method";
     }
 
-    @Ignore
-    public void testCamelMethodReference() {
-        myFixture.configureByFiles("CompleteJavaBeanRoute3TestData.java", "CompleteJavaBeanTestData.java",
-            "CompleteJavaBeanSuperClassTestData.java", "CompleteJavaBeanMethodPropertyTestData.properties");
-        PsiElement element = myFixture.getFile().findElementAt(myFixture.getCaretOffset()).getParent();
-        final ResolveResult[] resolveResults = ((CamelBeanMethodReference) element.getReferences()[0]).multiResolve(false);
-        assertEquals(1, resolveResults.length);
-        assertEquals("public void letsDoThis() {}",  resolveResults[0].getElement().getText());
-    }
+//    @Ignore
+//    public void testCamelMethodReference() {
+//        myFixture.configureByFiles("CompleteJavaBeanRoute3TestData.java", "CompleteJavaBeanTestData.java",
+//            "CompleteJavaBeanSuperClassTestData.java", "CompleteJavaBeanMethodPropertyTestData.properties");
+//        PsiElement element = myFixture.getFile().findElementAt(myFixture.getCaretOffset()).getParent();
+//        final ResolveResult[] resolveResults = ((CamelBeanMethodReference) element.getReferences()[0]).multiResolve(false);
+//        assertEquals(1, resolveResults.length);
+//        assertEquals("public void letsDoThis() {}",  resolveResults[0].getElement().getText());
+//    }
 
-    @Ignore
-    public void testCamelMultipleMethodReference() {
-        myFixture.configureByFiles("CompleteJavaBeanRoute4TestData.java", "CompleteJavaBeanMultipleMethodTestData.java", "CompleteJavaBeanSuperClassTestData.java");
-        PsiElement element = myFixture.getFile().findElementAt(myFixture.getCaretOffset()).getParent();
-        final ResolveResult[] resolveResults = ((CamelBeanMethodReference) element.getReferences()[0]).multiResolve(false);
-        assertEquals(2, resolveResults.length);
-        assertEquals("public void multipleMethodsWithSameName() { }",  resolveResults[0].getElement().getText());
-        assertEquals("public void multipleMethodsWithSameName(int data) { }",  resolveResults[1].getElement().getText());
-    }
+//    @Ignore
+//    public void testCamelMultipleMethodReference() {
+//        myFixture.configureByFiles("CompleteJavaBeanRoute4TestData.java", "CompleteJavaBeanMultipleMethodTestData.java", "CompleteJavaBeanSuperClassTestData.java");
+//        PsiElement element = myFixture.getFile().findElementAt(myFixture.getCaretOffset()).getParent();
+//        final ResolveResult[] resolveResults = ((CamelBeanMethodReference) element.getReferences()[0]).multiResolve(false);
+//        assertEquals(2, resolveResults.length);
+//        assertEquals("public void multipleMethodsWithSameName() { }",  resolveResults[0].getElement().getText());
+//        assertEquals("public void multipleMethodsWithSameName(int data) { }",  resolveResults[1].getElement().getText());
+//    }
 
     public void testCamelNoMethodReference() {
         myFixture.configureByFiles("CompleteJavaBeanRoute4TestData.java");
@@ -85,69 +84,69 @@ public class CamelBeanMethodReferenceTest extends CamelLightCodeInsightFixtureTe
         assertEquals(0, ((PsiPolyVariantReference) element.getReferences()[0]).multiResolve(false).length);
     }
 
-    @Ignore
-    public void testFindUsageFromMethodToBeanDSL() {
-        Collection<UsageInfo> usageInfos = myFixture.testFindUsages("CompleteJavaBeanTestData.java", "CompleteJavaBeanRoute1TestData.java");
-        assertEquals(1, usageInfos.size());
-
-        final UsageInfo usageInfo = usageInfos.iterator().next();
-        final PsiElement referenceElement = usageInfo.getElement();
-        assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
-        assertEquals("(beanTestData, \"anotherBeanMethod\")", referenceElement.getParent().getText());
-    }
+//    @Ignore
+//    public void testFindUsageFromMethodToBeanDSL() {
+//        Collection<UsageInfo> usageInfos = myFixture.testFindUsages("CompleteJavaBeanTestData.java", "CompleteJavaBeanRoute1TestData.java");
+//        assertEquals(1, usageInfos.size());
+//
+//        final UsageInfo usageInfo = usageInfos.iterator().next();
+//        final PsiElement referenceElement = usageInfo.getElement();
+//        assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
+//        assertEquals("(beanTestData, \"anotherBeanMethod\")", referenceElement.getParent().getText());
+//    }
 
     /**
      * Test if it can find usage from a Spring Service bean method to it's Camel routes bean method
      */
-    @Ignore
-    public void testFindUsageFromSpringServiceMethodToBeanDSL() {
-        Collection<UsageInfo> usageInfos = myFixture.testFindUsages("CompleteJavaSpringServiceBeanTestData.java", "CompleteJavaSpringServiceBeanRouteTestData.java");
-        assertEquals(1, usageInfos.size());
-
-        final UsageInfo usageInfo = usageInfos.iterator().next();
-        final PsiElement referenceElement = usageInfo.getElement();
-        assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
-        assertEquals("(\"myServiceBean\", \"anotherBeanMethod\")", referenceElement.getParent().getText());
-    }
+//    @Ignore
+//    public void testFindUsageFromSpringServiceMethodToBeanDSL() {
+//        Collection<UsageInfo> usageInfos = myFixture.testFindUsages("CompleteJavaSpringServiceBeanTestData.java", "CompleteJavaSpringServiceBeanRouteTestData.java");
+//        assertEquals(1, usageInfos.size());
+//
+//        final UsageInfo usageInfo = usageInfos.iterator().next();
+//        final PsiElement referenceElement = usageInfo.getElement();
+//        assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
+//        assertEquals("(\"myServiceBean\", \"anotherBeanMethod\")", referenceElement.getParent().getText());
+//    }
 
     /**
      * Test if it can find usage from a Spring Component bean method to it's Camel routes bean method
      */
-    @Ignore
-    public void testFindUsageFromSpringComponentMethodToBeanDSL() {
-        Collection<UsageInfo> usageInfos = myFixture.testFindUsages("CompleteJavaSpringComponentBeanTestData.java", "CompleteJavaSpringComponentBeanRouteTestData.java");
-        assertEquals(1, usageInfos.size());
-
-        final UsageInfo usageInfo = usageInfos.iterator().next();
-        final PsiElement referenceElement = usageInfo.getElement();
-        assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
-        assertEquals("(\"myComponentBean\", \"anotherBeanMethod\")", referenceElement.getParent().getText());
-    }
+//    @Ignore
+//    public void testFindUsageFromSpringComponentMethodToBeanDSL() {
+//        Collection<UsageInfo> usageInfos = myFixture.testFindUsages("CompleteJavaSpringComponentBeanTestData.java", "CompleteJavaSpringComponentBeanRouteTestData.java");
+//        assertEquals(1, usageInfos.size());
+//
+//        final UsageInfo usageInfo = usageInfos.iterator().next();
+//        final PsiElement referenceElement = usageInfo.getElement();
+//        assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
+//        assertEquals("(\"myComponentBean\", \"anotherBeanMethod\")", referenceElement.getParent().getText());
+//    }
 
     /**
      * Test if it can find usage from a Spring Repository bean method to it's Camel routes bean method
      */
-    @Ignore
-    public void testFindUsageFromSpringRepositoryMethodToBeanDSL() {
-        Collection<UsageInfo> usageInfos = myFixture.testFindUsages("CompleteJavaSpringRepositoryBeanTestData.java", "CompleteJavaSpringRepositoryBeanRouteTestData.java");
-        assertEquals(1, usageInfos.size());
+//    @Ignore
+//    public void testFindUsageFromSpringRepositoryMethodToBeanDSL() {
+//        Collection<UsageInfo> usageInfos = myFixture.testFindUsages("CompleteJavaSpringRepositoryBeanTestData.java", "CompleteJavaSpringRepositoryBeanRouteTestData.java");
+//        assertEquals(1, usageInfos.size());
+//
+//        final UsageInfo usageInfo = usageInfos.iterator().next();
+//        final PsiElement referenceElement = usageInfo.getElement();
+//        assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
+//        assertEquals("(\"myRepositoryBean\", \"anotherBeanMethod\")", referenceElement.getParent().getText());
+//    }
 
-        final UsageInfo usageInfo = usageInfos.iterator().next();
-        final PsiElement referenceElement = usageInfo.getElement();
-        assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
-        assertEquals("(\"myRepositoryBean\", \"anotherBeanMethod\")", referenceElement.getParent().getText());
-    }
-
-    @Ignore
-    public void testFindUsageFromWithOverloadedMethodToBeanDSL() {
-        Collection<UsageInfo> usageInfos = myFixture.testFindUsages("CompleteJavaBeanTest2Data.java", "CompleteJavaBeanRoute7TestData.java");
-        assertEquals(1, usageInfos.size());
-
-        final UsageInfo usageInfo = usageInfos.iterator().next();
-        final PsiElement referenceElement = usageInfo.getElement();
-        assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
-        assertEquals("(beanTestData, \"myOverLoadedBean\")", referenceElement.getParent().getText());
-    }
+//    @Ignore
+//    public void testFindUsageFromWithOverloadedMethodToBeanDSL() {
+//        Collection<UsageInfo> usageInfos = myFixture.testFindUsages("CompleteJavaBeanTest2Data.java", "CompleteJavaBeanRoute7TestData.java");
+//        assertEquals(1, usageInfos.size());
+//
+//        final UsageInfo usageInfo = usageInfos.iterator().next();
+//        final PsiElement referenceElement = usageInfo.getElement();
+//        assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
+//        assertEquals("(beanTestData, \"myOverLoadedBean\")", referenceElement.getParent().getText());
+//    }
 
 
     /**
@@ -171,14 +170,14 @@ public class CamelBeanMethodReferenceTest extends CamelLightCodeInsightFixtureTe
     /**
      * Test if the find usage is working with camel DSL bean method call with parameters
      */
-    @Ignore
-    public void testFindUsageFromWithAmbiguousToBeanDSLWithParameters() {
-        Collection<UsageInfo> usageInfos = myFixture.testFindUsages("CompleteJavaBeanTest3Data.java", "CompleteJavaBeanRoute8TestData.java");
-        assertEquals(1, usageInfos.size());
-
-        final UsageInfo usageInfo = usageInfos.iterator().next();
-        final PsiElement referenceElement = usageInfo.getElement();
-        assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
-        assertEquals("(beanTestData, \"myAmbiguousMethod(${body})\")", referenceElement.getParent().getText());
-    }
+//    @Ignore
+//    public void testFindUsageFromWithAmbiguousToBeanDSLWithParameters() {
+//        Collection<UsageInfo> usageInfos = myFixture.testFindUsages("CompleteJavaBeanTest3Data.java", "CompleteJavaBeanRoute8TestData.java");
+//        assertEquals(1, usageInfos.size());
+//
+//        final UsageInfo usageInfo = usageInfos.iterator().next();
+//        final PsiElement referenceElement = usageInfo.getElement();
+//        assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
+//        assertEquals("(beanTestData, \"myAmbiguousMethod(${body})\")", referenceElement.getParent().getText());
+//    }
 }

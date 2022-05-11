@@ -30,9 +30,6 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiLiteralExpression;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiReference;
-import org.junit.Ignore;
 
 /**
  * Test if the expected documentation is called where the caret is placed
@@ -74,41 +71,42 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
         return "src/test/resources/testData/documentation/";
     }
 
-    @Ignore
-    public void testJavaClassQuickNavigateInfo() throws Exception {
-        myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestWithCursorBeforeCamelComponent());
+//    @Ignore
+//    public void testJavaClassQuickNavigateInfo() throws Exception {
+//        myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestWithCursorBeforeCamelComponent());
+//
+//        PsiClass psiClass = getTestClass();
+//        PsiReference referenceElement = myFixture.getReferenceAtCaretPosition();
+//        assertNotNull(referenceElement);
+//
+//        String docInfo = new CamelDocumentationProvider().getQuickNavigateInfo(psiClass, referenceElement.getElement());
+//        assertNotNull(docInfo);
+//        assertEquals(exampleHtmlFileText(getTestName(true)), docInfo);
+//    }
 
-        PsiClass psiClass = getTestClass();
-        PsiReference referenceElement = myFixture.getReferenceAtCaretPosition();
-        assertNotNull(referenceElement);
+//    @Ignore
+//    public void testGetUrlFor() {
+//        assertNull(new CamelDocumentationProvider().getUrlFor(null, null));
+//    }
 
-        String docInfo = new CamelDocumentationProvider().getQuickNavigateInfo(psiClass, referenceElement.getElement());
-        assertNotNull(docInfo);
-        assertEquals(exampleHtmlFileText(getTestName(true)), docInfo);
-    }
-
-    public void testGetUrlFor() {
-        assertNull(new CamelDocumentationProvider().getUrlFor(null, null));
-    }
-
-    @Ignore
-    public void testGenerateDoc() throws Exception {
-        myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestDataWithCursorAfterQuestionMark());
-
-        PsiElement element = myFixture.findElementByText("\"file:inbox?\"", PsiLiteralExpression.class);
-        String componentName = "file";
-        String lookup = componentName + ":inbox?delete";
-        PsiManager manager = myFixture.getPsiManager();
-
-        PsiElement docInfo = new CamelDocumentationProvider().getDocumentationElementForLookupItem(manager, lookup, element);
-
-        String doc = new CamelDocumentationProvider().generateDoc(docInfo, null);
-        assertEquals(readExpectedFile(), doc);
-
-        String documentation = new CamelDocumentationProvider().generateDoc(element, null);
-        assertNotNull(documentation);
-        assertTrue(documentation.startsWith("<b>File Component</b><br/>The file component is used for reading or writing files.<br/>"));
-    }
+//    @Ignore
+//    public void testGenerateDoc() throws Exception {
+//        myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestDataWithCursorAfterQuestionMark());
+//
+//        PsiElement element = myFixture.findElementByText("\"file:inbox?\"", PsiLiteralExpression.class);
+//        String componentName = "file";
+//        String lookup = componentName + ":inbox?delete";
+//        PsiManager manager = myFixture.getPsiManager();
+//
+//        PsiElement docInfo = new CamelDocumentationProvider().getDocumentationElementForLookupItem(manager, lookup, element);
+//
+//        String doc = new CamelDocumentationProvider().generateDoc(docInfo, null);
+//        assertEquals(readExpectedFile(), doc);
+//
+//        String documentation = new CamelDocumentationProvider().generateDoc(element, null);
+//        assertNotNull(documentation);
+//        assertTrue(documentation.startsWith("<b>File Component</b><br/>The file component is used for reading or writing files.<br/>"));
+//    }
 
     public void testHandleExternalLink() {
         myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestDataWithCursorBeforeColon());

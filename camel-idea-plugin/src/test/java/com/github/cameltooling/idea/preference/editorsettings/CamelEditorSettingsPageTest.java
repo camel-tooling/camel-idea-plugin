@@ -68,11 +68,12 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
         assertTrue(checkBox.isSelected());
     }
 
-    public void testShouldContainScanThirdPartyComponentsCatalogCheckBox() {
-        JBCheckBox checkBox = editorSettingsPage.getScanThirdPartyComponentsCatalogCheckBox();
-        assertEquals("Scan classpath for third party Camel components using modern component packaging", checkBox.getText());
-        assertTrue(checkBox.isSelected());
-    }
+//    @Ignore
+//    public void testShouldContainScanThirdPartyComponentsCatalogCheckBox() {
+//        JBCheckBox checkBox = editorSettingsPage.getScanThirdPartyComponentsCatalogCheckBox();
+//        assertEquals("Scan classpath for third party Camel components using modern component packaging", checkBox.getText());
+//        assertTrue(checkBox.isSelected());
+//    }
 
     public void testShouldContainCamelIconInGutterCheckBox() {
         JBCheckBox checkBox = editorSettingsPage.getCamelIconInGutterCheckBox();

@@ -22,7 +22,6 @@ import java.util.List;
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.completion.CompletionType;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
 
 import static org.junit.Assert.assertThat;
 
@@ -84,20 +83,20 @@ public class JavaEndpointSmartCompletionValueTestIT extends CamelLightCodeInsigh
             + "        }\n"
             + "    }";
     }
-    @Ignore
-    public void testUnresolvedValueWithPreTestCompletion() {
-        myFixture.configureByText("JavaCaretInMiddleOptionsTestData.java", getJavaUnresolvedValueWithPreTestData());
-        myFixture.complete(CompletionType.BASIC, 1);
-        List<String> strings = myFixture.getLookupElementStrings();
-        assertFalse(strings.containsAll(Collections.singletonList("timer:trigger?repeatCount=10")));
-        assertThat(strings, Matchers.containsInAnyOrder(
-            "timer:trigger?exchangePattern=InOut",
-            "timer:trigger?exchangePattern=InOnly",
-            "timer:trigger?exchangePattern=InOptionalOut",
-            "timer:trigger?exchangePattern=OutIn",
-            "timer:trigger?exchangePattern=RobustInOnly",
-            "timer:trigger?exchangePattern=OutOptionalIn"));
-        assertEquals(6, strings.size());
-    }
+//    @Ignore
+//    public void testUnresolvedValueWithPreTestCompletion() {
+//        myFixture.configureByText("JavaCaretInMiddleOptionsTestData.java", getJavaUnresolvedValueWithPreTestData());
+//        myFixture.complete(CompletionType.BASIC, 1);
+//        List<String> strings = myFixture.getLookupElementStrings();
+//        assertFalse(strings.containsAll(Collections.singletonList("timer:trigger?repeatCount=10")));
+//        assertThat(strings, Matchers.containsInAnyOrder(
+//            "timer:trigger?exchangePattern=InOut",
+//            "timer:trigger?exchangePattern=InOnly",
+//            "timer:trigger?exchangePattern=InOptionalOut",
+//            "timer:trigger?exchangePattern=OutIn",
+//            "timer:trigger?exchangePattern=RobustInOnly",
+//            "timer:trigger?exchangePattern=OutOptionalIn"));
+//        assertEquals(6, strings.size());
+//    }
 
 }
