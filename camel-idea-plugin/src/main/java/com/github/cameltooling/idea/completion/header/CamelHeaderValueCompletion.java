@@ -29,12 +29,12 @@ import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.tooling.model.ComponentModel;
+import org.apache.camel.tooling.model.ComponentModel.EndpointHeaderModel;
 import org.apache.camel.tooling.model.JsonMapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -58,7 +58,7 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
         if (headerName == null) {
             return;
         }
-        final Predicate<ComponentModel.EndpointHeaderModel> predicate = predicate(headerName);
+        final Predicate<EndpointHeaderModel> predicate = predicate(headerName);
         final CamelCatalog camelCatalog = getCamelCatalog(element.getProject());
         for (CamelHeaderEndpoint endpoint : PRODUCER_ONLY.getEndpoints(element)) {
             // it is a known Camel component
@@ -67,7 +67,7 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
                 continue;
             }
             final ComponentModel componentModel = JsonMapper.generateComponentModel(json);
-            final Optional<? extends ComponentModel.EndpointHeaderModel> result = componentModel.getEndpointHeaders()
+            final Optional<? extends EndpointHeaderModel> result = componentModel.getEndpointHeaders()
                 .stream()
                 .filter(predicate)
                 .findFirst();
@@ -94,7 +94,7 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
      * @return a list of {@link LookupElement} corresponding to the possible suggestions.
      */
     private List<LookupElement> getSuggestions(final PsiElement element,
-                                               final ComponentModel.EndpointHeaderModel header) {
+                                               final EndpointHeaderModel header) {
         final List<LookupElement> answer = new ArrayList<>();
 
         final String javaType = header.getJavaType();
@@ -103,13 +103,13 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
         final Object defaultValue = header.getDefaultValue();
 
         if (enums != null) {
-            addEnumSuggestions(element, answer, deprecated, enums, defaultValue, javaType);
+            addEnumSuggestions(element, header, answer, deprecated, enums, defaultValue, javaType);
         } else if ("java.lang.Boolean".equalsIgnoreCase(javaType) || "boolean".equalsIgnoreCase(javaType)) {
-            addBooleanSuggestions(element, answer, deprecated, defaultValue);
+            addBooleanSuggestions(element, header, answer, deprecated, defaultValue);
         } else if (defaultValue != null) {
             // for any other kind of type and if there is a default value then add that as a suggestion
             // so it is easy to see what the default value is
-            addDefaultValueSuggestions(element, answer, deprecated, defaultValue);
+            addDefaultValueSuggestions(element, header, answer, deprecated, defaultValue);
         }
 
         return answer;
@@ -119,11 +119,11 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
      * Adds the possible value suggestions to the given list of {@link LookupElement} in case the value is an
      * enum.
      */
-    private void addEnumSuggestions(final PsiElement element, final List<LookupElement> answer,
-                                    final boolean deprecated, final List<String> enums,
-                                    final Object defaultValue, final String javaType) {
+    private void addEnumSuggestions(final PsiElement element, final EndpointHeaderModel header,
+                                    final List<LookupElement> answer, final boolean deprecated,
+                                    final List<String> enums, final Object defaultValue, final String javaType) {
         for (String part : enums) {
-            LookupElementBuilder builder = createEnumLookupElementBuilder(element, part, javaType);
+            LookupElementBuilder builder = createEnumLookupElementBuilder(element, header, part, javaType);
             // only show the option in the UI
             builder = builder.withPresentableText(part);
             builder = builder.withBoldness(true);
@@ -146,10 +146,11 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
      * Adds the possible value suggestions to the given list of {@link LookupElement} in case the value is a
      * {@code boolean}.
      */
-    private void addBooleanSuggestions(final PsiElement element, final List<LookupElement> answer,
-                                       final boolean deprecated, final Object defaultValue) {
+    private void addBooleanSuggestions(final PsiElement element, final EndpointHeaderModel header,
+                                       final List<LookupElement> answer, final boolean deprecated,
+                                       final Object defaultValue) {
         // for boolean types then give a choice between true|false
-        LookupElementBuilder builder = createLookupElementBuilder(element, Boolean.TRUE.toString());
+        LookupElementBuilder builder = createLookupElementBuilder(element, header, Boolean.TRUE.toString());
         // only show the option in the UI
         builder = builder.withPresentableText(Boolean.TRUE.toString());
         if (deprecated) {
@@ -165,7 +166,7 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
             answer.add(asPrioritizedLookupElement(builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE)));
         }
 
-        builder = createLookupElementBuilder(element, Boolean.FALSE.toString());
+        builder = createLookupElementBuilder(element, header, Boolean.FALSE.toString());
         // only show the option in the UI
         builder = builder.withPresentableText(Boolean.FALSE.toString());
         if (deprecated) {
@@ -186,10 +187,11 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
      * Adds the possible value suggestions to the given list of {@link LookupElement} in case only a default value
      * is proposed.
      */
-    private void addDefaultValueSuggestions(final PsiElement element, final List<LookupElement> answer,
-                                            final boolean deprecated, final Object defaultValue) {
+    private void addDefaultValueSuggestions(final PsiElement element, final EndpointHeaderModel header,
+                                            final List<LookupElement> answer, final boolean deprecated,
+                                            final Object defaultValue) {
         final String lookupString = defaultValue.toString();
-        LookupElementBuilder builder = createDefaultValueLookupElementBuilder(element, lookupString)
+        LookupElementBuilder builder = createDefaultValueLookupElementBuilder(element, header, lookupString)
             .withPresentableText(lookupString);
         // only show the option in the UI
         if (deprecated) {
@@ -202,7 +204,7 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
     }
 
     private static CamelCatalog getCamelCatalog(Project project) {
-        return ServiceManager.getService(project, CamelCatalogService.class).get();
+        return project.getService(CamelCatalogService.class).get();
     }
 
     /**
@@ -238,34 +240,41 @@ abstract class CamelHeaderValueCompletion extends CompletionProvider<CompletionP
      * Creates the {@link LookupElementBuilder} for the given suggestion that may be injected into
      * the given element.
      * @param element the element into which the value of header should be injected.
+     * @param header the header for which the value is suggested
      * @param suggestion the suggestion to convert into a {@link LookupElementBuilder}.
      * @return a {@link LookupElementBuilder} matching with the given parameters.
      */
-    protected abstract LookupElementBuilder createLookupElementBuilder(PsiElement element, String suggestion);
+    protected abstract LookupElementBuilder createLookupElementBuilder(PsiElement element, EndpointHeaderModel header,
+                                                                       String suggestion);
 
     /**
      * Creates the {@link LookupElementBuilder} for the given suggestion that may be injected into
      * the given element in case of an enum.
      * @param element the element into which the value of header should be injected.
+     * @param header the header for which the value is suggested
      * @param suggestion the suggestion to convert into a {@link LookupElementBuilder}.
      * @return a {@link LookupElementBuilder} matching with the given parameters.
      */
-    protected abstract LookupElementBuilder createEnumLookupElementBuilder(PsiElement element, String suggestion, String javaType);
+    protected abstract LookupElementBuilder createEnumLookupElementBuilder(PsiElement element, EndpointHeaderModel header,
+                                                                           String suggestion, String javaType);
 
     /**
      * Creates the {@link LookupElementBuilder} for the given suggestion that may be injected into
      * the given element in case of a default value.
      * @param element the element into which the value of header should be injected.
+     * @param header the header for which the default value is suggested
      * @param suggestion the suggestion to convert into a {@link LookupElementBuilder}.
      * @return a {@link LookupElementBuilder} matching with the given parameters.
      */
-    protected abstract LookupElementBuilder createDefaultValueLookupElementBuilder(PsiElement element, String suggestion);
+    protected abstract LookupElementBuilder createDefaultValueLookupElementBuilder(PsiElement element,
+                                                                                   EndpointHeaderModel header,
+                                                                                   String suggestion);
 
     /**
      * @param headerName the name of header for which we want a predicate.
      * @return a predicate to apply to each header to determine if it should be included
      */
-    protected abstract Predicate<ComponentModel.EndpointHeaderModel> predicate(@NotNull String headerName);
+    protected abstract Predicate<EndpointHeaderModel> predicate(@NotNull String headerName);
 
     /**
      * Extract the name of header from the given element.

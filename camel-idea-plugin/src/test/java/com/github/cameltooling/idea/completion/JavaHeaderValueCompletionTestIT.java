@@ -18,9 +18,11 @@ package com.github.cameltooling.idea.completion;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.testFramework.PsiTestUtil;
 
 /**
@@ -72,6 +74,27 @@ public class JavaHeaderValueCompletionTestIT extends CamelLightCodeInsightFixtur
     }
 
     /**
+     * Ensures that enum suggestions are only instances of {@link OptionSuggestion}.
+     */
+    public void testEnumSuggestionsInstancesOfOptionSuggestion() {
+        for (TestType type : TestType.values()) {
+            testEnumSuggestionsInstancesOfOptionSuggestion(type);
+        }
+    }
+    private void testEnumSuggestionsInstancesOfOptionSuggestion(TestType type) {
+        myFixture.configureByFiles(type.getFilePath("HeaderValueEnumSuggestions"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of OptionSuggestion are expected",
+            Arrays.stream(suggestions)
+                .map(LookupElement::getObject)
+                .anyMatch(o -> o instanceof OptionSuggestion)
+        );
+    }
+
+    /**
      * Ensures that suggestions of values of header of type boolean can be found.
      */
     public void testBooleanSuggestions() {
@@ -89,6 +112,27 @@ public class JavaHeaderValueCompletionTestIT extends CamelLightCodeInsightFixtur
     }
 
     /**
+     * Ensures that boolean suggestions are only instances of {@link OptionSuggestion}.
+     */
+    public void testBooleanSuggestionsInstancesOfOptionSuggestion() {
+        for (TestType type : TestType.values()) {
+            testBooleanSuggestionsInstancesOfOptionSuggestion(type);
+        }
+    }
+    private void testBooleanSuggestionsInstancesOfOptionSuggestion(TestType type) {
+        myFixture.configureByFiles(type.getFilePath("HeaderValueBooleanSuggestions"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of OptionSuggestion are expected",
+            Arrays.stream(suggestions)
+                .map(LookupElement::getObject)
+                .anyMatch(o -> o instanceof OptionSuggestion)
+        );
+    }
+
+    /**
      * Ensures that suggestions of values of header with default value can be found.
      */
     public void testDefaultValueSuggestion() {
@@ -102,6 +146,27 @@ public class JavaHeaderValueCompletionTestIT extends CamelLightCodeInsightFixtur
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
         assertTrue("Should contain '/'", strings.stream().anyMatch(s -> s.contains("/")));
+    }
+
+    /**
+     * Ensures that the suggestion of the default value is an instance of {@link OptionSuggestion}.
+     */
+    public void testDefaultValueSuggestionInstanceOfOptionSuggestion() {
+        for (TestType type : TestType.values()) {
+            testDefaultValueSuggestionInstanceOfOptionSuggestion(type);
+        }
+    }
+    private void testDefaultValueSuggestionInstanceOfOptionSuggestion(TestType type) {
+        myFixture.configureByFiles(type.getFilePath("HeaderValueDefaultSuggestion"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of OptionSuggestion are expected",
+            Arrays.stream(suggestions)
+                .map(LookupElement::getObject)
+                .anyMatch(o -> o instanceof OptionSuggestion)
+        );
     }
 
     /**

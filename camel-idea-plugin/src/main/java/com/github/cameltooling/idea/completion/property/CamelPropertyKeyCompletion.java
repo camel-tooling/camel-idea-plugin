@@ -25,6 +25,8 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
+import com.github.cameltooling.idea.completion.OptionSuggestion;
+import com.github.cameltooling.idea.completion.SimpleSuggestion;
 import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.intellij.codeInsight.completion.CompletionInitializationContext;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -35,13 +37,16 @@ import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.catalog.CamelCatalog;
+import org.apache.camel.tooling.model.ArtifactModel;
 import org.apache.camel.tooling.model.BaseOptionModel;
+import org.apache.camel.tooling.model.ComponentModel;
+import org.apache.camel.tooling.model.DataFormatModel;
 import org.apache.camel.tooling.model.JsonMapper;
+import org.apache.camel.tooling.model.LanguageModel;
 import org.apache.camel.tooling.model.MainModel;
 import org.jetbrains.annotations.NotNull;
 
@@ -179,24 +184,31 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
      * @param keyPrefix the prefix of the key to use when generating the entire key.
      * @param namesSupplier the supplier of name of components/data formats/languages
      * @param jsonProvider the function allowing to retrieve the json content corresponding to the given name 
-     * @param optionsProvider the function allowing to retrieve all the potential options
+     * @param modelProvider the function allowing to parse the model from a json payload
+     * @param optionsProvider the function allowing to retrieve all the potential options from the model
      * @param optionFilter the filter to apply on the options retrieved from the metadata.
      * @return the list of suggestion of potential options.
-     * @param <T> the type of option.
+     * @param <T> the type of model.
+     * @param <O> the type of option.
      */
     @NotNull
-    private <T extends BaseOptionModel> List<LookupElement> suggestOptions(String name,
+    private <T extends ArtifactModel<O>, O extends BaseOptionModel> List<LookupElement> suggestOptions(String name,
                                                                            String keyPrefix,
                                                                            Supplier<List<String>> namesSupplier,
                                                                            UnaryOperator<String> jsonProvider,
-                                                                           Function<String, List<T>> optionsProvider,
-                                                                           Predicate<T> optionFilter) {
+                                                                           Function<String, T> modelProvider,
+                                                                           Function<T, List<O>> optionsProvider,
+                                                                           Predicate<O> optionFilter) {
         if (namesSupplier.get().contains(name)) {
             final String json = jsonProvider.apply(name);
             if (json == null) {
                 return List.of();
             }
-            return optionsProvider.apply(json)
+            final T model = modelProvider.apply(json);
+            if (model == null) {
+                return List.of();
+            }
+            return optionsProvider.apply(model)
                 .stream()
                 .filter(optionFilter)
                 .map(option ->
@@ -216,7 +228,8 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
         return suggestOptions(
             componentName, COMPONENT_KEY_PREFIX, camelCatalog::findComponentNames,
             camelCatalog::componentJSonSchema,
-            json -> JsonMapper.generateComponentModel(json).getComponentOptions(),
+            JsonMapper::generateComponentModel,
+            ComponentModel::getComponentOptions,
             option -> "property".equals(option.getKind())
         );
     }
@@ -230,7 +243,8 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
         return suggestOptions(
             dataFormatName, DATA_FORMAT_KEY_PREFIX, camelCatalog::findDataFormatNames,
             camelCatalog::dataFormatJSonSchema,
-            json -> JsonMapper.generateDataFormatModel(json).getOptions(),
+            JsonMapper::generateDataFormatModel,
+            DataFormatModel::getOptions,
             option -> "attribute".equals(option.getKind()) && !"id".equals(option.getName())
         );
     }
@@ -244,7 +258,8 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
         return suggestOptions(
             languageName, LANGUAGE_KEY_PREFIX, camelCatalog::findLanguageNames,
             camelCatalog::languageJSonSchema,
-            json -> JsonMapper.generateLanguageModel(json).getOptions(),
+            JsonMapper::generateLanguageModel,
+            LanguageModel::getOptions,
             option -> "attribute".equals(option.getKind()) && !"id".equals(option.getName())
         );
     }
@@ -255,7 +270,10 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
      */
     @NotNull
     private List<LookupElement> suggestComponents(CamelCatalog camelCatalog) {
-        return suggestNames(camelCatalog::findComponentNames, COMPONENT_KEY_PREFIX);
+        return suggestNames(
+            camelCatalog::findComponentNames, COMPONENT_KEY_PREFIX, camelCatalog::componentJSonSchema,
+            JsonMapper::generateComponentModel
+        );
     }
 
     /**
@@ -264,7 +282,10 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
      */
     @NotNull
     private List<LookupElement> suggestDataFormats(CamelCatalog camelCatalog) {
-        return suggestNames(camelCatalog::findDataFormatNames, DATA_FORMAT_KEY_PREFIX);
+        return suggestNames(
+            camelCatalog::findDataFormatNames, DATA_FORMAT_KEY_PREFIX, camelCatalog::dataFormatJSonSchema,
+            JsonMapper::generateDataFormatModel
+        );
     }
 
     /**
@@ -273,20 +294,40 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
      */
     @NotNull
     private List<LookupElement> suggestLanguages(CamelCatalog camelCatalog) {
-        return suggestNames(camelCatalog::findLanguageNames, LANGUAGE_KEY_PREFIX);
+        return suggestNames(
+            camelCatalog::findLanguageNames, LANGUAGE_KEY_PREFIX, camelCatalog::languageJSonSchema,
+            JsonMapper::generateLanguageModel
+        );
     }
 
     /**
      * @param namesSupplier the supplier of name of component/language/data format.
      * @param keyPrefix the prefix of the key to generate
+     * @param jsonProvider the function allowing to retrieve the json content corresponding to the given name
+     * @param modelProvider the function allowing to parse the model from a json payload
      * @return the list of potential part of keys.
      */
     @NotNull
-    private List<LookupElement> suggestNames(Supplier<List<String>> namesSupplier, String keyPrefix) {
+    private <T extends ArtifactModel<O>, O extends BaseOptionModel> List<LookupElement> suggestNames(Supplier<List<String>> namesSupplier,
+                                                                                                     String keyPrefix,
+                                                                                                     UnaryOperator<String> jsonProvider,
+                                                                                                     Function<String, T> modelProvider) {
+        final Function<String, Supplier<String>> descriptionSupplierProvider =
+            key ->
+                () -> {
+                    final String json = jsonProvider.apply(key);
+                    if (json == null) {
+                        return null;
+                    }
+                    final T model = modelProvider.apply(json);
+                    if (model == null) {
+                        return null;
+                    }
+                    return model.getDescription();
+                };
         return namesSupplier.get()
             .stream()
-            .map(key -> String.format("%s.%s", keyPrefix, key))
-            .map(CamelPropertyKeyCompletion::asPrefixSuggestion)
+            .map(key -> asPrefixSuggestion(String.format("%s.%s", keyPrefix, key), descriptionSupplierProvider.apply(key)))
             .collect(Collectors.toList());
     }
 
@@ -306,7 +347,6 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
         result.add(asPrefixSuggestion(LANGUAGE_KEY_PREFIX));
         options
             .stream()
-            .map(MainModel.MainGroupModel::getName)
             .map(CamelPropertyKeyCompletion::asPrefixSuggestion)
             .forEach(result::add);
         return result;
@@ -328,6 +368,27 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
      */
     private static LookupElement asPrioritizedLookupElement(LookupElement element) {
         return PrioritizedLookupElement.withPriority(element, 200.0);
+    }
+
+    /**
+     * @param suggestion the suggestion to convert as a {@code LookupElement}.
+     * @param descriptionSupplier the supplier of the description of the suggestion
+     * @return a {@code LookupElement} corresponding to a suggestion of the beginning of the entire key.
+     */
+    private static LookupElement asPrefixSuggestion(String suggestion, Supplier<String> descriptionSupplier) {
+        return asPrioritizedLookupElement(
+            LookupElementBuilder.create(new SimpleSuggestion(suggestion, descriptionSupplier, String.format("%s.", suggestion)))
+                .withLookupString(suggestion)
+                .withPresentableText(suggestion)
+        );
+    }
+
+    /**
+     * @param main the main group's suggestion to convert as a {@code LookupElement}.
+     * @return a {@code LookupElement} corresponding to a suggestion of the beginning of the entire key.
+     */
+    private static LookupElement asPrefixSuggestion(MainModel.MainGroupModel main) {
+        return asPrefixSuggestion(main.getName(), main::getDescription);
     }
 
     /**
@@ -358,7 +419,9 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
      */
     private static LookupElement asOptionNameSuggestion(BaseOptionModel option, String suggestion) {
         final String suggestionInKebabCase = toKebabCaseLeaf(suggestion);
-        LookupElementBuilder builder = LookupElementBuilder.create(String.format("%s = ", suggestionInKebabCase))
+        LookupElementBuilder builder = LookupElementBuilder.create(
+            new OptionSuggestion(option, String.format("%s = ", suggestionInKebabCase))
+        )
             .withLookupString(suggestionInKebabCase)
             .withLookupString(suggestion)
             .withPresentableText(suggestionInKebabCase);
@@ -381,7 +444,7 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
     }
 
     private static CamelCatalog getCamelCatalog(Project project) {
-        return ServiceManager.getService(project, CamelCatalogService.class).get();
+        return project.getService(CamelCatalogService.class).get();
     }
 
     /**

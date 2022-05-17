@@ -18,10 +18,12 @@ package com.github.cameltooling.idea.completion;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.testFramework.PsiTestUtil;
 
 /**
@@ -78,6 +80,28 @@ public class JavaHeaderNameCompletionTestIT extends CamelLightCodeInsightFixture
             strings.stream()
             .filter(type::isFtpHeader)
             .collect(Collectors.toList())
+        );
+    }
+
+    /**
+     * Ensures that suggestions are only instances of {@link OptionSuggestion}.
+     */
+    public void testSingleEndpointSuggestionsInstancesOfOptionSuggestion() {
+        for (TestType type : TestType.values()) {
+            testSingleEndpointSuggestionsInstancesOfOptionSuggestion(type);
+        }
+    }
+    private void testSingleEndpointSuggestionsInstancesOfOptionSuggestion(TestType type) {
+        myFixture.configureByFiles(type.getFilePath("SingleEndpointSuggestions"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of OptionSuggestion are expected",
+            Arrays.stream(suggestions)
+                .filter(s -> type.isFileHeader(s.getLookupString()) && type.accept(s.getLookupString()))
+                .map(LookupElement::getObject)
+                .anyMatch(o -> o instanceof OptionSuggestion)
         );
     }
 
@@ -167,6 +191,30 @@ public class JavaHeaderNameCompletionTestIT extends CamelLightCodeInsightFixture
     }
 
     /**
+     * Ensures that suggestions in literal are only instances of {@link OptionSuggestion}.
+     */
+    public void testEndpointSuggestionsInLiteralInstancesOfOptionSuggestion() {
+        for (TestType type : TestType.values()) {
+            if (type.literalSupport()) {
+                testEndpointSuggestionsInLiteralInstancesOfOptionSuggestion(type);
+            }
+        }
+    }
+    private void testEndpointSuggestionsInLiteralInstancesOfOptionSuggestion(TestType type) {
+        myFixture.configureByFiles(type.getFilePath("EndpointSuggestionsInLiteral"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of OptionSuggestion are expected",
+            Arrays.stream(suggestions)
+                .filter(s -> s.getLookupString().startsWith("CamelFile") && !s.getLookupString().contains(","))
+                .map(LookupElement::getObject)
+                .anyMatch(o -> o instanceof OptionSuggestion)
+        );
+    }
+
+    /**
      * Ensures that suggestions can be filtered out by typing first letters.
      */
     public void testFilteringOutSuggestionsInLiteral() {
@@ -205,6 +253,30 @@ public class JavaHeaderNameCompletionTestIT extends CamelLightCodeInsightFixture
         myFixture.completeBasic();
         myFixture.type('\n');
         myFixture.checkResultByFile(type.getFilePath("HeaderCompletionOnKnownComponent"));
+    }
+
+    /**
+     * Ensures that suggestions based on a constant are only instances of {@link OptionSuggestion}.
+     */
+    public void testHeaderCompletionOnKnownComponentInstancesOfOptionSuggestion() {
+        for (TestType type : TestType.values()) {
+            if (type.importSupport()) {
+                testHeaderCompletionOnKnownComponentInstancesOfOptionSuggestion(type);
+            }
+        }
+    }
+    private void testHeaderCompletionOnKnownComponentInstancesOfOptionSuggestion(TestType type) {
+        myFixture.configureByFiles(type.getFilePath("SingleEndpointSuggestions"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of OptionSuggestion are expected",
+            Arrays.stream(suggestions)
+                .filter(s -> type.isFileHeader(s.getLookupString()) && type.accept(s.getLookupString()))
+                .map(LookupElement::getObject)
+                .anyMatch(o -> o instanceof OptionSuggestion)
+        );
     }
 
     /**

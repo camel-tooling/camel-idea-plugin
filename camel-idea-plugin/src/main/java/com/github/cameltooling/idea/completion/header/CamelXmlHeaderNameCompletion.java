@@ -16,6 +16,7 @@
  */
 package com.github.cameltooling.idea.completion.header;
 
+import com.github.cameltooling.idea.completion.OptionSuggestion;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.psi.PsiElement;
@@ -47,6 +48,6 @@ public class CamelXmlHeaderNameCompletion extends CamelHeaderNameCompletion {
     @Override
     protected LookupElementBuilder createLookupElementBuilder(final PsiElement element,
                                                               final ComponentModel.EndpointHeaderModel header) {
-        return LookupElementBuilder.create(header.getName());
+        return LookupElementBuilder.create(new OptionSuggestion(header, header.getName()));
     }
 }
