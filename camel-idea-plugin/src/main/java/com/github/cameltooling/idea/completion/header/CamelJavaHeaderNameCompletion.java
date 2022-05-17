@@ -16,6 +16,7 @@
  */
 package com.github.cameltooling.idea.completion.header;
 
+import com.github.cameltooling.idea.completion.OptionSuggestion;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.psi.JavaTokenType;
@@ -71,9 +72,11 @@ public class CamelJavaHeaderNameCompletion extends CamelHeaderNameCompletion {
         final String name = header.getName();
         int index;
         if (isStringLiteralExpected(element)) {
-            builder = LookupElementBuilder.create(name);
+            builder = LookupElementBuilder.create(new OptionSuggestion(header, name));
         } else if (constantName == null || (index = constantName.indexOf('#')) == -1) {
-            builder = LookupElementBuilder.create(formatSuggestion(String.format("\"%s\"", name)))
+            builder = LookupElementBuilder.create(
+                new OptionSuggestion(header, formatSuggestion(String.format("\"%s\"", name)))
+            )
                 .withLookupString(name)
                 .withPresentableText(name);
         } else {
@@ -83,16 +86,18 @@ public class CamelJavaHeaderNameCompletion extends CamelHeaderNameCompletion {
                 constantName.substring(index + 1)
             );
             final int indexNameProvider = simpleConstant.indexOf('@');
-            builder = LookupElementBuilder.create(formatSuggestion(simpleConstant.replace('@', '.')))
-            .withPresentableText(
-                indexNameProvider == -1 ? simpleConstant : simpleConstant.substring(0, indexNameProvider)
+            builder = LookupElementBuilder.create(new OptionSuggestion(
+                header, formatSuggestion(simpleConstant.replace('@', '.')))
             )
-            .withTailText(String.format(" ( = \"%s\")", header.getName()))
-            .withInsertHandler(
-                new CamelJavaHeaderInsertHandler(
-                    className, constantName.replace('#', '.').replace('@', '.'), 0
+                .withPresentableText(
+                    indexNameProvider == -1 ? simpleConstant : simpleConstant.substring(0, indexNameProvider)
                 )
-            );
+                .withTailText(String.format(" ( = \"%s\")", header.getName()))
+                .withInsertHandler(
+                    new CamelJavaHeaderInsertHandler(
+                        className, constantName.replace('#', '.').replace('@', '.'), 0
+                    )
+                );
         }
         return builder;
     }

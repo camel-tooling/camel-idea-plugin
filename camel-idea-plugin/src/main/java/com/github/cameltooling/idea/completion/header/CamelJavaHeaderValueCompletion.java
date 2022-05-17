@@ -18,6 +18,7 @@ package com.github.cameltooling.idea.completion.header;
 
 import java.util.function.Predicate;
 
+import com.github.cameltooling.idea.completion.OptionSuggestion;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.util.text.StringUtil;
@@ -25,6 +26,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpressionList;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.apache.camel.tooling.model.ComponentModel;
+import org.apache.camel.tooling.model.ComponentModel.EndpointHeaderModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,8 +40,10 @@ public class CamelJavaHeaderValueCompletion extends CamelHeaderValueCompletion {
      */
     private static final String PREFIX = "constant(";
     @Override
-    protected LookupElementBuilder createLookupElementBuilder(final PsiElement element, final String suggestion) {
-        return LookupElementBuilder.create(String.format("%s%s)", PREFIX, suggestion))
+    protected LookupElementBuilder createLookupElementBuilder(final PsiElement element,
+                                                              final EndpointHeaderModel header,
+                                                              final String suggestion) {
+        return LookupElementBuilder.create(new OptionSuggestion(header, String.format("%s%s)", PREFIX, suggestion)))
             .withLookupString(suggestion)
             .withPresentableText(suggestion);
     }
@@ -65,11 +69,12 @@ public class CamelJavaHeaderValueCompletion extends CamelHeaderValueCompletion {
 
     @Override
     protected LookupElementBuilder createEnumLookupElementBuilder(final PsiElement element,
+                                                                  final EndpointHeaderModel header,
                                                                   final String suggestion,
                                                                   final String javaType) {
 
         return createLookupElementBuilder(
-            element, String.format("%s.%s", javaType.substring(javaType.lastIndexOf('.') + 1), suggestion)
+            element, header, String.format("%s.%s", javaType.substring(javaType.lastIndexOf('.') + 1), suggestion)
         )
             .withPresentableText(suggestion)
             .withLookupString(suggestion)
@@ -81,8 +86,10 @@ public class CamelJavaHeaderValueCompletion extends CamelHeaderValueCompletion {
     }
 
     @Override
-    protected LookupElementBuilder createDefaultValueLookupElementBuilder(PsiElement element, String suggestion) {
-        return createLookupElementBuilder(element, String.format("\"%s\"", suggestion))
+    protected LookupElementBuilder createDefaultValueLookupElementBuilder(final PsiElement element,
+                                                                          final EndpointHeaderModel header,
+                                                                          final String suggestion) {
+        return createLookupElementBuilder(element, header, String.format("\"%s\"", suggestion))
             .withPresentableText(suggestion)
             .withLookupString(suggestion);
     }

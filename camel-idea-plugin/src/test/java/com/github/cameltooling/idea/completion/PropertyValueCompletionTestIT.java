@@ -16,9 +16,11 @@
  */
 package com.github.cameltooling.idea.completion;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import com.intellij.codeInsight.lookup.LookupElement;
 
 /**
  * Testing the completion of the property values based on the options defined in the metadata of component, data format,
@@ -40,6 +42,20 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
         assertContainsElements(strings, "true", "false");
+    }
+
+    /**
+     * Ensures that main option value suggestions are only instances of {@link OptionSuggestion}.
+     */
+    public void testMainOptionValueSuggestionInstancesOfOptionSuggestion() {
+        myFixture.configureByFiles(getFileName("main-option-values"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of OptionSuggestion are expected",
+            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
+        );
     }
 
     /**
@@ -67,6 +83,20 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
     }
 
     /**
+     * Ensures that component option value suggestions are only instances of {@link OptionSuggestion}.
+     */
+    public void testComponentOptionValueSuggestionInstancesOfOptionSuggestion() {
+        myFixture.configureByFiles(getFileName("component-option-values"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of OptionSuggestion are expected",
+            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
+        );
+    }
+
+    /**
      * Ensures that component option value suggestions can properly be proposed filtered.
      */
     public void testComponentOptionValueSuggestionFiltered() {
@@ -91,6 +121,20 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
     }
 
     /**
+     * Ensures that data format option value suggestions are only instances of {@link OptionSuggestion}.
+     */
+    public void testDataFormatOptionValueSuggestionInstancesOfOptionSuggestion() {
+        myFixture.configureByFiles(getFileName("data-format-option-values"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of OptionSuggestion are expected",
+            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
+        );
+    }
+
+    /**
      * Ensures that data format option value suggestions can properly be proposed filtered.
      */
     public void testDataFormatOptionValueSuggestionFiltered() {
@@ -112,6 +156,20 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
         assertContainsElements(strings, "Singleton", "Request", "Prototype");
+    }
+
+    /**
+     * Ensures that language option value suggestions are only instances of {@link OptionSuggestion}.
+     */
+    public void testLanguageOptionValueSuggestionInstancesOfOptionSuggestion() {
+        myFixture.configureByFiles(getFileName("language-option-values"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of OptionSuggestion are expected",
+            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
+        );
     }
 
     /**

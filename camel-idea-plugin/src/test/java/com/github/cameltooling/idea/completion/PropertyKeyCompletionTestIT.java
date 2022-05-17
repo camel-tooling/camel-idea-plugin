@@ -16,9 +16,11 @@
  */
 package com.github.cameltooling.idea.completion;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import com.intellij.codeInsight.lookup.LookupElement;
 
 /**
  * Testing the completion of the property keys based on the options defined in the metadata of component, data format,
@@ -133,6 +135,21 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
     }
 
     /**
+     * Ensures that group name suggestions are only instances of {@link SimpleSuggestion}.
+     */
+    public void testGroupNameSuggestionInstancesOfSimpleSuggestion() {
+        myFixture.configureByFiles(getFileName("full-first-key-with-separator"));
+        myFixture.completeBasic();
+        myFixture.type("main");
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of SimpleSuggestion are expected",
+            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof SimpleSuggestion)
+        );
+    }
+
+    /**
      * Ensures that main option suggestions can properly be proposed non filtered.
      */
     public void testMainOptionSuggestionNonFiltered() {
@@ -141,6 +158,20 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
         assertContainsElements(strings, "camel.main.debugging = ", "camel.main.configurations = ", "camel.main.auto-startup = ");
+    }
+
+    /**
+     * Ensures that main option suggestions are only instances of {@link OptionSuggestion}.
+     */
+    public void testMainOptionInstancesOfOptionSuggestion() {
+        myFixture.configureByFiles(getFileName("main-options-non-filtered"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of OptionSuggestion are expected",
+            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
+        );
     }
 
     /**
@@ -164,6 +195,20 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
         assertContainsElements(strings, "camel.component.ftp.", "camel.component.bean.", "camel.component.cql.");
+    }
+
+    /**
+     * Ensures that component name suggestions are only instances of {@link SimpleSuggestion}.
+     */
+    public void testComponentNameSuggestionInstancesOfSimpleSuggestion() {
+        myFixture.configureByFiles(getFileName("component-names-non-filtered"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of SimpleSuggestion are expected",
+            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof SimpleSuggestion)
+        );
     }
 
     /**
@@ -193,6 +238,20 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
     }
 
     /**
+     * Ensures that component option suggestions are only instances of {@link OptionSuggestion}.
+     */
+    public void testComponentOptionSuggestionInstancesOfOptionSuggestion() {
+        myFixture.configureByFiles(getFileName("component-options-non-filtered"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of OptionSuggestion are expected",
+            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
+        );
+    }
+
+    /**
      * Ensures that component options suggestions can properly be proposed filtered.
      */
     public void testComponentOptionSuggestionFiltered() {
@@ -213,6 +272,20 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
         assertContainsElements(strings, "camel.language.jsonpath.", "camel.language.bean.", "camel.language.xpath.");
+    }
+
+    /**
+     * Ensures that language name suggestions are only instances of {@link SimpleSuggestion}.
+     */
+    public void testLanguageNameSuggestionInstancesOfSimpleSuggestion() {
+        myFixture.configureByFiles(getFileName("language-names"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of SimpleSuggestion are expected",
+            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof SimpleSuggestion)
+        );
     }
 
     /**
@@ -241,6 +314,20 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
     }
 
     /**
+     * Ensures that language option suggestions are only instances of {@link OptionSuggestion}.
+     */
+    public void testLanguageOptionSuggestionInstancesOfOptionSuggestion() {
+        myFixture.configureByFiles(getFileName("language-options"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of OptionSuggestion are expected",
+            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
+        );
+    }
+
+    /**
      * Ensures that language option suggestions can properly be proposed filtered.
      */
     public void testLanguageOptionSuggestionFiltered() {
@@ -262,6 +349,20 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
         assertContainsElements(strings, "camel.dataformat.jackson.", "camel.dataformat.csv.", "camel.dataformat.bindyCsv.");
+    }
+
+    /**
+     * Ensures that data format name suggestions are only instances of {@link SimpleSuggestion}.
+     */
+    public void testDataFormatNameSuggestionInstancesOfSimpleSuggestion() {
+        myFixture.configureByFiles(getFileName("data-format-names-non-filtered"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of SimpleSuggestion are expected",
+            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof SimpleSuggestion)
+        );
     }
 
     /**
@@ -289,6 +390,20 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
             "camel.dataformat.jackson.json-view = "
         );
         assertDoesntContain(strings,  "camel.dataformat.jackson.id = ");
+    }
+
+    /**
+     * Ensures that data format option suggestions are only instances of {@link OptionSuggestion}.
+     */
+    public void testDataFormatOptionSuggestionInstancesOfOptionSuggestion() {
+        myFixture.configureByFiles(getFileName("data-format-options"));
+        myFixture.completeBasic();
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+            "Only instances of OptionSuggestion are expected",
+            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
+        );
     }
 
     /**

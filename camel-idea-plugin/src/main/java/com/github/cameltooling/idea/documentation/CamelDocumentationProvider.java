@@ -19,7 +19,10 @@ package com.github.cameltooling.idea.documentation;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import com.github.cameltooling.idea.completion.OptionSuggestion;
+import com.github.cameltooling.idea.completion.SimpleSuggestion;
 import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.service.CamelService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
@@ -30,7 +33,6 @@ import com.intellij.lang.Language;
 import com.intellij.lang.documentation.DocumentationProviderEx;
 import com.intellij.lang.documentation.ExternalDocumentationHandler;
 import com.intellij.lang.documentation.ExternalDocumentationProvider;
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -46,7 +48,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameterList;
 import com.intellij.psi.impl.light.LightElement;
@@ -55,6 +56,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlToken;
 import com.intellij.psi.xml.XmlTokenType;
 import org.apache.camel.catalog.CamelCatalog;
+import org.apache.camel.tooling.model.BaseOptionModel;
 import org.apache.camel.tooling.model.ComponentModel;
 import org.apache.camel.tooling.model.JsonMapper;
 import org.apache.camel.util.json.DeserializationException;
@@ -63,7 +65,6 @@ import org.apache.camel.util.json.Jsoner;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import static com.github.cameltooling.idea.util.StringUtils.asComponentName;
-import static com.github.cameltooling.idea.util.StringUtils.asLanguageName;
 import static com.github.cameltooling.idea.util.StringUtils.wrapSeparator;
 import static com.github.cameltooling.idea.util.StringUtils.wrapWords;
 
@@ -137,6 +138,8 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         if (element instanceof DocumentationElement) {
             DocumentationElement documentationElement = (DocumentationElement) element;
             return generateCamelEndpointOptionDocumentation(documentationElement.getComponentName(), documentationElement.getEndpointOption(), element.getProject());
+        } else if (element instanceof DocumentationAsString) {
+            return element.toString();
         }
 
         String val = null;
@@ -157,6 +160,11 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public PsiElement getDocumentationElementForLookupItem(PsiManager psiManager, Object object, PsiElement element) {
+        if (object instanceof OptionSuggestion) {
+            return new OptionDocumentationElement(psiManager, element.getLanguage(), (OptionSuggestion) object);
+        } else if (object instanceof SimpleSuggestion) {
+            return new SimpleSuggestionDocumentationElement(psiManager, element.getLanguage(), (SimpleSuggestion) object);
+        }
         // we only support literal - string types where Camel endpoints can be specified
         if (!(object instanceof String)) {
             return null;
@@ -354,6 +362,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
      * @param project the current project
      * @return a String representing the HTML documentation
      */
+    @Nullable
     private String generateCamelEndpointOptionDocumentation(String componentName, String option, Project project) {
         CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
         String json = camelCatalog.componentJSonSchema(componentName);
@@ -373,28 +382,54 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                 o -> option.equals(o.getName()))
                 .findFirst().orElse(null);
         }
-        if (endpointOption == null) {
+        return generateCamelOptionDocumentation(endpointOption);
+    }
+
+    /**
+     * Generate the documentation of a given option.
+     * @param option the option for which we expect the documentation.
+     * @return the documentation corresponding to the given option. {@code null} if the given option is also
+     * {@code null}.
+     */
+    @Nullable
+    private static String generateCamelOptionDocumentation(@Nullable BaseOptionModel option) {
+        if (option == null) {
             return null;
         }
-
-        StringBuilder builder = new StringBuilder();
-        if (endpointOption.isDeprecated()) {
-            builder.append("<strong><s>").append(endpointOption.getName()).append("</s></strong><br/><br/>");
+        final StringBuilder builder = new StringBuilder();
+        if (option.isDeprecated()) {
+            builder.append("<strong><s>").append(option.getName()).append("</s></strong><br/><br/>");
         } else {
-            builder.append("<strong>").append(endpointOption.getName()).append("</strong><br/><br/>");
+            builder.append("<strong>").append(option.getName()).append("</strong><br/><br/>");
         }
-        builder.append("<strong>Group: </strong>").append(endpointOption.getGroup()).append("<br/>");
-        builder.append("<strong>Type: </strong>").append("<tt>").append(endpointOption.getJavaType()).append("</tt>").append("<br/>");
-        boolean required = endpointOption.isRequired();
+        builder.append("<strong>Group: </strong>").append(Optional.ofNullable(option.getGroup()).orElse("NA")).append("<br/>");
+        builder.append("<strong>Type: </strong>").append("<tt>").append(option.getJavaType()).append("</tt>").append("<br/>");
+        boolean required = option.isRequired();
         builder.append("<strong>Required: </strong>").append(required).append("<br/>");
-        if (endpointOption.getEnums() != null) {
-            String values = String.join(", ", endpointOption.getEnums());
+        if (option.getEnums() != null) {
+            String values = String.join(", ", option.getEnums());
             builder.append("<strong>Possible values: </strong>").append(values).append("<br/>");
         }
-        if (endpointOption.getDefaultValue() != null) {
-            builder.append("<strong>Default value: </strong>").append(endpointOption.getDefaultValue()).append("<br/>");
+        if (option.getDefaultValue() != null) {
+            builder.append("<strong>Default value: </strong>").append(option.getDefaultValue()).append("<br/>");
         }
-        builder.append("<br/><div>").append(endpointOption.getDescription()).append("</div>");
+        builder.append("<br/><div>").append(option.getDescription()).append("</div>");
+        return builder.toString();
+    }
+
+    /**
+     * Generate the documentation of a given suggestion.
+     * @param suggestion the suggestion for which we expect the documentation.
+     */
+    @Nullable
+    private static String generateCamelSimpleDocumentation(@NotNull SimpleSuggestion suggestion) {
+        final String description = suggestion.getDescription();
+        if (description == null) {
+            return null;
+        }
+        final StringBuilder builder = new StringBuilder();
+        builder.append("<strong>").append(suggestion.getName()).append("</strong>");
+        builder.append("<br/><br/><div>").append(description).append("</div>");
         return builder.toString();
     }
 
@@ -587,5 +622,69 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         String getComponentName() {
             return componentName;
         }
+    }
+
+    /**
+     * {@code OptionDocumentationElement} represents a PSI element containing the documentation of a given option.
+     */
+    static class OptionDocumentationElement extends LightElement implements DocumentationAsString {
+
+        /**
+         * The option for which the documentation is expected.
+         */
+        private final transient BaseOptionModel option;
+
+        /**
+         * Construct a {@code OptionDocumentationElement} with the given parameters.
+         * @param manager the PSI manager
+         * @param language the expected language
+         * @param suggestion the holder of the option that has been suggested for which the documentation is expected.
+         */
+        OptionDocumentationElement(@NotNull PsiManager manager, @NotNull Language language,
+                                   @NotNull OptionSuggestion suggestion) {
+            super(manager, language);
+            this.option = suggestion.getOption();
+        }
+
+        @Override
+        public String toString() {
+            return generateCamelOptionDocumentation(option);
+        }
+
+    }
+
+    /**
+     * {@code SimpleSuggestionDocumentationElement} represents a PSI element containing the documentation of a given item.
+     */
+    static class SimpleSuggestionDocumentationElement extends LightElement implements DocumentationAsString {
+
+        /**
+         * The suggestion for which the documentation is expected.
+         */
+        private final transient SimpleSuggestion suggestion;
+
+        /**
+         * Construct a {@code SimpleSuggestionDocumentationElement} with the given parameters.
+         * @param manager the PSI manager
+         * @param language the expected language
+         * @param suggestion the suggestion for which the documentation is expected.
+         */
+        SimpleSuggestionDocumentationElement(@NotNull PsiManager manager, @NotNull Language language,
+                                             @NotNull SimpleSuggestion suggestion) {
+            super(manager, language);
+            this.suggestion = suggestion;
+        }
+
+        @Override
+        public String toString() {
+            return generateCamelSimpleDocumentation(suggestion);
+        }
+    }
+
+    /**
+     * {@code DocumentationAsString} represents a type of PSI element whose documentation is accessible from the
+     * {@link #toString()} method.
+     */
+    interface DocumentationAsString extends PsiElement {
     }
 }

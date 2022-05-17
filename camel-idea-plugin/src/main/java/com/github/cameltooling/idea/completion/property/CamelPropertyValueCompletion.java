@@ -23,6 +23,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
+import com.github.cameltooling.idea.completion.OptionSuggestion;
 import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
@@ -102,13 +103,13 @@ public class CamelPropertyValueCompletion extends CompletionProvider<CompletionP
         final Object defaultValue = option.getDefaultValue();
 
         if (enums != null) {
-            addEnumSuggestions(answer, deprecated, enums, defaultValue);
+            addEnumSuggestions(option, answer, deprecated, enums, defaultValue);
         } else if ("java.lang.Boolean".equalsIgnoreCase(javaType) || "boolean".equalsIgnoreCase(javaType)) {
-            addBooleanSuggestions(answer, deprecated, defaultValue);
+            addBooleanSuggestions(option, answer, deprecated, defaultValue);
         } else if (defaultValue != null) {
             // for any other kind of type and if there is a default value then add that as a suggestion
             // so it is easy to see what the default value is
-            addDefaultValueSuggestions(answer, deprecated, defaultValue);
+            addDefaultValueSuggestions(option, answer, deprecated, defaultValue);
         }
 
         return answer;
@@ -118,11 +119,11 @@ public class CamelPropertyValueCompletion extends CompletionProvider<CompletionP
      * Adds the possible value suggestions to the given list of {@link LookupElement} in case the value is an
      * enum.
      */
-    private static void addEnumSuggestions(final List<LookupElement> answer,
+    private static void addEnumSuggestions(final BaseOptionModel option, final List<LookupElement> answer,
                                            final boolean deprecated, final List<String> enums,
                                            final Object defaultValue) {
         for (String part : enums) {
-            LookupElementBuilder builder = LookupElementBuilder.create(part);
+            LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, part));
             // only show the option in the UI
             builder = builder.withPresentableText(part);
             builder = builder.withBoldness(true);
@@ -145,10 +146,10 @@ public class CamelPropertyValueCompletion extends CompletionProvider<CompletionP
      * Adds the possible value suggestions to the given list of {@link LookupElement} in case the value is a
      * {@code boolean}.
      */
-    private static void addBooleanSuggestions(final List<LookupElement> answer,
+    private static void addBooleanSuggestions(final BaseOptionModel option, final List<LookupElement> answer,
                                               final boolean deprecated, final Object defaultValue) {
         // for boolean types then give a choice between true|false
-        LookupElementBuilder builder = LookupElementBuilder.create(Boolean.TRUE.toString());
+        LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, Boolean.TRUE.toString()));
         // only show the option in the UI
         builder = builder.withPresentableText(Boolean.TRUE.toString());
         if (deprecated) {
@@ -164,7 +165,7 @@ public class CamelPropertyValueCompletion extends CompletionProvider<CompletionP
             answer.add(asPrioritizedLookupElement(builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE)));
         }
 
-        builder = LookupElementBuilder.create(Boolean.FALSE.toString());
+        builder = LookupElementBuilder.create(new OptionSuggestion(option, Boolean.FALSE.toString()));
         // only show the option in the UI
         builder = builder.withPresentableText(Boolean.FALSE.toString());
         if (deprecated) {
@@ -185,10 +186,10 @@ public class CamelPropertyValueCompletion extends CompletionProvider<CompletionP
      * Adds the possible value suggestions to the given list of {@link LookupElement} in case only a default value
      * is proposed.
      */
-    private static void addDefaultValueSuggestions(final List<LookupElement> answer,
+    private static void addDefaultValueSuggestions(final BaseOptionModel option, final List<LookupElement> answer,
                                                    final boolean deprecated, final Object defaultValue) {
         final String lookupString = defaultValue.toString();
-        LookupElementBuilder builder = LookupElementBuilder.create(lookupString);
+        LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, lookupString));
         // only show the option in the UI
         if (deprecated) {
             // mark as deprecated

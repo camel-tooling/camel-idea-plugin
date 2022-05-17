@@ -18,12 +18,14 @@ package com.github.cameltooling.idea.completion.header;
 
 import java.util.function.Predicate;
 
+import com.github.cameltooling.idea.completion.OptionSuggestion;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import org.apache.camel.tooling.model.ComponentModel;
+import org.apache.camel.tooling.model.ComponentModel.EndpointHeaderModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +35,8 @@ import org.jetbrains.annotations.Nullable;
 public class CamelXmlHeaderValueCompletion extends CamelHeaderValueCompletion {
 
     @Override
-    protected LookupElementBuilder createLookupElementBuilder(final PsiElement element, final String suggestion) {
+    protected LookupElementBuilder createLookupElementBuilder(final PsiElement element, final EndpointHeaderModel header,
+                                                              final String suggestion) {
         final PsiElement previous = element.getPrevSibling();
         String result = String.format("<constant>%s</constant>", suggestion);
         if (previous instanceof XmlTag) {
@@ -42,7 +45,7 @@ public class CamelXmlHeaderValueCompletion extends CamelHeaderValueCompletion {
                 result = result.substring(1 + tag.getLocalName().length());
             }
         }
-        return LookupElementBuilder.create(result)
+        return LookupElementBuilder.create(new OptionSuggestion(header, result))
             .withPresentableText(suggestion);
     }
 
@@ -62,13 +65,16 @@ public class CamelXmlHeaderValueCompletion extends CamelHeaderValueCompletion {
 
     @Override
     protected LookupElementBuilder createEnumLookupElementBuilder(final PsiElement element,
+                                                                  final EndpointHeaderModel header,
                                                                   final String suggestion,
                                                                   final String javaType) {
-        return createLookupElementBuilder(element, suggestion);
+        return createLookupElementBuilder(element, header, suggestion);
     }
 
     @Override
-    protected LookupElementBuilder createDefaultValueLookupElementBuilder(PsiElement element, String suggestion) {
-        return createLookupElementBuilder(element, suggestion);
+    protected LookupElementBuilder createDefaultValueLookupElementBuilder(final PsiElement element,
+                                                                          final EndpointHeaderModel header,
+                                                                          final String suggestion) {
+        return createLookupElementBuilder(element, header, suggestion);
     }
 }
