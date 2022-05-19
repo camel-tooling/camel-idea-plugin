@@ -40,7 +40,7 @@ public class StringUtilsTest {
     public void asComponentName() {
         assertEquals("seda", StringUtils.asComponentName("seda:foo?size=123"));
         assertEquals("seda", StringUtils.asComponentName("seda:foo"));
-        assertEquals(null, StringUtils.asComponentName("seda"));
+        assertNull(StringUtils.asComponentName("seda"));
         assertNull(StringUtils.asComponentName(null));
     }
 
@@ -141,7 +141,7 @@ public class StringUtilsTest {
     }
 
     @Test
-    public void wrapNothin() {
+    public void wrapNothing() {
         assertNull(StringUtils.wrapWords(null, "\n", 80, true));
     }
 
@@ -159,5 +159,14 @@ public class StringUtilsTest {
     @Test
     public void isNotEmpty() {
         assertTrue(StringUtils.isNotEmpty("test"));
+    }
+
+    @Test
+    public void testCaseConversion() {
+        // Nothing to convert
+        assertEquals("nothing", StringUtils.fromKebabToCamelCase("nothing"));
+        assertEquals("nothingToConvert", StringUtils.fromKebabToCamelCase("nothingToConvert"));
+        // Something to convert
+        assertEquals("nothingToConvert", StringUtils.fromKebabToCamelCase("nothing-to-convert"));
     }
 }

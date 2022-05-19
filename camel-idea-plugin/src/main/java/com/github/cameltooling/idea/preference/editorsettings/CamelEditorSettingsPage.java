@@ -16,12 +16,15 @@
  */
 package com.github.cameltooling.idea.preference.editorsettings;
 
+import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.options.BaseConfigurable;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
+import com.intellij.openapi.ui.ComboBox;
+import com.intellij.ui.SimpleListCellRenderer;
 import com.intellij.ui.components.JBCheckBox;
 import net.miginfocom.swing.MigLayout;
 import org.jetbrains.annotations.Nls;
@@ -37,6 +40,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
     private JBCheckBox scanThirdPartyComponentsCatalogCheckBox;
     private JBCheckBox camelIconInGutterCheckBox;
     private JBCheckBox enableDebuggerCheckBox;
+    private JComboBox<CamelCatalogProvider> camelRuntimeProviderComboBox;
 
     @Nullable
     @Override
@@ -45,8 +49,18 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         scanThirdPartyComponentsCatalogCheckBox = new JBCheckBox("Scan classpath for third party Camel components");
         camelIconInGutterCheckBox = new JBCheckBox("Show Camel icon in gutter");
         enableDebuggerCheckBox = new JBCheckBox("Enable Camel Debugger");
+        camelRuntimeProviderComboBox = new ComboBox<>(CamelCatalogProvider.values());
+        camelRuntimeProviderComboBox.setRenderer(
+            new SimpleListCellRenderer<>() {
+                @Override
+                public void customize(@NotNull JList<? extends CamelCatalogProvider> list, CamelCatalogProvider value,
+                                      int index, boolean selected, boolean hasFocus) {
+                    this.setText(value.getName());
+                }
+            }
+        );
 
-        // use mig layout which is like a spread-sheet with 2 columns, which we can span if we only have one element
+        // use mig layout which is like a spreadsheet with 2 columns, which we can span if we only have one element
         JPanel panel = new JPanel(new MigLayout("fillx,wrap 2", "[left]rel[grow,fill]"));
         panel.setOpaque(false);
 
@@ -54,6 +68,9 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         panel.add(scanThirdPartyComponentsCatalogCheckBox, "span 2");
         panel.add(camelIconInGutterCheckBox, "span 2");
         panel.add(enableDebuggerCheckBox, "span 2");
+
+        panel.add(new JLabel("Camel Runtime Provider"));
+        panel.add(camelRuntimeProviderComboBox);
 
         JPanel result = new JPanel(new BorderLayout());
         result.add(panel, BorderLayout.NORTH);
@@ -67,16 +84,17 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         getCamelPreferenceService().setScanThirdPartyComponents(scanThirdPartyComponentsCatalogCheckBox.isSelected());
         getCamelPreferenceService().setShowCamelIconInGutter(camelIconInGutterCheckBox.isSelected());
         getCamelPreferenceService().setEnableCamelDebugger(enableDebuggerCheckBox.isSelected());
+        getCamelPreferenceService().setCamelCatalogProvider((CamelCatalogProvider) camelRuntimeProviderComboBox.getSelectedItem());
     }
 
     @Override
     public boolean isModified() {
         // check boxes
-        boolean b1 = getCamelPreferenceService().isDownloadCatalog() != downloadCatalogCheckBox.isSelected()
+        return getCamelPreferenceService().isDownloadCatalog() != downloadCatalogCheckBox.isSelected()
                 || getCamelPreferenceService().isScanThirdPartyComponents() != scanThirdPartyComponentsCatalogCheckBox.isSelected()
                 || getCamelPreferenceService().isShowCamelIconInGutter() != camelIconInGutterCheckBox.isSelected()
-                || getCamelPreferenceService().isEnableCamelDebugger() != enableDebuggerCheckBox.isSelected();
-        return b1;
+                || getCamelPreferenceService().isEnableCamelDebugger() != enableDebuggerCheckBox.isSelected()
+                || getCamelPreferenceService().getCamelCatalogProvider() != camelRuntimeProviderComboBox.getSelectedItem();
     }
 
     @Override
@@ -85,6 +103,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         scanThirdPartyComponentsCatalogCheckBox.setSelected(getCamelPreferenceService().isScanThirdPartyComponents());
         camelIconInGutterCheckBox.setSelected(getCamelPreferenceService().isShowCamelIconInGutter());
         enableDebuggerCheckBox.setSelected(getCamelPreferenceService().isEnableCamelDebugger());
+        camelRuntimeProviderComboBox.setSelectedItem(getCamelPreferenceService().getCamelCatalogProvider());
     }
 
     @NotNull

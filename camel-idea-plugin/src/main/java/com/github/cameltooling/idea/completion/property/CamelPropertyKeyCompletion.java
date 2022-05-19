@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import com.github.cameltooling.idea.completion.OptionSuggestion;
 import com.github.cameltooling.idea.completion.SimpleSuggestion;
 import com.github.cameltooling.idea.service.CamelCatalogService;
+import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.codeInsight.completion.CompletionInitializationContext;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
@@ -56,9 +57,17 @@ import org.jetbrains.annotations.NotNull;
 public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionParameters> {
 
     /**
-     * The root prefix of all camel keys.
+     * The prefix of all camel keys corresponding to the configuration of a given component.
      */
-    private static final String ROOT_KEY_NAME = "camel";
+    static final String COMPONENT_KEY_PREFIX = "camel.component";
+    /**
+     * The prefix of all camel keys corresponding to the configuration of a given data format.
+     */
+    static final String DATA_FORMAT_KEY_PREFIX = "camel.dataformat";
+    /**
+     * The prefix of all camel keys corresponding to the configuration of a language.
+     */
+    static final String LANGUAGE_KEY_PREFIX = "camel.language";
     /**
      * The second part of the prefix of all camel keys corresponding to the configuration of a given component.
      */
@@ -71,18 +80,6 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
      * The second part of the prefix of all camel keys corresponding to the configuration of a given language.
      */
     private static final String LANGUAGE_KEY_NAME = "language";
-    /**
-     * The prefix of all camel keys corresponding to the configuration of a given component.
-     */
-    static final String COMPONENT_KEY_PREFIX = String.format("%s.%s", ROOT_KEY_NAME, COMPONENT_KEY_NAME);
-    /**
-     * The prefix of all camel keys corresponding to the configuration of a given data format.
-     */
-    static final String DATA_FORMAT_KEY_PREFIX = String.format("%s.%s", ROOT_KEY_NAME, DATA_FORMAT_KEY_NAME);
-    /**
-     * The prefix of all camel keys corresponding to the configuration of a language.
-     */
-    static final String LANGUAGE_KEY_PREFIX = String.format("%s.%s", ROOT_KEY_NAME, LANGUAGE_KEY_NAME);
 
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context,
@@ -91,15 +88,17 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
         if (element == null) {
             element = parameters.getPosition();
         }
-        final List<LookupElement> answer = getSuggestions(element);
-        if (!answer.isEmpty()) {
-            // sort the keys A..Z which is easier to users to understand
-            answer.sort((o1, o2) -> o1
-                .getLookupString()
-                .compareToIgnoreCase(o2.getLookupString()));
-            result.withPrefixMatcher(getText(element))
-                .caseInsensitive()
-                .addAllElements(answer);
+        if (element.getProject().getService(CamelService.class).isCamelPresent()) {
+            final List<LookupElement> answer = getSuggestions(element);
+            if (!answer.isEmpty()) {
+                // sort the keys A..Z which is easier to users to understand
+                answer.sort((o1, o2) -> o1
+                    .getLookupString()
+                    .compareToIgnoreCase(o2.getLookupString()));
+                result.withPrefixMatcher(getText(element))
+                    .caseInsensitive()
+                    .addAllElements(answer);
+            }
         }
     }
 
@@ -120,30 +119,27 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
      */
     private List<LookupElement> getSuggestions(final PsiElement element) {
         final String fullKey = getText(element);
-        if (isCamelKey(fullKey)) {
-            final CamelCatalog camelCatalog = getCamelCatalog(element.getProject());
-            final String[] keys = fullKey.split("\\.");
-            if (keys.length < 2 || keys.length == 2 && !fullKey.endsWith(".")) {
-                return suggestGroups(camelCatalog);
-            }
-            switch (keys[1]) {
-            case COMPONENT_KEY_NAME:
-                return suggest(
-                    camelCatalog, fullKey, keys, this::suggestComponents, this::suggestComponentOptions
-                );
-            case DATA_FORMAT_KEY_NAME:
-                return suggest(
-                    camelCatalog, fullKey, keys, this::suggestDataFormats, this::suggestDataFormatOptions
-                );
-            case LANGUAGE_KEY_NAME:
-                return suggest(
-                    camelCatalog, fullKey, keys, this::suggestLanguages, this::suggestLanguageOptions
-                );
-            default:
-                return suggestMainOptions(camelCatalog);
-            }
+        final CamelCatalog camelCatalog = getCamelCatalog(element.getProject());
+        final String[] keys = fullKey.split("\\.");
+        if (keys.length < 2 || keys.length == 2 && !fullKey.endsWith(".")) {
+            return suggestGroups(camelCatalog);
         }
-        return List.of();
+        switch (keys[1]) {
+        case COMPONENT_KEY_NAME:
+            return suggest(
+                camelCatalog, fullKey, keys, this::suggestComponents, this::suggestComponentOptions
+            );
+        case DATA_FORMAT_KEY_NAME:
+            return suggest(
+                camelCatalog, fullKey, keys, this::suggestDataFormats, this::suggestDataFormatOptions
+            );
+        case LANGUAGE_KEY_NAME:
+            return suggest(
+                camelCatalog, fullKey, keys, this::suggestLanguages, this::suggestLanguageOptions
+            );
+        default:
+            return suggestMainOptions(camelCatalog);
+        }
     }
 
     /**
@@ -350,17 +346,6 @@ public class CamelPropertyKeyCompletion extends CompletionProvider<CompletionPar
             .map(CamelPropertyKeyCompletion::asPrefixSuggestion)
             .forEach(result::add);
         return result;
-    }
-
-    /**
-     * Indicates whether the given key is a camel key.
-     * @param key the key to check.
-     * @return {@code true} if the key is empty or starts with {@code camel}, {@code false} otherwise.
-     */
-    private static boolean isCamelKey(String key) {
-        return key.isEmpty()
-            || key.length() < ROOT_KEY_NAME.length() && key.startsWith(ROOT_KEY_NAME.substring(0, key.length()))
-            || key.startsWith(ROOT_KEY_NAME);
     }
 
     /**

@@ -17,25 +17,48 @@
 package com.github.cameltooling.idea.service;
 
 import java.util.Map;
+
+import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
 import org.apache.camel.catalog.CamelCatalog;
-import org.apache.camel.catalog.DefaultCamelCatalog;
 import org.apache.camel.catalog.DefaultVersionManager;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Service which provides the instance to be used when accessing the {@link CamelCatalog}.
  */
-public class CamelCatalogService implements Disposable {
+public class CamelCatalogService implements Disposable, CamelPreferenceService.CamelCatalogProviderChangeListener {
 
-    private CamelCatalog instance;
+    private volatile CamelCatalog instance;
+    /**
+     * The project in which the service is registered.
+     */
+    private final Project project;
 
     /**
-     * Gets the {@link CamelCatalog} instance to use.
+     * Construct a {@code CamelCatalogService} with the given project.
+     * @param project the project in which the service is registered.
+     */
+    public CamelCatalogService(Project project) {
+        this.project = project;
+    }
+
+    /**
+     * Gets the {@link CamelCatalog} instance to use according to the {@link CamelCatalogProvider} that has been
+     * defined in the preferences.
      */
     public CamelCatalog get() {
         if (instance == null) {
-            instance = new DefaultCamelCatalog(true);
+            synchronized (this) {
+                if (instance == null) {
+                    final CamelPreferenceService preferenceService = ApplicationManager.getApplication()
+                        .getService(CamelPreferenceService.class);
+                    this.instance = preferenceService.getCamelCatalogProvider().get(project);
+                    preferenceService.addListener(this);
+                }
+            }
         }
         return instance;
     }
@@ -75,6 +98,15 @@ public class CamelCatalogService implements Disposable {
 
     @Override
     public void dispose() {
+        ApplicationManager.getApplication().getService(CamelPreferenceService.class).removeListener(this);
         instance = null;
+    }
+
+    /**
+     * Force the catalog to be reloaded when the {@link CamelCatalogProvider} defined in the preferences has changed.
+     */
+    @Override
+    public void onChange() {
+        clearLoadedVersion();
     }
 }

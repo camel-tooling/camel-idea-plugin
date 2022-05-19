@@ -16,21 +16,24 @@
  */
 package com.github.cameltooling.idea.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.swing.*;
+
+import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Transient;
-import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Service for holding preference for this plugin.
@@ -43,7 +46,7 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     @Transient
     public static final Icon CAMEL_ICON = IconLoader.getIcon("/META-INF/pluginIcon.svg", CamelPreferenceService.class);
     @Transient
-    private static String[] defaultIgnoreProperties = {
+    private static final String[] DEFAULT_IGNORE_PROPERTIES = {
         // ignore java and logger prefixes
         "java.", "Logger.", "logger", "appender.", "rootLogger.",
         // ignore camel component/dataformat/language
@@ -55,9 +58,13 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     };
 
     @Transient
-    private static String[] defaultExcludeFilePattern = {
+    private static final String[] DEFAULT_EXCLUDE_FILE_PATTERN = {
         "**/log4j.properties", "**/log4j2.properties", "**/logging.properties"};
-
+    /**
+     * The list of listeners to notify in case of change.
+     */
+    @Transient
+    private final List<CamelCatalogProviderChangeListener> listeners = new CopyOnWriteArrayList<>();
     private boolean realTimeEndpointValidation = true;
     private boolean realTimeSimpleValidation = true;
     private boolean realTimeJSonPathValidation = true;
@@ -68,13 +75,17 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     private boolean scanThirdPartyComponents = true;
     private boolean showCamelIconInGutter = true;
     private boolean enableCamelDebugger = true;
+    /**
+     * The {@link CamelCatalogProvider} set in the preferences.
+     */
+    private CamelCatalogProvider camelCatalogProvider;
     private List<String> ignorePropertyList = new ArrayList<>();
     private List<String> excludePropertyFiles = new ArrayList<>();
 
     private CamelPreferenceService() { }
 
     public static CamelPreferenceService getService() {
-        return ServiceManager.getService(CamelPreferenceService.class);
+        return ApplicationManager.getApplication().getService(CamelPreferenceService.class);
     }
 
     public boolean isRealTimeEndpointValidation() {
@@ -151,7 +162,7 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
 
     public List<String> getIgnorePropertyList() {
         if (ignorePropertyList.isEmpty()) {
-            ignorePropertyList = new ArrayList<>(Arrays.asList(defaultIgnoreProperties));
+            ignorePropertyList = new ArrayList<>(Arrays.asList(DEFAULT_IGNORE_PROPERTIES));
         }
         return ignorePropertyList;
     }
@@ -163,7 +174,7 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
 
     public List<String> getExcludePropertyFiles() {
         if (excludePropertyFiles.isEmpty()) {
-            excludePropertyFiles = new ArrayList<>(Arrays.asList(defaultExcludeFilePattern));
+            excludePropertyFiles = new ArrayList<>(Arrays.asList(DEFAULT_EXCLUDE_FILE_PATTERN));
         }
         return excludePropertyFiles;
     }
@@ -171,6 +182,49 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     // called with reflection when loadState is called
     public void setExcludePropertyFiles(List<String> excludePropertyFiles) {
         this.excludePropertyFiles = excludePropertyFiles;
+    }
+
+    /**
+     * @return the {@link CamelCatalogProvider} defined in the preferences, {@link CamelCatalogProvider#AUTO} by default.
+     */
+    public CamelCatalogProvider getCamelCatalogProvider() {
+        return getCamelCatalogProvider(camelCatalogProvider);
+    }
+
+    /**
+     * Set the {@link CamelCatalogProvider} to use. The change listeners are notified in case the value has changed.
+     * @param camelCatalogProvider the new {@link CamelCatalogProvider} to use
+     */
+    public void setCamelCatalogProvider(CamelCatalogProvider camelCatalogProvider) {
+        final boolean hasChanged = getCamelCatalogProvider() != getCamelCatalogProvider(camelCatalogProvider);
+        this.camelCatalogProvider = camelCatalogProvider;
+        if (hasChanged) {
+            for (CamelCatalogProviderChangeListener listener : listeners) {
+                listener.onChange();
+            }
+        }
+    }
+
+    /**
+     * @return {@link CamelCatalogProvider#AUTO} if the given {@link CamelCatalogProvider} is {@code null}, the
+     * given {@link CamelCatalogProvider} otherwise.
+     */
+    private CamelCatalogProvider getCamelCatalogProvider(CamelCatalogProvider camelCatalogProvider) {
+        return camelCatalogProvider == null ? CamelCatalogProvider.AUTO : camelCatalogProvider;
+    }
+
+    /**
+     * Add the given change listener to the list of listeners to notify in case of change.
+     */
+    public void addListener(CamelCatalogProviderChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * Remove the given change listener from the list of listeners to notify in case of change.
+     */
+    public void removeListener(CamelCatalogProviderChangeListener listener) {
+        listeners.remove(listener);
     }
 
     public Icon getCamelIcon() {
@@ -182,17 +236,16 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
         // noop
     }
 
-    @Nullable
     @Override
     public CamelPreferenceService getState() {
         if (ignorePropertyList.isEmpty()) {
-            ignorePropertyList = new ArrayList<>(Arrays.asList(defaultIgnoreProperties));
+            ignorePropertyList = new ArrayList<>(Arrays.asList(DEFAULT_IGNORE_PROPERTIES));
         }
         return this;
     }
 
     @Override
-    public void loadState(CamelPreferenceService state) {
+    public void loadState(@NotNull CamelPreferenceService state) {
         XmlSerializerUtil.copyBean(state, this);
     }
 
@@ -212,6 +265,7 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
             && downloadCatalog == that.downloadCatalog
             && scanThirdPartyComponents == that.scanThirdPartyComponents
             && showCamelIconInGutter == that.showCamelIconInGutter
+            && camelCatalogProvider == that.camelCatalogProvider
             && Objects.equals(ignorePropertyList, that.ignorePropertyList)
             && Objects.equals(excludePropertyFiles, that.excludePropertyFiles);
     }
@@ -219,7 +273,7 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     @Override
     public int hashCode() {
         return Objects.hash(realTimeEndpointValidation, realTimeSimpleValidation, realTimeJSonPathValidation,
-            realTimeIdReferenceTypeValidation, downloadCatalog, scanThirdPartyComponents,
+            realTimeIdReferenceTypeValidation, downloadCatalog, scanThirdPartyComponents, camelCatalogProvider,
             ignorePropertyList, excludePropertyFiles);
     }
 
@@ -229,5 +283,16 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
 
     public void setRealTimeBeanMethodValidationCheckBox(boolean realTimeBeanMethodValidationCheckBox) {
         this.realTimeBeanMethodValidationCheckBox = realTimeBeanMethodValidationCheckBox;
+    }
+
+    /**
+     * {@code CamelCatalogProviderChangeListener} defines a listener to notify in case the {@link CamelCatalogProvider}
+     * defined in the preferences has changed.
+     */
+    public interface CamelCatalogProviderChangeListener {
+        /**
+         * Called when the {@link CamelCatalogProvider} defined in the preferences has changed.
+         */
+        void onChange();
     }
 }

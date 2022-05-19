@@ -23,7 +23,8 @@ The plugin includes:
 - Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)
 - Inspection (analyze code) to validate Camel endpoints in Java, XML, YAML
 - Camel icon in gutter can be customized by choosing one of the three provided icons
-- Supports loading camel-catalog from third party Maven repositories define in the project Maven pom.xml file 
+- Supports loading camel-catalog from third party Maven repositories define in the project Maven pom.xml file
+- Defines the Camel Runtime (set manually or detected automatically) to adapt the completion of options' key and value in properties files accordingly (by default automatic detection is enabled)
 
 When the plugin becomes more complete and stable then the intention is to donate the source code
 to Apache Software Foundation to be included out of the box at Apache Camel.
