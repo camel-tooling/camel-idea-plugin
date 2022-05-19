@@ -11,6 +11,9 @@
   <change-notes><![CDATA[
       v.0.8.8
       <ul>
+        <li>Upgraded to Camel 3.17.0</li>
+        <li>Code completion for application.properties</li>
+        <li>Code completion for endpoint headers in DSL</li>
         <li>Bug fixes</li>
       </ul>
     ]]>
