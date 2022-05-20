@@ -25,6 +25,7 @@ import java.util.function.UnaryOperator;
 
 import com.github.cameltooling.idea.completion.OptionSuggestion;
 import com.github.cameltooling.idea.service.CamelCatalogService;
+import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -35,7 +36,6 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.properties.parsing.PropertiesElementTypes;
 import com.intellij.lang.properties.parsing.PropertiesTokenTypes;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
@@ -50,16 +50,12 @@ import org.jetbrains.annotations.Nullable;
 import static com.github.cameltooling.idea.completion.property.CamelPropertyKeyCompletion.COMPONENT_KEY_PREFIX;
 import static com.github.cameltooling.idea.completion.property.CamelPropertyKeyCompletion.DATA_FORMAT_KEY_PREFIX;
 import static com.github.cameltooling.idea.completion.property.CamelPropertyKeyCompletion.LANGUAGE_KEY_PREFIX;
+import static com.github.cameltooling.idea.util.StringUtils.fromKebabToCamelCase;
 
 /**
  * The {@link CompletionProvider} that gives the value of the options of main, components, languages and data formats.
  */
 public class CamelPropertyValueCompletion extends CompletionProvider<CompletionParameters> {
-
-    /**
-     * The root prefix of all camel keys.
-     */
-    private static final String ROOT_KEY_NAME = "camel.";
 
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context,
@@ -68,23 +64,25 @@ public class CamelPropertyValueCompletion extends CompletionProvider<CompletionP
         if (element == null) {
             element = parameters.getPosition();
         }
-        final String propertyKey = getPropertyKey(element);
-        if (propertyKey == null) {
-            return;
-        }
-        final Optional<? extends BaseOptionModel> option = getOption(element, propertyKey);
-        if (option.isEmpty()) {
-            return;
-        }
-        final List<LookupElement> answer = getSuggestions(option.get());
-        if (!answer.isEmpty()) {
-            // sort the values A..Z which is easier to users to understand
-            answer.sort((o1, o2) -> o1
-                .getLookupString()
-                .compareToIgnoreCase(o2.getLookupString()));
-            result
-                .caseInsensitive()
-                .addAllElements(answer);
+        if (element.getProject().getService(CamelService.class).isCamelPresent()) {
+            final String propertyKey = getPropertyKey(element);
+            if (propertyKey == null) {
+                return;
+            }
+            final Optional<? extends BaseOptionModel> option = getOption(element, propertyKey);
+            if (option.isEmpty()) {
+                return;
+            }
+            final List<LookupElement> answer = getSuggestions(option.get());
+            if (!answer.isEmpty()) {
+                // sort the values A..Z which is easier to users to understand
+                answer.sort((o1, o2) -> o1
+                    .getLookupString()
+                    .compareToIgnoreCase(o2.getLookupString()));
+                result
+                    .caseInsensitive()
+                    .addAllElements(answer);
+            }
         }
     }
 
@@ -216,49 +214,37 @@ public class CamelPropertyValueCompletion extends CompletionProvider<CompletionP
      */
     private static @NotNull Optional<? extends BaseOptionModel> getOption(@NotNull PsiElement element,
                                                                           @NotNull String propertyKey) {
-        if (isCamelKey(propertyKey)) {
-            final CamelCatalog camelCatalog = getCamelCatalog(element.getProject());
-            if (propertyKey.startsWith(COMPONENT_KEY_PREFIX)) {
-                return getOption(
-                    propertyKey, camelCatalog::findComponentNames,
-                    camelCatalog::componentJSonSchema,
-                    json -> JsonMapper.generateComponentModel(json).getComponentOptions()
-                );
-            } else if (propertyKey.startsWith(DATA_FORMAT_KEY_PREFIX)) {
-                return getOption(
-                    propertyKey, camelCatalog::findDataFormatNames,
-                    camelCatalog::dataFormatJSonSchema,
-                    json -> JsonMapper.generateDataFormatModel(json).getOptions()
-                );
+        final CamelCatalog camelCatalog = getCamelCatalog(element.getProject());
+        if (propertyKey.startsWith(COMPONENT_KEY_PREFIX)) {
+            return getOption(
+                propertyKey, camelCatalog::findComponentNames,
+                camelCatalog::componentJSonSchema,
+                json -> JsonMapper.generateComponentModel(json).getComponentOptions()
+            );
+        } else if (propertyKey.startsWith(DATA_FORMAT_KEY_PREFIX)) {
+            return getOption(
+                propertyKey, camelCatalog::findDataFormatNames,
+                camelCatalog::dataFormatJSonSchema,
+                json -> JsonMapper.generateDataFormatModel(json).getOptions()
+            );
 
-            } else if (propertyKey.startsWith(LANGUAGE_KEY_PREFIX)) {
-                return getOption(
-                    propertyKey, camelCatalog::findLanguageNames,
-                    camelCatalog::languageJSonSchema,
-                    json -> JsonMapper.generateLanguageModel(json).getOptions()
-                );
+        } else if (propertyKey.startsWith(LANGUAGE_KEY_PREFIX)) {
+            return getOption(
+                propertyKey, camelCatalog::findLanguageNames,
+                camelCatalog::languageJSonSchema,
+                json -> JsonMapper.generateLanguageModel(json).getOptions()
+            );
 
-            }
-            // It is a main property
-            final MainModel mainModel = camelCatalog.mainModel();
-            if (mainModel == null) {
-                return Optional.empty();
-            }
-            return mainModel.getOptions()
-                .stream()
-                .filter(option -> isEquals(propertyKey, option.getName()))
-                .findFirst();
         }
-        return Optional.empty();
-    }
-
-    /**
-     * Indicates whether the given key is a camel key.
-     * @param key the key to check.
-     * @return {@code true} if the key is empty or starts with {@code camel}, {@code false} otherwise.
-     */
-    private static boolean isCamelKey(String key) {
-        return key.startsWith(ROOT_KEY_NAME);
+        // It is a main property
+        final MainModel mainModel = camelCatalog.mainModel();
+        if (mainModel == null) {
+            return Optional.empty();
+        }
+        return mainModel.getOptions()
+            .stream()
+            .filter(option -> isEquals(propertyKey, option.getName()))
+            .findFirst();
     }
 
     /**
@@ -299,11 +285,12 @@ public class CamelPropertyValueCompletion extends CompletionProvider<CompletionP
      * @return {@code true} if they are equal, {@code false} otherwise.
      */
     private static boolean isEquals(@NotNull String propertyKey, String optionName) {
-        return toCamelCase(propertyKey).equals(optionName);
+        // The option name can be in Camel Case or Kebab Case
+        return propertyKey.equals(optionName) || fromKebabToCamelCase(propertyKey).equals(fromKebabToCamelCase(optionName));
     }
 
     private static CamelCatalog getCamelCatalog(Project project) {
-        return ServiceManager.getService(project, CamelCatalogService.class).get();
+        return project.getService(CamelCatalogService.class).get();
     }
 
     /**
@@ -327,30 +314,5 @@ public class CamelPropertyValueCompletion extends CompletionProvider<CompletionP
             previous = previous.getPrevSibling();
         }
         return null;
-    }
-
-    /**
-     * Convert the given text in Camel case.
-     * @param text the text to convert
-     * @return the content of the given text converted in Camel case.
-     */
-    private static String toCamelCase(String text) {
-        final int length = text.length();
-        final StringBuilder result = new StringBuilder(length);
-        boolean toUpperCase = false;
-        for (int i = 0; i < length; i++) {
-            char c = text.charAt(i);
-            if (c == '-') {
-                toUpperCase = true;
-                continue;
-            }
-            if (toUpperCase) {
-                result.append(Character.toUpperCase(c));
-                toUpperCase = false;
-            } else {
-                result.append(c);
-            }
-        }
-        return result.toString();
     }
 }

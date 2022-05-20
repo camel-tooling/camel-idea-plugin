@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
+import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.codeInsight.lookup.LookupElement;
 
 /**
@@ -31,6 +33,15 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
     @Override
     protected String getTestDataPath() {
         return "src/test/resources/testData/completion/property";
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        try {
+            CamelPreferenceService.getService().setCamelCatalogProvider(null);
+        } finally {
+            super.tearDown();
+        }
     }
 
     /**
@@ -108,6 +119,35 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
      */
     public void testGroupSuggestionWithFullFirstKeyWithSeparator() {
         testSuggestionWhenEmptyKey("full-first-key-with-separator");
+    }
+
+    /**
+     * Ensures that group suggestions for default Camel Runtime matches with the expectations.
+     */
+    public void testGroupSuggestionForDefaultCamelRuntime() {
+        CamelPreferenceService.getService().setCamelCatalogProvider(CamelCatalogProvider.DEFAULT);
+        testGroupSuggestionWithFullFirstKeyWithSeparator();
+    }
+
+    /**
+     * Ensures that group suggestions for Quarkus Camel Runtime matches with the expectations.
+     */
+    public void testGroupSuggestionForQuarkusCamelRuntime() {
+        CamelPreferenceService.getService().setCamelCatalogProvider(CamelCatalogProvider.QUARKUS);
+        testGroupSuggestionWithFullFirstKeyWithSeparator();
+    }
+
+    /**
+     * Ensures that group suggestions for Karaf Camel Runtime matches with the expectations.
+     */
+    public void testGroupSuggestionForKarafCamelRuntime() {
+        CamelPreferenceService.getService().setCamelCatalogProvider(CamelCatalogProvider.KARAF);
+        myFixture.configureByFiles(getFileName("full-first-key-with-separator"));
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertDoesntContain(strings, "camel.main.");
+        assertContainsElements(strings, "camel.component.", "camel.language.", "camel.dataformat.");
     }
 
     /**
