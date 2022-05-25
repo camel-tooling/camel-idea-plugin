@@ -1,0 +1,4 @@
+camel:
+  language:
+    bean:
+      scope: <caret>

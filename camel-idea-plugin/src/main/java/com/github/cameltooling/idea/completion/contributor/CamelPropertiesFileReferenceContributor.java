@@ -17,8 +17,8 @@
 package com.github.cameltooling.idea.completion.contributor;
 
 import com.github.cameltooling.idea.completion.extension.CamelEndpointSmartCompletionExtension;
-import com.github.cameltooling.idea.completion.property.CamelPropertyKeyCompletion;
-import com.github.cameltooling.idea.completion.property.CamelPropertyValueCompletion;
+import com.github.cameltooling.idea.completion.property.CamelPropertiesPropertyKeyCompletion;
+import com.github.cameltooling.idea.completion.property.CamelPropertiesPropertyValueCompletion;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.lang.properties.parsing.PropertiesTokenTypes;
 import com.intellij.patterns.PsiFilePattern;
@@ -45,14 +45,14 @@ public class CamelPropertiesFileReferenceContributor extends CamelContributor {
             psiElement(PropertiesTokenTypes.KEY_CHARACTERS)
                 .inside(PsiFile.class)
                 .inFile(filePattern),
-            new CamelPropertyKeyCompletion()
+            new CamelPropertiesPropertyKeyCompletion()
         );
         // The value of the property corresponding to value characters in a properties file
         extend(CompletionType.BASIC,
             psiElement(PropertiesTokenTypes.VALUE_CHARACTERS)
                 .inside(PsiFile.class)
                 .inFile(filePattern),
-            new CamelPropertyValueCompletion()
+            new CamelPropertiesPropertyValueCompletion()
         );
     }
 
