@@ -26,10 +26,11 @@ import com.intellij.codeInsight.lookup.LookupElement;
 
 /**
  * Testing the completion of the property keys based on the options defined in the metadata of component, data format,
- * language and main.
+ * language and main in properties files.
  */
-public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
+public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
+    private static final String SUFFIX = String.format("%n");
     @Override
     protected String getTestDataPath() {
         return "src/test/resources/testData/completion/property";
@@ -102,7 +103,12 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
      * Ensures that group suggestions are properly filtered when part of the first key section is provided.
      */
     public void testGroupSuggestionWithPartialFirstKey() {
-        testSuggestionWhenEmptyKey("partial-first-key");
+        myFixture.configureByFiles(getFileName("empty"));
+        myFixture.completeBasic();
+        myFixture.type("cam");
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertContainsElements(strings, "camel:" + SUFFIX);
     }
 
     /**
@@ -110,7 +116,12 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
      * the separator.
      */
     public void testGroupSuggestionWithFullFirstKeyWithoutSeparator() {
-        testSuggestionWhenEmptyKey("full-first-key-without-separator");
+        myFixture.configureByFiles(getFileName("empty"));
+        myFixture.completeBasic();
+        myFixture.type("camel");
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertContainsElements(strings, "camel:" + SUFFIX);
     }
 
     /**
@@ -118,7 +129,11 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
      * the separator.
      */
     public void testGroupSuggestionWithFullFirstKeyWithSeparator() {
-        testSuggestionWhenEmptyKey("full-first-key-with-separator");
+        myFixture.configureByFiles(getFileName("full-first-key-with-separator"));
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertContainsElements(strings, "main:" + SUFFIX, "component:" + SUFFIX, "language:" + SUFFIX, "dataformat:" + SUFFIX);
     }
 
     /**
@@ -126,7 +141,10 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
      */
     public void testGroupSuggestionForDefaultCamelRuntime() {
         CamelPreferenceService.getService().setCamelCatalogProvider(CamelCatalogProvider.DEFAULT);
-        testGroupSuggestionWithFullFirstKeyWithSeparator();
+        myFixture.configureByFiles(getFileName("full-first-key-with-separator"));
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNullOrEmpty(strings);
     }
 
     /**
@@ -145,9 +163,7 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.configureByFiles(getFileName("full-first-key-with-separator"));
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertNotNull(strings);
-        assertDoesntContain(strings, "camel.main.");
-        assertContainsElements(strings, "camel.component.", "camel.language.", "camel.dataformat.");
+        assertNullOrEmpty(strings);
     }
 
     /**
@@ -170,8 +186,8 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.type(type);
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.main.");
-        assertDoesntContain(strings, "camel.component.", "camel.language.", "camel.dataformat.");
+        assertContainsElements(strings, "main:" + SUFFIX);
+        assertDoesntContain(strings, "component:" + SUFFIX, "language:" + SUFFIX, "dataformat:" + SUFFIX);
     }
 
     /**
@@ -197,7 +213,7 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.main.debugging = ", "camel.main.configurations = ", "camel.main.auto-startup = ");
+        assertContainsElements(strings, "debugging: ", "configurations: ", "auto-startup: ");
     }
 
     /**
@@ -218,12 +234,13 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
      * Ensures that main option suggestions can properly be proposed filtered.
      */
     public void testMainOptionSuggestionFiltered() {
-        myFixture.configureByFiles(getFileName("main-options-filtered"));
+        myFixture.configureByFiles(getFileName("main-options-non-filtered"));
         myFixture.completeBasic();
+        myFixture.type("deb");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.main.debugging = ");
-        assertDoesntContain(strings,  "camel.main.configurations = ", "camel.main.auto-startup = ");
+        assertContainsElements(strings, "debugging: ");
+        assertDoesntContain(strings, "configurations: ", "auto-startup: ");
     }
 
     /**
@@ -234,7 +251,7 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.component.ftp.", "camel.component.bean.", "camel.component.cql.");
+        assertContainsElements(strings, "ftp:" + SUFFIX, "bean:" + SUFFIX, "cql:" + SUFFIX);
     }
 
     /**
@@ -259,8 +276,8 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.component.ftp.");
-        assertDoesntContain(strings,  "camel.component.bean.", "camel.component.cql.");
+        assertContainsElements(strings, "ftp:" +  SUFFIX);
+        assertDoesntContain(strings, "bean:" +  SUFFIX, "cql:" +  SUFFIX);
     }
 
     /**
@@ -271,10 +288,7 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(
-            strings, "camel.component.quartz.scheduler = ", "camel.component.quartz.enable-jmx = ",
-            "camel.component.quartz.properties = "
-        );
+        assertContainsElements(strings, "scheduler: ", "enable-jmx: ", "properties: ");
     }
 
     /**
@@ -299,8 +313,8 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.component.quartz.scheduler = ");
-        assertDoesntContain(strings,  "camel.component.quartz.enable-jmx = ", "camel.component.quartz.properties = ");
+        assertContainsElements(strings, "scheduler: ");
+        assertDoesntContain(strings, "enable-jmx: ", "properties: ");
     }
 
     /**
@@ -311,7 +325,7 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.language.jsonpath.", "camel.language.bean.", "camel.language.xpath.");
+        assertContainsElements(strings, "jsonpath:" + SUFFIX, "bean:" + SUFFIX, "xpath:" + SUFFIX);
     }
 
     /**
@@ -337,8 +351,8 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.type("be");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.language.bean.");
-        assertDoesntContain(strings,  "camel.language.jsonpath.", "camel.language.xpath.");
+        assertContainsElements(strings, "bean:" + SUFFIX);
+        assertDoesntContain(strings, "jsonpath:" + SUFFIX, "xpath:" + SUFFIX);
     }
 
     /**
@@ -349,8 +363,8 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.language.bean.method = ", "camel.language.bean.scope = ", "camel.language.bean.bean-type = ");
-        assertDoesntContain(strings,  "camel.language.bean.id = ");
+        assertContainsElements(strings, "method: ", "scope: ", "bean-type: ");
+        assertDoesntContain(strings, "id: ");
     }
 
     /**
@@ -376,8 +390,8 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.type("sc");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.language.bean.scope = ");
-        assertDoesntContain(strings,  "camel.language.bean.method = ", "camel.language.bean.bean-type = ");
+        assertContainsElements(strings, "scope: ");
+        assertDoesntContain(strings, "method: ", "bean-type: ");
     }
 
     /**
@@ -388,7 +402,7 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.dataformat.jackson.", "camel.dataformat.csv.", "camel.dataformat.bindyCsv.");
+        assertContainsElements(strings, "jackson:" + SUFFIX, "csv:" + SUFFIX, "bindyCsv:" + SUFFIX);
     }
 
     /**
@@ -409,12 +423,13 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
      * Ensures that data format name suggestions can properly be proposed filtered.
      */
     public void testDataFormatNameSuggestionFiltered() {
-        myFixture.configureByFiles(getFileName("data-format-names-filtered"));
+        myFixture.configureByFiles(getFileName("data-format-names-non-filtered"));
         myFixture.completeBasic();
+        myFixture.type("cs");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.dataformat.csv.");
-        assertDoesntContain(strings,  "camel.dataformat.jackson.", "camel.dataformat.xpath.");
+        assertContainsElements(strings, "csv:" + SUFFIX);
+        assertDoesntContain(strings, "jackson:" + SUFFIX, "xpath:" + SUFFIX);
     }
 
     /**
@@ -425,11 +440,8 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(
-            strings, "camel.dataformat.jackson.include = ", "camel.dataformat.jackson.pretty-print = ",
-            "camel.dataformat.jackson.json-view = "
-        );
-        assertDoesntContain(strings,  "camel.dataformat.jackson.id = ");
+        assertContainsElements(strings, "include: ", "pretty-print: ", "json-view: ");
+        assertDoesntContain(strings, "id: ");
     }
 
     /**
@@ -455,8 +467,8 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.type("inc");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.dataformat.jackson.include = ");
-        assertDoesntContain(strings,  "camel.dataformat.jackson.pretty-print = ", "camel.dataformat.jackson.json-view = ");
+        assertContainsElements(strings, "include: ");
+        assertDoesntContain(strings, "pretty-print: ", "json-view: ");
     }
 
     /**
@@ -468,8 +480,8 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.type("allowe");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.dataformat.bindyCsv.allow-empty-stream = ");
-        assertDoesntContain(strings,  "camel.dataformat.bindyCsv.class-type = ", "camel.dataformat.bindyCsv.local = ");
+        assertContainsElements(strings, "allow-empty-stream: ");
+        assertDoesntContain(strings, "class-type: ", "local: ");
     }
 
     /**
@@ -481,8 +493,8 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.type("access-K");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.component.aws2-athena.access-key = ");
-        assertDoesntContain(strings,  "camel.component.aws2-athena.query-string = ", "camel.component.aws2-athena.output-location = ");
+        assertContainsElements(strings, "access-key: ");
+        assertDoesntContain(strings, "query-string: ", "output-location: ");
     }
 
     private void testSuggestionWhenEmptyKey(String fileNamePrefix) {
@@ -490,10 +502,35 @@ public class PropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTes
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.main.", "camel.component.", "camel.language.", "camel.dataformat.");
+        assertContainsElements(strings, "camel:" + SUFFIX);
+    }
+
+    /**
+     * Ensure that the property completion has expected indent in case of intermediate key.
+     */
+    public void testPropertyCompletionIntermediateKey() {
+        myFixture.configureByFiles(getFileName("component-names-filtered"));
+        myFixture.completeBasic();
+        myFixture.type('\n');
+        myFixture.type('x');
+        myFixture.checkResultByFile(getFileName("component-names-filtered-result"));
+    }
+
+    /**
+     * Ensure that the property completion has expected indent in case of end of key.
+     */
+    public void testPropertyCompletionEndOfKey() {
+        myFixture.configureByFiles(getFileName("component-options-filtered"));
+        myFixture.completeBasic();
+        myFixture.type('\n');
+        myFixture.type('x');
+        myFixture.checkResultByFile(getFileName("component-options-filtered-result"));
     }
 
     private String getFileName(String fileNamePrefix) {
-        return String.format("%s.properties", fileNamePrefix);
+        if (CamelPreferenceService.getService().getCamelCatalogProvider() == CamelCatalogProvider.AUTO) {
+            CamelPreferenceService.getService().setCamelCatalogProvider(CamelCatalogProvider.QUARKUS);
+        }
+        return String.format("%s.yaml", fileNamePrefix);
     }
 }

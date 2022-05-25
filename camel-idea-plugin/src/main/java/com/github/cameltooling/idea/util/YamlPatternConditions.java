@@ -78,6 +78,14 @@ public final class YamlPatternConditions {
     }
 
     /**
+     * @param pattern the pattern to validate against the previous sibling.
+     * @return a {@code PatternCondition} that accepts elements whose previous sibling matches with the given pattern.
+     */
+    public static <T extends PsiElement> PatternCondition<T> withPrevSibling(@NotNull ElementPattern<T> pattern) {
+        return new PrevSiblingPatternCondition<>(pattern);
+    }
+
+    /**
      * {@code FirstChildPatternCondition} is a {@link PatternCondition} allowing to identify elements whose
      * first child matches with a specific pattern.
      */
@@ -128,6 +136,33 @@ public final class YamlPatternConditions {
         public boolean accepts(@NotNull T t, ProcessingContext context) {
             final PsiElement lastChild = t.getLastChild();
             return lastChild != null && pattern.accepts(lastChild);
+        }
+    }
+
+    /**
+     * {@code PrevSiblingPatternCondition} is a {@link PatternCondition} allowing to identify elements whose
+     * previous sibling matches with a specific pattern.
+     */
+    private static class PrevSiblingPatternCondition<T extends PsiElement> extends PatternCondition<T> {
+
+        /**
+         * The pattern to validate against the previous sibling.
+         */
+        private final ElementPattern<T> pattern;
+
+        /**
+         * Construct a {@code PrevSiblingPatternCondition} with the given pattern.
+         * @param pattern the pattern to validate against the previous sibling.
+         */
+        PrevSiblingPatternCondition(@NotNull ElementPattern<T> pattern) {
+            super("withPrevSibling");
+            this.pattern = pattern;
+        }
+
+        @Override
+        public boolean accepts(@NotNull T t, ProcessingContext context) {
+            final PsiElement prevSibling = t.getPrevSibling();
+            return prevSibling != null && pattern.accepts(prevSibling);
         }
     }
 

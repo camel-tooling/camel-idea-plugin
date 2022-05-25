@@ -15,6 +15,7 @@
         <li>Code completion for application.properties</li>
         <li>Code completion for endpoint headers in DSL</li>
         <li>Add support of different Camel Runtimes</li>
+        <li>Code completion in yaml files for Quarkus and Spring Boot runtimes</li>
         <li>Bug fixes</li>
       </ul>
     ]]>

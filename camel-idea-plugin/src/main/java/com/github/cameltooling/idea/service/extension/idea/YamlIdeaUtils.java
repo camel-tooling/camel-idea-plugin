@@ -17,10 +17,14 @@
 package com.github.cameltooling.idea.service.extension.idea;
 
 import java.util.Optional;
+
 import com.github.cameltooling.idea.extension.IdeaUtilsExtension;
+import com.intellij.application.options.CodeStyle;
 import com.intellij.codeInsight.completion.CompletionInitializationContext;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
+import com.intellij.lang.Language;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
@@ -80,6 +84,21 @@ public class YamlIdeaUtils implements IdeaUtilsExtension {
     @Override
     public boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
         return false;
+    }
+
+    /**
+     * @param editor The editor for which the indent must be returned.
+     * @param offset the offset at which the indent is expected
+     * @param indentTimesMore the total amount of times a new indent should be added to the initial indent.
+     * @return the indent computed from the indent used at the caret offset to which the additional indent is applied.
+     */
+    public static String getIndent(Editor editor, int offset, int indentTimesMore) {
+        // Collect the line indent of the current line
+        String indent = CodeStyle.getLineIndent(editor, Language.findLanguageByID("yaml"), offset, false);
+        if (indent == null) {
+            indent = "";
+        }
+        return indent + "  ".repeat(Math.max(0, indentTimesMore));
     }
 
     @Override

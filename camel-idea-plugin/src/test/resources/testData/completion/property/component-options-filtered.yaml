@@ -1,0 +1,4 @@
+camel:
+  component:
+    quartz:
+      sch<caret>

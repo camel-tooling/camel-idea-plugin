@@ -20,16 +20,15 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import com.github.cameltooling.idea.completion.OptionSuggestion;
-import com.intellij.application.options.CodeStyle;
 import com.intellij.codeInsight.completion.CompletionInitializationContext;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.lang.Language;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.util.PsiTreeUtil;
-import org.apache.camel.tooling.model.ComponentModel.EndpointHeaderModel;
 import org.apache.camel.tooling.model.ComponentModel;
+import org.apache.camel.tooling.model.ComponentModel.EndpointHeaderModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
@@ -49,16 +48,20 @@ public class CamelYamlHeaderValueCompletion extends CamelHeaderValueCompletion {
             .withPresentableText(suggestion)
             .withInsertHandler(
                 (context, item) -> {
-                    // Collect the line indent of the current line
-                    String indent = CodeStyle.getLineIndent(
-                        context.getEditor(), Language.findLanguageByID("yaml"),
-                        context.getEditor().getCaretModel().getOffset(), false
+                    // Retrieve the content of the current line
+                    final int startOffset = context.getStartOffset();
+                    final int lineIndex = context.getDocument().getLineNumber(startOffset);
+                    final CharSequence line = context.getDocument().getCharsSequence().subSequence(
+                        context.getDocument().getLineStartOffset(lineIndex),
+                        context.getDocument().getLineEndOffset(lineIndex)
                     );
-                    if (indent == null) {
-                        indent = "";
+                    if (line.toString().trim().isEmpty()) {
+                        // Remove the empty line in case the value is not requested at the same level as expression
+                        context.getDocument().deleteString(startOffset, startOffset + String.format("%n").length());
                     }
-                    // Add the line indent of the previous line to the new line and add 2 more spaces
-                    context.getDocument().insertString(context.getStartOffset() + 1, String.format("%s  ", indent));
+                    context.commitDocument();
+                    // Adjust the indent to have the constant at the expected level
+                    CodeStyleManager.getInstance(context.getProject()).adjustLineIndent(context.getFile(), startOffset);
                 }
             );
     }

@@ -25,7 +25,6 @@ import java.util.function.UnaryOperator;
 
 import com.github.cameltooling.idea.completion.OptionSuggestion;
 import com.github.cameltooling.idea.service.CamelCatalogService;
-import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -33,12 +32,9 @@ import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.lang.ASTNode;
-import com.intellij.lang.properties.parsing.PropertiesElementTypes;
-import com.intellij.lang.properties.parsing.PropertiesTokenTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.PsiFile;
 import com.intellij.util.ProcessingContext;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.tooling.model.BaseOptionModel;
@@ -55,16 +51,13 @@ import static com.github.cameltooling.idea.util.StringUtils.fromKebabToCamelCase
 /**
  * The {@link CompletionProvider} that gives the value of the options of main, components, languages and data formats.
  */
-public class CamelPropertyValueCompletion extends CompletionProvider<CompletionParameters> {
+abstract class CamelPropertyValueCompletion extends CompletionProvider<CompletionParameters> {
 
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context,
                                   @NotNull CompletionResultSet result) {
-        PsiElement element = parameters.getOriginalPosition();
-        if (element == null) {
-            element = parameters.getPosition();
-        }
-        if (element.getProject().getService(CamelService.class).isCamelPresent()) {
+        final PsiElement element = getCompletionPosition(parameters);
+        if (isEnabled(element.getProject(), element.getContainingFile())) {
             final String propertyKey = getPropertyKey(element);
             if (propertyKey == null) {
                 return;
@@ -87,12 +80,46 @@ public class CamelPropertyValueCompletion extends CompletionProvider<CompletionP
     }
 
     /**
+     * Indicates whether suggestions should be provided for the given file in the given project
+     *
+     * @param project the project to test.
+     * @param file the file to test
+     * @return {@code true} if the code completion is enabled for the given file, {@code false} otherwise.
+     */
+    protected abstract boolean isEnabled(Project project, PsiFile file);
+
+    /**
+     * Gives the leaf PSI element corresponding to the position where the completion has been
+     * requested.
+     * @param parameters the completion parameters from which the current element is retrieved.
+     * @return a {@link PsiElement} corresponding to the current position.
+     */
+    protected abstract @NotNull PsiElement getCompletionPosition(@NotNull CompletionParameters parameters);
+
+    /**
+     * Gets the key of the property corresponding to the given element.
+     * @param element the element from which the property key must be retrieved.
+     * @return the corresponding property key if it could be found {@code null} otherwise.
+     */
+    protected abstract @Nullable String getPropertyKey(PsiElement element);
+
+    /**
+     * Create a new instance of {@code LookupElementBuilder} for the given option using the given lookup string.
+     * @param option the option for which the {@code LookupElementBuilder} is created.
+     * @param lookupString the lookup string to use
+     * @return an instance of {@code LookupElementBuilder} corresponding to the given arguments.
+     */
+    protected LookupElementBuilder createLookupElementBuilder(BaseOptionModel option, String lookupString) {
+        return LookupElementBuilder.create(new OptionSuggestion(option, lookupString));
+    }
+
+    /**
      * Gives all the possible suggestions of values for the given option.
      *
      * @param option the option for which we expect value suggestions.
      * @return a list of {@link LookupElement} corresponding to the possible suggestions.
      */
-    private static List<LookupElement> getSuggestions(final BaseOptionModel option) {
+    private List<LookupElement> getSuggestions(final BaseOptionModel option) {
         final List<LookupElement> answer = new ArrayList<>();
 
         final String javaType = option.getJavaType();
@@ -117,11 +144,11 @@ public class CamelPropertyValueCompletion extends CompletionProvider<CompletionP
      * Adds the possible value suggestions to the given list of {@link LookupElement} in case the value is an
      * enum.
      */
-    private static void addEnumSuggestions(final BaseOptionModel option, final List<LookupElement> answer,
-                                           final boolean deprecated, final List<String> enums,
-                                           final Object defaultValue) {
+    private void addEnumSuggestions(final BaseOptionModel option, final List<LookupElement> answer,
+                                    final boolean deprecated, final List<String> enums,
+                                    final Object defaultValue) {
         for (String part : enums) {
-            LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, part));
+            LookupElementBuilder builder = createLookupElementBuilder(option, part);
             // only show the option in the UI
             builder = builder.withPresentableText(part);
             builder = builder.withBoldness(true);
@@ -144,10 +171,10 @@ public class CamelPropertyValueCompletion extends CompletionProvider<CompletionP
      * Adds the possible value suggestions to the given list of {@link LookupElement} in case the value is a
      * {@code boolean}.
      */
-    private static void addBooleanSuggestions(final BaseOptionModel option, final List<LookupElement> answer,
-                                              final boolean deprecated, final Object defaultValue) {
+    private void addBooleanSuggestions(final BaseOptionModel option, final List<LookupElement> answer,
+                                       final boolean deprecated, final Object defaultValue) {
         // for boolean types then give a choice between true|false
-        LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, Boolean.TRUE.toString()));
+        LookupElementBuilder builder = createLookupElementBuilder(option, Boolean.TRUE.toString());
         // only show the option in the UI
         builder = builder.withPresentableText(Boolean.TRUE.toString());
         if (deprecated) {
@@ -163,7 +190,7 @@ public class CamelPropertyValueCompletion extends CompletionProvider<CompletionP
             answer.add(asPrioritizedLookupElement(builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE)));
         }
 
-        builder = LookupElementBuilder.create(new OptionSuggestion(option, Boolean.FALSE.toString()));
+        builder = createLookupElementBuilder(option, Boolean.FALSE.toString());
         // only show the option in the UI
         builder = builder.withPresentableText(Boolean.FALSE.toString());
         if (deprecated) {
@@ -184,10 +211,10 @@ public class CamelPropertyValueCompletion extends CompletionProvider<CompletionP
      * Adds the possible value suggestions to the given list of {@link LookupElement} in case only a default value
      * is proposed.
      */
-    private static void addDefaultValueSuggestions(final BaseOptionModel option, final List<LookupElement> answer,
-                                                   final boolean deprecated, final Object defaultValue) {
+    private void addDefaultValueSuggestions(final BaseOptionModel option, final List<LookupElement> answer,
+                                            final boolean deprecated, final Object defaultValue) {
         final String lookupString = defaultValue.toString();
-        LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, lookupString));
+        LookupElementBuilder builder = createLookupElementBuilder(option, lookupString);
         // only show the option in the UI
         if (deprecated) {
             // mark as deprecated
@@ -291,28 +318,5 @@ public class CamelPropertyValueCompletion extends CompletionProvider<CompletionP
 
     private static CamelCatalog getCamelCatalog(Project project) {
         return project.getService(CamelCatalogService.class).get();
-    }
-
-    /**
-     * Gets the key of the property corresponding to the given element.
-     * @param element the element from which the property key must be retrieved.
-     * @return the corresponding property key if it could be found {@code null} otherwise.
-     */
-    private static @Nullable String getPropertyKey(PsiElement element) {
-        PsiElement previous = element.getPrevSibling();
-        while (previous != null) {
-            final ASTNode node = previous.getNode();
-            if (node != null) {
-                final IElementType elementType = node.getElementType();
-                if (elementType == PropertiesElementTypes.PROPERTY) {
-                    final String result = node.getText();
-                    return result.endsWith("=") ? result.substring(0, result.length() - 1) : result;
-                } else if (elementType == PropertiesTokenTypes.KEY_CHARACTERS) {
-                    return node.getText();
-                }
-            }
-            previous = previous.getPrevSibling();
-        }
-        return null;
     }
 }

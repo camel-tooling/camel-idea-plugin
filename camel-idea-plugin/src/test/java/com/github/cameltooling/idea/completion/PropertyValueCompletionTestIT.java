@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
+import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.codeInsight.lookup.LookupElement;
 
 /**
@@ -33,11 +35,26 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
         return "src/test/resources/testData/completion/property";
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        try {
+            CamelPreferenceService.getService().setCamelCatalogProvider(null);
+        } finally {
+            super.tearDown();
+        }
+    }
+
     /**
      * Ensures that main option value suggestions can properly be proposed non filtered.
      */
     public void testMainOptionValueSuggestionNonFiltered() {
-        myFixture.configureByFiles(getFileName("main-option-values"));
+        for (FileType type : FileType.values()) {
+            testMainOptionValueSuggestionNonFiltered(type);
+        }
+    }
+
+    private void testMainOptionValueSuggestionNonFiltered(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "main-option-values"));
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
@@ -45,10 +62,26 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
     }
 
     /**
+     * Ensures that no suggestions are provided when the Camel Runtime is not compatible.
+     */
+    public void testNoOptionValueSuggestionWhenCamelRuntimeNotCompatible() {
+        myFixture.configureByFiles(getFileName(FileType.YAML, "main-option-values", CamelCatalogProvider.DEFAULT));
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNullOrEmpty(strings);
+    }
+
+    /**
      * Ensures that main option value suggestions are only instances of {@link OptionSuggestion}.
      */
     public void testMainOptionValueSuggestionInstancesOfOptionSuggestion() {
-        myFixture.configureByFiles(getFileName("main-option-values"));
+        for (FileType type : FileType.values()) {
+            testMainOptionValueSuggestionInstancesOfOptionSuggestion(type);
+        }
+    }
+
+    private void testMainOptionValueSuggestionInstancesOfOptionSuggestion(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "main-option-values"));
         myFixture.completeBasic();
         LookupElement[] suggestions = myFixture.getLookupElements();
         assertNotNull(suggestions);
@@ -62,7 +95,13 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
      * Ensures that main option value suggestions can properly be proposed filtered.
      */
     public void testMainOptionValueSuggestionFiltered() {
-        myFixture.configureByFiles(getFileName("main-option-values"));
+        for (FileType type : FileType.values()) {
+            testMainOptionValueSuggestionFiltered(type);
+        }
+    }
+
+    private void testMainOptionValueSuggestionFiltered(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "main-option-values"));
         myFixture.completeBasic();
         myFixture.type('t');
         List<String> strings = myFixture.getLookupElementStrings();
@@ -75,7 +114,13 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
      * Ensures that component option value suggestions can properly be proposed non filtered.
      */
     public void testComponentOptionValueSuggestionNonFiltered() {
-        myFixture.configureByFiles(getFileName("component-option-values"));
+        for (FileType type : FileType.values()) {
+            testComponentOptionValueSuggestionNonFiltered(type);
+        }
+    }
+
+    private void testComponentOptionValueSuggestionNonFiltered(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "component-option-values"));
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
@@ -86,7 +131,13 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
      * Ensures that component option value suggestions are only instances of {@link OptionSuggestion}.
      */
     public void testComponentOptionValueSuggestionInstancesOfOptionSuggestion() {
-        myFixture.configureByFiles(getFileName("component-option-values"));
+        for (FileType type : FileType.values()) {
+            testComponentOptionValueSuggestionInstancesOfOptionSuggestion(type);
+        }
+    }
+
+    private void testComponentOptionValueSuggestionInstancesOfOptionSuggestion(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "component-option-values"));
         myFixture.completeBasic();
         LookupElement[] suggestions = myFixture.getLookupElements();
         assertNotNull(suggestions);
@@ -100,7 +151,13 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
      * Ensures that component option value suggestions can properly be proposed filtered.
      */
     public void testComponentOptionValueSuggestionFiltered() {
-        myFixture.configureByFiles(getFileName("component-option-values"));
+        for (FileType type : FileType.values()) {
+            testComponentOptionValueSuggestionFiltered(type);
+        }
+    }
+
+    private void testComponentOptionValueSuggestionFiltered(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "component-option-values"));
         myFixture.completeBasic();
         myFixture.type('t');
         List<String> strings = myFixture.getLookupElementStrings();
@@ -113,7 +170,13 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
      * Ensures that data format option value suggestions can properly be proposed non filtered.
      */
     public void testDataFormatOptionValueSuggestionNonFiltered() {
-        myFixture.configureByFiles(getFileName("data-format-option-values"));
+        for (FileType type : FileType.values()) {
+            testDataFormatOptionValueSuggestionNonFiltered(type);
+        }
+    }
+
+    private void testDataFormatOptionValueSuggestionNonFiltered(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "data-format-option-values"));
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
@@ -124,7 +187,13 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
      * Ensures that data format option value suggestions are only instances of {@link OptionSuggestion}.
      */
     public void testDataFormatOptionValueSuggestionInstancesOfOptionSuggestion() {
-        myFixture.configureByFiles(getFileName("data-format-option-values"));
+        for (FileType type : FileType.values()) {
+            testDataFormatOptionValueSuggestionInstancesOfOptionSuggestion(type);
+        }
+    }
+
+    private void testDataFormatOptionValueSuggestionInstancesOfOptionSuggestion(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "data-format-option-values"));
         myFixture.completeBasic();
         LookupElement[] suggestions = myFixture.getLookupElements();
         assertNotNull(suggestions);
@@ -138,7 +207,13 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
      * Ensures that data format option value suggestions can properly be proposed filtered.
      */
     public void testDataFormatOptionValueSuggestionFiltered() {
-        myFixture.configureByFiles(getFileName("data-format-option-values"));
+        for (FileType type : FileType.values()) {
+            testDataFormatOptionValueSuggestionFiltered(type);
+        }
+    }
+
+    private void testDataFormatOptionValueSuggestionFiltered(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "data-format-option-values"));
         myFixture.completeBasic();
         myFixture.type('t');
         List<String> strings = myFixture.getLookupElementStrings();
@@ -151,7 +226,13 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
      * Ensures that language option value suggestions can properly be proposed non filtered.
      */
     public void testLanguageOptionValueSuggestionNonFiltered() {
-        myFixture.configureByFiles(getFileName("language-option-values"));
+        for (FileType type : FileType.values()) {
+            testLanguageOptionValueSuggestionNonFiltered(type);
+        }
+    }
+
+    private void testLanguageOptionValueSuggestionNonFiltered(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "language-option-values"));
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
@@ -162,7 +243,13 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
      * Ensures that language option value suggestions are only instances of {@link OptionSuggestion}.
      */
     public void testLanguageOptionValueSuggestionInstancesOfOptionSuggestion() {
-        myFixture.configureByFiles(getFileName("language-option-values"));
+        for (FileType type : FileType.values()) {
+            testLanguageOptionValueSuggestionInstancesOfOptionSuggestion(type);
+        }
+    }
+
+    private void testLanguageOptionValueSuggestionInstancesOfOptionSuggestion(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "language-option-values"));
         myFixture.completeBasic();
         LookupElement[] suggestions = myFixture.getLookupElements();
         assertNotNull(suggestions);
@@ -176,7 +263,13 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
      * Ensures that language option value suggestions can properly be proposed filtered.
      */
     public void testLanguageOptionValueSuggestionFiltered() {
-        myFixture.configureByFiles(getFileName("language-option-values"));
+        for (FileType type : FileType.values()) {
+            testLanguageOptionValueSuggestionFiltered(type);
+        }
+    }
+
+    private void testLanguageOptionValueSuggestionFiltered(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "language-option-values"));
         myFixture.completeBasic();
         myFixture.type("si");
         List<String> strings = myFixture.getLookupElementStrings();
@@ -189,7 +282,13 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
      * Ensures that camel case is also supported.
      */
     public void testFilterInCamelCase() {
-        myFixture.configureByFiles(getFileName("camel-case-value-filter"));
+        for (FileType type : FileType.values()) {
+            testFilterInCamelCase(type);
+        }
+    }
+
+    private void testFilterInCamelCase(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "camel-case-value-filter"));
         myFixture.completeBasic();
         myFixture.type('t');
         List<String> strings = myFixture.getLookupElementStrings();
@@ -202,7 +301,13 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
      * Ensures that kebab case is also supported.
      */
     public void testFilterInKebabCase() {
-        myFixture.configureByFiles(getFileName("kebab-case-value-filter"));
+        for (FileType type : FileType.values()) {
+            testFilterInKebabCase(type);
+        }
+    }
+
+    private void testFilterInKebabCase(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "kebab-case-value-filter"));
         myFixture.completeBasic();
         myFixture.type('f');
         List<String> strings = myFixture.getLookupElementStrings();
@@ -215,7 +320,13 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
      * Ensures that no suggestions are provided when the first key is unknown.
      */
     public void testNoSuggestionOnUnknownFirstKey() {
-        myFixture.configureByFiles(getFileName("value-unknown-first-key"));
+        for (FileType type : FileType.values()) {
+            testNoSuggestionOnUnknownFirstKey(type);
+        }
+    }
+
+    private void testNoSuggestionOnUnknownFirstKey(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "value-unknown-first-key"));
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNullOrEmpty(strings);
@@ -225,7 +336,13 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
      * Ensures that no suggestions are provided when the second key is unknown.
      */
     public void testNoSuggestionOnUnknownSecondKey() {
-        myFixture.configureByFiles(getFileName("value-unknown-second-key"));
+        for (FileType type : FileType.values()) {
+            testNoSuggestionOnUnknownSecondKey(type);
+        }
+    }
+
+    private void testNoSuggestionOnUnknownSecondKey(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "value-unknown-second-key"));
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNullOrEmpty(strings);
@@ -235,12 +352,35 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
      * Ensures that no suggestions are provided when the component is unknown.
      */
     public void testNoSuggestionOnUnknownComponent() {
-        myFixture.configureByFiles(getFileName("value-unknown-component"));
+        for (FileType type : FileType.values()) {
+            testNoSuggestionOnUnknownComponent(type);
+        }
+    }
+
+    private void testNoSuggestionOnUnknownComponent(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "value-unknown-component"));
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNullOrEmpty(strings);
     }
-    private String getFileName(String fileNamePrefix) {
-        return String.format("%s.properties", fileNamePrefix);
+
+    private static String getFileName(FileType type, String fileNamePrefix) {
+        if (type == FileType.YAML) {
+            // Switch to Quarkus mode
+            return getFileName(type, fileNamePrefix, CamelCatalogProvider.QUARKUS);
+        }
+        return getFileName(type, fileNamePrefix, null);
+    }
+    private static String getFileName(FileType type, String fileNamePrefix, CamelCatalogProvider provider) {
+        if (provider != null) {
+            // Switch to Quarkus mode
+            CamelPreferenceService.getService().setCamelCatalogProvider(provider);
+        }
+        return String.format("%s.%s", fileNamePrefix, type.name().toLowerCase());
+    }
+
+    enum FileType {
+        PROPERTIES,
+        YAML
     }
 }

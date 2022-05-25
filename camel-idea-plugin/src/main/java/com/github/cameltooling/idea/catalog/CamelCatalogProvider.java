@@ -40,7 +40,7 @@ public enum CamelCatalogProvider {
      */
     AUTO("Auto detect", null) {
         @Override
-        protected CamelCatalogProvider getActualProvider(final Project project) {
+        public CamelCatalogProvider getActualProvider(final Project project) {
             LOG.debug("Trying to automatically detect the Camel Runtime");
             final CamelService camelService = project.getService(CamelService.class);
             if (camelService.containsLibrary("camel-spring-boot", false)) {
@@ -133,7 +133,7 @@ public enum CamelCatalogProvider {
      * @param project the project used to find the actual {@code CamelCatalogProvider}.
      * @return the actual {@code CamelCatalogProvider} in case of an automatic detection mode, {@code this} otherwise.
      */
-    protected CamelCatalogProvider getActualProvider(final Project project) {
+    public CamelCatalogProvider getActualProvider(final Project project) {
         return this;
     }
 

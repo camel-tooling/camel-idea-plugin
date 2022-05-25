@@ -1,0 +1,4 @@
+camel:
+  component:
+    quartz:
+      interrupt-jobs-on-shutdown: <caret>

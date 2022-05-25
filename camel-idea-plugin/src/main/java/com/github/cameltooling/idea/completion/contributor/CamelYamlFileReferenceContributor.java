@@ -21,11 +21,15 @@ import com.github.cameltooling.idea.completion.extension.CamelEndpointSmartCompl
 import com.github.cameltooling.idea.completion.header.CamelHeaderEndpointSource;
 import com.github.cameltooling.idea.completion.header.CamelYamlHeaderNameCompletion;
 import com.github.cameltooling.idea.completion.header.CamelYamlHeaderValueCompletion;
+import com.github.cameltooling.idea.completion.property.CamelYamlPropertyKeyCompletion;
+import com.github.cameltooling.idea.completion.property.CamelYamlPropertyValueCompletion;
 import com.github.cameltooling.idea.util.YamlPatternConditions;
 import com.intellij.codeInsight.completion.CompletionInitializationContext;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.TokenType;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
@@ -167,6 +171,46 @@ public class CamelYamlFileReferenceContributor extends CamelContributor {
                         )
                 ),
             new CamelYamlHeaderNameCompletion(CamelHeaderEndpointSource.ALL)
+        );
+        // The sub part of a property key corresponding to a text token whose parent is a scalar plain that doesn't
+        // contain colon and whose grandparent is a document or a mapping in case of root level or has indent token
+        // as previous sibling in case of non-root levels.
+        extend(CompletionType.BASIC,
+            psiElement(YAMLTokenTypes.TEXT)
+                .withParent(
+                    StandardPatterns.or(
+                        psiElement(YAMLElementTypes.SCALAR_PLAIN_VALUE)
+                            .withText(
+                                StandardPatterns.not(StandardPatterns.string().contains(":"))
+                            )
+                            .withParent(
+                                StandardPatterns.or(
+                                    psiElement(YAMLElementTypes.DOCUMENT), psiElement(YAMLElementTypes.MAPPING)
+                                )
+                            ),
+                        psiElement(YAMLElementTypes.SCALAR_PLAIN_VALUE)
+                            .with(
+                                YamlPatternConditions.withPrevSibling(psiElement(YAMLTokenTypes.INDENT))
+                            )
+                            .withText(
+                                StandardPatterns.not(StandardPatterns.string().contains(":"))
+                            )
+                    )
+                ),
+            new CamelYamlPropertyKeyCompletion()
+        );
+
+        // The value of a property corresponding to a text token whose parent is a scalar plain with a white space
+        // token as previous sibling
+        extend(CompletionType.BASIC,
+            psiElement(YAMLTokenTypes.TEXT)
+                .withParent(
+                    psiElement(YAMLElementTypes.SCALAR_PLAIN_VALUE)
+                        .with(
+                            YamlPatternConditions.withPrevSibling(psiElement(TokenType.WHITE_SPACE))
+                        )
+                ),
+            new CamelYamlPropertyValueCompletion()
         );
     }
 }
