@@ -14,8 +14,8 @@
         <li>Upgraded to Camel 3.17.0</li>
         <li>Code completion for application.properties</li>
         <li>Code completion for endpoint headers in DSL</li>
-        <li>Add support of different Camel Runtimes</li>
-        <li>Code completion in yaml files for Quarkus and Spring Boot runtimes</li>
+        <li>Adapt to different Camel runtimes (Standalone, Spring Boot, Quarkus, Karaf)</li>
+        <li>Code completion in yaml files for Spring Boot and Quarkus runtimes</li>
         <li>Bug fixes</li>
       </ul>
     ]]>
@@ -86,8 +86,6 @@
     <!-- allow code completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelJavaReferenceContributor" order="first"/>
     <completion.contributor language="XML" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelXmlReferenceContributor"/>
-    <!-- TODO: work in progress -->
-<!--    <completion.contributor language="Properties" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertiesContributor"/>-->
     <completion.contributor language="Properties" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertiesFileReferenceContributor" order="before javaClassReference"/>
     <completion.contributor language="yaml" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelYamlFileReferenceContributor" order="before javaClassReference"/>
 
