@@ -1,0 +1,14 @@
+<idea-plugin>
+    <name>Apache Camel Integration Tests</name>
+    <id>org.apache.camel.tests</id>
+    <description>Overriding services for testing purpose.</description>
+
+    <depends>org.apache.camel</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceInterface="com.github.cameltooling.idea.service.CamelPreferenceService"
+                            serviceImplementation="com.github.cameltooling.idea.service.CamelPreferenceServiceMock"
+                            overrides="true" />
+    </extensions>
+
+</idea-plugin>

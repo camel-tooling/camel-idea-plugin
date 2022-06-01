@@ -30,20 +30,11 @@ import com.intellij.testFramework.PsiTestUtil;
  */
 public class JavaHeaderValueCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
-    private static String CAMEL_CORE_MODEL_MAVEN_ARTIFACT = "org.apache.camel:camel-core-model:%s";
-    private static String CAMEL_ATHENA_MAVEN_ARTIFACT = "org.apache.camel:camel-aws2-athena:%s";
+    private static final String CAMEL_CORE_MODEL_MAVEN_ARTIFACT = String.format("org.apache.camel:camel-core-model:%s", CAMEL_VERSION);
+    private static final String CAMEL_ATHENA_MAVEN_ARTIFACT = String.format("org.apache.camel:camel-aws2-athena:%s", CAMEL_VERSION);
 
-    private static final File[] mavenArtifacts;
+    private static final File[] mavenArtifacts = getMavenArtifacts(CAMEL_CORE_MODEL_MAVEN_ARTIFACT, CAMEL_ATHENA_MAVEN_ARTIFACT);
 
-    static {
-        try {
-            CAMEL_CORE_MODEL_MAVEN_ARTIFACT = String.format(CAMEL_CORE_MODEL_MAVEN_ARTIFACT, CAMEL_VERSION);
-            CAMEL_ATHENA_MAVEN_ARTIFACT = String.format(CAMEL_ATHENA_MAVEN_ARTIFACT, CAMEL_VERSION);
-            mavenArtifacts = getMavenArtifacts(CAMEL_CORE_MODEL_MAVEN_ARTIFACT, CAMEL_ATHENA_MAVEN_ARTIFACT);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     protected void setUp() throws Exception {
         super.setUp();

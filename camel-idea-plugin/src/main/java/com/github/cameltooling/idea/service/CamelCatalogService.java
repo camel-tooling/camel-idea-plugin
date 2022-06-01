@@ -24,6 +24,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultVersionManager;
+import org.apache.camel.catalog.VersionManager;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -53,8 +54,7 @@ public class CamelCatalogService implements Disposable, CamelPreferenceService.C
         if (instance == null) {
             synchronized (this) {
                 if (instance == null) {
-                    final CamelPreferenceService preferenceService = ApplicationManager.getApplication()
-                        .getService(CamelPreferenceService.class);
+                    final CamelPreferenceService preferenceService = getPreferenceService();
                     this.instance = preferenceService.getCamelCatalogProvider().get(project);
                     preferenceService.addListener(this);
                 }
@@ -65,6 +65,32 @@ public class CamelCatalogService implements Disposable, CamelPreferenceService.C
 
     boolean isInstantiated() {
         return instance != null;
+    }
+
+    /**
+     * Called once the catalog is ready to use.
+     */
+    void onCamelCatalogReady() {
+        CamelCatalog catalog = instance;
+        if (catalog != null) {
+            // Update the runtime provider is needed
+            updateRuntimeProvider(catalog);
+            // As the catalog is ready to use, the cache can be enabled
+            catalog.enableCache();
+        }
+    }
+
+    /**
+     * Updates the Camel Runtime provider if needed.
+     * @param catalog the catalog into which the Camel Runtime should be updated.
+     */
+    private void updateRuntimeProvider(CamelCatalog catalog) {
+        final VersionManager versionManager = catalog.getVersionManager();
+        if (versionManager instanceof CamelMavenVersionManager) {
+            getPreferenceService().getCamelCatalogProvider().updateRuntimeProvider(
+                project, catalog, ((CamelMavenVersionManager) versionManager).getClassLoader()
+            );
+        }
     }
 
     /**
@@ -91,6 +117,23 @@ public class CamelCatalogService implements Disposable, CamelPreferenceService.C
         return loaded;
     }
 
+    /**
+     * Attempt to load the runtime provider version to be used by the catalog.
+     * <p/>
+     * Loading the runtime provider JAR of the given version of choice may require internet access to download the JAR
+     * from Maven central. You can pre download the JAR and install in a local Maven repository to avoid internet access
+     * for offline environments.
+     *
+     * @param  groupId    the runtime provider Maven groupId
+     * @param  artifactId the runtime provider Maven artifactId
+     * @param  version    the runtime provider Maven version
+     * @return            <tt>true</tt> if the version was loaded, <tt>false</tt> if not.
+     */
+    public boolean loadRuntimeProviderVersion(@NotNull String groupId, @NotNull String artifactId,
+                                              @NotNull String version) {
+        return get().getVersionManager().loadRuntimeProviderVersion(groupId, artifactId, version);
+    }
+
     public void clearLoadedVersion() {
         // this will force re initialization of the catalog
         dispose();
@@ -98,8 +141,15 @@ public class CamelCatalogService implements Disposable, CamelPreferenceService.C
 
     @Override
     public void dispose() {
-        ApplicationManager.getApplication().getService(CamelPreferenceService.class).removeListener(this);
+        getPreferenceService().removeListener(this);
         instance = null;
+    }
+
+    /**
+     * @return the preference service
+     */
+    private CamelPreferenceService getPreferenceService() {
+        return ApplicationManager.getApplication().getService(CamelPreferenceService.class);
     }
 
     /**
@@ -107,6 +157,9 @@ public class CamelCatalogService implements Disposable, CamelPreferenceService.C
      */
     @Override
     public void onChange() {
+        // Clear the old catalog
         clearLoadedVersion();
+        // Load the new catalog
+        project.getService(CamelService.class).loadCamelCatalog(project);
     }
 }

@@ -71,7 +71,7 @@ public class CamelCatalogServiceTestIT extends CamelLightCodeInsightFixtureTestC
         CamelCatalog catalog = service.get();
         assertSame(catalog, service.get());
         CamelPreferenceService.getService().setCamelCatalogProvider(CamelCatalogProvider.QUARKUS);
-        assertFalse(service.isInstantiated());
+        assertTrue(service.isInstantiated());
         assertNotSame(catalog, service.get());
     }
 

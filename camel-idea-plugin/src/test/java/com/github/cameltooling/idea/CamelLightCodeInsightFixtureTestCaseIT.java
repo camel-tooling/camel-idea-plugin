@@ -19,6 +19,7 @@ package com.github.cameltooling.idea;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -45,6 +46,7 @@ import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.java.JpsJavaSdkType;
 
 /**
@@ -54,7 +56,7 @@ import org.jetbrains.jps.model.java.JpsJavaSdkType;
 public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCodeInsightFixtureTestCase {
     private static final String BUILD_MOCK_JDK_DIRECTORY = "build/mockJDK-";
 
-    private static File[] mavenArtifacts;
+    private static final File[] mavenArtifacts;
     private boolean ignoreCamelCoreLib;
 
     protected static String CAMEL_VERSION;
@@ -62,18 +64,16 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
 
 
     static {
-        try {
-            final String projectRoot = System.getProperty("user.dir").substring(0, System.getProperty("user.dir").lastIndexOf('/'));
-
+        final String projectRoot = System.getProperty("user.dir").substring(0, System.getProperty("user.dir").lastIndexOf('/'));
+        try (InputStream is = new FileInputStream(projectRoot +"/gradle.properties")) {
             Properties gradleProperties = new Properties();
-            gradleProperties.load(new FileInputStream(projectRoot +"/gradle.properties"));
+            gradleProperties.load(is);
             CAMEL_VERSION = gradleProperties.getProperty("camelVersion");
             CAMEL_CORE_MAVEN_ARTIFACT = String.format(CAMEL_CORE_MAVEN_ARTIFACT, CAMEL_VERSION);
-
-            mavenArtifacts = getMavenArtifacts(CAMEL_CORE_MAVEN_ARTIFACT);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
+        mavenArtifacts = getMavenArtifacts(CAMEL_CORE_MAVEN_ARTIFACT);
     }
 
     @Override
@@ -108,15 +108,12 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
      * </p>
      * @param mavenArtifact - Array of maven artifact to resolve
      * @return Array of artifact files
-     * @throws IOException
      */
-    protected static File[] getMavenArtifacts(String... mavenArtifact) throws IOException {
-        File[] libs = Maven.configureResolver()
+    protected static File[] getMavenArtifacts(String... mavenArtifact) {
+        return Maven.configureResolver()
             .withRemoteRepo("snapshot", "https://repository.apache.org/snapshots/", "default")
             .resolve(mavenArtifact)
             .withoutTransitivity().asFile();
-
-        return libs;
     }
 
     protected PsiElement getElementAtCaret() {
@@ -129,6 +126,15 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
 
     protected void setIgnoreCamelCoreLib(boolean ignoreCamelCoreLib) {
         this.ignoreCamelCoreLib = ignoreCamelCoreLib;
+    }
+
+    /**
+     * @return an array of the dependencies to add to the module in the following format
+     * {@code group-id:artifact-id:version}. No additional dependencies by default.
+     */
+    @Nullable
+    protected String[] getMavenDependencies() {
+        return null;
     }
 
     protected void initCamelPreferencesService() {
@@ -160,8 +166,24 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
 
             @Override
             public void configureModule(@NotNull Module module, @NotNull ModifiableRootModel model, @NotNull ContentEntry contentEntry) {
+                loadDependencies(model);
                 model.getModuleExtension( LanguageLevelModuleExtension.class ).setLanguageLevel( languageLevel );
             }
         };
+    }
+
+    /**
+     * Loads the maven dependencies into the given model.
+     * @param model the model into which the dependencies are added.
+     */
+    protected void loadDependencies(@NotNull ModifiableRootModel model) {
+        String[] dependencies = getMavenDependencies();
+        if (dependencies != null && dependencies.length > 0) {
+            File[] artifacts = getMavenArtifacts(dependencies);
+            for (int i = 0; i < artifacts.length; i++) {
+                File artifact = artifacts[i];
+                PsiTestUtil.addLibrary(model, dependencies[i], artifact.getParent(), artifact.getName());
+            }
+        }
     }
 }
