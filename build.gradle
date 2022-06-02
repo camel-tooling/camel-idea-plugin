@@ -58,12 +58,6 @@ subprojects {
     }
 
     test {
-        filter {
-            //exclude specific method because they fail other tests, not sure why at this point but it might be because it 
-            //not cleanup after itself.
-            excludeTestsMatching "*.testShouldChangeStateOfRealTimeJSonPathValidationCatalogCheckBox"
-            excludeTestsMatching "*.testShouldChangeStateOfRealTimeBeanMethodValidationCheckBox"
-        }
         afterTest { desc, result ->
             logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
         }

@@ -41,7 +41,7 @@ import org.jetbrains.annotations.NotNull;
 @State(
     name = "CamelPreferences",
     storages = {@Storage("apachecamelplugin.xml")})
-public final class CamelPreferenceService implements PersistentStateComponent<CamelPreferenceService>, Disposable {
+public class CamelPreferenceService implements PersistentStateComponent<CamelPreferenceService>, Disposable {
 
     @Transient
     public static final Icon CAMEL_ICON = IconLoader.getIcon("/META-INF/pluginIcon.svg", CamelPreferenceService.class);
@@ -82,7 +82,7 @@ public final class CamelPreferenceService implements PersistentStateComponent<Ca
     private List<String> ignorePropertyList = new ArrayList<>();
     private List<String> excludePropertyFiles = new ArrayList<>();
 
-    private CamelPreferenceService() { }
+    protected CamelPreferenceService() { }
 
     public static CamelPreferenceService getService() {
         return ApplicationManager.getApplication().getService(CamelPreferenceService.class);

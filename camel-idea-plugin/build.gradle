@@ -77,3 +77,15 @@ tasks.register('prepareTest') {
 }
 
 tasks.test.dependsOn("prepareTest")
+
+test {
+// Start: To get Grape log messages
+//    systemProperty("groovy.grape.report.downloads", "true")
+//    systemProperty("ivy.message.logger.level", "4")
+//    testLogging {
+//        showStandardStreams = true
+//    }
+// End: To get Grape log messages
+// To enable the remote debug
+//    jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005'
+}

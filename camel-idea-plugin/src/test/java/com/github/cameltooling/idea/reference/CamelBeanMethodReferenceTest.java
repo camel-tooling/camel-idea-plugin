@@ -37,15 +37,7 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 public class CamelBeanMethodReferenceTest extends CamelLightCodeInsightFixtureTestCaseIT {
     private static final String SPRING_CONTEXT_MAVEN_ARTIFACT = "org.springframework:spring-context:5.1.6.RELEASE";
 
-    private static File[] springMavenArtifacts;
-
-    static {
-        try {
-            springMavenArtifacts = getMavenArtifacts(SPRING_CONTEXT_MAVEN_ARTIFACT);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    private static final File[] springMavenArtifacts = getMavenArtifacts(SPRING_CONTEXT_MAVEN_ARTIFACT);
 
     @Override
     protected void setUp() throws Exception {
