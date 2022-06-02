@@ -58,3 +58,8 @@ jobs:
         with:
           name: Reports
           path: camel-idea-plugin/build/reports
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: Logs
+          path: camel-idea-plugin/target/*.log
