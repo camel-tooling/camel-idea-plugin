@@ -16,8 +16,10 @@
  */
 package com.github.cameltooling.idea.inspection;
 
-/*
-public class CamelInspectJavaEndpointTestIT extends InspectionTestCase {
+import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
+import com.intellij.testFramework.JavaInspectionTestCase;
+
+public class CamelInspectJavaEndpointTestIT extends JavaInspectionTestCase {
 
     @Override
     protected String getTestDataPath() {
@@ -32,4 +34,3 @@ public class CamelInspectJavaEndpointTestIT extends InspectionTestCase {
     }
 
 }
-*/

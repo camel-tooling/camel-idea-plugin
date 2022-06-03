@@ -16,14 +16,12 @@
  */
 package com.github.cameltooling.idea.completion;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.testFramework.PsiTestUtil;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Testing the completion of the header values based on the headers defined in the metadata of a component.
@@ -33,13 +31,10 @@ public class JavaHeaderValueCompletionTestIT extends CamelLightCodeInsightFixtur
     private static final String CAMEL_CORE_MODEL_MAVEN_ARTIFACT = String.format("org.apache.camel:camel-core-model:%s", CAMEL_VERSION);
     private static final String CAMEL_ATHENA_MAVEN_ARTIFACT = String.format("org.apache.camel:camel-aws2-athena:%s", CAMEL_VERSION);
 
-    private static final File[] mavenArtifacts = getMavenArtifacts(CAMEL_CORE_MODEL_MAVEN_ARTIFACT, CAMEL_ATHENA_MAVEN_ARTIFACT);
-
-
-    protected void setUp() throws Exception {
-        super.setUp();
-        PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myFixture.getModule(), "Maven: " + CAMEL_CORE_MODEL_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
-        PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myFixture.getModule(), "Maven: " + CAMEL_ATHENA_MAVEN_ARTIFACT, mavenArtifacts[1].getParent(), mavenArtifacts[1].getName());
+    @Nullable
+    @Override
+    protected String[] getMavenDependencies() {
+        return new String[]{CAMEL_CORE_MODEL_MAVEN_ARTIFACT, CAMEL_ATHENA_MAVEN_ARTIFACT};
     }
 
     @Override

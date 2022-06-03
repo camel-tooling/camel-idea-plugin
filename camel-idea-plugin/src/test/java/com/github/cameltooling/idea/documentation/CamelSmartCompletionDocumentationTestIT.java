@@ -54,27 +54,26 @@ public class CamelSmartCompletionDocumentationTestIT extends CamelLightCodeInsig
         PsiElement docInfo = new CamelDocumentationProvider().getDocumentationElementForLookupItem(manager, lookup, element);
 
         CamelDocumentationProvider.DocumentationElement de = (CamelDocumentationProvider.DocumentationElement) docInfo;
+        assertNotNull(de);
         assertEquals(componentName, de.getComponentName());
         assertEquals("delete", de.getText());
         assertEquals("delete", de.getEndpointOption());
     }
 
-//    @Ignore
-//    public void testXMLQuickDocCaretOnAmpersand() throws Exception {
-//        myFixture.configureByFile("XmlCamelRouteQuickDocCaretOnAmpTestData.xml");
-//        PsiElement element = getElementAtCaret();
-//        assertNotNull(element);
-//        CamelDocumentationProvider camelDocumentationProvider = new CamelDocumentationProvider();
-//        assertEquals(element.getParent(), camelDocumentationProvider.getCustomDocumentationElement(myFixture.getEditor(), myFixture.getFile(), element));
-//    }
-//
-//    @Ingore
-//    public void testXMLQuickDocCaretAtTheEndOfTheRoute() throws Exception {
-//        myFixture.configureByFile("XmlCamelRouteQuickDocCaretAtTheEndTestData.xml");
-//        PsiElement element = getElementAtCaret();
-//        assertNotNull(element);
-//        CamelDocumentationProvider camelDocumentationProvider = new CamelDocumentationProvider();
-//        assertEquals(element.getParent(), camelDocumentationProvider.getCustomDocumentationElement(myFixture.getEditor(), myFixture.getFile(), element));
-//    }
+    public void testXMLQuickDocCaretOnAmpersand() {
+        myFixture.configureByFile("XmlCamelRouteQuickDocCaretOnAmpTestData.xml");
+        PsiElement element = getElementAtCaret();
+        assertNotNull(element);
+        CamelDocumentationProvider camelDocumentationProvider = new CamelDocumentationProvider();
+        assertEquals(element.getParent(), camelDocumentationProvider.getCustomDocumentationElement(myFixture.getEditor(), myFixture.getFile(), element, 0));
+    }
+
+    public void testXMLQuickDocCaretAtTheEndOfTheRoute() {
+        myFixture.configureByFile("XmlCamelRouteQuickDocCaretAtTheEndTestData.xml");
+        PsiElement element = getElementAtCaret();
+        assertNotNull(element);
+        CamelDocumentationProvider camelDocumentationProvider = new CamelDocumentationProvider();
+        assertEquals(element.getParent(), camelDocumentationProvider.getCustomDocumentationElement(myFixture.getEditor(), myFixture.getFile(), element, 0));
+    }
 
 }

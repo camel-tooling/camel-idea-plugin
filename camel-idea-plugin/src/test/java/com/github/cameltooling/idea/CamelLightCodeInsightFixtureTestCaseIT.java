@@ -30,16 +30,17 @@ import com.github.cameltooling.idea.service.CamelService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.JavaMethodUtils;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.projectRoots.JavaSdk;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.LanguageLevelModuleExtension;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.pom.java.LanguageLevel;
 import com.intellij.psi.PsiElement;
+import com.intellij.testFramework.IdeaTestUtil;
 import com.intellij.testFramework.LightProjectDescriptor;
 import com.intellij.testFramework.PsiTestUtil;
 import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor;
@@ -47,20 +48,19 @@ import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jps.model.java.JpsJavaSdkType;
 
 /**
  * Super class for Camel Plugin Testing. If you are testing plug-in code with LightCodeInsightFixtureTestCase
  * you should extend this class to make sure it is setup as expected and clean up on tearDown
  */
 public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCodeInsightFixtureTestCase {
-    private static final String BUILD_MOCK_JDK_DIRECTORY = "build/mockJDK-";
 
     private static final File[] mavenArtifacts;
     private boolean ignoreCamelCoreLib;
 
     protected static String CAMEL_VERSION;
     protected static String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:%s";
+    protected static String CAMEL_CORE_MODEL_MAVEN_ARTIFACT = "org.apache.camel:camel-core-model:%s";
 
 
     static {
@@ -70,6 +70,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
             gradleProperties.load(is);
             CAMEL_VERSION = gradleProperties.getProperty("camelVersion");
             CAMEL_CORE_MAVEN_ARTIFACT = String.format(CAMEL_CORE_MAVEN_ARTIFACT, CAMEL_VERSION);
+            CAMEL_CORE_MODEL_MAVEN_ARTIFACT = String.format(CAMEL_CORE_MODEL_MAVEN_ARTIFACT, CAMEL_VERSION);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -82,18 +83,20 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
         if (!ignoreCamelCoreLib) {
             PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myFixture.getModule(), "Maven: " + CAMEL_CORE_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
         }
+        Project project = getModule().getProject();
         ApplicationManager
             .getApplication()
             .executeOnPooledThread(() -> ApplicationManager.getApplication().runReadAction(() -> {
-                disposeOnTearDown(ServiceManager.getService(getModule().getProject(), CamelCatalogService.class));
-                disposeOnTearDown(ServiceManager.getService(getModule().getProject(), CamelService.class));
-                disposeOnTearDown(ServiceManager.getService(CamelPreferenceService.class));
-                disposeOnTearDown(ServiceManager.getService(CamelIdeaUtils.class));
-                disposeOnTearDown(ServiceManager.getService(IdeaUtils.class));
-                disposeOnTearDown(ServiceManager.getService(JavaMethodUtils.class));
+                disposeOnTearDown(project.getService(CamelCatalogService.class));
+                disposeOnTearDown(project.getService(CamelService.class));
+                Application application = ApplicationManager.getApplication();
+                disposeOnTearDown(application.getService(CamelPreferenceService.class));
+                disposeOnTearDown(application.getService(CamelIdeaUtils.class));
+                disposeOnTearDown(application.getService(IdeaUtils.class));
+                disposeOnTearDown(application.getService(JavaMethodUtils.class));
             }));
 
-        ServiceManager.getService(getModule().getProject(), CamelService.class).setCamelPresent(true);
+        project.getService(CamelService.class).setCamelPresent(true);
     }
 
     @Override
@@ -139,7 +142,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
 
     protected void initCamelPreferencesService() {
         List<String> expectedExcludedProperties = Arrays.asList("**/log4j.properties", "**/log4j2.properties", "**/logging.properties");
-        CamelPreferenceService service = ServiceManager.getService(CamelPreferenceService.class);
+        CamelPreferenceService service = ApplicationManager.getApplication().getService(CamelPreferenceService.class);
         service.setExcludePropertyFiles(expectedExcludedProperties);
         service.setRealTimeEndpointValidation(true);
         service.setDownloadCatalog(true);
@@ -156,18 +159,16 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
     @NotNull
     @Override
     protected LightProjectDescriptor getProjectDescriptor() {
-        LanguageLevel languageLevel = LanguageLevel.JDK_11;
         return new DefaultLightProjectDescriptor() {
             @Override
             public Sdk getSdk() {
-                String compilerOption = JpsJavaSdkType.complianceOption(languageLevel.toJavaVersion());
-                return JavaSdk.getInstance().createJdk( "java " + compilerOption, BUILD_MOCK_JDK_DIRECTORY + compilerOption, false );
+                return IdeaTestUtil.getMockJdk11();
             }
 
             @Override
             public void configureModule(@NotNull Module module, @NotNull ModifiableRootModel model, @NotNull ContentEntry contentEntry) {
                 loadDependencies(model);
-                model.getModuleExtension( LanguageLevelModuleExtension.class ).setLanguageLevel( languageLevel );
+                model.getModuleExtension( LanguageLevelModuleExtension.class ).setLanguageLevel( LanguageLevel.JDK_11 );
             }
         };
     }

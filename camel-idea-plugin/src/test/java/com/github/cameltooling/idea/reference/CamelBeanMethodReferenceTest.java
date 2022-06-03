@@ -16,20 +16,10 @@
  */
 package com.github.cameltooling.idea.reference;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiPolyVariantReference;
-import com.intellij.psi.ResolveResult;
-import com.intellij.testFramework.PsiTestUtil;
-import com.intellij.usageView.UsageInfo;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Test method reference link between the Java Camel DSL bean reference method @{code bean(MyClass.class,"myMethodName")}
@@ -37,12 +27,10 @@ import static org.hamcrest.core.IsInstanceOf.instanceOf;
 public class CamelBeanMethodReferenceTest extends CamelLightCodeInsightFixtureTestCaseIT {
     private static final String SPRING_CONTEXT_MAVEN_ARTIFACT = "org.springframework:spring-context:5.1.6.RELEASE";
 
-    private static final File[] springMavenArtifacts = getMavenArtifacts(SPRING_CONTEXT_MAVEN_ARTIFACT);
-
+    @Nullable
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myFixture.getModule(), "Maven: " + SPRING_CONTEXT_MAVEN_ARTIFACT, springMavenArtifacts[0].getParent(), springMavenArtifacts[0].getName());
+    protected String[] getMavenDependencies() {
+        return new String[]{SPRING_CONTEXT_MAVEN_ARTIFACT};
     }
 
     @Override
