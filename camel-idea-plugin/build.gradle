@@ -70,14 +70,6 @@ dependencies {
 
 description = 'Apache Camel IDE :: IDEA Plugin'
 
-tasks.register('prepareTest') {
-    doFirst {
-        project.file('build/mockJDK-11').mkdirs()
-    }
-}
-
-tasks.test.dependsOn("prepareTest")
-
 test {
 // Start: To get Grape log messages
 //    systemProperty("groovy.grape.report.downloads", "true")

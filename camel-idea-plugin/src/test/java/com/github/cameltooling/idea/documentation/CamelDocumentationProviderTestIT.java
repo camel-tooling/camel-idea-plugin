@@ -87,7 +87,6 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
         return "src/test/resources/testData/documentation/";
     }
 
-//    @Ignore
     public void testJavaClassQuickNavigateInfo() throws Exception {
         myFixture.configureByText(JavaFileType.INSTANCE, getJavaTestWithCursorBeforeCamelComponent());
 

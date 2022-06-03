@@ -16,7 +16,6 @@
  */
 package com.github.cameltooling.idea.completion;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
@@ -34,6 +33,7 @@ public class JavaEndpointSmartCompletionValueTestIT extends CamelLightCodeInsigh
         myFixture.configureByFiles("CompleteJavaEndpointValueEnumTestData.java");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
         assertEquals(8, strings.size());
         assertThat(strings, Matchers.contains("file:inbox?readLock=changed", "file:inbox?readLock=fileLock", "file:inbox?readLock=idempotent",
             "file:inbox?readLock=idempotent-changed", "file:inbox?readLock=idempotent-rename", "file:inbox?readLock=markerFile",
@@ -44,6 +44,7 @@ public class JavaEndpointSmartCompletionValueTestIT extends CamelLightCodeInsigh
         myFixture.configureByFiles("CompleteJavaEndpointValueDefaultTestData.java");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
         assertEquals(1, strings.size());
         assertThat(strings, Matchers.contains("file:inbox?delay=500"));
     }
@@ -52,6 +53,7 @@ public class JavaEndpointSmartCompletionValueTestIT extends CamelLightCodeInsigh
         myFixture.configureByFiles("CompleteJavaEndpointValueBooleanTestData.java");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
         assertEquals(2, strings.size());
         assertThat(strings, Matchers.contains("file:inbox?delay=1000&recursive=false", "file:inbox?delay=1000&recursive=true"));
     }
@@ -69,7 +71,8 @@ public class JavaEndpointSmartCompletionValueTestIT extends CamelLightCodeInsigh
         myFixture.configureByText("JavaCaretInMiddleOptionsTestData.java", getJavaInTheMiddleUnresolvedValueTestData());
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertFalse(strings.containsAll(Collections.singletonList("timer:trigger?repeatCount=10")));
+        assertNotNull(strings);
+        assertDoesntContain(strings, "timer:trigger?repeatCount=10");
         assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&fixedRate=false", "timer:trigger?repeatCount=10&fixedRate=true"));
         assertEquals(2, strings.size());
     }
@@ -83,20 +86,17 @@ public class JavaEndpointSmartCompletionValueTestIT extends CamelLightCodeInsigh
             + "        }\n"
             + "    }";
     }
-//    @Ignore
-//    public void testUnresolvedValueWithPreTestCompletion() {
-//        myFixture.configureByText("JavaCaretInMiddleOptionsTestData.java", getJavaUnresolvedValueWithPreTestData());
-//        myFixture.complete(CompletionType.BASIC, 1);
-//        List<String> strings = myFixture.getLookupElementStrings();
-//        assertFalse(strings.containsAll(Collections.singletonList("timer:trigger?repeatCount=10")));
-//        assertThat(strings, Matchers.containsInAnyOrder(
-//            "timer:trigger?exchangePattern=InOut",
-//            "timer:trigger?exchangePattern=InOnly",
-//            "timer:trigger?exchangePattern=InOptionalOut",
-//            "timer:trigger?exchangePattern=OutIn",
-//            "timer:trigger?exchangePattern=RobustInOnly",
-//            "timer:trigger?exchangePattern=OutOptionalIn"));
-//        assertEquals(6, strings.size());
-//    }
+    public void testUnresolvedValueWithPreTestCompletion() {
+        myFixture.configureByText("JavaCaretInMiddleOptionsTestData.java", getJavaUnresolvedValueWithPreTestData());
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertDoesntContain(strings, "timer:trigger?repeatCount=10");
+        assertContainsElements(strings,
+            "timer:trigger?exchangePattern=InOut",
+            "timer:trigger?exchangePattern=InOnly",
+            "timer:trigger?exchangePattern=InOptionalOut");
+        assertEquals(3, strings.size());
+    }
 
 }

@@ -91,7 +91,7 @@ public class BeanReferenceTypeAnnotator extends AbstractCamelAnnotator {
     }
 
     private boolean isBeanReference(PsiElement element) {
-        return Arrays.stream(element.getReferences()).anyMatch(ref -> ref instanceof BeanReference);
+        return Arrays.stream(element.getReferences()).anyMatch(BeanReference.class::isInstance);
     }
 
     private boolean isBeanPropertyReference(PsiElement element) {

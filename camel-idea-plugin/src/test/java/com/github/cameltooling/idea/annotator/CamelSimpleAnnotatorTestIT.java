@@ -17,6 +17,7 @@
 package com.github.cameltooling.idea.annotator;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Test Camel simple validation and the expected value is highlighted
@@ -30,6 +31,12 @@ import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
  */
 public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
+    @Nullable
+    @Override
+    protected String[] getMavenDependencies() {
+        return new String[]{CAMEL_CORE_MODEL_MAVEN_ARTIFACT};
+    }
+
     @Override
     protected String getTestDataPath() {
         return "src/test/resources/testData/annotator";
@@ -41,11 +48,10 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
 //        myFixture.checkHighlighting(false, false, true, true);
 //    }
 
-//    @Ignore
-//    public void testAnnotatorLogValidation() {
-//        myFixture.configureByText("AnnotatorTestData.java", getJavaWithLog());
-//        myFixture.checkHighlighting(false, false, true, true);
-//    }
+    public void testAnnotatorLogValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaWithLog());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
 
     public void testAnnotatorLogValidation2() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaWithFilterAndLog());
@@ -64,17 +70,15 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
 //        myFixture.checkHighlighting(false, false, true, true);
 //    }
 
-//    @Ignore
-//    public void testAnnotatorCamelPredicateValidation() {
-//        myFixture.configureByText("AnnotatorTestData.java", getJavaWithCamelPredicate());
-//        myFixture.checkHighlighting(false, false, false, true);
-//    }
+    public void testAnnotatorCamelPredicateValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaWithCamelPredicate());
+        myFixture.checkHighlighting(false, false, false, true);
+    }
 
-//    @Ignore
-//    public void testAnnotatorJavaMultilinePredicateValidation() {
-//        myFixture.configureByText("AnnotatorTestData.java", getJavaMultilinePredicate());
-//        myFixture.checkHighlighting(false, false, false, true);
-//    }
+    public void testAnnotatorJavaMultilinePredicateValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaMultilinePredicate());
+        myFixture.checkHighlighting(false, false, false, true);
+    }
 
 //    @Ignore
 //    public void testAnnotatorCamelPredicateValidation2() {
@@ -82,11 +86,10 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
 //        myFixture.checkHighlighting(false, false, false, true);
 //    }
 
-//    @Ignore
-//    public void testXmlAnnotatorSimpleValidation2() {
-//        myFixture.configureByText("AnnotatorTestData.xml", getXmlWithSimple());
-//        myFixture.checkHighlighting(false, false, false, true);
-//    }
+    public void testXmlAnnotatorSimpleValidation2() {
+        myFixture.configureByText("AnnotatorTestData.xml", getXmlWithSimple());
+        myFixture.checkHighlighting(false, false, false, true);
+    }
 
 //    @Ignore
 //    public void testXmlAnnotatorPredicateValidation2() {
@@ -96,15 +99,15 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
 //    }
 
 //    @Ignore
-//    public void testXmlAnnotatorWithLogValidation() {
-//        myFixture.configureByText("AnnotatorTestData.xml", getXmlWithLog());
-//        myFixture.checkHighlighting(false, false, false, true);
-//    }
+    public void testXmlAnnotatorWithLogValidation() {
+        myFixture.configureByText("AnnotatorTestData.xml", getXmlWithLog());
+        myFixture.checkHighlighting(false, false, false, true);
+    }
 
     private String getJavaWithSimple() {
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
-            + "        public void configure() throws Exception {\n"
+            + "        public void configure() {\n"
             + "            from(\"netty-http:http://localhost/cdi?matchOnUriPrefix=true&nettySharedHttpServer=#httpServer\")\n"
             + "            .id(\"http-route-cdi\")\n"
             + "            .transform()\n"
@@ -116,7 +119,7 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
     private String getJavaWithLog() {
         return "import org.apache.camel.builder.RouteBuilder;"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
-            + "    public void configure() throws Exception {\n"
+            + "    public void configure() {\n"
             + "      from(\"timer:stream?repeatCount=1\")\n"
             + "           .log(\"Result from query <error descr=\"Unknown function: xbody\">${xbody}</error>\")\n"
             + "           .process(exchange -> {\n"
@@ -129,7 +132,7 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
     private String getJavaWithFilterAndLog() {
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
-            + "    public void configure() throws Exception {\n"
+            + "    public void configure() {\n"
             + "      from(\"direct:foo\")\n"
             + "         .filter(header(Exchange.REDELIVERED))\n"
             + "           .log(LoggingLevel.WARN, \"Processed ${body} after ${header.CamelRedeliveryCount} retries\")\n"
@@ -141,7 +144,7 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
     private String getJavaOpenBracketWithSimple() {
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
-            + "        public void configure() throws Exception {\n"
+            + "        public void configure() {\n"
             + "            from(\"netty-http:http://localhost/cdi?matchOnUriPrefix=true&nettySharedHttpServer=#httpServer\")\n"
             + "            .id(\"http-route-cdi\")\n"
             + "            .transform()\n"
@@ -153,7 +156,7 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
     private String getJavaMutlipleOpenBracketWithSimple() {
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
-            + "        public void configure() throws Exception {\n"
+            + "        public void configure() {\n"
             + "            from(\"netty-http:http://localhost/cdi?matchOnUriPrefix=true&nettySharedHttpServer=#httpServer\")\n"
             + "            .id(\"http-route-cdi\")\n"
             + "            .transform()\n"
@@ -165,7 +168,7 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
     private String getJavaWithCamelPredicate() {
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
-            + "        public void configure() throws Exception {\n"
+            + "        public void configure() {\n"
             + "              from(\"direct:start\")\n"
             + "                .loopDoWhile(simple(\"${body.length} <error descr=\"Unexpected token =\">=!=</error> 12\"))\n"
             + "                .to(\"mock:loop\")\n"
@@ -178,7 +181,7 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
     private String getJavaWithCamelPredicate2() {
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
-            + "        public void configure() throws Exception {\n"
+            + "        public void configure() {\n"
             + "              from(\"direct:start\")\n"
             + "                .loopDoWhile(simple(\"${body.length} != 12\"))\n"
             + "                .filter().simple(<error descr=\"Unknown function: xxxx\">\"${xxxx}\"</error>)\n"
@@ -194,7 +197,7 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
     private String getJavaMultilinePredicate() {
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
-            + "        public void configure() throws Exception {\n"
+            + "        public void configure() {\n"
             + " from(\"timer:trigger\")\n"
             + "            .choice()\n"
             + "                .when(xpath(\"/person/city = 'London'\"))\n"

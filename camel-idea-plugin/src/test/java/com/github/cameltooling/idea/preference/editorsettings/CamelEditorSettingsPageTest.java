@@ -39,13 +39,6 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
         super.initCamelPreferencesService();
     }
 
-    @Override
-    public void tearDown() throws Exception {
-        super.tearDown();
-        editorSettingsPage = null;
-        super.initCamelPreferencesService();
-    }
-
     public void testPluginXmlShouldContainEditorPreferencesPage() {
         File pluginXml = new File("src/main/resources/META-INF/plugin.xml");
         assertNotNull(pluginXml);
@@ -68,12 +61,11 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
         assertTrue(checkBox.isSelected());
     }
 
-//    @Ignore
-//    public void testShouldContainScanThirdPartyComponentsCatalogCheckBox() {
-//        JBCheckBox checkBox = editorSettingsPage.getScanThirdPartyComponentsCatalogCheckBox();
-//        assertEquals("Scan classpath for third party Camel components using modern component packaging", checkBox.getText());
-//        assertTrue(checkBox.isSelected());
-//    }
+    public void testShouldContainScanThirdPartyComponentsCatalogCheckBox() {
+        JBCheckBox checkBox = editorSettingsPage.getScanThirdPartyComponentsCatalogCheckBox();
+        assertEquals("Scan classpath for third party Camel components", checkBox.getText());
+        assertTrue(checkBox.isSelected());
+    }
 
     public void testShouldContainCamelIconInGutterCheckBox() {
         JBCheckBox checkBox = editorSettingsPage.getCamelIconInGutterCheckBox();
