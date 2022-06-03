@@ -79,22 +79,22 @@ public class CamelService implements Disposable {
     private final AtomicBoolean downloadInProgress = new AtomicBoolean();
     private Library camel2CoreLibrary;
     private List<Library> camel3CoreLibraries = new ArrayList<>();
-    private Library slf4japiLibrary;
+    private Library slf4jApiLibrary;
     private ClassLoader camelCoreClassloader;
     private final Set<String> processedLibraries = new HashSet<>();
     private final Map<Library, ArtifactCoordinates> projectLibraries = new HashMap<>();
     private ClassLoader projectClassloader;
     private volatile boolean camelPresent;
-    private Notification camelVersionNotification;
-    private Notification camelMissingJSonSchemaNotification;
-    private Notification camelMissingJSonPathJarNotification;
+    private volatile Notification camelVersionNotification;
+    private volatile Notification camelMissingJSonSchemaNotification;
+    private volatile Notification camelMissingJSonPathJarNotification;
 
     public IdeaUtils getIdeaUtils() {
         return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
 
     @Override
-    public void dispose() {
+    public synchronized void dispose() {
         processedLibraries.clear();
         projectLibraries.clear();
 
@@ -114,7 +114,7 @@ public class CamelService implements Disposable {
         camelCoreClassloader = null;
         camel2CoreLibrary = null;
         camel3CoreLibraries = null;
-        slf4japiLibrary = null;
+        slf4jApiLibrary = null;
         projectClassloader = null;
     }
 
@@ -135,28 +135,28 @@ public class CamelService implements Disposable {
     /**
      * @param lib - Add the of the library
      */
-    public void addLibrary(String lib) {
+    public synchronized void addLibrary(String lib) {
         processedLibraries.add(lib);
     }
 
     /**
      * @return all cached library names
      */
-    public Set<String> getLibraries() {
-        return processedLibraries;
+    public synchronized Set<String> getLibraries() {
+        return new HashSet<>(processedLibraries);
     }
 
     /**
      * Clean the library cache
      */
-    public void clearLibraries() {
+    public synchronized void clearLibraries() {
         processedLibraries.clear();
     }
 
     /**
      * @return true if the library name is cached
      */
-    public boolean containsLibrary(String lib, boolean quickCheck) {
+    public synchronized boolean containsLibrary(String lib, boolean quickCheck) {
         boolean answer = processedLibraries.contains(lib);
         if (!answer && !quickCheck) {
             for (ArtifactCoordinates coordinates : projectLibraries.values()) {
@@ -176,7 +176,7 @@ public class CamelService implements Disposable {
      * @return the {@code ArtifactCoordinates} corresponding to the artifact if it could be found, {@code null} otherwise.
      */
     @Nullable
-    public ArtifactCoordinates getProjectLibraryCoordinates(String groupId, String artifactId) {
+    public synchronized ArtifactCoordinates getProjectLibraryCoordinates(String groupId, String artifactId) {
         for (ArtifactCoordinates coordinates : projectLibraries.values()) {
             if (coordinates.getGroupId().equals(groupId) && coordinates.getArtifactId().equals(artifactId)) {
                 return coordinates;
@@ -191,7 +191,7 @@ public class CamelService implements Disposable {
      * otherwise.
      */
     @Nullable
-    private ArtifactCoordinates getProjectCamelCoreCoordinates() {
+    private synchronized ArtifactCoordinates getProjectCamelCoreCoordinates() {
         for (ArtifactCoordinates coordinates : projectLibraries.values()) {
             if (isCamel2CoreMavenDependency(coordinates) || isCamel3CoreMavenDependency(coordinates)) {
                 return coordinates;
@@ -203,14 +203,14 @@ public class CamelService implements Disposable {
     /**
      * Gets the classloader that can load classes from camel-core which is present on the project classpath
      */
-    public ClassLoader getCamelCoreClassloader() {
+    public synchronized ClassLoader getCamelCoreClassloader() {
         if (camelCoreClassloader == null) {
             try {
                 if (camel2CoreLibrary != null) {
-                    camelCoreClassloader = getIdeaUtils().newURLClassLoaderForLibrary(camel2CoreLibrary, slf4japiLibrary);
+                    camelCoreClassloader = getIdeaUtils().newURLClassLoaderForLibrary(camel2CoreLibrary, slf4jApiLibrary);
                 } else {
                     List<Library> list = new ArrayList<>(camel3CoreLibraries);
-                    list.add(slf4japiLibrary);
+                    list.add(slf4jApiLibrary);
                     camelCoreClassloader = getIdeaUtils().newURLClassLoaderForLibrary(list.toArray(new Library[0]));
                 }
             } catch (Throwable e) {
@@ -223,7 +223,7 @@ public class CamelService implements Disposable {
     /**
      * Gets the classloader for the project classpath
      */
-    public ClassLoader getProjectClassloader() {
+    public synchronized ClassLoader getProjectClassloader() {
         ClassLoader loader = projectClassloader;
         if (loader == null) {
             try {
@@ -250,36 +250,38 @@ public class CamelService implements Disposable {
      * These two version needs to be aligned to offer the best tooling support on the given project.
      */
     public void scanForCamelProject(@NotNull Project project, @NotNull Module module) {
-        for (OrderEntry entry : ModuleRootManager.getInstance(module).getOrderEntries()) {
-            if (!(entry instanceof LibraryOrderEntry)) {
-                continue;
-            }
-            LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
+        synchronized (this) {
+            for (OrderEntry entry : ModuleRootManager.getInstance(module).getOrderEntries()) {
+                if (!(entry instanceof LibraryOrderEntry)) {
+                    continue;
+                }
+                LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
 
-            if (!libraryOrderEntry.getScope().isForProductionCompile() && !libraryOrderEntry.getScope().isForProductionRuntime()) {
-                continue;
-            }
-            final Library library = libraryOrderEntry.getLibrary();
-            if (library == null) {
-                continue;
-            }
-            ArtifactCoordinates coordinates = ArtifactCoordinates.parse(libraryOrderEntry);
-            if (coordinates == null) {
-                continue;
-            }
+                if (!libraryOrderEntry.getScope().isForProductionCompile() && !libraryOrderEntry.getScope().isForProductionRuntime()) {
+                    continue;
+                }
+                final Library library = libraryOrderEntry.getLibrary();
+                if (library == null) {
+                    continue;
+                }
+                ArtifactCoordinates coordinates = ArtifactCoordinates.parse(libraryOrderEntry);
+                if (coordinates == null) {
+                    continue;
+                }
 
-            projectLibraries.putIfAbsent(library, coordinates);
+                projectLibraries.putIfAbsent(library, coordinates);
 
-            if (isSlf4jMavenDependency(coordinates)) {
-                slf4japiLibrary = library;
-            } else if (isCamel2CoreMavenDependency(coordinates)) {
-                // okay it is a camel v2 project
-                camel2CoreLibrary = library;
-                setCamelPresent(true);
-            } else if (isCamel3CoreMavenDependency(coordinates)) {
-                camel3CoreLibraries.add(library);
-                // okay it is a camel v3 project
-                setCamelPresent(true);
+                if (isSlf4jMavenDependency(coordinates)) {
+                    slf4jApiLibrary = library;
+                } else if (isCamel2CoreMavenDependency(coordinates)) {
+                    // okay it is a camel v2 project
+                    camel2CoreLibrary = library;
+                    setCamelPresent(true);
+                } else if (isCamel3CoreMavenDependency(coordinates)) {
+                    camel3CoreLibraries.add(library);
+                    // okay it is a camel v3 project
+                    setCamelPresent(true);
+                }
             }
         }
         loadCamelCatalog(project);
