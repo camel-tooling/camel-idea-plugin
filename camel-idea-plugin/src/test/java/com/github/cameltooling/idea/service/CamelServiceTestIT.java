@@ -22,13 +22,12 @@ import com.intellij.testFramework.PsiTestUtil;
 import com.intellij.testFramework.exceptionCases.AbstractExceptionCase;
 
 public class CamelServiceTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
-    
+
     public void testScanForCamelProjectShouldSupportDependenciesWithoutVersion() throws Throwable {
-        CamelService service = ServiceManager.getService(getModule().getProject(), CamelService.class);
+        CamelService service = getModule().getProject().getService(CamelService.class);
         assertNoException(ArrayIndexOutOfBoundsExceptionCase.check(
             () -> PsiTestUtil.addProjectLibrary(getModule(), "gradle::mylib:"))
         );
-        assertTrue(service.isCamelPresent());
         assertNoException(ArrayIndexOutOfBoundsExceptionCase.check(
             () -> PsiTestUtil.addProjectLibrary(getModule(), "gradle:mygroup:myartifactId:"))
         );

@@ -39,6 +39,9 @@
   <applicationListeners>
     <listener class="com.github.cameltooling.idea.CamelPluginStartup" topic="com.intellij.openapi.project.ProjectManagerListener"/>
   </applicationListeners>
+  <projectListeners>
+    <listener class="com.github.cameltooling.idea.CamelPluginStartup" topic="com.intellij.openapi.roots.ModuleRootListener"/>
+  </projectListeners>
 
   <extensions defaultExtensionNs="com.intellij">
     <notificationGroup id="Apache Camel" displayType="BALLOON"/>
