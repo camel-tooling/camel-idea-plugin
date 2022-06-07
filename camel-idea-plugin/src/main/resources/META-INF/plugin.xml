@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
-  <version>0.8.10</version>
+  <version>0.8.11</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -9,11 +9,8 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.0.8.10
+      v.0.8.11
       <ul>
-        <li>Support for IDEA 2022.2 EAP</li>
-        <li>Adding Camel to an existing project is now detected and enables the Camel plugin without having to reload the project</li>
-        <li>Better detection of Camel runtimes (Spring Boot, Quarkus, Karaf, Camel Main, etc.)</li>
         <li>Bug fixes</li>
       </ul>
     ]]>
