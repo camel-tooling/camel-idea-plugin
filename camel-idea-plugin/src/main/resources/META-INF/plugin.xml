@@ -11,6 +11,7 @@
   <change-notes><![CDATA[
       v.0.8.10
       <ul>
+        <li>Support for IDEA 2022.2 EAP</li>
         <li>Bug fixes</li>
       </ul>
     ]]>
