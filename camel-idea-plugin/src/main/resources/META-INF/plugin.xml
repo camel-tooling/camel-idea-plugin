@@ -12,6 +12,8 @@
       v.0.8.10
       <ul>
         <li>Support for IDEA 2022.2 EAP</li>
+        <li>Adding Camel to an existing project is now detected and enables the Camel plugin without having to reload the project</li>
+        <li>Better detection of Camel runtimes (Spring Boot, Quarkus, Karaf, Camel Main, etc.)
         <li>Bug fixes</li>
       </ul>
     ]]>
