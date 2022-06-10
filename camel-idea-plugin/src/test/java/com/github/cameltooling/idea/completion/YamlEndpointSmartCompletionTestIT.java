@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
-import com.intellij.codeInsight.completion.CompletionType;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -35,16 +34,17 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
 
     public void testConsumerCompletion() {
         myFixture.configureByFiles("CompleteYamlEndpointConsumerTestData.yaml");
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
         assertTrue(strings.containsAll(Arrays.asList("file:inbox?autoCreate", "file:inbox?include", "file:inbox?delay", "file:inbox?delete")));
         assertFalse(strings.containsAll(Arrays.asList("file:inbox?fileExist", "file:inbox?forceWrites")));
-        assertTrue("There is many options", strings.size() > 60);
+        assertTrue("There are many options", strings.size() > 60);
     }
 
     public void testProducerCompletion() {
         myFixture.configureByFiles("CompleteYamlEndpointProducerTestData.yaml");
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, not(contains(Arrays.asList("file:outbox?autoCreate", "file:outbox?include", "file:outbox?delay", "file:outbox?delete"))));
         assertThat(strings, hasItems("file:outbox?fileExist", "file:outbox?forceWrites"));
@@ -62,10 +62,11 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
 
     public void testYamlInsertAfterQuestionMarkTestData() {
         String insertAfterQuestionMarkTestData = getYamlInsertAfterQuestionMarkTestData();
-        myFixture.configureByText("JavaCaretInMiddleOptionsTestData.yaml", insertAfterQuestionMarkTestData);
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.configureByText("YamlCaretInMiddleOptionsTestData.yaml", insertAfterQuestionMarkTestData);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals("There is many options", 1, strings.size());
+        assertNotNull(strings);
+        assertEquals("There are many options", 1, strings.size());
         assertThat(strings, contains("timer:trigger?period"));
         myFixture.type('\n');
         String result = insertAfterQuestionMarkTestData.replace("<caret>", "iod=");
@@ -82,9 +83,10 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
 
     public void testYamlEndOfLineOptionsCompletion() {
         myFixture.configureByText("YamlCaretInMiddleOptionsTestData.yaml", getYamlEndOfLineTestData());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertTrue("There is many options", strings.size() > 9);
+        assertNotNull(strings);
+        assertTrue("There are many options", strings.size() > 9);
     }
 
     private String getYamlCaretAfterQuestionMarkWithPreDataOptionsTestData() {
@@ -97,7 +99,7 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
 
     public void testYamlAfterQuestionMarkWithPreDataOptionsCompletion() {
         myFixture.configureByText("YamlCaretInMiddleOptionsTestData.yaml", getYamlCaretAfterQuestionMarkWithPreDataOptionsTestData());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNull("Don't except any elements, because it the 're' is unique and return the repeatCount", strings);
     }
@@ -112,7 +114,7 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
 
     public void testYamlAfterAmpCompletion() {
         myFixture.configureByText("YamlCaretInMiddleOptionsTestData.yaml", getYamlAfterAmpOptionsTestData());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, not(contains("timer:trigger?repeatCount=10")));
         assertThat(strings, contains("&bridgeErrorHandler",
@@ -140,8 +142,9 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
 
     public void testYamlInTheMiddleOfResolvedOptionsCompletion() {
         myFixture.configureByText("YamlCaretInMiddleOptionsTestData.yaml", getYamlInTheMiddleOfResolvedOptionsData());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
         assertEquals("There is less options", 0, strings.size());
     }
 
@@ -155,7 +158,7 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
 
     public void testYamlInTheMiddleUnresolvedOptionsCompletion() {
         myFixture.configureByText("YamlCaretInMiddleOptionsTestData.yaml", getYamlInTheMiddleUnresolvedOptionsTestData());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, not(contains("timer:trigger?repeatCount=10")));
         assertThat(strings, contains("&exceptionHandler", "&exchangePattern"));
@@ -175,8 +178,9 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
 
     public void testYamlAfterValueWithOutAmpCompletion() {
         myFixture.configureByText("YamlAfterValueWithOutAmpCompletion.yaml", getYamlAfterValueWithOutAmpTestData());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
         assertTrue("There is less options", strings.size() > 10);
         myFixture.type('\n');
         String result = getYamlAfterValueWithOutAmpTestData().replace("<caret>", "&bridgeErrorHandler=");
@@ -196,9 +200,10 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
 
     public void testYamlMultilineTestData() {
         myFixture.configureByText("CamelRoute.yaml", getYamlMultilineTestData());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals("There is many options", 9, strings.size());
+        assertNotNull(strings);
+        assertEquals("There are many options", 9, strings.size());
         assertThat(strings, not(containsInAnyOrder(
             "timer:trigger?repeatCount=10&",
             "&fixedRate=false",
@@ -222,9 +227,10 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
 
     public void testYamlMultilineTest2Data() {
         myFixture.configureByText("CamelRoute.yaml", getYamlMultilineTest2Data());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals("There is many options", 9, strings.size());
+        assertNotNull(strings);
+        assertEquals("There are many options", 9, strings.size());
         assertThat(strings, not(containsInAnyOrder(
             "timer:trigger?repeatCount=10",
             "&fixedRate=false",
@@ -248,9 +254,10 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
 
     public void testYamlMultilineTest3Data() {
         myFixture.configureByText("CamelRoute.yaml", getYamlMultilineTest3Data());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals("There is many options", 9, strings.size());
+        assertNotNull(strings);
+        assertEquals("There are many options", 9, strings.size());
         assertThat(strings, not(containsInAnyOrder(
             "timer:trigger?repeatCount=10&",
             "&fixedRate=false",
@@ -273,14 +280,129 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
 
     }
 
-    public void testJavaMultilineInFixSearchData() {
+    public void testYamlMultilineInFixSearchData() {
         myFixture.configureByText("CamelRoute.yaml", getYamlMultilineInFixSearchData());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals("There is many options", 2, strings.size());
+        assertNotNull(strings);
+        assertEquals("There are many options", 2, strings.size());
         assertThat(strings, containsInAnyOrder("&exceptionHandler", "&exchangePattern"));
         myFixture.type('\n');
         String result = getYamlMultilineInFixSearchData().replace("<caret>", "ceptionHandler=");
         myFixture.checkResult(result);
+    }
+
+    private String getYamlKameletSuggestionsData() {
+        return "- route\n"
+            + "     from:\n"
+            + "       uri: \"kamelet:<caret>\"\n"
+            + "       steps:\n"
+            + "         - to: \"file:outbox?delete=true&fileExist=Append\"\n";
+    }
+
+    /**
+     * Ensure that the name of the available Kamelets can be suggested
+     */
+    public void testYamlKameletSuggestions() {
+        myFixture.configureByText("CamelRoute.yaml", getYamlKameletSuggestionsData());
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertDoesntContain(strings, "kamelet:avro-deserialize-action", "kamelet:aws-sqs-sink");
+        assertContainsElements(strings, "kamelet:aws-s3-source", "kamelet:ftp-source", "kamelet:webhook-source");
+        myFixture.type("ft\n");
+        String javaMarkTestData = getYamlKameletSuggestionsData().replace("<caret>", "ftp-source");
+        myFixture.checkResult(javaMarkTestData);
+    }
+
+    private String getYamlNonSourceKameletSuggestionsData() {
+        return "- route\n"
+            + "     from:\n"
+            + "       uri: \"stream:in\"\n"
+            + "       steps:\n"
+            + "         - to: \"kamelet:<caret>\"\n";
+    }
+
+    /**
+     * Ensure that the name of the available non source Kamelets can be suggested
+     */
+    public void testYamlNonSourceKameletSuggestions() {
+        myFixture.configureByText("CamelRoute.yaml", getYamlNonSourceKameletSuggestionsData());
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertDoesntContain(strings, "kamelet:aws-s3-source", "kamelet:ftp-source", "kamelet:webhook-source");
+        assertContainsElements(strings, "kamelet:avro-deserialize-action", "kamelet:aws-sqs-sink");
+        myFixture.type("avro-d\n");
+        String javaMarkTestData = getYamlNonSourceKameletSuggestionsData().replace("<caret>", "avro-deserialize-action");
+        myFixture.checkResult(javaMarkTestData);
+    }
+
+    private String getYamlKameletOptionSuggestionsData() {
+        return "- route\n"
+            + "     from:\n"
+            + "       uri: \"kamelet:ftp-source?<caret>\"\n"
+            + "       steps:\n"
+            + "         - to: \"file:outbox?delete=true&fileExist=Append\"\n";
+    }
+
+    /**
+     * Ensure that the configuration option of a given Kamelet can be suggested
+     */
+    public void testYamlKameletOptionSuggestions() {
+        myFixture.configureByText("CamelRoute.yaml", getYamlKameletOptionSuggestionsData());
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertContainsElements(strings, "kamelet:ftp-source?connectionHost", "kamelet:ftp-source?connectionPort", "kamelet:ftp-source?bridgeErrorHandler");
+        myFixture.type("user\n");
+        String javaMarkTestData = getYamlKameletOptionSuggestionsData().replace("<caret>", "username=");
+        myFixture.checkResult(javaMarkTestData);
+    }
+
+    private String getYamlKameletOptionValueSuggestionsData() {
+        return "- route\n"
+            + "     from:\n"
+            + "       uri: \"kamelet:ftp-source?passiveMode=<caret>\"\n"
+            + "       steps:\n"
+            + "         - to: \"file:outbox?delete=true&fileExist=Append\"\n";
+    }
+
+    /**
+     * Ensure that the values of a configuration option of a given Kamelet can be suggested
+     */
+    public void testYamlKameletOptionValueSuggestions() {
+        myFixture.configureByText("CamelRoute.yaml", getYamlKameletOptionValueSuggestionsData());
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertContainsElements(strings, "kamelet:ftp-source?passiveMode=true", "kamelet:ftp-source?passiveMode=false");
+        myFixture.type('\n');
+        String javaMarkTestData = getYamlKameletOptionValueSuggestionsData().replace("<caret>", "false");
+        myFixture.checkResult(javaMarkTestData);
+    }
+
+    private String getYamlKameletOptionFilteredSuggestionsData() {
+        return "- route\n"
+            + "     from:\n"
+            + "       uri: \"kamelet:ftp-source?passiveMode=true&bridgeErrorHandler=true&<caret>\"\n"
+            + "       steps:\n"
+            + "         - to: \"file:outbox?delete=true&fileExist=Append\"\n";
+    }
+
+    /**
+     * Ensure that configuration options of a given Kamelet can be filtered
+     */
+    public void testYamlKameletOptionFilteredSuggestions() {
+        myFixture.configureByText("CamelRoute.yaml", getYamlKameletOptionFilteredSuggestionsData());
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        String prefix = "&";
+        assertDoesntContain(strings, prefix + "passiveMode", prefix + "bridgeErrorHandler");
+        assertContainsElements(strings, prefix + "connectionHost", prefix + "connectionPort");
+        myFixture.type("user\n");
+        String javaMarkTestData = getYamlKameletOptionFilteredSuggestionsData().replace("<caret>", "username=");
+        myFixture.checkResult(javaMarkTestData);
     }
 }

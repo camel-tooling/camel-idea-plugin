@@ -19,7 +19,7 @@ package com.github.cameltooling.idea.completion.extension;
 import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
-import com.intellij.codeInsight.completion.CompletionType;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Testing camel endpoint name completion in Java and XML DSL
@@ -31,21 +31,26 @@ public class CamelEndpointNameCompletionExtensionIT extends CamelLightCodeInsigh
         return "src/test/resources/testData/completion/endpointname";
     }
 
-//    @Ignore
-//    public void testDirectEndpointNameCompletionInJava() {
-//        myFixture.configureByFiles("CompleteDirectEndpointNameTestData.java");
-//        doTestCompletion();
-//    }
+    @Nullable
+    @Override
+    protected String[] getMavenDependencies() {
+        return new String[]{CAMEL_CORE_MODEL_MAVEN_ARTIFACT};
+    }
+
+    public void testDirectEndpointNameCompletionInJava() {
+        myFixture.configureByFiles("CompleteDirectEndpointNameTestData.java");
+        doTestCompletion();
+    }
 
     public void testDirectEndpointNameCompletionInXml() {
         myFixture.configureByFiles("CompleteDirectEndpointNameTestData.xml");
-        myFixture.complete(CompletionType.BASIC);
+        myFixture.completeBasic();
         doTestCompletion();
     }
 
     public void testDirectEndpointNameCompletionInYaml() {
         myFixture.configureByFiles("CompleteDirectEndpointNameTestData.yaml");
-        myFixture.complete(CompletionType.BASIC);
+        myFixture.completeBasic();
         doTestCompletion();
     }
 
@@ -80,22 +85,17 @@ public class CamelEndpointNameCompletionExtensionIT extends CamelLightCodeInsigh
     }
 
     private void doTestCompletion() {
-        myFixture.complete(CompletionType.BASIC);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertEquals(3, strings.size());
         assertContainsElements(strings, "direct:abc", "direct:def", "direct:test");
     }
 
     private void doTestCompletionAtInvalidPlace() {
-        myFixture.complete(CompletionType.BASIC);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         if (strings != null) {
-            assertFalse(strings.contains("direct:abc"));
-            assertFalse(strings.contains("direct:def"));
-            assertFalse(strings.contains("direct:test"));
-            assertFalse(strings.contains("file:inbox"));
+            assertDoesntContain(strings, "direct:abc", "direct:def", "direct:test", "file:inbox");
         }
     }
-
 }

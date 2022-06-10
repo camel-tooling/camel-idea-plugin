@@ -23,8 +23,9 @@ import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.HighlightSeverity;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlAttributeValue;
@@ -41,7 +42,8 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
 
     @Override
     boolean isEnabled() {
-        return ServiceManager.getService(CamelPreferenceService.class).isRealTimeJSonPathValidation();
+        return ApplicationManager.getApplication().getService(CamelPreferenceService.class)
+            .isRealTimeJSonPathValidation();
     }
 
     /**
@@ -52,13 +54,14 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
 
         // only validate if the element is jsonpath element
         if (getCamelIdeaUtils().isCamelExpression(element, "jsonpath")) {
-            CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
-            CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
+            Project project = element.getProject();
+            CamelCatalog catalogService = project.getService(CamelCatalogService.class).get();
+            CamelService camelService = project.getService(CamelService.class);
 
             // must have camel-json library
             boolean jsonLib = camelService.containsLibrary("camel-jsonpath", false);
             if (!jsonLib) {
-                camelService.showMissingJSonPathJarNotification(element.getProject());
+                camelService.showMissingJSonPathJarNotification();
                 return;
             }
 
@@ -128,12 +131,12 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
         return range;
     }
 
-    private IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
+    private static IdeaUtils getIdeaUtils() {
+        return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
     
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
+    private static CamelIdeaUtils getCamelIdeaUtils() {
+        return ApplicationManager.getApplication().getService(CamelIdeaUtils.class);
     }
 
 }

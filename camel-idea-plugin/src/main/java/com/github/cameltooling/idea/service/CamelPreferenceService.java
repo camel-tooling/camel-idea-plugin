@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.*;
 
@@ -31,6 +30,7 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.util.messages.Topic;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Transient;
 import org.jetbrains.annotations.NotNull;
@@ -60,11 +60,6 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     @Transient
     private static final String[] DEFAULT_EXCLUDE_FILE_PATTERN = {
         "**/log4j.properties", "**/log4j2.properties", "**/logging.properties"};
-    /**
-     * The list of listeners to notify in case of change.
-     */
-    @Transient
-    private final List<CamelCatalogProviderChangeListener> listeners = new CopyOnWriteArrayList<>();
     private boolean realTimeEndpointValidation = true;
     private boolean realTimeSimpleValidation = true;
     private boolean realTimeJSonPathValidation = true;
@@ -199,9 +194,8 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
         final boolean hasChanged = getCamelCatalogProvider() != getCamelCatalogProvider(camelCatalogProvider);
         this.camelCatalogProvider = camelCatalogProvider;
         if (hasChanged) {
-            for (CamelCatalogProviderChangeListener listener : listeners) {
-                listener.onChange();
-            }
+            ApplicationManager.getApplication().getMessageBus().syncPublisher(CamelCatalogProviderChangeListener.TOPIC)
+                .onChange();
         }
     }
 
@@ -211,20 +205,6 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
      */
     private CamelCatalogProvider getCamelCatalogProvider(CamelCatalogProvider camelCatalogProvider) {
         return camelCatalogProvider == null ? CamelCatalogProvider.AUTO : camelCatalogProvider;
-    }
-
-    /**
-     * Add the given change listener to the list of listeners to notify in case of change.
-     */
-    public void addListener(CamelCatalogProviderChangeListener listener) {
-        listeners.add(listener);
-    }
-
-    /**
-     * Remove the given change listener from the list of listeners to notify in case of change.
-     */
-    public void removeListener(CamelCatalogProviderChangeListener listener) {
-        listeners.remove(listener);
     }
 
     public Icon getCamelIcon() {
@@ -290,6 +270,15 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
      * defined in the preferences has changed.
      */
     public interface CamelCatalogProviderChangeListener {
+
+        /**
+         * The topic to subscribe to in order to be notified when the {@link CamelCatalogProvider} has changed.
+         */
+        @Topic.AppLevel
+        Topic<CamelCatalogProviderChangeListener> TOPIC = Topic.create(
+            "CamelCatalogProviderChangeListener", CamelCatalogProviderChangeListener.class
+        );
+
         /**
          * Called when the {@link CamelCatalogProvider} defined in the preferences has changed.
          */

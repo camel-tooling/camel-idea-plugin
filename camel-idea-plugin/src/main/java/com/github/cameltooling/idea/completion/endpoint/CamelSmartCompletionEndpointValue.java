@@ -19,12 +19,13 @@ package com.github.cameltooling.idea.completion.endpoint;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.cameltooling.idea.completion.OptionSuggestion;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.Lookup;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.psi.PsiElement;
@@ -54,23 +55,24 @@ public final class CamelSmartCompletionEndpointValue {
             val = val.replace(stringToRemove[1], "");
         }
         if (enums != null) {
-            addEnumSuggestions(editor, val, suffix, answer, deprecated, enums, defaultValue, xmlMode);
+            addEnumSuggestions(editor, option, val, suffix, answer, deprecated, enums, defaultValue, xmlMode);
         } else if ("java.lang.Boolean".equals(javaType) || "boolean".equals(javaType)) {
-            addBooleanSuggestions(editor, val, suffix, answer, deprecated, defaultValue, xmlMode);
+            addBooleanSuggestions(editor, option, val, suffix, answer, deprecated, defaultValue, xmlMode);
         } else if (defaultValue != null) {
             // for any other kind of type and if there is a default value then add that as a suggestion
             // so its easy to see what the default value is
-            addDefaultValueSuggestions(editor, val, suffix, answer, deprecated, defaultValue, xmlMode);
+            addDefaultValueSuggestions(editor, option, val, suffix, answer, deprecated, defaultValue, xmlMode);
         }
 
         return answer;
     }
 
-    private static void addEnumSuggestions(Editor editor, String val, String suffix, List<LookupElement> answer,
-                                           boolean deprecated, List<String> enums, Object defaultValue, boolean xmlMode) {
+    private static void addEnumSuggestions(Editor editor, ComponentModel.EndpointOptionModel option, String val,
+                                           String suffix, List<LookupElement> answer, boolean deprecated,
+                                           List<String> enums, Object defaultValue, boolean xmlMode) {
         for (String part : enums) {
             String lookup = val + part;
-            LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+            LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, lookup));
             builder = addInsertHandler(editor, suffix, builder, xmlMode);
 
             // only show the option in the UI
@@ -91,11 +93,12 @@ public final class CamelSmartCompletionEndpointValue {
         }
     }
 
-    private static void addBooleanSuggestions(Editor editor, String val, String suffix, List<LookupElement> answer,
-                                              boolean deprecated, Object defaultValue, boolean xmlMode) {
+    private static void addBooleanSuggestions(Editor editor, ComponentModel.EndpointOptionModel option, String val,
+                                              String suffix, List<LookupElement> answer, boolean deprecated,
+                                              Object defaultValue, boolean xmlMode) {
         // for boolean types then give a choice between true|false
         String lookup = val + "true";
-        LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+        LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, lookup));
         builder = addInsertHandler(editor, suffix, builder, xmlMode);
         // only show the option in the UI
         builder = builder.withPresentableText("true");
@@ -113,7 +116,7 @@ public final class CamelSmartCompletionEndpointValue {
         }
 
         lookup = val + "false";
-        builder = LookupElementBuilder.create(lookup);
+        builder = LookupElementBuilder.create(new OptionSuggestion(option, lookup));
         builder = addInsertHandler(editor, suffix, builder, xmlMode);
         // only show the option in the UI
         builder = builder.withPresentableText("false");
@@ -131,10 +134,11 @@ public final class CamelSmartCompletionEndpointValue {
         }
     }
 
-    private static void addDefaultValueSuggestions(Editor editor, String val, String suffix, List<LookupElement> answer,
-                                                   boolean deprecated, Object defaultValue, boolean xmlMode) {
+    private static void addDefaultValueSuggestions(Editor editor, ComponentModel.EndpointOptionModel option, String val,
+                                                   String suffix, List<LookupElement> answer, boolean deprecated,
+                                                   Object defaultValue, boolean xmlMode) {
         String lookup = val + defaultValue;
-        LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+        LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, lookup));
         builder = addInsertHandler(editor, suffix, builder, xmlMode);
         // only show the option in the UI
         if (defaultValue != null) {
@@ -191,7 +195,7 @@ public final class CamelSmartCompletionEndpointValue {
     }
 
     private static IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
+        return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
 
 }

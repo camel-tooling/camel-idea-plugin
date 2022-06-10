@@ -55,13 +55,14 @@ public final class ArtifactCoordinates {
      *
      * @param libraryOrderEntry the entry to convert into {@code ArtifactCoordinates}.
      * @return a new instance of {@code ArtifactCoordinates} corresponding to what could be extracted from user-visible
-     * name of the given {@link LibraryOrderEntry} if possible, {@code null} otherwise.
+     * name of the given {@link LibraryOrderEntry} if possible, otherwise it is processed as a custom library.
      */
-    @Nullable
+    @NotNull
     public static ArtifactCoordinates parse(LibraryOrderEntry libraryOrderEntry) {
-        String[] split = libraryOrderEntry.getPresentableName().toLowerCase().split(":");
+        String presentableName = libraryOrderEntry.getPresentableName().toLowerCase();
+        String[] split = presentableName.split(":");
         if (split.length < 3) {
-            return null;
+            return new ArtifactCoordinates("$", presentableName, null);
         }
         int startIdx = 0;
         if (split[0].equalsIgnoreCase("maven")

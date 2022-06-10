@@ -9,8 +9,9 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.0.8.10
+      v.0.8.11
       <ul>
+        <li>Code completion for Kamelets</li>
         <li>Bug fixes</li>
       </ul>
     ]]>
@@ -74,6 +75,7 @@
     <!-- services which can be requested from IDEA api -->
     <projectService serviceImplementation="com.github.cameltooling.idea.service.CamelCatalogService"/>
     <projectService serviceImplementation="com.github.cameltooling.idea.service.CamelService"/>
+    <projectService serviceImplementation="com.github.cameltooling.idea.service.KameletService"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.IdeaUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.CamelIdeaUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.service.CamelPreferenceService"/>

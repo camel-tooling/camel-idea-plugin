@@ -18,6 +18,7 @@ package com.github.cameltooling.idea.completion.extension;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -27,7 +28,6 @@ import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Code completion for camel endpoint names (only for direct endpoints so far).
