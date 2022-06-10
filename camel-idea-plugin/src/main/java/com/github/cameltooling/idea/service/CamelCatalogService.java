@@ -30,7 +30,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Service which provides the instance to be used when accessing the {@link CamelCatalog}.
  */
-public class CamelCatalogService implements Disposable, CamelPreferenceService.CamelCatalogProviderChangeListener {
+public class CamelCatalogService implements Disposable {
 
     private volatile CamelCatalog instance;
     /**
@@ -44,6 +44,12 @@ public class CamelCatalogService implements Disposable, CamelPreferenceService.C
      */
     public CamelCatalogService(Project project) {
         this.project = project;
+        ApplicationManager.getApplication().getMessageBus()
+            .connect(this)
+            .subscribe(CamelPreferenceService.CamelCatalogProviderChangeListener.TOPIC, this::onCamelCatalogProviderChanged);
+        project.getMessageBus()
+            .connect(this)
+            .subscribe(CamelService.CamelCatalogListener.TOPIC, this::onCamelCatalogReady);
     }
 
     /**
@@ -54,9 +60,7 @@ public class CamelCatalogService implements Disposable, CamelPreferenceService.C
         if (instance == null) {
             synchronized (this) {
                 if (instance == null) {
-                    final CamelPreferenceService preferenceService = getPreferenceService();
-                    this.instance = preferenceService.getCamelCatalogProvider().get(project);
-                    preferenceService.addListener(this);
+                    this.instance = getPreferenceService().getCamelCatalogProvider().get(project);
                 }
             }
         }
@@ -70,7 +74,7 @@ public class CamelCatalogService implements Disposable, CamelPreferenceService.C
     /**
      * Called once the catalog is ready to use.
      */
-    void onCamelCatalogReady() {
+    private void onCamelCatalogReady() {
         CamelCatalog catalog = instance;
         if (catalog != null) {
             // Update the runtime provider is needed
@@ -141,7 +145,6 @@ public class CamelCatalogService implements Disposable, CamelPreferenceService.C
 
     @Override
     public void dispose() {
-        getPreferenceService().removeListener(this);
         instance = null;
     }
 
@@ -155,11 +158,10 @@ public class CamelCatalogService implements Disposable, CamelPreferenceService.C
     /**
      * Force the catalog to be reloaded when the {@link CamelCatalogProvider} defined in the preferences has changed.
      */
-    @Override
-    public void onChange() {
+    private void onCamelCatalogProviderChanged() {
         // Clear the old catalog
         clearLoadedVersion();
         // Load the new catalog
-        project.getService(CamelService.class).loadCamelCatalog(project);
+        project.getService(CamelService.class).loadCamelCatalog();
     }
 }

@@ -20,19 +20,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.util.messages.MessageBusConnection;
 
 /**
  * Test class for {@link CamelPreferenceService}.
  */
 public class CamelPreferenceServiceTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
-    private CamelPreferenceService.CamelCatalogProviderChangeListener listener;
+    private MessageBusConnection connection;
 
     @Override
     protected void tearDown() throws Exception {
         CamelPreferenceService.getService().setCamelCatalogProvider(null);
-        if (listener != null) {
-            CamelPreferenceService.getService().removeListener(listener);
+        if (connection != null) {
+            connection.disconnect();
         }
         super.tearDown();
     }
@@ -49,9 +51,10 @@ public class CamelPreferenceServiceTestIT extends CamelLightCodeInsightFixtureTe
      */
     public void testChangeNotification() {
         AtomicInteger counter = new AtomicInteger();
-        this.listener = counter::incrementAndGet;
+        CamelPreferenceService.CamelCatalogProviderChangeListener listener = counter::incrementAndGet;
         CamelPreferenceService service = CamelPreferenceService.getService();
-        service.addListener(listener);
+        connection = ApplicationManager.getApplication().getMessageBus().connect();
+        connection.subscribe(CamelPreferenceService.CamelCatalogProviderChangeListener.TOPIC, listener);
         assertEquals(0, counter.get());
         service.setCamelCatalogProvider(CamelCatalogProvider.AUTO);
         assertEquals(0, counter.get());

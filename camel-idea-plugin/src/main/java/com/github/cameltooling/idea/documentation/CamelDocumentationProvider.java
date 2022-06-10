@@ -364,13 +364,11 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
      */
     @Nullable
     private String generateCamelEndpointOptionDocumentation(String componentName, String option, Project project) {
-        CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
-        String json = camelCatalog.componentJSonSchema(componentName);
-        if (json == null) {
+        CamelCatalog camelCatalog = project.getService(CamelCatalogService.class).get();
+        ComponentModel component = camelCatalog.componentModel(componentName);
+        if (component == null) {
             return null;
         }
-        ComponentModel component = JsonMapper.generateComponentModel(json);
-
         ComponentModel.EndpointOptionModel endpointOption;
         if (option.endsWith(".")) {
             // find the line with this prefix as prefix and multivalue

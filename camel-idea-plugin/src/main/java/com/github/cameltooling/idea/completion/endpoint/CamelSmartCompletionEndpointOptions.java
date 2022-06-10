@@ -16,6 +16,11 @@
  */
 package com.github.cameltooling.idea.completion.endpoint;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import com.github.cameltooling.idea.completion.OptionSuggestion;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
@@ -26,16 +31,12 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.psi.PsiElement;
 import org.apache.camel.tooling.model.ComponentModel;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Smart completion for editing a Camel endpoint uri, to show a list of possible endpoint options which can be added.
@@ -48,6 +49,7 @@ public final class CamelSmartCompletionEndpointOptions {
         // static class
     }
 
+    @NotNull
     public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(final String[] query,
                                                                                    final ComponentModel component,
                                                                                    final Map<String, String> existing,
@@ -78,7 +80,7 @@ public final class CamelSmartCompletionEndpointOptions {
                 if (consumerOnly && option.getLabel() != null && option.getLabel().contains("producer")) {
                     continue;
                 }
-                // if we are producer only, then any option that has consume in the label should be skipped (as its only for consumer)
+                // if we are producer only, then any option that has consumer in the label should be skipped (as its only for consumer)
                 final boolean producerOnly = getCamelIdeaUtils().isProducerEndpoint(element);
                 if (producerOnly && option.getLabel() != null && option.getLabel().contains("consumer")) {
                     continue;
@@ -108,7 +110,7 @@ public final class CamelSmartCompletionEndpointOptions {
                     if (xmlMode) {
                         lookup = lookup.replace("&", "&amp;");
                     }
-                    LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+                    LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, lookup));
                     final String suffix = query[1];
                     builder = addInsertHandler(editor, builder, suffix);
                     // only show the option in the UI
@@ -147,10 +149,10 @@ public final class CamelSmartCompletionEndpointOptions {
     }
 
 
+    @NotNull
     public static List<LookupElement> addSmartCompletionSuggestionsContextPath(String val,
                                                                                final ComponentModel component,
                                                                                final Map<String, String> existing,
-                                                                               final boolean xmlMode,
                                                                                final PsiElement psiElement) {
         final List<LookupElement> answer = new ArrayList<>();
 
@@ -195,10 +197,9 @@ public final class CamelSmartCompletionEndpointOptions {
 
                         // add all enum as choices
                         for (final String choice : option.getEnums()) {
-                            final String key = choice;
-                            final String lookup = val + key;
+                            final String lookup = val + choice;
 
-                            LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+                            LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, lookup));
                             // only show the option in the UI
                             builder = builder.withPresentableText(choice);
                             // lets use the option name as the type so its visible
@@ -303,15 +304,15 @@ public final class CamelSmartCompletionEndpointOptions {
     }
 
     private static CamelPreferenceService getCamelPreferenceService() {
-        return ServiceManager.getService(CamelPreferenceService.class);
+        return ApplicationManager.getApplication().getService(CamelPreferenceService.class);
     }
 
     private static IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
+        return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
 
     private static CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
+        return ApplicationManager.getApplication().getService(CamelIdeaUtils.class);
     }
 
 }

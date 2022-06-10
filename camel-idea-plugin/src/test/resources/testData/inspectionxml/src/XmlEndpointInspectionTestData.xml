@@ -19,5 +19,6 @@
   <route>
     <from uri="file:inbox?delete=true&amp;fileExist=Append"/>
     <to uri="file:outbox?flatten=true"/>
+    <to uri="kamelet:avro-deserialize-action?validate=true&amp;lazyStartProducer=true"/>
   </route>
 </routes>

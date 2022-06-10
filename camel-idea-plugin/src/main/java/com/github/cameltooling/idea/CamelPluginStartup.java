@@ -17,8 +17,6 @@
 package com.github.cameltooling.idea;
 
 import com.github.cameltooling.idea.service.CamelService;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.roots.ModuleRootEvent;
@@ -38,7 +36,7 @@ public class CamelPluginStartup implements ProjectManagerListener, ModuleRootLis
 
     @Override
     public void projectClosed(@NotNull Project project) {
-        reset(getCamelIdeaService(project));
+        getCamelIdeaService(project).reset();
     }
 
     @Override
@@ -54,24 +52,7 @@ public class CamelPluginStartup implements ProjectManagerListener, ModuleRootLis
      */
     private static void scanForCamelProject(@NotNull Project project) {
         // rebuild list of libraries because the dependencies may have changed
-        CamelService camelService = getCamelIdeaService(project);
-        reset(camelService);
-        for (Module module : ModuleManager.getInstance(project).getModules()) {
-            camelService.scanForCamelProject(project, module);
-            // if its a Camel project then scan for additional Camel components
-            if (camelService.isCamelPresent()) {
-                camelService.scanForCamelDependencies(project, module);
-            }
-        }
-    }
-
-    /**
-     * Reset the given camel service
-     * @param camelService the camel service to reset
-     */
-    private static void reset(CamelService camelService) {
-        camelService.setCamelPresent(false);
-        camelService.clearLibraries();
+        getCamelIdeaService(project).scanForCamelProject();
     }
 
     private static CamelService getCamelIdeaService(Project project) {

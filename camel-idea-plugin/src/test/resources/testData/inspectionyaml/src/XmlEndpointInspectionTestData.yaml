@@ -19,3 +19,4 @@
       uri: file:inbox?delete=true&fileExist=Append
       steps:
         - to: "file:outbox?flatten=true"
+        - to: "kamelet:avro-deserialize-action?validate=true&amp;lazyStartProducer=true"
