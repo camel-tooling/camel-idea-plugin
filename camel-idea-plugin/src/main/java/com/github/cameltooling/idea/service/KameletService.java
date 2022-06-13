@@ -32,6 +32,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectFileIndex;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.newvfs.BulkFileListener;
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.JSONSchemaProps;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;
@@ -93,6 +98,18 @@ public class KameletService implements Disposable {
         project.getMessageBus()
             .connect(this)
             .subscribe(CamelService.CamelCatalogListener.TOPIC, this::onCamelCatalogReady);
+        project.getMessageBus()
+            .connect(this)
+            .subscribe(
+                VirtualFileManager.VFS_CHANGES,
+                new BulkFileListener() {
+                    @Override
+                    public void after(@NotNull List<? extends VFileEvent> events) {
+                        // handle the events
+                        checkForReload(events);
+                    }
+                }
+            );
     }
 
     /**
@@ -133,6 +150,33 @@ public class KameletService implements Disposable {
     }
 
     /**
+     * Check if the received events are events on Kamelets and if so force the reloading of the Kamelets.
+     *
+     * @param events the events received to check.
+     */
+    private void checkForReload(@NotNull List<? extends VFileEvent> events) {
+        LOG.debug("Checking received events for a possible reloading");
+        boolean toReload = false;
+        for (VFileEvent event : events) {
+            final VirtualFile file = event.getFile();
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Checking the file " + file);
+            }
+            if (file != null && file.getName().endsWith(KAMELETS_FILE_SUFFIX)) {
+                String canonicalPath = file.getCanonicalPath();
+                if (canonicalPath == null || canonicalPath.contains("/" + KAMELETS_DIR + "/")) {
+                    LOG.debug("An event on a potential Kamelet has been detected");
+                    toReload = true;
+                }
+            }
+        }
+        if (toReload) {
+            LOG.debug("At least one event on a Kamelet has been detected, the Kamelets will be reloaded");
+            this.kamelets = null;
+        }
+    }
+
+    /**
      * Called once the catalog is ready to use.
      */
     private void onCamelCatalogReady() {
@@ -168,7 +212,7 @@ public class KameletService implements Disposable {
         final ClassGraph classGraph = new ClassGraph()
             .acceptPaths("/" + KAMELETS_DIR + "/");
         final CamelService service = project.getService(CamelService.class);
-        final ClassLoader projectClassloader = service.getProjectClassloader();
+        final ClassLoader projectClassloader = service.getProjectCompleteClassloader();
         if (projectClassloader != null) {
             if (service.containsLibrary("camel-kamelets", false)) {
                 // The project has a specific version of the Kamelets catalog, so we use it by default

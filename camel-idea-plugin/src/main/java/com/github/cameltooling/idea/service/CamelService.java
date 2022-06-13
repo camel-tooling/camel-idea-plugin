@@ -18,6 +18,7 @@ package com.github.cameltooling.idea.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,10 +83,18 @@ public class CamelService implements Disposable {
     private Library camel2CoreLibrary;
     private List<Library> camel3CoreLibraries = new ArrayList<>();
     private Library slf4jApiLibrary;
-    private ClassLoader camelCoreClassloader;
+    private URLClassLoader camelCoreClassloader;
     private final Set<String> processedLibraries = new HashSet<>();
     private final Map<Library, ArtifactCoordinates> projectLibraries = new HashMap<>();
-    private ClassLoader projectClassloader;
+    /**
+     * The class loader of the Project based only on the libraries defined as dependencies of the project's modules.
+     */
+    private URLClassLoader projectClassloader;
+    /**
+     * The class loader of the Project based on the sources of the project but also the libraries defined as
+     * dependencies of the project's modules.
+     */
+    private URLClassLoader projectCompleteClassloader;
     private volatile boolean camelPresent;
     private volatile Notification camelVersionNotification;
     private volatile Notification camelMissingJSonSchemaNotification;
@@ -125,12 +134,41 @@ public class CamelService implements Disposable {
             camelMissingJSonPathJarNotification.expire();
             camelMissingJSonPathJarNotification = null;
         }
-
-        camelCoreClassloader = null;
+        if (camelCoreClassloader != null) {
+            try {
+                camelCoreClassloader.close();
+            } catch (IOException e) {
+                LOG.warn("Could not close the Camel Core ClassLoader: " + e.getMessage());
+                LOG.debug(e);
+            } finally {
+                camelCoreClassloader = null;
+            }
+        }
         camel2CoreLibrary = null;
         camel3CoreLibraries = null;
         slf4jApiLibrary = null;
-        projectClassloader = null;
+        // Close the child Class Loader first
+        if (projectCompleteClassloader != null) {
+            try {
+                projectCompleteClassloader.close();
+            } catch (IOException e) {
+                LOG.warn("Could not close the Project Complete ClassLoader: " + e.getMessage());
+                LOG.debug(e);
+            } finally {
+                projectCompleteClassloader = null;
+            }
+        }
+        // Then close the parent Class Loader
+        if (projectClassloader != null) {
+            try {
+                projectClassloader.close();
+            } catch (IOException e) {
+                LOG.warn("Could not close the Project ClassLoader: " + e.getMessage());
+                LOG.debug(e);
+            } finally {
+                projectClassloader = null;
+            }
+        }
     }
 
     /**
@@ -167,8 +205,38 @@ public class CamelService implements Disposable {
     public synchronized void reset() {
         processedLibraries.clear();
         projectLibraries.clear();
-        projectClassloader = null;
-        camelCoreClassloader = null;
+        // Close the child Class Loader first
+        if (projectCompleteClassloader != null) {
+            try {
+                projectCompleteClassloader.close();
+            } catch (IOException e) {
+                LOG.warn("Could not close the Project Complete ClassLoader: " + e.getMessage());
+                LOG.debug(e);
+            } finally {
+                projectCompleteClassloader = null;
+            }
+        }
+        // Then close the parent Class Loader
+        if (projectClassloader != null) {
+            try {
+                projectClassloader.close();
+            } catch (IOException e) {
+                LOG.warn("Could not close the Project ClassLoader: " + e.getMessage());
+                LOG.debug(e);
+            } finally {
+                projectClassloader = null;
+            }
+        }
+        if (camelCoreClassloader != null) {
+            try {
+                camelCoreClassloader.close();
+            } catch (IOException e) {
+                LOG.warn("Could not close the Camel Core ClassLoader: " + e.getMessage());
+                LOG.debug(e);
+            } finally {
+                camelCoreClassloader = null;
+            }
+        }
         camel2CoreLibrary = null;
         slf4jApiLibrary = null;
         camel3CoreLibraries = new ArrayList<>();
@@ -228,14 +296,16 @@ public class CamelService implements Disposable {
     public synchronized ClassLoader getCamelCoreClassloader() {
         if (camelCoreClassloader == null) {
             try {
-                if (camel2CoreLibrary != null) {
-                    camelCoreClassloader = getIdeaUtils().newURLClassLoaderForLibrary(camel2CoreLibrary, slf4jApiLibrary);
-                } else {
-                    List<Library> list = new ArrayList<>(camel3CoreLibraries);
+                if (camel2CoreLibrary == null) {
+                    // Camel 3 is assumed
+                    final List<Library> list = new ArrayList<>(camel3CoreLibraries);
                     list.add(slf4jApiLibrary);
                     camelCoreClassloader = getIdeaUtils().newURLClassLoaderForLibrary(list.toArray(new Library[0]));
+                } else {
+                    // Camel 2 has been detected
+                    camelCoreClassloader = getIdeaUtils().newURLClassLoaderForLibrary(camel2CoreLibrary, slf4jApiLibrary);
                 }
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 LOG.warn("Error creating URLClassLoader for loading classes from camel-core", e);
             }
         }
@@ -243,19 +313,45 @@ public class CamelService implements Disposable {
     }
 
     /**
-     * Gets the classloader for the project classpath
+     * Gets the class loader of the Project based only on the libraries defined as dependencies of the project's modules.
      */
     public synchronized ClassLoader getProjectClassloader() {
-        ClassLoader loader = projectClassloader;
-        if (loader == null) {
+        if (projectClassloader == null) {
             try {
-                Library[] libs = projectLibraries.keySet().toArray(new Library[projectLibraries.size()]);
+                final Library[] libs = projectLibraries.keySet().toArray(new Library[0]);
                 projectClassloader = getIdeaUtils().newURLClassLoaderForLibrary(libs);
-            } catch (Throwable e) {
-                LOG.warn("Error creating URLClassLoader for project. This exception is ignored.", e);
+            } catch (Exception e) {
+                LOG.warn("Error creating URLClassLoader for loading classes from the project", e);
             }
         }
         return projectClassloader;
+    }
+
+    /**
+     * Gets the class loader of the Project based on the sources of the project but also the libraries defined as
+     * dependencies of the project's modules.
+     */
+    synchronized ClassLoader getProjectCompleteClassloader() {
+        if (projectCompleteClassloader == null) {
+            try {
+                final List<URL> sourceURLs = new ArrayList<>();
+                for (Module module : ModuleManager.getInstance(project).getModules()) {
+                    for (String sourceURL : ModuleRootManager.getInstance(module).getSourceRootUrls(false)) {
+                        if (!sourceURL.startsWith("file:")) {
+                            continue;
+                        }
+                        if (!sourceURL.endsWith("/")) {
+                            sourceURL += "/";
+                        }
+                        sourceURLs.add(new URL(sourceURL));
+                    }
+                }
+                projectCompleteClassloader = new URLClassLoader(sourceURLs.toArray(new URL[0]), getProjectClassloader());
+            } catch (Exception e) {
+                LOG.warn("Error creating URLClassLoader for loading classes and resources from the project", e);
+            }
+        }
+        return projectCompleteClassloader;
     }
 
     public void showMissingJSonPathJarNotification() {
