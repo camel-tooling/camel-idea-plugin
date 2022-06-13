@@ -231,18 +231,18 @@ public final class IdeaUtils implements Disposable {
     public @Nullable URLClassLoader newURLClassLoaderForLibrary(Library... libraries) throws MalformedURLException {
         List<URL> urls = new ArrayList<>();
         for (Library library : libraries) {
-            if (library != null) {
-                VirtualFile[] files = library.getFiles(OrderRootType.CLASSES);
-                if (files.length == 1) {
-                    VirtualFile vf = files[0];
-                    if (vf.getName().toLowerCase().endsWith(".jar")) {
-                        String path = vf.getPath();
-                        if (path.endsWith("!/")) {
-                            path = path.substring(0, path.length() - 2);
-                        }
-                        URL url = new URL("file:" + path);
-                        urls.add(url);
+            if (library == null) {
+                continue;
+            }
+            VirtualFile[] files = library.getFiles(OrderRootType.CLASSES);
+            if (files.length == 1) {
+                VirtualFile vf = files[0];
+                if (vf.getName().toLowerCase().endsWith(".jar")) {
+                    String path = vf.getPath();
+                    if (path.endsWith("!/")) {
+                        path = path.substring(0, path.length() - 2);
                     }
+                    urls.add(new URL("file:" + path));
                 }
             }
         }
@@ -250,8 +250,7 @@ public final class IdeaUtils implements Disposable {
             return null;
         }
 
-        URL[] array = urls.toArray(new URL[urls.size()]);
-        return new URLClassLoader(array);
+        return new URLClassLoader(urls.toArray(new URL[0]));
     }
 
     /**
