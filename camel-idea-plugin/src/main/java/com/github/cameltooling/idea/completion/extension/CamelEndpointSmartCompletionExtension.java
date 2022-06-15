@@ -17,10 +17,15 @@
 package com.github.cameltooling.idea.completion.extension;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import javax.swing.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.cameltooling.idea.service.CamelCatalogService;
@@ -31,6 +36,7 @@ import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -127,14 +133,14 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         final String componentName = StringUtils.asComponentName(query[0]);
         final Project project = parameters.getOriginalFile().getManager().getProject();
         final CamelCatalog camelCatalog = project.getService(CamelCatalogService.class).get();
-        final CatalogHandler catalogHandler = CatalogHandler.getInstance(componentName);
+        final Mode mode = Mode.getMode(componentName);
         Map<String, String> existing = null;
         try {
-            existing = catalogHandler.endpointProperties(project, camelCatalog, componentName, concatQuery);
+            existing = mode.endpointProperties(project, camelCatalog, componentName, concatQuery);
         } catch (Exception e) {
             LOG.warn("Error parsing Camel endpoint properties with url: " + queryAtPosition, e);
         }
-        final ComponentModel componentModel = catalogHandler.componentModel(
+        final ComponentModel componentModel = mode.componentModel(
             project, camelCatalog, componentName, concatQuery, getCamelIdeaUtils().isConsumerEndpoint(element)
         );
         if (componentModel == null) {
@@ -156,7 +162,10 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
                 answer = addSmartCompletionSuggestionsQueryParameters(query, componentModel, existing, xmlMode, element, parameters.getEditor());
             } else {
                 // suggest a list of options for context-path
-                answer = addSmartCompletionSuggestionsContextPath(queryAtPosition, componentModel, existing, element);
+                answer = addSmartCompletionSuggestionsContextPath(
+                    queryAtPosition, componentModel, existing, element, mode.getContextPathComponentPredicate(),
+                    mode.getContextPathOptionPredicate(), mode.getIconProvider(project)
+                );
             }
         }
         // are there any results then add them
@@ -181,12 +190,12 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
     }
 
     /**
-     * {@code CatalogHandler} is a facade of a {@link CamelCatalog} allowing to easily adapt the behavior of the specific
-     * methods that are used by the {@link CamelEndpointSmartCompletionExtension}.
+     * {@code Mode} defines all the specific methods needed to adapt the behavior of the class
+     * {@link CamelEndpointSmartCompletionExtension} according to the requested component.
      */
-    enum CatalogHandler {
+    enum Mode {
         /**
-         * The default implementation of a catalog handler corresponding to any component but Kamelet.
+         * The default mode corresponding to any component but Kamelet.
          */
         DEFAULT {
             @Override
@@ -200,9 +209,28 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
                                                           String componentName, String uri) throws URISyntaxException {
                 return camelCatalog.endpointProperties(uri);
             }
+
+            @Override
+            Predicate<ComponentModel> getContextPathComponentPredicate() {
+                return component -> component
+                    .getEndpointOptions()
+                    .stream()
+                    .filter(o -> "path".equals(o.getKind()) && o.getEnums() != null)
+                    .count() == 1;
+            }
+
+            @Override
+            Predicate<ComponentModel.EndpointOptionModel> getContextPathOptionPredicate() {
+                return o -> o.getEnums() != null;
+            }
+
+            @Override
+            Function<ComponentModel.EndpointOptionModel, Icon> getIconProvider(Project project) {
+                return o -> AllIcons.Nodes.Enum;
+            }
         },
         /**
-         * The specific implementation of a catalog handler for the Kamelet component.
+         * The specific mode for the Kamelet component.
          */
         KAMELET {
             @Override
@@ -210,23 +238,23 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
                                                  String uri, boolean consumer) {
                 // Rebuild the component model instead of getting it from the catalog as it will be altered
                 // and the component model instance likely shared thanks to an internal cache.
-                String json = camelCatalog.componentJSonSchema(componentName);
+                final String json = camelCatalog.componentJSonSchema(componentName);
                 if (json == null) {
                     return null;
                 }
                 final ComponentModel componentModel = JsonMapper.generateComponentModel(json);
                 final KameletService service = project.getService(KameletService.class);
-                // Add the list of name of Kamelet available according to the type of endpoint
-                componentModel.addEndpointOption(createKameletNameOption(service, consumer));
+                // Add the list of name of Kamelets available according to the type of endpoint
+                componentModel.getEndpointOptions().addAll(createKameletNameOptions(service, consumer));
                 final String name = getKameletName(uri);
                 if (!name.isEmpty()) {
                     final JSONSchemaProps props = service.getDefinition(name);
                     // Add the parameters defined in the Kamelet definition if any
                     if (props != null && props.getProperties() != null) {
-                        List<String> required = props.getRequired();
+                        final List<String> required = props.getRequired();
                         for (Map.Entry<String, JSONSchemaProps> entry : props.getProperties().entrySet()) {
-                            ComponentModel.EndpointOptionModel option = new ComponentModel.EndpointOptionModel();
-                            JSONSchemaProps schemaProps = entry.getValue();
+                            final ComponentModel.EndpointOptionModel option = new ComponentModel.EndpointOptionModel();
+                            final JSONSchemaProps schemaProps = entry.getValue();
                             option.setKind("parameter");
                             option.setGroup("common");
                             String nameProperty = entry.getKey();
@@ -240,7 +268,7 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
                                 option.setDefaultValue(defaultValue.asText());
                             }
                             option.setSecret("password".equalsIgnoreCase(schemaProps.getFormat()));
-                            List<JsonNode> values = schemaProps.getEnum();
+                            final List<JsonNode> values = schemaProps.getEnum();
                             if (values != null && !values.isEmpty()) {
                                 option.setEnums(values.stream().map(JsonNode::asText).collect(Collectors.toList()));
                             }
@@ -289,24 +317,47 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
                 return result;
             }
 
+            @Override
+            Predicate<ComponentModel> getContextPathComponentPredicate() {
+                return componentModel -> true;
+            }
+
+            @Override
+            Predicate<ComponentModel.EndpointOptionModel> getContextPathOptionPredicate() {
+                return option -> "KameletName".equals(option.getLabel());
+            }
+
+            @Override
+            Function<ComponentModel.EndpointOptionModel, Icon> getIconProvider(Project project) {
+                return o -> project.getService(KameletService.class).getIcon(o.getName());
+            }
+
             /**
              * @param service the service from which the name of available Kamelets are retrieved.
              * @param consumer the flag indicating if the related endpoint is a consumer or not.
-             * @return an option corresponding to the Kamelet name with the list of name of Kamelets for consumer
-             * endpoint if {@code consumer} is {@code true} otherwise with the list of name of Kamelets for producer
-             * endpoint.
+             * @return a list of options corresponding to Kamelets for consumer endpoint if {@code consumer} is
+             * {@code true} otherwise with the list of Kamelets for producer endpoint.
              */
-            private ComponentModel.EndpointOptionModel createKameletNameOption(KameletService service,
-                                                                               boolean consumer) {
-                ComponentModel.EndpointOptionModel option = new ComponentModel.EndpointOptionModel();
-                option.setName("kameletName");
-                option.setKind("path");
-                option.setDisplayName("Kamelet Name");
-                option.setType("string");
-                option.setJavaType("java.lang.String");
-                option.setDescription("The name of the Kamelet");
-                option.setEnums(consumer ? service.getConsumerNames() : service.getProducerNames());
-                return option;
+            private List<ComponentModel.EndpointOptionModel> createKameletNameOptions(KameletService service,
+                                                                                      boolean consumer) {
+                final List<ComponentModel.EndpointOptionModel> result = new ArrayList<>();
+                for (String name : consumer ? service.getConsumerNames() : service.getProducerNames()) {
+                    final JSONSchemaProps definition = service.getDefinition(name);
+                    if (definition == null) {
+                        LOG.trace("No definition could be found for the Kamelet " + name);
+                        continue;
+                    }
+                    final ComponentModel.EndpointOptionModel option = new ComponentModel.EndpointOptionModel();
+                    option.setName(name);
+                    option.setLabel("KameletName");
+                    option.setKind("path");
+                    option.setDisplayName(definition.getTitle());
+                    option.setType("string");
+                    option.setJavaType("java.lang.String");
+                    option.setDescription(definition.getDescription());
+                    result.add(option);
+                }
+                return result;
             }
 
             /**
@@ -350,10 +401,28 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
                                                         String uri) throws URISyntaxException;
 
         /**
-         * @param componentName the name of the component for which the catalog handler is expected.
-         * @return the catalog handler corresponding to given component.
+         * @return the predicate allowing to know whether context path suggestions should be provided.
          */
-        static CatalogHandler getInstance(String componentName) {
+        abstract Predicate<ComponentModel> getContextPathComponentPredicate();
+
+        /**
+         * @return the predicate allowing to know whether a {@link com.intellij.codeInsight.lookup.LookupElement} should
+         * be added for a given context path option.
+         */
+        abstract Predicate<ComponentModel.EndpointOptionModel> getContextPathOptionPredicate();
+
+        /**
+         * @param project the project for which the icon needs to be retrieved.
+         *
+         * @return the function allowing to get the right icon to display for a given option.
+         */
+        abstract Function<ComponentModel.EndpointOptionModel, Icon> getIconProvider(Project project);
+
+        /**
+         * @param componentName the name of the component for which the mode is expected.
+         * @return the mode corresponding to given component.
+         */
+        static Mode getMode(String componentName) {
             if ("kamelet".equals(componentName)) {
                 return KAMELET;
             }
