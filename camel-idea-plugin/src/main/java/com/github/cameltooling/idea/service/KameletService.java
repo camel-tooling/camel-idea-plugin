@@ -16,8 +16,12 @@
  */
 package com.github.cameltooling.idea.service;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -25,23 +29,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import javax.swing.*;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
+import com.intellij.ui.scale.ScaleContext;
+import com.intellij.util.SVGLoader;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.JSONSchemaProps;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ScanResult;
-import com.intellij.openapi.diagnostic.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -71,9 +77,22 @@ public class KameletService implements Disposable {
      */
     private static final String KAMELET_LABEL_TYPE = "camel.apache.org/kamelet.type";
     /**
+     * The name of the annotation corresponding to the icon of the Kamelet encoded in Base 64.
+     */
+    private static final String KAMELET_ANNOTATION_ICON = "camel.apache.org/kamelet.icon";
+    /**
+     * The prefix of the content of the annotation corresponding to the icon of the Kamelet.
+     * It assumes that all icons are encoded in Base64 and are in SVG format.
+     */
+    private static final String KAMELET_ANNOTATION_ICON_PREFIX = "data:image/svg+xml;base64,";
+    /**
      * The type of Kamelet corresponding to a source.
      */
     private static final String KAMELET_SOURCE_TYPE = "source";
+    /**
+     * The expected size of the icon.
+     */
+    private static final int ICON_SIZE = 16;
     /**
      * The mapper used to deserialize the definition of a Kamelet.
      */
@@ -91,6 +110,7 @@ public class KameletService implements Disposable {
 
     /**
      * Construct a {@code KameletService} with the given project.
+     *
      * @param project the project in which the service is registered.
      */
     public KameletService(Project project) {
@@ -114,6 +134,7 @@ public class KameletService implements Disposable {
 
     /**
      * Gives the name of the Kamelets that can be used in a consumer endpoint.
+     *
      * @return a list of name of the Kamelets whose type is {@code source}.
      */
     @NotNull
@@ -127,6 +148,7 @@ public class KameletService implements Disposable {
 
     /**
      * Gives the name of the Kamelets that can be used in a producer endpoint.
+     *
      * @return a list of name of the Kamelets whose type is not {@code source}.
      */
     @NotNull
@@ -140,13 +162,26 @@ public class KameletService implements Disposable {
 
     /**
      * Gives the definition of a Kamelet whose name is the given name.
+     *
      * @param name the name of the Kamelet for which the definition is expected.
-     * @return the corresponding Kamelet if it exists, {@code null} otherwise.
+     * @return the corresponding definition of Kamelet if it exists, {@code null} otherwise.
      */
     @Nullable
     public JSONSchemaProps getDefinition(String name) {
         final Kamelet kamelet = getKamelets().get(name);
         return kamelet == null ? null : kamelet.getDefinition();
+    }
+
+    /**
+     * Gives the icon of a Kamelet whose name is the given name.
+     *
+     * @param name the name of the Kamelet for which the icon is expected.
+     * @return the corresponding icon of Kamelet if it exists, {@code null} otherwise.
+     */
+    @Nullable
+    public Icon getIcon(String name) {
+        final Kamelet kamelet = getKamelets().get(name);
+        return kamelet == null ? null : kamelet.getIcon();
     }
 
     /**
@@ -186,6 +221,7 @@ public class KameletService implements Disposable {
 
     /**
      * Gives the loaded Kamelets as {@code Map}. If they have not been loaded yet, it lazily loads them.
+     *
      * @return the loaded Kamelets as {@code Map}.
      */
     private Map<String, Kamelet> getKamelets() {
@@ -206,6 +242,7 @@ public class KameletService implements Disposable {
      * Loads all the Kamelets that can be found in the {@code KAMELETS_DIR} of any jar files defined as dependencies of
      * the project. Loads also the catalog embedded into the plugin if and only if no catalog {@code camel-kamelets} has
      * been added as dependency of the project otherwise the catalog of the project is loaded instead.
+     *
      * @return the Kamelets that could be found as {@code Map}.
      */
     private Map<String, Kamelet> loadKamelets() {
@@ -222,6 +259,7 @@ public class KameletService implements Disposable {
             }
         }
         final Map<String, Kamelet> result = new HashMap<>();
+        final Map<String, Icon> icons = new HashMap<>();
         try (ScanResult scanResult = classGraph.scan()) {
             for (Resource resource : scanResult.getAllResources()) {
                 try (InputStream is = resource.open()) {
@@ -231,7 +269,7 @@ public class KameletService implements Disposable {
                         resource.getClasspathElementFile(),
                         resource.getPath(),
                         name));
-                    final Kamelet kamelet = toKamelet(resource, source);
+                    final Kamelet kamelet = toKamelet(icons, resource, source);
                     if (kamelet == null) {
                         continue;
                     }
@@ -247,12 +285,14 @@ public class KameletService implements Disposable {
 
     /**
      * Convert the given source of Kamelet to an instance of {@link Kamelet}.
+     *
+     * @param icons The icons that have already been loaded.
      * @param resource the resource that contains the Kamelet definition
-     * @param source the Kamelet definition to convert.
+     * @param source   the Kamelet definition to convert.
      * @return An instance of {@link Kamelet} with the type of Kamelet and its definition.
-     * @throws JsonProcessingException if the definition of the Kamelet could not be deserialized.
+     * @throws IOException if the definition of the Kamelet could not be deserialized.
      */
-    private static Kamelet toKamelet(Resource resource, JsonNode source) throws JsonProcessingException {
+    private static Kamelet toKamelet(Map<String, Icon> icons, Resource resource, JsonNode source) throws IOException {
         final JsonNode spec = source.get("spec");
         if (spec == null) {
             LOG.debug("No spec defined in " + resource.getPath());
@@ -278,7 +318,58 @@ public class KameletService implements Disposable {
             LOG.debug("No type defined in " + resource.getPath());
             return null;
         }
-        return new Kamelet(type.asText(), MAPPER.treeToValue(definition, JSONSchemaProps.class));
+        final JsonNode annotations = metadata.get("annotations");
+        if (annotations == null) {
+            LOG.debug("No annotations defined in " + resource.getPath());
+            return null;
+        }
+        final JsonNode annotationIcon = annotations.get(KAMELET_ANNOTATION_ICON);
+        Icon icon = null;
+        if (annotationIcon == null) {
+            LOG.debug("No icon defined in " + resource.getPath());
+        } else {
+            final String iconContent = annotationIcon.asText();
+            if (iconContent == null || !iconContent.startsWith(KAMELET_ANNOTATION_ICON_PREFIX)) {
+                LOG.debug("The icon defined in " + resource.getPath() + " is not in the expected format");
+            } else {
+                icon = toIcon(
+                    icons, resource, Base64.getDecoder().decode(iconContent.substring(KAMELET_ANNOTATION_ICON_PREFIX.length()))
+                );
+            }
+        }
+        return new Kamelet(type.asText(), MAPPER.treeToValue(definition, JSONSchemaProps.class), icon);
+    }
+
+    /**
+     * Converts the given content of icon into an instance of {@link Icon}. If the original icon doesn't have the
+     * expected size, it is automatically resized. To limit the impact of the icons on the heap as an icon can be heavy
+     * and can be used several times, it first tries to see if the icon has already been loaded based on its content, if
+     * so it reuses the same instance otherwise it converts it into a {@code Icon} and puts the result into the map {
+     * @code icons} for the next potential calls.
+     *
+     * @param icons The icons that have already been loaded.
+     * @param resource the resource that contains the content of the icon
+     * @param content the content of the icon as bytes.
+     * @return the icon in the expected size. {@code null} in case of an error.
+     */
+    private static Icon toIcon(Map<String, Icon> icons, Resource resource, byte[] content) {
+        try {
+            return icons.computeIfAbsent(
+                Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-256").digest(content)),
+                key -> {
+                    try {
+                        return new ImageIcon(
+                            SVGLoader.load(null, new ByteArrayInputStream(content), ScaleContext.create(), ICON_SIZE, ICON_SIZE)
+                        );
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                }
+            );
+        } catch (Exception e) {
+            LOG.warn("The icon embedded into " + resource.getPath() + " could not be loaded", e);
+        }
+        return null;
     }
 
     /**
@@ -313,15 +404,22 @@ public class KameletService implements Disposable {
          * The definition of the Kamelet.
          */
         private final JSONSchemaProps definition;
+        /**
+         * The icon of the Kamelet.
+         */
+        private final Icon icon;
 
         /**
          * Construct a {@code Kamelet} with the given parameters.
-         * @param type the type of Kamelet.
+         *
+         * @param type       the type of Kamelet.
          * @param definition the definition of the Kamelet.
+         * @param icon       the icon of the Kamelet.
          */
-        Kamelet(String type, JSONSchemaProps definition) {
+        Kamelet(String type, JSONSchemaProps definition, Icon icon) {
             this.type = type;
             this.definition = definition;
+            this.icon = icon;
         }
 
         String getType() {
@@ -330,6 +428,10 @@ public class KameletService implements Disposable {
 
         JSONSchemaProps getDefinition() {
             return definition;
+        }
+
+        Icon getIcon() {
+            return icon;
         }
     }
 }

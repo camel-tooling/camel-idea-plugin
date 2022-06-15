@@ -19,6 +19,10 @@ package com.github.cameltooling.idea.completion.endpoint;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import javax.swing.*;
 
 import com.github.cameltooling.idea.completion.OptionSuggestion;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
@@ -153,7 +157,10 @@ public final class CamelSmartCompletionEndpointOptions {
     public static List<LookupElement> addSmartCompletionSuggestionsContextPath(String val,
                                                                                final ComponentModel component,
                                                                                final Map<String, String> existing,
-                                                                               final PsiElement psiElement) {
+                                                                               final PsiElement psiElement,
+                                                                               final Predicate<ComponentModel> componentPredicate,
+                                                                               final Predicate<ComponentModel.EndpointOptionModel> optionPredicate,
+                                                                               final Function<ComponentModel.EndpointOptionModel, Icon> iconProvider) {
         final List<LookupElement> answer = new ArrayList<>();
 
         // show the syntax as the only choice for now
@@ -165,7 +172,9 @@ public final class CamelSmartCompletionEndpointOptions {
         final LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE);
         answer.add(element);
         val = removeUnknownEnum(val, psiElement);
-        final List<LookupElement> old = addSmartCompletionContextPathEnumSuggestions(val, component, existing);
+        final List<LookupElement> old = addSmartCompletionContextPathSuggestions(
+            val, component, existing, componentPredicate, optionPredicate, iconProvider
+        );
         if (!old.isEmpty()) {
             answer.addAll(old);
         }
@@ -173,53 +182,34 @@ public final class CamelSmartCompletionEndpointOptions {
         return answer;
     }
 
-    private static List<LookupElement> addSmartCompletionContextPathEnumSuggestions(final String val,
-                                                                                    final ComponentModel component,
-                                                                                    final Map<String, String> existing) {
+    private static List<LookupElement> addSmartCompletionContextPathSuggestions(final String val,
+                                                                                final ComponentModel component,
+                                                                                final Map<String, String> existing,
+                                                                                final Predicate<ComponentModel> componentPredicate,
+                                                                                final Predicate<ComponentModel.EndpointOptionModel> optionPredicate,
+                                                                                final Function<ComponentModel.EndpointOptionModel, Icon> iconProvider) {
         final List<LookupElement> answer = new ArrayList<>();
-        double priority = 100.0d;
-
-        // lets help the suggestion list if we are editing the context-path and only have 1 enum type option
-        // and the option has not been in use yet, then we can populate the list with the enum values.
-        final long enums = component
-                .getEndpointOptions()
-                .stream()
-                .filter(o -> "path".equals(o.getKind()) && o.getEnums() != null)
-                .count();
-        if (enums == 1) {
+        if (componentPredicate.test(component)) {
+            double priority = 100.0d;
             for (final ComponentModel.EndpointOptionModel option : component.getEndpointOptions()) {
                 // only add support for enum in the context-path smart completion
-                if ("path".equals(option.getKind()) && option.getEnums() != null) {
+                if ("path".equals(option.getKind()) && optionPredicate.test(option)) {
                     final String name = option.getName();
                     // only add if not already used
                     final String old = existing != null ? existing.get(name) : "";
                     if (existing == null || old == null || old.isEmpty()) {
-
-                        // add all enum as choices
-                        for (final String choice : option.getEnums()) {
-                            final String lookup = val + choice;
-
-                            LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, lookup));
-                            // only show the option in the UI
-                            builder = builder.withPresentableText(choice);
-                            // lets use the option name as the type so its visible
-                            builder = builder.withTypeText(name, true);
-                            builder = builder.withIcon(AllIcons.Nodes.Enum);
-
-                            if (option.isDeprecated()) {
-                                // mark as deprecated
-                                builder = builder.withStrikeoutness(true);
+                        List<String> enums = option.getEnums();
+                        if (enums == null || enums.isEmpty()) {
+                            priority = createContextPathLookupElement(
+                                answer, priority, option, name, option.getDisplayName(), val + name, iconProvider
+                            );
+                        } else {
+                            // add all enum as choices
+                            for (final String choice : enums) {
+                                priority = createContextPathLookupElement(
+                                    answer, priority, option, name, choice, val + choice, iconProvider
+                                );
                             }
-
-                            // its an enum so always auto complete the choices
-                            LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.ALWAYS_AUTOCOMPLETE);
-
-                            // they should be in the exact order
-                            element = PrioritizedLookupElement.withPriority(element, priority);
-
-                            priority -= 1.0d;
-
-                            answer.add(element);
                         }
                     }
                 }
@@ -227,6 +217,34 @@ public final class CamelSmartCompletionEndpointOptions {
         }
 
         return answer;
+    }
+
+    private static double createContextPathLookupElement(List<LookupElement> answer, double priority,
+                                                         ComponentModel.EndpointOptionModel option, String name,
+                                                         String choice, String lookup,
+                                                         Function<ComponentModel.EndpointOptionModel, Icon> iconProvider) {
+        LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, lookup));
+        // only show the option in the UI
+        builder = builder.withPresentableText(choice);
+        // lets use the option name as the type so its visible
+        builder = builder.withTypeText(name, true);
+        builder = builder.withIcon(iconProvider.apply(option));
+
+        if (option.isDeprecated()) {
+            // mark as deprecated
+            builder = builder.withStrikeoutness(true);
+        }
+
+        // its an enum so always auto complete the choices
+        LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.ALWAYS_AUTOCOMPLETE);
+
+        // they should be in the exact order
+        element = PrioritizedLookupElement.withPriority(element, priority);
+
+        priority -= 1.0d;
+
+        answer.add(element);
+        return priority;
     }
 
     /**
