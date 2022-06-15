@@ -19,6 +19,8 @@ package com.github.cameltooling.idea.service;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
@@ -257,6 +259,7 @@ public class KameletService implements Disposable {
             }
         }
         final Map<String, Kamelet> result = new HashMap<>();
+        final Map<String, Icon> icons = new HashMap<>();
         try (ScanResult scanResult = classGraph.scan()) {
             for (Resource resource : scanResult.getAllResources()) {
                 try (InputStream is = resource.open()) {
@@ -266,7 +269,7 @@ public class KameletService implements Disposable {
                         resource.getClasspathElementFile(),
                         resource.getPath(),
                         name));
-                    final Kamelet kamelet = toKamelet(resource, source);
+                    final Kamelet kamelet = toKamelet(icons, resource, source);
                     if (kamelet == null) {
                         continue;
                     }
@@ -283,12 +286,13 @@ public class KameletService implements Disposable {
     /**
      * Convert the given source of Kamelet to an instance of {@link Kamelet}.
      *
+     * @param icons The icons that have already been loaded.
      * @param resource the resource that contains the Kamelet definition
      * @param source   the Kamelet definition to convert.
      * @return An instance of {@link Kamelet} with the type of Kamelet and its definition.
      * @throws IOException if the definition of the Kamelet could not be deserialized.
      */
-    private static Kamelet toKamelet(Resource resource, JsonNode source) throws IOException {
+    private static Kamelet toKamelet(Map<String, Icon> icons, Resource resource, JsonNode source) throws IOException {
         final JsonNode spec = source.get("spec");
         if (spec == null) {
             LOG.debug("No spec defined in " + resource.getPath());
@@ -329,7 +333,7 @@ public class KameletService implements Disposable {
                 LOG.debug("The icon defined in " + resource.getPath() + " is not in the expected format");
             } else {
                 icon = toIcon(
-                    resource, Base64.getDecoder().decode(iconContent.substring(KAMELET_ANNOTATION_ICON_PREFIX.length()))
+                    icons, resource, Base64.getDecoder().decode(iconContent.substring(KAMELET_ANNOTATION_ICON_PREFIX.length()))
                 );
             }
         }
@@ -338,18 +342,31 @@ public class KameletService implements Disposable {
 
     /**
      * Converts the given content of icon into an instance of {@link Icon}. If the original icon doesn't have the
-     * expected size, it is automatically resized.
+     * expected size, it is automatically resized. To limit the impact of the icons on the heap as an icon can be heavy
+     * and can be used several times, it first tries to see if the icon has already been loaded based on its content, if
+     * so it reuses the same instance otherwise it converts it into a {@code Icon} and puts the result into the map {
+     * @code icons} for the next potential calls.
      *
+     * @param icons The icons that have already been loaded.
      * @param resource the resource that contains the content of the icon
      * @param content the content of the icon as bytes.
      * @return the icon in the expected size. {@code null} in case of an error.
      */
-    private static Icon toIcon(Resource resource, byte[] content) {
+    private static Icon toIcon(Map<String, Icon> icons, Resource resource, byte[] content) {
         try {
-            return new ImageIcon(
-                SVGLoader.load(null, new ByteArrayInputStream(content), ScaleContext.create(), ICON_SIZE, ICON_SIZE)
+            return icons.computeIfAbsent(
+                Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-256").digest(content)),
+                key -> {
+                    try {
+                        return new ImageIcon(
+                            SVGLoader.load(null, new ByteArrayInputStream(content), ScaleContext.create(), ICON_SIZE, ICON_SIZE)
+                        );
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                }
             );
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOG.warn("The icon embedded into " + resource.getPath() + " could not be loaded", e);
         }
         return null;
