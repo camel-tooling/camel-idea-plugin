@@ -11,6 +11,7 @@
   <change-notes><![CDATA[
       v.0.8.13
       <ul>
+        <li>Simplify types in code assistance for better readability</li>
         <li>Bug fixes</li>
       </ul>
     ]]>

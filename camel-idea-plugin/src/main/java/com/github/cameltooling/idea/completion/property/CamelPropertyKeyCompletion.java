@@ -28,6 +28,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import com.github.cameltooling.idea.service.CamelCatalogService;
+import com.github.cameltooling.idea.util.JavaClassUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -465,7 +466,7 @@ abstract class CamelPropertyKeyCompletion extends CompletionProvider<CompletionP
         final boolean advanced = group != null && group.contains("advanced");
         builder = builder.withBoldness(!advanced);
         if (!option.getJavaType().isEmpty()) {
-            builder = builder.withTypeText(option.getJavaType(), true);
+            builder = builder.withTypeText(JavaClassUtils.getService().toSimpleType(option.getJavaType()), true);
         }
         if (option.isDeprecated()) {
             // mark as deprecated

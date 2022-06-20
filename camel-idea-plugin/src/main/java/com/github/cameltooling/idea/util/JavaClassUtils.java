@@ -16,8 +16,16 @@
  */
 package com.github.cameltooling.idea.util;
 
+import java.beans.Introspector;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
@@ -41,19 +49,16 @@ import com.intellij.util.Query;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.beans.Introspector;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 
 public class JavaClassUtils implements Disposable {
 
+    /**
+     * The prefix of all the classes in the java lang package.
+     */
+    private static final String JAVA_LANG_PACKAGE = "java.lang.";
+
     public static JavaClassUtils getService() {
-        return ServiceManager.getService(JavaClassUtils.class);
+        return ApplicationManager.getApplication().getService(JavaClassUtils.class);
     }
 
     /**
@@ -159,6 +164,40 @@ public class JavaClassUtils implements Disposable {
             }
         }
         return null;
+    }
+
+    /**
+     * @param type the Java type to simplify if needed.
+     * @return the primitive type in case of wrapper classes. {@code string} in case of {@link String}. The given type
+     * otherwise.
+     */
+    @Nullable
+    public String toSimpleType(@Nullable String type) {
+        if (type == null) {
+            return null;
+        }
+        String result = type.toLowerCase();
+        if (result.startsWith(JAVA_LANG_PACKAGE)) {
+            result = result.substring(JAVA_LANG_PACKAGE.length());
+        }
+        switch (result) {
+        case "string":
+        case "long":
+        case "boolean":
+        case "double":
+        case "float":
+        case "short":
+        case "char":
+        case "byte":
+        case "int":
+            return result;
+        case "character":
+            return "char";
+        case "integer":
+            return "int";
+        default:
+            return type;
+        }
     }
 
     /**

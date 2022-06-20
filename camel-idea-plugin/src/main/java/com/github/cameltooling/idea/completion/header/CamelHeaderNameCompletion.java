@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.util.IdeaUtils;
+import com.github.cameltooling.idea.util.JavaClassUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -29,7 +30,7 @@ import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ProcessingContext;
@@ -91,11 +92,11 @@ abstract class CamelHeaderNameCompletion extends CompletionProvider<CompletionPa
     }
 
     private static CamelCatalog getCamelCatalog(Project project) {
-        return ServiceManager.getService(project, CamelCatalogService.class).get();
+        return project.getService(CamelCatalogService.class).get();
     }
 
     protected static IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
+        return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
 
     /**
@@ -151,7 +152,7 @@ abstract class CamelHeaderNameCompletion extends CompletionProvider<CompletionPa
             .contains("advanced");
         builder = builder.withBoldness(!advanced);
         if (!header.getJavaType().isEmpty()) {
-            builder = builder.withTypeText(header.getJavaType(), true);
+            builder = builder.withTypeText(JavaClassUtils.getService().toSimpleType(header.getJavaType()), true);
         }
         if (header.isDeprecated()) {
             // mark as deprecated

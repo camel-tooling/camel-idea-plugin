@@ -28,6 +28,7 @@ import com.github.cameltooling.idea.completion.OptionSuggestion;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
+import com.github.cameltooling.idea.util.JavaClassUtils;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.Lookup;
@@ -125,7 +126,7 @@ public final class CamelSmartCompletionEndpointOptions {
                             .contains("advanced");
                     builder = builder.withBoldness(!advanced);
                     if (!option.getJavaType().isEmpty()) {
-                        builder = builder.withTypeText(option.getJavaType(), true);
+                        builder = builder.withTypeText(JavaClassUtils.getService().toSimpleType(option.getJavaType()), true);
                     }
                     if (option.isDeprecated()) {
                         // mark as deprecated
