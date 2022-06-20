@@ -71,6 +71,10 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     private boolean showCamelIconInGutter = true;
     private boolean enableCamelDebugger = true;
     /**
+     * Flag indicating whether only the options of the Kamelet should be proposed.
+     */
+    private boolean onlyShowKameletOptions = true;
+    /**
      * The {@link CamelCatalogProvider} set in the preferences.
      */
     private CamelCatalogProvider camelCatalogProvider;
@@ -153,6 +157,14 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
 
     public void setEnableCamelDebugger(boolean enableCamelDebugger) {
         this.enableCamelDebugger = enableCamelDebugger;
+    }
+
+    public boolean isOnlyShowKameletOptions() {
+        return onlyShowKameletOptions;
+    }
+
+    public void setOnlyShowKameletOptions(boolean onlyShowKameletOptions) {
+        this.onlyShowKameletOptions = onlyShowKameletOptions;
     }
 
     public List<String> getIgnorePropertyList() {
@@ -246,6 +258,7 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
             && scanThirdPartyComponents == that.scanThirdPartyComponents
             && showCamelIconInGutter == that.showCamelIconInGutter
             && camelCatalogProvider == that.camelCatalogProvider
+            && onlyShowKameletOptions == that.onlyShowKameletOptions
             && Objects.equals(ignorePropertyList, that.ignorePropertyList)
             && Objects.equals(excludePropertyFiles, that.excludePropertyFiles);
     }
@@ -254,7 +267,7 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     public int hashCode() {
         return Objects.hash(realTimeEndpointValidation, realTimeSimpleValidation, realTimeJSonPathValidation,
             realTimeIdReferenceTypeValidation, downloadCatalog, scanThirdPartyComponents, camelCatalogProvider,
-            ignorePropertyList, excludePropertyFiles);
+            onlyShowKameletOptions, ignorePropertyList, excludePropertyFiles);
     }
 
     public boolean isRealTimeBeanMethodValidationCheckBox() {
