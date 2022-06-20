@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import com.github.cameltooling.idea.service.CamelPreferenceService;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -31,6 +32,14 @@ import static org.junit.Assert.assertThat;
  * Testing smart completion with Camel XML DSL
  */
 public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
+
+    protected void tearDown() throws Exception {
+        try {
+            CamelPreferenceService.getService().setOnlyShowKameletOptions(true);
+        } finally {
+            super.tearDown();
+        }
+    }
 
     public void testConsumerCompletion() {
         myFixture.configureByFiles("CompleteXmlEndpointConsumerTestData.xml");
@@ -356,9 +365,10 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
     }
 
     /**
-     * Ensure that the configuration option of a given Kamelet can be suggested
+     * Ensure that the configuration option of a given Kamelet can be suggested with other options.
      */
     public void testXmlKameletOptionSuggestions() {
+        CamelPreferenceService.getService().setOnlyShowKameletOptions(false);
         myFixture.configureByText("CamelRoute.xml", getXmlKameletOptionSuggestionsData());
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
@@ -366,6 +376,22 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
         assertContainsElements(strings, "kamelet:ftp-source?connectionHost", "kamelet:ftp-source?connectionPort", "kamelet:ftp-source?bridgeErrorHandler");
         myFixture.type("user\n");
         String javaMarkTestData = getXmlKameletOptionSuggestionsData().replace("<caret>", "username=");
+        myFixture.checkResult(javaMarkTestData);
+    }
+
+    /**
+     * Ensure that the configuration option of a given Kamelet can be suggested without other options.
+     */
+    public void testXmlKameletOptionAloneSuggestions() {
+        CamelPreferenceService.getService().setOnlyShowKameletOptions(true);
+        myFixture.configureByText("CamelRoute.xml", getXmlKameletOptionSuggestionsData());
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertDoesntContain(strings, "kamelet:ftp-source?bridgeErrorHandler");
+        assertContainsElements(strings, "kamelet:ftp-source?connectionHost", "kamelet:ftp-source?connectionPort");
+        myFixture.type("connectionH\n");
+        String javaMarkTestData = getXmlKameletOptionSuggestionsData().replace("<caret>", "connectionHost=");
         myFixture.checkResult(javaMarkTestData);
     }
 

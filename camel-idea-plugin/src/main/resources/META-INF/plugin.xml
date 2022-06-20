@@ -12,6 +12,7 @@
       v.0.8.13
       <ul>
         <li>Simplify types in code assistance for better readability</li>
+        <li>Allow to suggest only the Kamelet options (configurable)</li>
         <li>Bug fixes</li>
       </ul>
     ]]>

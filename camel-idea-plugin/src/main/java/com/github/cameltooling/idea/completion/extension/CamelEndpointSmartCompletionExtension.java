@@ -29,6 +29,7 @@ import javax.swing.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.cameltooling.idea.service.CamelCatalogService;
+import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.KameletService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
@@ -244,6 +245,9 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
                 }
                 final ComponentModel componentModel = JsonMapper.generateComponentModel(json);
                 final KameletService service = project.getService(KameletService.class);
+                if (CamelPreferenceService.getService().isOnlyShowKameletOptions()) {
+                    componentModel.getEndpointOptions().clear();
+                }
                 // Add the list of name of Kamelets available according to the type of endpoint
                 componentModel.getEndpointOptions().addAll(createKameletNameOptions(service, consumer));
                 final String name = getKameletName(uri);
@@ -256,9 +260,9 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
                             final ComponentModel.EndpointOptionModel option = new ComponentModel.EndpointOptionModel();
                             final JSONSchemaProps schemaProps = entry.getValue();
                             option.setKind("parameter");
-                            option.setGroup("common");
                             String nameProperty = entry.getKey();
                             option.setName(nameProperty);
+                            option.setGroup(required.contains(nameProperty) ? "common" : "advanced");
                             option.setRequired(required.contains(nameProperty));
                             option.setDisplayName(schemaProps.getTitle());
                             option.setJavaType(schemaProps.getType());
