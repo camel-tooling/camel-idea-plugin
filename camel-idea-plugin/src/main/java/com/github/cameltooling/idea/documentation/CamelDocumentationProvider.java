@@ -27,6 +27,7 @@ import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.service.CamelService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
+import com.github.cameltooling.idea.util.JavaClassUtils;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.Language;
@@ -401,7 +402,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             builder.append("<strong>").append(option.getName()).append("</strong><br/><br/>");
         }
         builder.append("<strong>Group: </strong>").append(Optional.ofNullable(option.getGroup()).orElse("NA")).append("<br/>");
-        builder.append("<strong>Type: </strong>").append("<tt>").append(option.getJavaType()).append("</tt>").append("<br/>");
+        builder.append("<strong>Type: </strong>").append("<tt>").append(JavaClassUtils.getService().toSimpleType(option.getJavaType())).append("</tt>").append("<br/>");
         boolean required = option.isRequired();
         builder.append("<strong>Required: </strong>").append(required).append("<br/>");
         if (option.getEnums() != null) {
