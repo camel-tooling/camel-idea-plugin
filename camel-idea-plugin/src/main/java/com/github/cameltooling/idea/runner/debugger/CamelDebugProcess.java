@@ -27,6 +27,7 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.ArrayUtil;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugSession;
@@ -42,16 +43,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CamelDebugProcess extends XDebugProcess {
-    private CamelDebuggerEditorsProvider camelDebuggerEditorsProvider;
 
-    private CamelBreakpointHandler camelBreakpointHandler;
-    private CamelDebuggerSession camelDebuggerSession;
-    private ProcessHandler javaProcessHandler;
+    private static final Logger LOG = Logger.getInstance(CamelDebugProcess.class);
 
-//  private final ExecutionConsole executionConsole;
+    private final CamelDebuggerEditorsProvider camelDebuggerEditorsProvider;
+
+    private final CamelBreakpointHandler camelBreakpointHandler;
+    private final CamelDebuggerSession camelDebuggerSession;
+    private final ProcessHandler javaProcessHandler;
+
     private boolean forceRefresh;
 
-    protected CamelDebugProcess(@NotNull XDebugSession session, @NotNull CamelDebuggerSession camelDebuggerSession, ProcessHandler javaProcessHandler) {
+    protected CamelDebugProcess(@NotNull XDebugSession session, @NotNull CamelDebuggerSession camelDebuggerSession,
+                                ProcessHandler javaProcessHandler) {
         super(session);
 
         this.camelDebuggerEditorsProvider = new CamelDebuggerEditorsProvider();
@@ -62,7 +66,7 @@ public class CamelDebugProcess extends XDebugProcess {
         try {
             init();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.warn("Could not initialize the camel debug process", e);
         }
     }
 
@@ -81,20 +85,17 @@ public class CamelDebugProcess extends XDebugProcess {
         camelDebuggerSession.setXDebugSession(this.getSession());
         camelDebuggerSession.connect(javaProcessHandler);
 
-        camelDebuggerSession.addMessageReceivedListener(new MessageReceivedListener() {
-            @Override
-            public void onNewMessageReceived(CamelMessageInfo camelMessageInfo) {
-                XSourcePosition topPosition = getSession().getTopFramePosition();
-                if (forceRefresh || topPosition == null || !topPosition.equals(camelMessageInfo.getXSourcePosition())) {
-                    forceRefresh = false;
-                    //List frames
-                    List<CamelStackFrame> stackFrames = new ArrayList<CamelStackFrame>();
-                    for (CamelMessageInfo info : camelMessageInfo.getStack()) {
-                        CamelStackFrame nextFrame = new CamelStackFrame(getSession().getProject(), camelDebuggerSession, info);
-                        stackFrames.add(nextFrame);
-                    }
-                    getSession().positionReached(new CamelSuspendContext(stackFrames.toArray(new CamelStackFrame[stackFrames.size()])));
+        camelDebuggerSession.addMessageReceivedListener(camelMessageInfo -> {
+            XSourcePosition topPosition = getSession().getTopFramePosition();
+            if (forceRefresh || topPosition == null || !topPosition.equals(camelMessageInfo.getXSourcePosition())) {
+                forceRefresh = false;
+                //List frames
+                List<CamelStackFrame> stackFrames = new ArrayList<>();
+                for (CamelMessageInfo info : camelMessageInfo.getStack()) {
+                    CamelStackFrame nextFrame = new CamelStackFrame(camelDebuggerSession, info);
+                    stackFrames.add(nextFrame);
                 }
+                getSession().positionReached(new CamelSuspendContext(stackFrames.toArray(new CamelStackFrame[0])));
             }
         });
     }
@@ -167,7 +168,5 @@ public class CamelDebugProcess extends XDebugProcess {
 
         AnAction evaluate = ActionManager.getInstance().getAction("EvaluateExpression");
         topToolbar.remove(evaluate);
-        //XDebugger.SetValue
-
     }
 }

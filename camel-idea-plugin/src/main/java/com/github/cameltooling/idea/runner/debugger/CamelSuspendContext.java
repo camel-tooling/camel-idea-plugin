@@ -23,7 +23,7 @@ import com.intellij.xdebugger.frame.XSuspendContext;
 
 public class CamelSuspendContext extends XSuspendContext {
 
-    private CamelExecutionStack camelExecutionStack;
+    private final CamelExecutionStack camelExecutionStack;
 
     public CamelSuspendContext(XStackFrame... frame) {
         camelExecutionStack = new CamelExecutionStack("Camel Execution", frame);

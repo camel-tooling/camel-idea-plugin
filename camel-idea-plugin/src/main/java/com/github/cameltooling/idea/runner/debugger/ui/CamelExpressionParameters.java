@@ -54,9 +54,9 @@ public class CamelExpressionParameters {
     }
 
     private void createUIComponents() {
-        resultTypeCombo = new ComboBox(new String[]{"java.lang.String", "java.lang.Boolean"});
-        bodyMediaTypeCombo = new ComboBox(new String[]{"application/json", "application/xml", "application/csv", "application/x-java-object", "text/plain"});
-        outputMediaTypeCombo = new ComboBox(new String[]{"application/json", "application/xml", "application/csv", "application/x-java-object", "text/plain"});
+        resultTypeCombo = new ComboBox<>(new String[]{"java.lang.String", "java.lang.Boolean"});
+        bodyMediaTypeCombo = new ComboBox<>(new String[]{"application/json", "application/xml", "application/csv", "application/x-java-object", "text/plain"});
+        outputMediaTypeCombo = new ComboBox<>(new String[]{"application/json", "application/xml", "application/csv", "application/x-java-object", "text/plain"});
     }
 
 }

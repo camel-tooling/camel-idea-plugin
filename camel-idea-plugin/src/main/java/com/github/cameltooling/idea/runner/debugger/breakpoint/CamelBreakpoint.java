@@ -20,9 +20,9 @@ import com.intellij.psi.PsiElement;
 import com.intellij.xdebugger.XSourcePosition;
 
 public class CamelBreakpoint {
-    private String breakpointId;
-    private PsiElement breakpointTag;
-    private XSourcePosition position;
+    private final String breakpointId;
+    private final PsiElement breakpointTag;
+    private final XSourcePosition position;
 
     public CamelBreakpoint(String breakpointId, PsiElement breakpointTag, XSourcePosition position) {
         this.breakpointId = breakpointId;
@@ -34,23 +34,12 @@ public class CamelBreakpoint {
         return breakpointId;
     }
 
-    public void setBreakpointId(String breakpointId) {
-        this.breakpointId = breakpointId;
-    }
-
     public PsiElement getBreakpointTag() {
         return breakpointTag;
-    }
-
-    public void setBreakpointTag(PsiElement breakpointTag) {
-        this.breakpointTag = breakpointTag;
     }
 
     public XSourcePosition getXSourcePosition() {
         return position;
     }
 
-    public void setXSourcePosition(XSourcePosition position) {
-        this.position = position;
-    }
 }

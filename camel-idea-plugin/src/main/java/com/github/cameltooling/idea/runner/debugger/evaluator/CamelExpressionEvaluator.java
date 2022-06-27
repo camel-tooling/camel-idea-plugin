@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 
 public class CamelExpressionEvaluator extends XDebuggerEvaluator {
 
-    private CamelDebuggerSession session;
+    private final CamelDebuggerSession session;
 
     public CamelExpressionEvaluator(@NotNull CamelDebuggerSession session) {
         this.session = session;

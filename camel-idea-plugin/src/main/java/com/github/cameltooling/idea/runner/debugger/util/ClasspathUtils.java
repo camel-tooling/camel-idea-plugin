@@ -16,6 +16,7 @@
  */
 package com.github.cameltooling.idea.runner.debugger.util;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -36,48 +37,22 @@ import java.util.List;
 
 public final class ClasspathUtils {
     private static final Key<ParameterizedCachedValue<List<URL>, Module>> URLS_KEY = Key.create("MODULE.URLS");
-
-    private static ClasspathUtils classpathUtils = new ClasspathUtils();
+    private static final Logger LOG = Logger.getInstance(ClasspathUtils.class);
 
     private ClasspathUtils() {
-
     }
 
-    public static ClasspathUtils getInstance() {
-        return classpathUtils;
-    }
-
-    public static ClassLoader getProjectClassLoader(Project project, ClassLoader parent) throws Exception {
-        ClassLoader fullClassLoader = null;
-
+    public static ClassLoader getProjectClassLoader(Project project, ClassLoader parent) {
         List<URL> loaderUrls = new ArrayList<>();
-
-        Module[] modulesList = ModuleManager.getInstance(project).getModules();
-        for (Module nextModule : modulesList) {
+        for (Module nextModule : ModuleManager.getInstance(project).getModules()) {
             loaderUrls.addAll(getURLsForModule(nextModule));
         }
-
-        fullClassLoader = new URLClassLoader(loaderUrls.toArray(new URL[] {}), parent);
-
-        return fullClassLoader;
+        return new URLClassLoader(loaderUrls.toArray(new URL[0]), parent);
     }
 
-    public static ClassLoader getModuleClassLoader(Module module, ClassLoader parent) throws Exception {
-        ClassLoader moduleClassLoader = null;
-
-        List<URL> loaderUrls = getURLsForModule(module);
-
-        moduleClassLoader = new URLClassLoader(loaderUrls.toArray(new URL[] {}), parent);
-
-        return moduleClassLoader;
-    }
-
-    private static List<URL> getURLsForModule(Module module) throws Exception {
-
+    private static List<URL> getURLsForModule(Module module) {
         final CachedValuesManager manager = CachedValuesManager.getManager(module.getProject());
-        List<URL> loaderUrls = manager.getParameterizedCachedValue(module, URLS_KEY, new UrlsCachedProvider(), false, module);
-
-        return loaderUrls;
+        return manager.getParameterizedCachedValue(module, URLS_KEY, new UrlsCachedProvider(), false, module);
     }
 
     private static class UrlsCachedProvider implements ParameterizedCachedValueProvider<List<URL>, Module> {
@@ -86,9 +61,8 @@ public final class ClasspathUtils {
         public CachedValueProvider.Result<List<URL>> compute(Module module) {
             List<URL> loaderUrls = new ArrayList<>();
 
-            ArrayList<Object> dependencies = new ArrayList<Object>();
+            ArrayList<Object> dependencies = new ArrayList<>();
             dependencies.add(ProjectRootManager.getInstance(module.getProject()));
-            //dependencies.add(module);
 
             String fullClasspath = OrderEnumerator.orderEntries(module).recursively().getPathsList().getPathsString();
 
@@ -98,7 +72,9 @@ public final class ClasspathUtils {
                     URL url = nextEntry.endsWith(".jar") ? new URL("jar:file://" + nextEntry + "!/") : new URL("file://" + nextEntry);
                     loaderUrls.add(url);
                 } catch (Exception e) {
-
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(String.format("Could not add the entry %s due to: %s", nextEntry, e.getMessage()));
+                    }
                 }
             }
 
@@ -108,11 +84,12 @@ public final class ClasspathUtils {
                 if (!nextUrlString.endsWith("/")) {
                     nextUrlString = nextUrlString + "/";
                 }
-
                 try {
                     loaderUrls.add(new URL(nextUrlString));
                 } catch (Exception e) {
-
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(String.format("Could not add the URL %s due to: %s", nextUrlString, e.getMessage()));
+                    }
                 }
             }
 

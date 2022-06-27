@@ -41,12 +41,13 @@ import java.util.List;
 import java.util.Map;
 
 public class ContextAwareDebugProcess extends XDebugProcess {
-    private ProcessHandler processHandler;
-    private Map<String, XDebugProcess> debugProcesses;
+    private final ProcessHandler processHandler;
+    private final Map<String, XDebugProcess> debugProcesses;
     private String currentContext;
-    private String defaultContext;
+    private final String defaultContext;
 
-    public ContextAwareDebugProcess(@NotNull XDebugSession session, ProcessHandler processHandler, Map<String, XDebugProcess> debugProcesses, String defaultContext) {
+    public ContextAwareDebugProcess(@NotNull XDebugSession session, ProcessHandler processHandler,
+                                    Map<String, XDebugProcess> debugProcesses, String defaultContext) {
         super(session);
         this.processHandler = processHandler;
         this.debugProcesses = debugProcesses;
@@ -61,12 +62,12 @@ public class ContextAwareDebugProcess extends XDebugProcess {
     @Override
     @NotNull
     public XBreakpointHandler<?>[] getBreakpointHandlers() {
-        List<XBreakpointHandler> breakpointHandlers = new ArrayList<>();
+        List<XBreakpointHandler<?>> breakpointHandlers = new ArrayList<>();
         final Collection<XDebugProcess> values = debugProcesses.values();
         for (XDebugProcess value : values) {
             breakpointHandlers.addAll(Arrays.asList(value.getBreakpointHandlers()));
         }
-        return breakpointHandlers.toArray(new XBreakpointHandler[breakpointHandlers.size()]);
+        return breakpointHandlers.toArray(new XBreakpointHandler[0]);
     }
 
     @Override
@@ -121,9 +122,8 @@ public class ContextAwareDebugProcess extends XDebugProcess {
 
     @Override
     @NotNull
-    public Promise stopAsync() {
-        final Collection<XDebugProcess> values = debugProcesses.values();
-        for (XDebugProcess value : values) {
+    public Promise<Object> stopAsync() {
+        for (XDebugProcess value : debugProcesses.values()) {
             value.stopAsync();
         }
         return getDefaultDebugProcess().stopAsync();
@@ -168,9 +168,9 @@ public class ContextAwareDebugProcess extends XDebugProcess {
     }
 
     @Override
-    public void registerAdditionalActions(@NotNull DefaultActionGroup leftToolbar, @NotNull DefaultActionGroup topToolbar, @NotNull DefaultActionGroup settings) {
-        final Collection<XDebugProcess> values = debugProcesses.values();
-        for (XDebugProcess value : values) {
+    public void registerAdditionalActions(@NotNull DefaultActionGroup leftToolbar, @NotNull DefaultActionGroup topToolbar,
+                                          @NotNull DefaultActionGroup settings) {
+        for (XDebugProcess value : debugProcesses.values()) {
             value.registerAdditionalActions(leftToolbar, topToolbar, settings);
         }
     }

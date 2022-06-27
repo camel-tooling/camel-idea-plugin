@@ -42,9 +42,9 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.Icon;
 
 public class ObjectFieldDefinitionValue extends XValue {
-    private CamelDebuggerSession session;
-    private CamelMessageInfo.Value fieldDefinition;
-    private Icon icon;
+    private final CamelDebuggerSession session;
+    private final CamelMessageInfo.Value fieldDefinition;
+    private final Icon icon;
 
     public ObjectFieldDefinitionValue(CamelDebuggerSession session, CamelMessageInfo.Value fieldDefinition, Icon icon) {
         this.session = session;
@@ -54,7 +54,6 @@ public class ObjectFieldDefinitionValue extends XValue {
 
     @Override
     public void computePresentation(@NotNull XValueNode node, @NotNull XValuePlace xValuePlace) {
-//        final List<ObjectFieldDefinition> innerElements = fieldDefinition.getInnerElements();
         node.setPresentation(icon, fieldDefinition.getType(), String.valueOf(fieldDefinition.getValue()), false);
     }
 
@@ -79,36 +78,7 @@ public class ObjectFieldDefinitionValue extends XValue {
                 }
             });
         });
-/*
-        ApplicationManager.getApplication().runReadAction(() -> {
-            PsiClass aClass = JavaPsiFacade.getInstance(session.getProject()).findClass(fieldDefinition.getType(), GlobalSearchScope.allScope(session.getProject()));
-            if (aClass != null) {
-                navigatable.setSourcePosition(createPositionByElement(aClass));
-            }
-        });
-*/
-
     }
-
-/*
-    @Override
-    public void computeChildren(@NotNull XCompositeNode node) {
-        final XValueChildrenList list = new XValueChildrenList();
-        if (fieldDefinition.isHasUnloadedChildren()) {
-            final List<ObjectFieldDefinition> innerElements = session.loadInnerFields(fieldDefinition);
-            for (ObjectFieldDefinition innerElement : innerElements) {
-                list.add(innerElement.getName(), new ObjectFieldDefinitionValue(session, innerElement, PlatformIcons.FIELD_ICON));
-            }
-        } else {
-            final List<ObjectFieldDefinition> innerElements = fieldDefinition.getInnerElements();
-            for (ObjectFieldDefinition innerElement : innerElements) {
-                list.add(innerElement.getName(), new ObjectFieldDefinitionValue(session, innerElement, PlatformIcons.FIELD_ICON));
-            }
-        }
-        node.addChildren(list, false);
-        super.computeChildren(node);
-    }
-*/
 
     @Nullable
     private XSourcePosition createPositionByElement(PsiElement element) {
@@ -131,13 +101,14 @@ public class ObjectFieldDefinitionValue extends XValue {
 
             private XSourcePosition getDelegate() {
                 if (myDelegate == null) {
-                    myDelegate = ApplicationManager.getApplication().runReadAction(new Computable<XSourcePosition>() {
-                        @Override
-                        public XSourcePosition compute() {
-                            PsiElement elem = pointer.getElement();
-                            return XSourcePositionImpl.createByOffset(pointer.getVirtualFile(), elem != null ? elem.getTextOffset() : -1);
+                    synchronized (this) {
+                        if (myDelegate == null) {
+                            myDelegate = ApplicationManager.getApplication().runReadAction((Computable<XSourcePosition>) () -> {
+                                PsiElement elem = pointer.getElement();
+                                return XSourcePositionImpl.createByOffset(pointer.getVirtualFile(), elem != null ? elem.getTextOffset() : -1);
+                            });
                         }
-                    });
+                    }
                 }
                 return myDelegate;
             }
@@ -162,8 +133,9 @@ public class ObjectFieldDefinitionValue extends XValue {
             @Override
             public Navigatable createNavigatable(@NotNull Project project) {
                 // no need to create delegate here, it may be expensive
-                if (myDelegate != null) {
-                    return myDelegate.createNavigatable(project);
+                XSourcePosition delegate = myDelegate;
+                if (delegate != null) {
+                    return delegate.createNavigatable(project);
                 }
                 PsiElement elem = pointer.getElement();
                 if (elem instanceof Navigatable) {

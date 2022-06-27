@@ -25,7 +25,7 @@ import com.intellij.xdebugger.impl.actions.XDebuggerActionBase;
 import org.jetbrains.annotations.NotNull;
 
 public class CamelEvaluateAction extends XDebuggerActionBase {
-    private CamelEvaluateActionHandler evaluateActionHandler = new CamelEvaluateActionHandler();
+    private final CamelEvaluateActionHandler evaluateActionHandler = new CamelEvaluateActionHandler();
 
     public CamelEvaluateAction() {
         super(true);
@@ -42,6 +42,9 @@ public class CamelEvaluateAction extends XDebuggerActionBase {
         super.update(event);
         if (event.getPresentation().isEnabledAndVisible()) {
             final Project project = event.getProject();
+            if (project == null) {
+                return;
+            }
             final CamelService camelService = project.getService(CamelService.class);
             event.getPresentation().setEnabled(camelService.isCamelPresent());
             event.getPresentation().setVisible(camelService.isCamelPresent());

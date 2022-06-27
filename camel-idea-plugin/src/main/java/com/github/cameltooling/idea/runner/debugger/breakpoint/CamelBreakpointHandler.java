@@ -23,7 +23,7 @@ import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint;
 import org.jetbrains.annotations.NotNull;
 
-public class CamelBreakpointHandler extends XBreakpointHandler<XLineBreakpoint<XBreakpointProperties>> {
+public class CamelBreakpointHandler extends XBreakpointHandler<XLineBreakpoint<XBreakpointProperties<?>>> {
     private final CamelDebuggerSession debuggerSession;
 
     public CamelBreakpointHandler(Project project, CamelDebuggerSession debuggerSession) {
@@ -33,12 +33,12 @@ public class CamelBreakpointHandler extends XBreakpointHandler<XLineBreakpoint<X
     }
 
     @Override
-    public void registerBreakpoint(@NotNull XLineBreakpoint<XBreakpointProperties> xBreakpoint) {
+    public void registerBreakpoint(@NotNull XLineBreakpoint<XBreakpointProperties<?>> xBreakpoint) {
         debuggerSession.addBreakpoint(xBreakpoint);
     }
 
     @Override
-    public void unregisterBreakpoint(@NotNull XLineBreakpoint<XBreakpointProperties> xBreakpoint, boolean temporary) {
+    public void unregisterBreakpoint(@NotNull XLineBreakpoint<XBreakpointProperties<?>> xBreakpoint, boolean temporary) {
         debuggerSession.removeBreakpoint(xBreakpoint);
     }
 }
