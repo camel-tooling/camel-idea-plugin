@@ -85,8 +85,8 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private static final String BACKLOG_DEBUGGER_LOGGING_LEVEL = "TRACE";
     private static final long FALLBACK_TIMEOUT = Long.MAX_VALUE - 1;
 
-    private final List<XLineBreakpoint<XBreakpointProperties>> pendingBreakpointsAdd = new ArrayList<>();
-    private final List<XLineBreakpoint<XBreakpointProperties>> pendingBreakpointsRemove = new ArrayList<>();
+    private final List<XLineBreakpoint<XBreakpointProperties<?>>> pendingBreakpointsAdd = new ArrayList<>();
+    private final List<XLineBreakpoint<XBreakpointProperties<?>>> pendingBreakpointsRemove = new ArrayList<>();
 
     private final Map<String, CamelBreakpoint> breakpoints = new HashMap<>();
     private final List<String> explicitBreakpointIDs = new ArrayList<>();
@@ -110,7 +110,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         try {
             isConnected = backlogDebugger != null && backlogDebugger.isEnabled();
         } catch (Exception e) {
-
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Unable to know if the BacklogDebugger is enabled: {}", e.getMessage());
+            }
         }
         return isConnected;
     }
@@ -131,8 +133,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
     public void connect(final ProcessHandler javaProcessHandler) {
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            boolean isConnected = connect(javaProcessHandler, true, 0);
-            if (isConnected) {
+            if (connect(javaProcessHandler, true, 0)) {
                 checkSuspendedBreakpoints();
             }
         });
@@ -143,6 +144,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             try {
                 backlogDebugger.disableDebugger();
             } catch (Exception e) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Could not disable the BacklogDebugger: " + e.getMessage());
+                }
             } finally {
                 backlogDebugger = null;
                 serverConnection = null;
@@ -150,7 +154,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         }
     }
 
-    public void addBreakpoint(XLineBreakpoint<XBreakpointProperties> xBreakpoint) {
+    public void addBreakpoint(XLineBreakpoint<XBreakpointProperties<?>> xBreakpoint) {
         if (isConnected()) {
             toggleBreakpoint(xBreakpoint, true);
         } else {
@@ -159,7 +163,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         }
     }
 
-    public void removeBreakpoint(XLineBreakpoint<XBreakpointProperties> xBreakpoint) {
+    public void removeBreakpoint(XLineBreakpoint<XBreakpointProperties<?>> xBreakpoint) {
         if (isConnected()) {
             toggleBreakpoint(xBreakpoint, false);
         } else {
@@ -209,7 +213,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
 
         if (breakpointElement == null) {
-            //TODO Log warning
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("The breakpoint element could not be created from the position " + position);
+            }
             return;
         }
         String breakpointId = breakpointElement.keySet().iterator().next();
@@ -242,7 +248,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.warn("Could not evaluate the expression " + expression, e);
         }
     }
 
@@ -252,7 +258,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
 
             if (breakpointElement == null) {
-                //TODO Log warning
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("The breakpoint element could not be created from the position " + position);
+                }
                 return null;
             }
             String breakpointId = breakpointElement.keySet().iterator().next();
@@ -262,8 +270,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 Object result;
                 ClassLoader current = Thread.currentThread().getContextClassLoader();
                 try {
-                    ClassLoader projectClassLoader = ClasspathUtils.getProjectClassLoader(project, this.getClass().getClassLoader());
-                    Thread.currentThread().setContextClassLoader(projectClassLoader);
+                    Thread.currentThread().setContextClassLoader(ClasspathUtils.getProjectClassLoader(project, this.getClass().getClassLoader()));
 
                     String bodyMediaType = params != null && params.containsKey("bodyMediaType") ? params.get("bodyMediaType") : "application/json";
                     String outputMediaType = params != null && params.containsKey("outputMediaType") ? params.get("outputMediaType") : "application/json";
@@ -314,7 +321,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
 
             if (breakpointElement == null) {
-                //TODO Log warning
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("The breakpoint element could not be created from the position " + position);
+                }
                 return;
             }
             String breakpointId = breakpointElement.keySet().iterator().next();
@@ -349,7 +358,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.warn("Could not process the step out at " + position, e);
         }
     }
 
@@ -358,6 +367,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         Map<String, PsiElement> toBreakpointElement = createBreakpointElementFromPosition(toPosition);
 
         if (toBreakpointElement == null) { //this is not a tag
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("The breakpoint element could not be created from the position " + toPosition);
+            }
             return;
         }
 
@@ -379,7 +391,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
 
         if (breakpointElement == null) {
-            //TODO Log warning
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("The breakpoint element could not be created from the position " + position);
+            }
             return;
         }
         String breakpointId = breakpointElement.keySet().iterator().next();
@@ -416,6 +430,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 Thread.sleep(1000L * 2);
                 isConnected = connect(javaProcessHandler, retry, retries + 1);
             } catch (InterruptedException e1) {
+                Thread.currentThread().interrupt();
                 return false;
             }
         }
@@ -427,8 +442,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         ClassLoader current = Thread.currentThread().getContextClassLoader();
 
         try {
-            ClassLoader projectClassLoader = ClasspathUtils.getProjectClassLoader(project, this.getClass().getClassLoader());
-            Thread.currentThread().setContextClassLoader(projectClassLoader);
+            Thread.currentThread().setContextClassLoader(ClasspathUtils.getProjectClassLoader(project, this.getClass().getClassLoader()));
 
             this.serverConnection = getLocalJavaProcessMBeanServer(javaProcessPID);
             if (serverConnection == null) {
@@ -453,11 +467,11 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                     ManagedCamelContextMBean camelContext = JMX.newMBeanProxy(serverConnection, mbeanName, ManagedCamelContextMBean.class);
 
                     while (!"Started".equals(camelContext.getState())) {
-                        LOG.debug("Waiting for the context to start");
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Waiting for the context to start");
+                        }
+                        Thread.onSpinWait();
                     }
-
-                    //Enable message history
-                    //serverConnection.setAttribute(mbeanName, new Attribute("MessageHistory", Boolean.TRUE));
 
                     //Init DOM Documents
                     String routes = camelContext.dumpRoutesAsXml(false, true);
@@ -471,12 +485,16 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 }
 
                 //Toggle all pending breakpoints
-                for (XLineBreakpoint breakpoint : pendingBreakpointsRemove) {
+                for (XLineBreakpoint<XBreakpointProperties<?>> breakpoint : pendingBreakpointsRemove) {
                     ApplicationManager.getApplication().runReadAction(() -> {
-                        toggleBreakpoint(breakpoint, false);
+                        try {
+                            toggleBreakpoint(breakpoint, false);
+                        } catch (Exception e) {
+                            LOG.error(e);
+                        }
                     });
                 }
-                for (XLineBreakpoint breakpoint : pendingBreakpointsAdd) {
+                for (XLineBreakpoint<XBreakpointProperties<?>> breakpoint : pendingBreakpointsAdd) {
                     ApplicationManager.getApplication().runReadAction(() -> {
                         try {
                             toggleBreakpoint(breakpoint, true);
@@ -492,6 +510,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             }
             return false;
         } catch (Exception e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Could not initialize the BackLogDebugger", e);
+            }
             return false;
         } finally {
             Thread.currentThread().setContextClassLoader(current);
@@ -511,14 +532,16 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             vm.detach();
             return connection;
         } catch (Exception e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Could not retrieve the server connection of the java process " + javaProcessPID, e);
+            }
             return null;
         }
     }
 
     private String getPID(ProcessHandler handler) {
         String cmdLine = handler.toString();
-        ProcessInfo[] infoList = OSProcessUtil.getProcessList();
-        for (ProcessInfo info : infoList) {
+        for (ProcessInfo info : OSProcessUtil.getProcessList()) {
             if (info.getCommandLine().equals(cmdLine)) {
                 return String.valueOf(info.getPid());
             }
@@ -526,7 +549,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         return null;
     }
 
-    private boolean toggleBreakpoint(@NotNull XLineBreakpoint<XBreakpointProperties> xBreakpoint, boolean toggleOn) {
+    private boolean toggleBreakpoint(@NotNull XLineBreakpoint<XBreakpointProperties<?>> xBreakpoint, boolean toggleOn) {
         XSourcePosition position = xBreakpoint.getSourcePosition();
         Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
 
@@ -550,7 +573,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
             return true;
         }
-
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(String.format("The breakpoint element could not be created from the position %s", position));
+        }
         //Breakpoint is invalid
         xDebugSession.setBreakpointInvalid(xBreakpoint, "Camel EIP ID not found");
         return false;
@@ -559,18 +584,13 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private void checkSuspendedBreakpoints() {
         while (isConnected()) {
             try {
-                Collection<String> suspendedBreakpointIDs = (Collection<String>) serverConnection.invoke(this.debuggerMBeanObjectName, "getSuspendedBreakpointNodeIds", new Object[]{}, new String[]{});
+                Collection<String> suspendedBreakpointIDs = (Collection<String>) serverConnection.invoke(
+                    this.debuggerMBeanObjectName, "getSuspendedBreakpointNodeIds", new Object[]{}, new String[]{}
+                );
                 if (suspendedBreakpointIDs != null && !suspendedBreakpointIDs.isEmpty()) {
                     //Fire notifications here, we need to display the exchange, stack etc
                     for (String id : suspendedBreakpointIDs) {
-                        String xml = backlogDebugger.dumpTracedMessagesAsXml(id);
-                        try { //If the Camel version is 3.15 or later, the exchange properties are included
-                            xml = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "dumpTracedMessagesAsXml", new Object[]{id, true},
-                                    new String[]{"java.lang.String", "boolean"});
-                        } catch (Exception e) {
-                            //TODO log this or display warning
-                        }
-                        final String suspendedMessage = xml;
+                        final String suspendedMessage = dumpTracedMessagesAsXml(id);
 
                         ApplicationManager.getApplication().runReadAction(() -> {
                             for (MessageReceivedListener listener : messageReceivedListeners) {
@@ -586,7 +606,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                                     info.setStack(stack);
                                     listener.onNewMessageReceived(info);
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    LOG.warn("Could not notify the message listener", e);
                                 }
                             }
                         });
@@ -596,25 +616,32 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 try {
                     Thread.sleep(1000L);
                 } catch (InterruptedException e) {
-
-                } finally {
-
+                    Thread.currentThread().interrupt();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                LOG.warn("Could not check suspended breakpoints", e);
             }
         }
+    }
+
+    private String dumpTracedMessagesAsXml(String id) {
+        String xml;
+        try {
+            // If the Camel version is 3.15 or later, the exchange properties are included
+            xml = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "dumpTracedMessagesAsXml", new Object[]{id, true},
+                    new String[]{"java.lang.String", "boolean"});
+        } catch (Exception e) {
+            LOG.warn("Could not invoke dumpTracedMessagesAsXml(" + id + ", true)", e);
+            // Could not invoke the dumpTracedMessagesAsXml with the new signature let's try the old one
+            xml = backlogDebugger.dumpTracedMessagesAsXml(id);
+        }
+        return xml;
     }
 
     private Element getParentRouteId(String id) throws Exception {
         String path = "//route[*[attribute::id = '" + id + "']]";
         XPath xPath = XPathFactory.newInstance().newXPath();
-        Node tagNode = (Node) xPath.compile(path).evaluate(routesDOMDocument, XPathConstants.NODE);
-        if (tagNode == null) {
-            return null;
-        }
-        Element tag = (Element) tagNode;
-        return tag;
+        return (Element) xPath.compile(path).evaluate(routesDOMDocument, XPathConstants.NODE);
     }
 
     private List<CamelMessageInfo> getStack(String breakpointId, String suspendedMessage) throws Exception {
@@ -664,9 +691,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         case "YAML":
             sourceLocation = virtualFile.getPresentableUrl();
             if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
-                sourceLocation = "file:" + sourceLocation.replace("src/main/resources", "target/classes"); // file:/absolute/path/to/file.xml
+                sourceLocation = String.format("file:%s", sourceLocation.replace("src/main/resources", "target/classes")); // file:/absolute/path/to/file.xml
             } else { //Then it must be a Jar
-                sourceLocation = "classpath:" + sourceLocation.substring(sourceLocation.lastIndexOf("!") + 2);
+                sourceLocation = String.format("classpath:%s", sourceLocation.substring(sourceLocation.lastIndexOf("!") + 2));
             }
             break;
         case "JAVA":
@@ -685,8 +712,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 breakpointId = breakpointTagFromContext.getAttributes().getNamedItem("id").getTextContent();
             }
         } catch (Exception e) {
-            breakpointId = null;
-            e.printStackTrace();
+            LOG.warn("Could not retrieve the breakpoint id from the path " + path, e);
         }
 
         return breakpointId;
@@ -722,20 +748,20 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             return new CamelBreakpoint(id, breakpointElement.get(id), position);
         } else {
             PsiFile[] psiFiles = FilenameIndex.getFilesByName(project, fileName, GlobalSearchScope.everythingScope(project));
-            if (psiFiles == null || psiFiles.length < 1) {
+            if (psiFiles.length < 1) {
                 return null;
             }
             for (PsiFile psiFile : psiFiles) {
                 VirtualFile virtualFile = psiFile.getVirtualFile();
                 String url = virtualFile.getPresentableUrl();
                 if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
-                    url = "file:" + url.replace("src/main/resources", "target/classes"); // file:/absolute/path/to/file.xml
+                    url = String.format("file:%s", url.replace("src/main/resources", "target/classes")); // file:/absolute/path/to/file.xml
                 } else { //Then it must be a Jar
-                    url = "classpath:" + url.substring(url.lastIndexOf("!") + 2);
+                    url = String.format("classpath:%s", url.substring(url.lastIndexOf("!") + 2));
                 }
                 if (filePath.equals(url)) {
                     //We found our file, let's get a source position
-                    XSourcePosition position = XDebuggerUtil.getInstance().createPosition(virtualFile, new Integer(lineNumber) - 1);
+                    XSourcePosition position = XDebuggerUtil.getInstance().createPosition(virtualFile, Integer.parseInt(lineNumber) - 1);
                     Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
                     return new CamelBreakpoint(id, breakpointElement.get(id), position);
                 }
@@ -748,13 +774,13 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     @Nullable
     private Map<String, PsiElement> createBreakpointElementFromPosition(XSourcePosition position) {
         Map<String, PsiElement> breakpointElement = null;
-        String breakpointId = null;
+        String breakpointId;
         PsiElement psiElement = null;
 
         VirtualFile file = position.getFile();
         switch (file.getFileType().getName()) {
         case "XML":
-            psiElement = IdeaUtils.getService().getXmlTagAt(project, position);
+            psiElement = IdeaUtils.getXmlTagAt(project, position);
             break;
         case "JAVA":
             psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
@@ -787,6 +813,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         try {
             tagNode = (Node) xPath.evaluate(path, routesDOMDocument, XPathConstants.NODE);
         } catch (XPathExpressionException e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Could not retrieve the node from the path " + path, e);
+            }
             tagNode = null;
         }
         if (tagNode == null) {

@@ -31,9 +31,9 @@ import java.util.Map;
 
 public class MapOfObjectFieldDefinitionValue extends XValue {
 
-    private CamelDebuggerSession session;
-    private Map<String, CamelMessageInfo.Value[]> values;
-    private Icon icon;
+    private final CamelDebuggerSession session;
+    private final Map<String, CamelMessageInfo.Value[]> values;
+    private final Icon icon;
 
     public MapOfObjectFieldDefinitionValue(CamelDebuggerSession session, Map<String, CamelMessageInfo.Value[]> values, Icon icon) {
         this.session = session;

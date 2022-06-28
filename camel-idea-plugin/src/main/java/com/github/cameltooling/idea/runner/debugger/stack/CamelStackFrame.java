@@ -33,30 +33,19 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class CamelStackFrame extends XStackFrame {
-    private final Project project;
 
-    private CamelDebuggerSession session;
-    private CamelMessageInfo camelMessageInfo;
-    //    @Nullable
-    //    private ObjectFieldDefinition exceptionThrown;
+    private final CamelDebuggerSession session;
+    private final CamelMessageInfo camelMessageInfo;
 
-    public CamelStackFrame(@NotNull Project project, @NotNull CamelDebuggerSession session, CamelMessageInfo camelMessageInfo) {
+
+    public CamelStackFrame(@NotNull CamelDebuggerSession session, CamelMessageInfo camelMessageInfo) {
         this.session = session;
         this.camelMessageInfo = camelMessageInfo;
-        this.project = project;
     }
 
     public CamelMessageInfo getCamelMessageInfo() {
         return camelMessageInfo;
     }
-
-    /*
-    public CamelStackFrame(@NotNull Project project, CamelDebuggerSession session, CamelMessageInfo camelMessageInfo, @Nullable ObjectFieldDefinition exceptionThrown)
-    {
-        this(project, session, camelMessageInfo);
-        this.exceptionThrown = exceptionThrown;
-    }
-*/
 
     @Nullable
     @Override
@@ -98,11 +87,6 @@ public class CamelStackFrame extends XStackFrame {
         } else {
             children.add("WARNING: ", JavaStackFrame.createMessageNode("Exchange Properties in Debugger are only available in Camel version 3.15 or later", AllIcons.Nodes.WarningMark));
         }
-/*
-        if (exceptionThrown != null) {
-            children.add("Exception", new ObjectFieldDefinitionValue(this.session, exceptionThrown, AllIcons.General.Error));
-        }
-*/
         node.addChildren(children, true);
     }
 }

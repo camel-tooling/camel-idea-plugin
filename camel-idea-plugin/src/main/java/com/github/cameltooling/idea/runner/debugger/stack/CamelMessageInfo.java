@@ -45,12 +45,12 @@ public class CamelMessageInfo {
     private final String messageInfoAsXML;
     private final DocumentBuilder documentBuilder;
 
-    private XSourcePosition position;
-    private PsiElement tag;
+    private final XSourcePosition position;
+    private final PsiElement tag;
 
-    private String routeId;
-    private String processorId;
-    private String processor;
+    private final String routeId;
+    private final String processorId;
+    private final String processor;
 
     private List<CamelMessageInfo> stack;
 
@@ -173,8 +173,8 @@ public class CamelMessageInfo {
     }
 
     public static class Value {
-        private String type;
-        private Object value;
+        private final String type;
+        private final Object value;
 
         public Value(String type, Object value) {
             this.type = type;
@@ -189,6 +189,4 @@ public class CamelMessageInfo {
             return value;
         }
     }
-
-
 }

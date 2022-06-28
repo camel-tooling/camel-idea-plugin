@@ -21,8 +21,8 @@ import com.intellij.openapi.util.IconLoader;
 import javax.swing.Icon;
 
 public final class CamelDebuggerIcons {
-    public static final Icon EVALUATE_EXPRESSION_ICON = IconLoader.findIcon("/META-INF/evaluateCamelExpression.png");
-    public static final Icon SET_VALUE_ICON = IconLoader.findIcon("/META-INF/setValue.png");
+    public static final Icon EVALUATE_EXPRESSION_ICON = IconLoader.getIcon("/META-INF/evaluateCamelExpression.png", CamelDebuggerIcons.class);
+    public static final Icon SET_VALUE_ICON = IconLoader.getIcon("/META-INF/setValue.png", CamelDebuggerIcons.class);
 
     private CamelDebuggerIcons() {
     }
