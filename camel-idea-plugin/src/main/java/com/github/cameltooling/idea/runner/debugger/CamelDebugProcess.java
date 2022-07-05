@@ -61,7 +61,7 @@ public class CamelDebugProcess extends XDebugProcess {
         this.camelDebuggerEditorsProvider = new CamelDebuggerEditorsProvider();
         this.camelDebuggerSession = camelDebuggerSession;
         this.javaProcessHandler = javaProcessHandler;
-        this.camelBreakpointHandler = new CamelBreakpointHandler(session.getProject(), camelDebuggerSession);
+        this.camelBreakpointHandler = new CamelBreakpointHandler(camelDebuggerSession);
 
         try {
             init();
@@ -82,7 +82,6 @@ public class CamelDebugProcess extends XDebugProcess {
     }
 
     public void init() {
-        camelDebuggerSession.setXDebugSession(this.getSession());
         camelDebuggerSession.connect(javaProcessHandler);
 
         camelDebuggerSession.addMessageReceivedListener(camelMessageInfo -> {

@@ -20,6 +20,8 @@ import com.github.cameltooling.idea.language.CamelLanguages;
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpoint;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.github.cameltooling.idea.runner.debugger.util.ClasspathUtils;
+import com.github.cameltooling.idea.service.CamelRuntime;
+import com.github.cameltooling.idea.service.CamelService;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.execution.process.OSProcessUtil;
@@ -60,6 +62,7 @@ import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
+import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.xml.parsers.DocumentBuilder;
@@ -69,6 +72,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -77,6 +81,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class CamelDebuggerSession implements AbstractDebuggerSession {
     private static final Logger LOG = Logger.getInstance(CamelDebuggerSession.class);
@@ -85,25 +91,31 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private static final String BACKLOG_DEBUGGER_LOGGING_LEVEL = "TRACE";
     private static final long FALLBACK_TIMEOUT = Long.MAX_VALUE - 1;
 
-    private final List<XLineBreakpoint<XBreakpointProperties<?>>> pendingBreakpointsAdd = new ArrayList<>();
-    private final List<XLineBreakpoint<XBreakpointProperties<?>>> pendingBreakpointsRemove = new ArrayList<>();
+    private final List<XLineBreakpoint<XBreakpointProperties<?>>> pendingBreakpointsAdd = new CopyOnWriteArrayList<>();
+    private final List<XLineBreakpoint<XBreakpointProperties<?>>> pendingBreakpointsRemove = new CopyOnWriteArrayList<>();
 
-    private final Map<String, CamelBreakpoint> breakpoints = new HashMap<>();
-    private final List<String> explicitBreakpointIDs = new ArrayList<>();
+    private final Map<String, CamelBreakpoint> breakpoints = new ConcurrentHashMap<>();
+    private final List<String> explicitBreakpointIDs = new CopyOnWriteArrayList<>();
 
-    private final List<MessageReceivedListener> messageReceivedListeners = new ArrayList<>();
+    private final List<MessageReceivedListener> messageReceivedListeners = new CopyOnWriteArrayList<>();
 
-    private Project project;
+    private final Project project;
 
-    private ManagedBacklogDebuggerMBean backlogDebugger;
-    private MBeanServerConnection serverConnection;
-    private ObjectName debuggerMBeanObjectName;
+    private volatile ManagedBacklogDebuggerMBean backlogDebugger;
+    private volatile JMXConnector connector;
+    private volatile MBeanServerConnection serverConnection;
+    private volatile ObjectName debuggerMBeanObjectName;
 
-    private org.w3c.dom.Document routesDOMDocument;
+    private volatile org.w3c.dom.Document routesDOMDocument;
 
-    private String temporaryBreakpointId;
+    private volatile String temporaryBreakpointId;
 
-    private XDebugSession xDebugSession;
+    private final XDebugSession xDebugSession;
+
+    public CamelDebuggerSession(Project project, XDebugSession session) {
+        this.project = project;
+        this.xDebugSession = session;
+    }
 
     public boolean isConnected() {
         boolean isConnected = false;
@@ -142,6 +154,11 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     public void disconnect() {
         if (backlogDebugger != null) {
             try {
+                backlogDebugger.detach();
+            } catch (Exception e) {
+                LOG.warn("Could not detach the debugger: " + e.getMessage());
+            }
+            try {
                 backlogDebugger.disableDebugger();
             } catch (Exception e) {
                 if (LOG.isDebugEnabled()) {
@@ -149,7 +166,18 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 }
             } finally {
                 backlogDebugger = null;
+            }
+        }
+        if (connector != null) {
+            try {
+                connector.close();
+            } catch (IOException e) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Could not close the JMXConnector: " + e.getMessage());
+                }
+            } finally {
                 serverConnection = null;
+                connector = null;
             }
         }
     }
@@ -172,10 +200,6 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         }
     }
 
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
     public Project getProject() {
         return project;
     }
@@ -191,14 +215,6 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         }
         temporaryBreakpointId = null;
         backlogDebugger.resumeAll();
-    }
-
-    public void setXDebugSession(XDebugSession xDebugSession) {
-        this.xDebugSession = xDebugSession;
-    }
-
-    public XDebugSession getXDebugSession() {
-        return xDebugSession;
     }
 
     public void setValue(String target,
@@ -444,9 +460,11 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         try {
             Thread.currentThread().setContextClassLoader(ClasspathUtils.getProjectClassLoader(project, this.getClass().getClassLoader()));
 
-            this.serverConnection = getLocalJavaProcessMBeanServer(javaProcessPID);
-            if (serverConnection == null) {
+            this.connector = getJMXConnector(javaProcessPID);
+            if (connector == null) {
                 return false;
+            } else {
+                this.serverConnection = connector.getMBeanServerConnection();
             }
             //init debugger
             // org.apache.camel:context=camel-1,type=tracer,name=BacklogDebugger
@@ -506,6 +524,11 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 pendingBreakpointsAdd.clear();
                 pendingBreakpointsRemove.clear();
 
+                try {
+                    backlogDebugger.attach();
+                } catch (Exception e) {
+                    LOG.warn("Could not attach the debugger: " + e.getMessage());
+                }
                 return true;
             }
             return false;
@@ -519,7 +542,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         }
     }
 
-    private MBeanServerConnection getLocalJavaProcessMBeanServer(String javaProcessPID) {
+    private JMXConnector getLocalJavaProcessJMXConnector(String javaProcessPID) {
         try {
             final String localConnectorAddressProperty =
                     "com.sun.management.jmxremote.localConnectorAddress";
@@ -527,16 +550,33 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             vm.startLocalManagementAgent();
             String connectorAddress =
                     vm.getAgentProperties().getProperty(localConnectorAddressProperty);
-            JMXServiceURL jmxUrl = new JMXServiceURL(connectorAddress);
-            MBeanServerConnection connection = JMXConnectorFactory.connect(jmxUrl).getMBeanServerConnection();
+            JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(connectorAddress));
             vm.detach();
-            return connection;
+            return connector;
         } catch (Exception e) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Could not retrieve the server connection of the java process " + javaProcessPID, e);
+                LOG.debug("Could not retrieve the JMX API connector of the java process " + javaProcessPID, e);
             }
             return null;
         }
+    }
+
+    /**
+     * @param javaProcessPID the id of the process of the Java application launched from the IDE
+     * @return the {@link JMXConnector} that matches the best with the current context.
+     */
+    private JMXConnector getJMXConnector(String javaProcessPID) {
+        if (CamelRuntime.getCamelRuntime(project) == CamelRuntime.QUARKUS) {
+            // In case of Quarkus another process is launched such that the JMXConnector needs to b retrieved from the URL
+            try {
+                return JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi/camel"));
+            } catch (Exception e) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Could not retrieve the JMX API connector", e);
+                }
+            }
+        }
+        return getLocalJavaProcessJMXConnector(javaProcessPID);
     }
 
     private String getPID(ProcessHandler handler) {

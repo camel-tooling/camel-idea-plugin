@@ -26,6 +26,10 @@ public final class Constants {
         "http://www.springframework.org/schema/beans",
         OSGI_BLUEPRINT_NAMESPACE
     };
+    /**
+     * The main group ID of the Camel artifacts.
+     */
+    public static final String CAMEL_GROUP_ID = "org.apache.camel";
 
     private Constants() {
     }

@@ -17,7 +17,6 @@
 package com.github.cameltooling.idea.runner.debugger.breakpoint;
 
 import com.github.cameltooling.idea.runner.debugger.CamelDebuggerSession;
-import com.intellij.openapi.project.Project;
 import com.intellij.xdebugger.breakpoints.XBreakpointHandler;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint;
@@ -26,10 +25,9 @@ import org.jetbrains.annotations.NotNull;
 public class CamelBreakpointHandler extends XBreakpointHandler<XLineBreakpoint<XBreakpointProperties<?>>> {
     private final CamelDebuggerSession debuggerSession;
 
-    public CamelBreakpointHandler(Project project, CamelDebuggerSession debuggerSession) {
+    public CamelBreakpointHandler(CamelDebuggerSession debuggerSession) {
         super(CamelBreakpointType.class);
         this.debuggerSession = debuggerSession;
-        debuggerSession.setProject(project);
     }
 
     @Override

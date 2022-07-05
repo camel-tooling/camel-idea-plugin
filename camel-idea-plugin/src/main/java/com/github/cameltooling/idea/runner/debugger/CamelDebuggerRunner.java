@@ -117,21 +117,21 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
             throws ExecutionException {
         LOG.debug("Attaching VM...");
         DefaultDebugEnvironment environment = new DefaultDebugEnvironment(env, state, connection, pollConnection);
-        final DebuggerSession debuggerSession = DebuggerManagerEx.getInstanceEx(env.getProject()).attachVirtualMachine(environment);
+        Project project = env.getProject();
+        final DebuggerSession debuggerSession = DebuggerManagerEx.getInstanceEx(project).attachVirtualMachine(environment);
         if (debuggerSession == null) {
             return null;
         }
-        final CamelDebuggerSession camelDebuggerSession = new CamelDebuggerSession();
         final DebugProcessImpl debugProcess = debuggerSession.getProcess();
         if (!debugProcess.isDetached() && !debugProcess.isDetaching()) {
             if (environment.isRemote()) {
                 debugProcess.putUserData(BatchEvaluator.REMOTE_SESSION_KEY, Boolean.TRUE);
             }
 
-            return XDebuggerManager.getInstance(env.getProject()).startSession(env, new XDebugProcessStarter() {
+            return XDebuggerManager.getInstance(project).startSession(env, new XDebugProcessStarter() {
                 @NotNull
                 public XDebugProcess start(@NotNull XDebugSession session) {
-
+                    final CamelDebuggerSession camelDebuggerSession = new CamelDebuggerSession(project, session);
                     final XDebugSessionImpl sessionImpl = (XDebugSessionImpl) session;
                     final ExecutionResult executionResult = debugProcess.getExecutionResult();
                     final Map<String, XDebugProcess> context = new HashMap<>();
@@ -161,7 +161,6 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
             }).getRunContentDescriptor();
         } else {
             debuggerSession.dispose();
-            camelDebuggerSession.dispose();
             return null;
         }
     }
