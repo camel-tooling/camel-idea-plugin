@@ -54,6 +54,7 @@ public class CamelRunnerConfPanel implements PanelWithAnchor, MavenSettingsObser
     protected LabeledComponent<EditorTextField> profilesComponent;
     protected JBLabel myFakeLabel;
     protected FixedSizeButton showProjectTreeButton;
+    protected LabeledComponent<EditorTextField> additionalPluginParamsComponent;
     protected JComponent anchor;
 
     public CamelRunnerConfPanel(@NotNull Project project) {
@@ -100,12 +101,13 @@ public class CamelRunnerConfPanel implements PanelWithAnchor, MavenSettingsObser
                 workingDirComponent.getComponent());
 
         setAnchor(profilesComponent.getLabel());
+        setAnchor(additionalPluginParamsComponent.getLabel());
     }
 
     protected void setData(final MavenRunnerParameters data) {
         data.setWorkingDirPath(workingDirComponent.getComponent().getText());
 
-        data.setGoals(List.of("clean", "compile"));
+        data.setGoals(ParametersListUtil.parse(additionalPluginParamsComponent.getComponent().getText(), true));
 
         Map<String, Boolean> profilesMap = new LinkedHashMap<>();
 
@@ -129,7 +131,7 @@ public class CamelRunnerConfPanel implements PanelWithAnchor, MavenSettingsObser
 
     protected void getData(final MavenRunnerParameters data) {
         workingDirComponent.getComponent().setText(data.getWorkingDirPath());
-
+        additionalPluginParamsComponent.getComponent().setText(String.join(" ", data.getGoals()));
         ParametersList parametersList = new ParametersList();
 
         for (Map.Entry<String, Boolean> entry : data.getProfilesMap().entrySet()) {
@@ -163,11 +165,13 @@ public class CamelRunnerConfPanel implements PanelWithAnchor, MavenSettingsObser
         this.anchor = anchor;
         workingDirComponent.setAnchor(anchor);
         profilesComponent.setAnchor(anchor);
+        additionalPluginParamsComponent.setAnchor(anchor);
     }
 
     @Override
     public void registerSettingsWatcher(@NotNull MavenRCSettingsWatcher watcher) {
         watcher.registerComponent("workingDir", workingDirComponent);
         watcher.registerComponent("profiles", profilesComponent);
+        watcher.registerComponent("additionalPluginParams", additionalPluginParamsComponent);
     }
 }

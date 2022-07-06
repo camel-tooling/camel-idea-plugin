@@ -354,7 +354,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
 
             @Override
             void addRequiredParameters(JavaParameters parameters) {
-                super.addPluginGoal(parameters);
+                super.addRequiredMavenGoals(parameters);
             }
 
             @Override
@@ -373,7 +373,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
 
             @Override
             void addRequiredParameters(JavaParameters parameters) {
-                super.addPluginGoal(parameters);
+                super.addRequiredMavenGoals(parameters);
                 // Added as required parameters for backward compatibility reasons
                 parameters.getProgramParametersList().addProperty("spring-boot.run.fork", "false");
             }
@@ -394,7 +394,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
 
             @Override
             void addRequiredParameters(JavaParameters parameters) {
-                super.addPluginGoal(parameters);
+                super.addRequiredMavenGoals(parameters);
             }
 
             @Override
@@ -563,12 +563,14 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
         }
 
         /**
-         * Adds the pair {@code maven-plugin-name:goal-name} to the given parameters.
+         * Adds the required maven goals to the given parameters.
          *
          * @param parameters the parameters to patch.
          */
-        private void addPluginGoal(JavaParameters parameters) {
-            parameters.getProgramParametersList().add(runtime.getPluginGoal());
+        private void addRequiredMavenGoals(JavaParameters parameters) {
+            parameters.getProgramParametersList().addAt(0, "clean");
+            parameters.getProgramParametersList().addAt(1, "compile");
+            parameters.getProgramParametersList().addAt(2, runtime.getPluginGoal());
         }
     }
 }
