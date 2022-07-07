@@ -22,7 +22,6 @@ import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointHa
 import com.github.cameltooling.idea.runner.debugger.evaluator.CamelExpressionEvaluator;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelStackFrame;
-import com.intellij.execution.process.ProcessHandler;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -50,17 +49,13 @@ public class CamelDebugProcess extends XDebugProcess {
 
     private final CamelBreakpointHandler camelBreakpointHandler;
     private final CamelDebuggerSession camelDebuggerSession;
-    private final ProcessHandler javaProcessHandler;
-
     private boolean forceRefresh;
 
-    protected CamelDebugProcess(@NotNull XDebugSession session, @NotNull CamelDebuggerSession camelDebuggerSession,
-                                ProcessHandler javaProcessHandler) {
+    protected CamelDebugProcess(@NotNull XDebugSession session, @NotNull CamelDebuggerSession camelDebuggerSession) {
         super(session);
 
         this.camelDebuggerEditorsProvider = new CamelDebuggerEditorsProvider();
         this.camelDebuggerSession = camelDebuggerSession;
-        this.javaProcessHandler = javaProcessHandler;
         this.camelBreakpointHandler = new CamelBreakpointHandler(camelDebuggerSession);
 
         try {
@@ -82,7 +77,7 @@ public class CamelDebugProcess extends XDebugProcess {
     }
 
     public void init() {
-        camelDebuggerSession.connect(javaProcessHandler);
+        camelDebuggerSession.connect();
 
         camelDebuggerSession.addMessageReceivedListener(camelMessageInfo -> {
             XSourcePosition topPosition = getSession().getTopFramePosition();

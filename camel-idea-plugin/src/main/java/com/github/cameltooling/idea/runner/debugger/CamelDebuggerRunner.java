@@ -131,13 +131,10 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
             return XDebuggerManager.getInstance(project).startSession(env, new XDebugProcessStarter() {
                 @NotNull
                 public XDebugProcess start(@NotNull XDebugSession session) {
-                    final CamelDebuggerSession camelDebuggerSession = new CamelDebuggerSession(project, session);
                     final XDebugSessionImpl sessionImpl = (XDebugSessionImpl) session;
                     final ExecutionResult executionResult = debugProcess.getExecutionResult();
                     final Map<String, XDebugProcess> context = new HashMap<>();
                     final ContextAwareDebugProcess contextAwareDebugProcess = new ContextAwareDebugProcess(session, executionResult.getProcessHandler(), context, JAVA_CONTEXT);
-
-                    camelDebuggerSession.addMessageReceivedListener(camelMessageInfo -> contextAwareDebugProcess.setContext(CAMEL_CONTEXT));
 
                     debuggerSession.getContextManager().addListener((newContext, event) -> contextAwareDebugProcess.setContext(JAVA_CONTEXT));
 
@@ -147,11 +144,11 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
                         sessionImpl.addRestartActions(((DefaultExecutionResult) executionResult).getRestartActions());
                     }
                     final JavaDebugProcess javaDebugProcess = JavaDebugProcess.create(session, debuggerSession);
+                    final CamelDebuggerSession camelDebuggerSession = new CamelDebuggerSession(project, session, javaDebugProcess.getProcessHandler());
+                    camelDebuggerSession.addMessageReceivedListener(camelMessageInfo -> contextAwareDebugProcess.setContext(CAMEL_CONTEXT));
 
                     //Init Camel Debug Process
-                    final CamelDebugProcess camelDebugProcess = new CamelDebugProcess(
-                        session, camelDebuggerSession, javaDebugProcess.getProcessHandler()
-                    );
+                    final CamelDebugProcess camelDebugProcess = new CamelDebugProcess(session, camelDebuggerSession);
 
                     //Register All Processes
                     context.put(JAVA_CONTEXT, javaDebugProcess);
