@@ -145,7 +145,7 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
                     }
                     final JavaDebugProcess javaDebugProcess = JavaDebugProcess.create(session, debuggerSession);
                     final CamelDebuggerSession camelDebuggerSession = new CamelDebuggerSession(project, session, javaDebugProcess.getProcessHandler());
-                    camelDebuggerSession.addMessageReceivedListener(camelMessageInfo -> contextAwareDebugProcess.setContext(CAMEL_CONTEXT));
+                    camelDebuggerSession.addMessageReceivedListener(messages -> contextAwareDebugProcess.setContext(CAMEL_CONTEXT));
 
                     //Init Camel Debug Process
                     final CamelDebugProcess camelDebugProcess = new CamelDebugProcess(session, camelDebuggerSession);

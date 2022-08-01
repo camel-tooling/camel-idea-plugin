@@ -27,7 +27,10 @@ import com.intellij.execution.process.OSProcessUtil;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessInfo;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ApplicationNamesInfo;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.DumbService;
+import com.intellij.openapi.project.IndexNotReadyException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaPsiFacade;
@@ -76,12 +79,15 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 public class CamelDebuggerSession implements AbstractDebuggerSession {
     private static final Logger LOG = Logger.getInstance(CamelDebuggerSession.class);
@@ -635,17 +641,21 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 Collection<String> suspendedBreakpointIDs = (Collection<String>) serverConnection.invoke(
                     this.debuggerMBeanObjectName, "getSuspendedBreakpointNodeIds", new Object[]{}, new String[]{}
                 );
-                if (suspendedBreakpointIDs != null) {
+                if (suspendedBreakpointIDs != null && !suspendedBreakpointIDs.isEmpty()) {
+                    LOG.debug("Found suspended breakpoint nodes ids: ", suspendedBreakpointIDs.size());
                     //Fire notifications here, we need to display the exchange, stack etc
-                    for (String id : suspendedBreakpointIDs) {
-                        ApplicationManager.getApplication().runReadAction(() -> {
-                            final CamelMessageInfo info = getCamelMessageInfo(id);
-                            if (info == null) {
-                                return;
-                            }
-                            notifyMessageReceivedListeners(info);
-                        });
-                    }
+                    ApplicationManager.getApplication().runReadAction(() -> {
+                        final List<CamelMessageInfo> messages = suspendedBreakpointIDs.stream()
+                            .map(this::getCamelMessageInfo)
+                            .filter(Objects::nonNull)
+                            .sorted(Comparator.comparing(CamelMessageInfo::getTimestamp))
+                            .collect(Collectors.toList());
+                        if (messages.isEmpty()) {
+                            LOG.debug("No message info could be collected");
+                            return;
+                        }
+                        notifyMessageReceivedListeners(messages);
+                    });
                 }
                 Thread.sleep(1_000L);
             } catch (InterruptedException e) {
@@ -658,13 +668,14 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     /**
-     * Notifies all the {@link MessageReceivedListener} that a message has been received.
-     * @param info the message info to provide to the listeners.
+     * Notifies all the {@link MessageReceivedListener} that new messages have been received.
+     * @param camelMessages the info of the messages to provide to the listeners.
      */
-    private void notifyMessageReceivedListeners(CamelMessageInfo info) {
+    private void notifyMessageReceivedListeners(List<CamelMessageInfo> camelMessages) {
+        LOG.debug("Notifying the message listeners");
         for (MessageReceivedListener listener : messageReceivedListeners) {
             try {
-                listener.onNewMessageReceived(info);
+                listener.onMessagesReceived(camelMessages);
             } catch (Exception e) {
                 LOG.warn("Could not notify the message listener", e);
             }
@@ -679,7 +690,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
      */
     @Nullable
     private CamelMessageInfo getCamelMessageInfo(String id) {
-        final CamelMessageInfo info; //We only need stack for the top frame
+        String xml = null;
         try {
             CamelBreakpoint breakpoint = breakpoints.get(id);
             if (breakpoint == null) {
@@ -687,14 +698,25 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 breakpoint = getCamelBreakpointById(id);
                 breakpoints.put(id, breakpoint);
             }
-            List<CamelMessageInfo> stack = getStack(id, dumpTracedMessagesAsXml(id));
-            info = stack.get(0);
+            xml = dumpTracedMessagesAsXml(id);
+            final List<CamelMessageInfo> stack = getStack(id, xml);
+            final CamelMessageInfo info = stack.get(0); // We only need stack for the top frame
             info.setStack(stack);
+            return info;
+        } catch (IndexNotReadyException e) {
+            DumbService.getInstance(project)
+                .showDumbModeNotification(
+                    String.format(
+                        "The Camel Debugger is disabled while %s is updating indices", ApplicationNamesInfo.getInstance().getProductName()
+                    )
+                );
         } catch (Exception e) {
-            LOG.warn("Could not collect the camel message info", e);
-            return null;
+            LOG.warn("Could not collect the camel message info: " + e.getMessage());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Could not collect the camel message info from id = " + id + " and xml = " + xml, e);
+            }
         }
-        return info;
+        return null;
     }
 
     /**

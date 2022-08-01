@@ -15,6 +15,7 @@
         <li>Allow to suggest only the Kamelet options (configurable)</li>
         <li>Auto setup of the Camel Debugger for different Camel runtimes (Standalone/Main, SpringBoot, Quarkus).</li>
         <li>Allow to define custom plugin parameters in the Camel Runners</li>
+        <li>Improve the multi-breakpoints support of the Camel Debugger</li>
         <li>Bug fixes</li>
       </ul>
     ]]>

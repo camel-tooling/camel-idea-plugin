@@ -41,7 +41,7 @@ public class CamelMessageInfo {
 
     private Value body;
     private String exchangeId;
-
+    private String timestamp;
     private final String messageInfoAsXML;
     private final DocumentBuilder documentBuilder;
 
@@ -99,6 +99,9 @@ public class CamelMessageInfo {
                 headers.put(key, new Value[]{newValue});
             }
         }
+        // Get the timestamp
+        Element timestampElement = (Element) (document.getElementsByTagName("timestamp").item(0));
+        timestamp = timestampElement.getTextContent();
         //Get Exchange ID
         Element exchangeElement = (Element) (document.getElementsByTagName("exchangeId").item(0));
         exchangeId = exchangeElement.getTextContent();
@@ -142,6 +145,14 @@ public class CamelMessageInfo {
 
     public String getExchangeId() {
         return exchangeId;
+    }
+
+    public Value exchangeIdAsValue() {
+        return new Value("java.lang.String", exchangeId);
+    }
+
+    public String getTimestamp() {
+        return timestamp;
     }
 
     public XSourcePosition getXSourcePosition() {
