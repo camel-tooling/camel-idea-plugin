@@ -162,6 +162,11 @@ class CamelMavenVersionManager implements VersionManager {
         return null;
     }
 
+    @Override
+    public void setClassLoader(ClassLoader classLoader) {
+        // Nothing to do
+    }
+
     ClassLoader getClassLoader() {
         return classLoader;
     }

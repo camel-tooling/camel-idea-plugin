@@ -25,6 +25,7 @@ The plugin includes:
 - Camel icon in gutter can be customized by choosing one of the three provided icons
 - Supports loading camel-catalog from third party Maven repositories define in the project Maven pom.xml file
 - Defines the Camel Runtime (set manually or detected automatically) to adapt the completion of options' key and value in properties files accordingly (by default automatic detection is enabled)
+- Auto setup of the Camel Debugger for different Camel runtimes (Standalone/Main, SpringBoot, Quarkus). In case of Camel Quarkus, it is only possible using the Camel Quarkus runner.
 
 When the plugin becomes more complete and stable then the intention is to donate the source code
 to Apache Software Foundation to be included out of the box at Apache Camel.

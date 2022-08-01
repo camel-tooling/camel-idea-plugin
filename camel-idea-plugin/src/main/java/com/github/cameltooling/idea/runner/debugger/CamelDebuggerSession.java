@@ -20,6 +20,7 @@ import com.github.cameltooling.idea.language.CamelLanguages;
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpoint;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.github.cameltooling.idea.runner.debugger.util.ClasspathUtils;
+import com.github.cameltooling.idea.service.CamelRuntime;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.execution.process.OSProcessUtil;
@@ -60,6 +61,7 @@ import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
+import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.xml.parsers.DocumentBuilder;
@@ -69,6 +71,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -77,6 +80,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class CamelDebuggerSession implements AbstractDebuggerSession {
     private static final Logger LOG = Logger.getInstance(CamelDebuggerSession.class);
@@ -84,26 +89,39 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private static final int MAX_RETRIES = 30;
     private static final String BACKLOG_DEBUGGER_LOGGING_LEVEL = "TRACE";
     private static final long FALLBACK_TIMEOUT = Long.MAX_VALUE - 1;
+    /**
+     * All breakpoints to add that are kept in memory to register them on connect or re-connect.
+     */
+    private final List<XLineBreakpoint<XBreakpointProperties<?>>> breakpointsAdd = new CopyOnWriteArrayList<>();
+    /**
+     * All breakpoints to remove that are kept in memory to register them on connect or re-connect.
+     */
+    private final List<XLineBreakpoint<XBreakpointProperties<?>>> breakpointsRemove = new CopyOnWriteArrayList<>();
 
-    private final List<XLineBreakpoint<XBreakpointProperties<?>>> pendingBreakpointsAdd = new ArrayList<>();
-    private final List<XLineBreakpoint<XBreakpointProperties<?>>> pendingBreakpointsRemove = new ArrayList<>();
+    private final Map<String, CamelBreakpoint> breakpoints = new ConcurrentHashMap<>();
+    private final List<String> explicitBreakpointIDs = new CopyOnWriteArrayList<>();
 
-    private final Map<String, CamelBreakpoint> breakpoints = new HashMap<>();
-    private final List<String> explicitBreakpointIDs = new ArrayList<>();
+    private final List<MessageReceivedListener> messageReceivedListeners = new CopyOnWriteArrayList<>();
 
-    private final List<MessageReceivedListener> messageReceivedListeners = new ArrayList<>();
+    private final Project project;
 
-    private Project project;
+    private volatile ManagedBacklogDebuggerMBean backlogDebugger;
+    private volatile JMXConnector connector;
+    private volatile MBeanServerConnection serverConnection;
+    private volatile ObjectName debuggerMBeanObjectName;
 
-    private ManagedBacklogDebuggerMBean backlogDebugger;
-    private MBeanServerConnection serverConnection;
-    private ObjectName debuggerMBeanObjectName;
+    private volatile org.w3c.dom.Document routesDOMDocument;
 
-    private org.w3c.dom.Document routesDOMDocument;
+    private volatile String temporaryBreakpointId;
 
-    private String temporaryBreakpointId;
+    private final XDebugSession xDebugSession;
+    private final ProcessHandler javaProcessHandler;
 
-    private XDebugSession xDebugSession;
+    public CamelDebuggerSession(Project project, XDebugSession session, ProcessHandler javaProcessHandler) {
+        this.project = project;
+        this.xDebugSession = session;
+        this.javaProcessHandler = javaProcessHandler;
+    }
 
     public boolean isConnected() {
         boolean isConnected = false;
@@ -131,16 +149,17 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         disconnect();
     }
 
-    public void connect(final ProcessHandler javaProcessHandler) {
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
-            if (connect(javaProcessHandler, true, 0)) {
-                checkSuspendedBreakpoints();
-            }
-        });
+    public void connect() {
+        ApplicationManager.getApplication().executeOnPooledThread(this::checkSuspendedBreakpoints);
     }
 
     public void disconnect() {
         if (backlogDebugger != null) {
+            try {
+                backlogDebugger.detach();
+            } catch (Exception e) {
+                LOG.warn("Could not detach the debugger: " + e.getMessage());
+            }
             try {
                 backlogDebugger.disableDebugger();
             } catch (Exception e) {
@@ -149,31 +168,36 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 }
             } finally {
                 backlogDebugger = null;
+            }
+        }
+        if (connector != null) {
+            try {
+                connector.close();
+            } catch (IOException e) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Could not close the JMXConnector: " + e.getMessage());
+                }
+            } finally {
                 serverConnection = null;
+                connector = null;
             }
         }
     }
 
     public void addBreakpoint(XLineBreakpoint<XBreakpointProperties<?>> xBreakpoint) {
+        breakpointsAdd.add(xBreakpoint);
+        breakpointsRemove.remove(xBreakpoint);
         if (isConnected()) {
             toggleBreakpoint(xBreakpoint, true);
-        } else {
-            pendingBreakpointsAdd.add(xBreakpoint);
-            pendingBreakpointsRemove.remove(xBreakpoint);
         }
     }
 
     public void removeBreakpoint(XLineBreakpoint<XBreakpointProperties<?>> xBreakpoint) {
+        breakpointsAdd.remove(xBreakpoint);
+        breakpointsRemove.add(xBreakpoint);
         if (isConnected()) {
             toggleBreakpoint(xBreakpoint, false);
-        } else {
-            pendingBreakpointsAdd.remove(xBreakpoint);
-            pendingBreakpointsRemove.add(xBreakpoint);
         }
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
     }
 
     public Project getProject() {
@@ -185,20 +209,14 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     public void resume() {
-        //Remove temporary breakpoint
-        if (temporaryBreakpointId != null && !explicitBreakpointIDs.contains(temporaryBreakpointId)) {
-            backlogDebugger.removeBreakpoint(temporaryBreakpointId);
+        if (isConnected()) {
+            //Remove temporary breakpoint
+            if (temporaryBreakpointId != null && !explicitBreakpointIDs.contains(temporaryBreakpointId)) {
+                backlogDebugger.removeBreakpoint(temporaryBreakpointId);
+            }
+            backlogDebugger.resumeAll();
         }
         temporaryBreakpointId = null;
-        backlogDebugger.resumeAll();
-    }
-
-    public void setXDebugSession(XDebugSession xDebugSession) {
-        this.xDebugSession = xDebugSession;
-    }
-
-    public XDebugSession getXDebugSession() {
-        return xDebugSession;
     }
 
     public void setValue(String target,
@@ -423,30 +441,39 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         }
     }
 
-    private boolean connect(final ProcessHandler javaProcessHandler, boolean retry, int retries) {
-        boolean isConnected = doConnect(javaProcessHandler);
-        while (!isConnected && retry && retries < MAX_RETRIES && !javaProcessHandler.isProcessTerminated() && !javaProcessHandler.isProcessTerminating()) {
+    /**
+     * Tries to connect to the JMX connector server. In case of failure, it retries every 2 seconds several times, and if
+     * after {@link #MAX_RETRIES}, it still cannot connect, it stops trying.
+     *
+     * @return {@code true} if it could connect to the JMX connector server, {@code false} otherwise.
+     */
+    private boolean tryToConnect() {
+        for (int i = 0; i < MAX_RETRIES && !javaProcessHandler.isProcessTerminated() && !javaProcessHandler.isProcessTerminating(); i++) {
+            LOG.debug("Trying to connect to the JMX connector server");
+            if (doConnect()) {
+                LOG.debug("Connected with success to the JMX connector server");
+                return true;
+            }
             try {
                 Thread.sleep(1000L * 2);
-                isConnected = connect(javaProcessHandler, retry, retries + 1);
-            } catch (InterruptedException e1) {
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                return false;
+                break;
             }
         }
-        return isConnected;
+        return false;
     }
 
-    private boolean doConnect(final ProcessHandler javaProcessHandler) {
-        String javaProcessPID = getPID(javaProcessHandler);
-        ClassLoader current = Thread.currentThread().getContextClassLoader();
-
+    private boolean doConnect() {
+        final ClassLoader current = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(ClasspathUtils.getProjectClassLoader(project, this.getClass().getClassLoader()));
 
-            this.serverConnection = getLocalJavaProcessMBeanServer(javaProcessPID);
-            if (serverConnection == null) {
+            this.connector = getJMXConnector();
+            if (connector == null) {
                 return false;
+            } else {
+                this.serverConnection = connector.getMBeanServerConnection();
             }
             //init debugger
             // org.apache.camel:context=camel-1,type=tracer,name=BacklogDebugger
@@ -485,7 +512,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 }
 
                 //Toggle all pending breakpoints
-                for (XLineBreakpoint<XBreakpointProperties<?>> breakpoint : pendingBreakpointsRemove) {
+                for (XLineBreakpoint<XBreakpointProperties<?>> breakpoint : breakpointsRemove) {
                     ApplicationManager.getApplication().runReadAction(() -> {
                         try {
                             toggleBreakpoint(breakpoint, false);
@@ -494,7 +521,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                         }
                     });
                 }
-                for (XLineBreakpoint<XBreakpointProperties<?>> breakpoint : pendingBreakpointsAdd) {
+                for (XLineBreakpoint<XBreakpointProperties<?>> breakpoint : breakpointsAdd) {
                     ApplicationManager.getApplication().runReadAction(() -> {
                         try {
                             toggleBreakpoint(breakpoint, true);
@@ -503,9 +530,11 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                         }
                     });
                 }
-                pendingBreakpointsAdd.clear();
-                pendingBreakpointsRemove.clear();
-
+                try {
+                    backlogDebugger.attach();
+                } catch (Exception e) {
+                    LOG.warn("Could not attach the debugger: " + e.getMessage());
+                }
                 return true;
             }
             return false;
@@ -519,27 +548,44 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         }
     }
 
-    private MBeanServerConnection getLocalJavaProcessMBeanServer(String javaProcessPID) {
-        try {
-            final String localConnectorAddressProperty =
-                    "com.sun.management.jmxremote.localConnectorAddress";
-            VirtualMachine vm = VirtualMachine.attach(javaProcessPID);
-            vm.startLocalManagementAgent();
-            String connectorAddress =
-                    vm.getAgentProperties().getProperty(localConnectorAddressProperty);
-            JMXServiceURL jmxUrl = new JMXServiceURL(connectorAddress);
-            MBeanServerConnection connection = JMXConnectorFactory.connect(jmxUrl).getMBeanServerConnection();
-            vm.detach();
-            return connection;
-        } catch (Exception e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Could not retrieve the server connection of the java process " + javaProcessPID, e);
-            }
+    private JMXConnector getLocalJavaProcessJMXConnector() {
+        final String javaProcessPID = getPID(javaProcessHandler);
+        if (javaProcessPID == null) {
             return null;
         }
+        try {
+            final VirtualMachine vm = VirtualMachine.attach(javaProcessPID);
+            vm.startLocalManagementAgent();
+            final String connectorAddress = vm.getAgentProperties().getProperty("com.sun.management.jmxremote.localConnectorAddress");
+            vm.detach();
+            return JMXConnectorFactory.connect(new JMXServiceURL(connectorAddress));
+        } catch (Exception e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Could not retrieve the JMX API connector of the java process " + javaProcessPID, e);
+            }
+        }
+        return null;
     }
 
-    private String getPID(ProcessHandler handler) {
+    /**
+     * @return the {@link JMXConnector} that matches the best with the current context.
+     */
+    private JMXConnector getJMXConnector() {
+        if (CamelRuntime.getCamelRuntime(project) == CamelRuntime.QUARKUS) {
+            // In case of Quarkus, the application runs in a forked process such that the JMXConnector needs to be
+            // retrieved from a URL corresponding to a remote process
+            try {
+                return JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi/camel"));
+            } catch (Exception e) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Could not retrieve the JMX API connector", e);
+                }
+            }
+        }
+        return getLocalJavaProcessJMXConnector();
+    }
+
+    private static String getPID(ProcessHandler handler) {
         String cmdLine = handler.toString();
         for (ProcessInfo info : OSProcessUtil.getProcessList()) {
             if (info.getCommandLine().equals(cmdLine)) {
@@ -582,48 +628,82 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     private void checkSuspendedBreakpoints() {
-        while (isConnected()) {
+        while (isConnected() || tryToConnect()) {
             try {
+                LOG.debug("Collecting suspended breakpoint nodes ids");
+                @SuppressWarnings("unchecked")
                 Collection<String> suspendedBreakpointIDs = (Collection<String>) serverConnection.invoke(
                     this.debuggerMBeanObjectName, "getSuspendedBreakpointNodeIds", new Object[]{}, new String[]{}
                 );
-                if (suspendedBreakpointIDs != null && !suspendedBreakpointIDs.isEmpty()) {
+                if (suspendedBreakpointIDs != null) {
                     //Fire notifications here, we need to display the exchange, stack etc
                     for (String id : suspendedBreakpointIDs) {
-                        final String suspendedMessage = dumpTracedMessagesAsXml(id);
-
                         ApplicationManager.getApplication().runReadAction(() -> {
-                            for (MessageReceivedListener listener : messageReceivedListeners) {
-                                try {
-                                    CamelBreakpoint breakpoint = breakpoints.get(id);
-                                    if (breakpoint == null) {
-                                        //find tag and source position based on ID
-                                        breakpoint = getCamelBreakpointById(id);
-                                        breakpoints.put(id, breakpoint);
-                                    }
-                                    List<CamelMessageInfo> stack = getStack(id, suspendedMessage);
-                                    CamelMessageInfo info = stack.get(0); //We only need stack for the top frame
-                                    info.setStack(stack);
-                                    listener.onNewMessageReceived(info);
-                                } catch (Exception e) {
-                                    LOG.warn("Could not notify the message listener", e);
-                                }
+                            final CamelMessageInfo info = getCamelMessageInfo(id);
+                            if (info == null) {
+                                return;
                             }
+                            notifyMessageReceivedListeners(info);
                         });
                     }
                 }
-
-                try {
-                    Thread.sleep(1000L);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+                Thread.sleep(1_000L);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             } catch (Exception e) {
                 LOG.warn("Could not check suspended breakpoints", e);
             }
         }
+        LOG.debug("Stop collecting suspended breakpoint nodes ids");
     }
 
+    /**
+     * Notifies all the {@link MessageReceivedListener} that a message has been received.
+     * @param info the message info to provide to the listeners.
+     */
+    private void notifyMessageReceivedListeners(CamelMessageInfo info) {
+        for (MessageReceivedListener listener : messageReceivedListeners) {
+            try {
+                listener.onNewMessageReceived(info);
+            } catch (Exception e) {
+                LOG.warn("Could not notify the message listener", e);
+            }
+        }
+    }
+
+    /**
+     * Retrieves the {@link CamelMessageInfo} corresponding to the given id of breakpoint.
+     * @param id the id of the breakpoint
+     * @return the {@link CamelMessageInfo} corresponding to the given id of breakpoint if it could be found, {@code null}
+     * otherwise.
+     */
+    @Nullable
+    private CamelMessageInfo getCamelMessageInfo(String id) {
+        final CamelMessageInfo info; //We only need stack for the top frame
+        try {
+            CamelBreakpoint breakpoint = breakpoints.get(id);
+            if (breakpoint == null) {
+                //find tag and source position based on ID
+                breakpoint = getCamelBreakpointById(id);
+                breakpoints.put(id, breakpoint);
+            }
+            List<CamelMessageInfo> stack = getStack(id, dumpTracedMessagesAsXml(id));
+            info = stack.get(0);
+            info.setStack(stack);
+        } catch (Exception e) {
+            LOG.warn("Could not collect the camel message info", e);
+            return null;
+        }
+        return info;
+    }
+
+    /**
+     * Invokes through JMX {@code dumpTracedMessagesAsXml} using the new method signature, if it fails, it retries using
+     * the old signature.
+     *
+     * @param id The node id for which the method {@code dumpTracedMessagesAsXml} should be invoked.
+     * @return the result of the method {@code dumpTracedMessagesAsXml} that could be called through JMX.
+     */
     private String dumpTracedMessagesAsXml(String id) {
         String xml;
         try {
@@ -644,7 +724,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         return (Element) xPath.compile(path).evaluate(routesDOMDocument, XPathConstants.NODE);
     }
 
-    private List<CamelMessageInfo> getStack(String breakpointId, String suspendedMessage) throws Exception {
+    private List<CamelMessageInfo> getStack(String breakpointId, String messageInfoAsXML) throws Exception {
         List<CamelMessageInfo> stack = new ArrayList<>();
         //Use new operation to retrieve message history
         String messageHistory = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "messageHistoryOnBreakpointAsXml",
@@ -667,7 +747,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             }
             if (breakpoint != null) {
                 breakpoints.put(processorId, breakpoint);
-                CamelMessageInfo info = new CamelMessageInfo(suspendedMessage, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag(), routeId, processorId, processor, null);
+                CamelMessageInfo info = new CamelMessageInfo(messageInfoAsXML, breakpoint.getXSourcePosition(), breakpoint.getBreakpointTag(), routeId, processorId, processor, null);
                 stack.add(info);
             }
         }

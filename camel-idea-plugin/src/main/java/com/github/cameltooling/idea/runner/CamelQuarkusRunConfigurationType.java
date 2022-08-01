@@ -14,14 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.runner.beforerun;
+package com.github.cameltooling.idea.runner;
 
-import com.intellij.execution.BeforeRunTask;
-import com.intellij.openapi.util.Key;
-import org.jetbrains.annotations.NotNull;
+import com.intellij.execution.configurations.ConfigurationType;
 
-public class CamelBeforeRunTask extends BeforeRunTask<CamelBeforeRunTask> {
-    protected CamelBeforeRunTask(@NotNull Key providerId) {
-        super(providerId);
+/**
+ * The {@link ConfigurationType} for Camel Quarkus applications.
+ */
+public class CamelQuarkusRunConfigurationType extends CamelRunConfigurationType {
+    public static final String ID = "CamelQuarkusRunConfiguration";
+
+    /**
+     * reflection
+     */
+    CamelQuarkusRunConfigurationType() {
+        super(ID, "Camel Quarkus Application");
     }
 }

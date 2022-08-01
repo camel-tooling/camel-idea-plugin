@@ -71,6 +71,10 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     private boolean showCamelIconInGutter = true;
     private boolean enableCamelDebugger = true;
     /**
+     * The flag indicating whether the Camel Debugger should be automatically setup.
+     */
+    private boolean camelDebuggerAutoSetup = true;
+    /**
      * Flag indicating whether only the options of the Kamelet should be proposed.
      */
     private boolean onlyShowKameletOptions = true;
@@ -167,6 +171,14 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
         this.onlyShowKameletOptions = onlyShowKameletOptions;
     }
 
+    public void setCamelDebuggerAutoSetup(boolean camelDebuggerAutoSetup) {
+        this.camelDebuggerAutoSetup = camelDebuggerAutoSetup;
+    }
+
+    public boolean isCamelDebuggerAutoSetup() {
+        return camelDebuggerAutoSetup;
+    }
+
     public List<String> getIgnorePropertyList() {
         if (ignorePropertyList.isEmpty()) {
             ignorePropertyList = new ArrayList<>(Arrays.asList(DEFAULT_IGNORE_PROPERTIES));
@@ -259,6 +271,7 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
             && showCamelIconInGutter == that.showCamelIconInGutter
             && camelCatalogProvider == that.camelCatalogProvider
             && onlyShowKameletOptions == that.onlyShowKameletOptions
+            && camelDebuggerAutoSetup == that.camelDebuggerAutoSetup
             && Objects.equals(ignorePropertyList, that.ignorePropertyList)
             && Objects.equals(excludePropertyFiles, that.excludePropertyFiles);
     }
@@ -267,7 +280,7 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     public int hashCode() {
         return Objects.hash(realTimeEndpointValidation, realTimeSimpleValidation, realTimeJSonPathValidation,
             realTimeIdReferenceTypeValidation, downloadCatalog, scanThirdPartyComponents, camelCatalogProvider,
-            onlyShowKameletOptions, ignorePropertyList, excludePropertyFiles);
+            onlyShowKameletOptions, camelDebuggerAutoSetup, ignorePropertyList, excludePropertyFiles);
     }
 
     public boolean isRealTimeBeanMethodValidationCheckBox() {

@@ -117,27 +117,24 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
             throws ExecutionException {
         LOG.debug("Attaching VM...");
         DefaultDebugEnvironment environment = new DefaultDebugEnvironment(env, state, connection, pollConnection);
-        final DebuggerSession debuggerSession = DebuggerManagerEx.getInstanceEx(env.getProject()).attachVirtualMachine(environment);
+        Project project = env.getProject();
+        final DebuggerSession debuggerSession = DebuggerManagerEx.getInstanceEx(project).attachVirtualMachine(environment);
         if (debuggerSession == null) {
             return null;
         }
-        final CamelDebuggerSession camelDebuggerSession = new CamelDebuggerSession();
         final DebugProcessImpl debugProcess = debuggerSession.getProcess();
         if (!debugProcess.isDetached() && !debugProcess.isDetaching()) {
             if (environment.isRemote()) {
                 debugProcess.putUserData(BatchEvaluator.REMOTE_SESSION_KEY, Boolean.TRUE);
             }
 
-            return XDebuggerManager.getInstance(env.getProject()).startSession(env, new XDebugProcessStarter() {
+            return XDebuggerManager.getInstance(project).startSession(env, new XDebugProcessStarter() {
                 @NotNull
                 public XDebugProcess start(@NotNull XDebugSession session) {
-
                     final XDebugSessionImpl sessionImpl = (XDebugSessionImpl) session;
                     final ExecutionResult executionResult = debugProcess.getExecutionResult();
                     final Map<String, XDebugProcess> context = new HashMap<>();
                     final ContextAwareDebugProcess contextAwareDebugProcess = new ContextAwareDebugProcess(session, executionResult.getProcessHandler(), context, JAVA_CONTEXT);
-
-                    camelDebuggerSession.addMessageReceivedListener(camelMessageInfo -> contextAwareDebugProcess.setContext(CAMEL_CONTEXT));
 
                     debuggerSession.getContextManager().addListener((newContext, event) -> contextAwareDebugProcess.setContext(JAVA_CONTEXT));
 
@@ -147,11 +144,11 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
                         sessionImpl.addRestartActions(((DefaultExecutionResult) executionResult).getRestartActions());
                     }
                     final JavaDebugProcess javaDebugProcess = JavaDebugProcess.create(session, debuggerSession);
+                    final CamelDebuggerSession camelDebuggerSession = new CamelDebuggerSession(project, session, javaDebugProcess.getProcessHandler());
+                    camelDebuggerSession.addMessageReceivedListener(camelMessageInfo -> contextAwareDebugProcess.setContext(CAMEL_CONTEXT));
 
                     //Init Camel Debug Process
-                    final CamelDebugProcess camelDebugProcess = new CamelDebugProcess(
-                        session, camelDebuggerSession, javaDebugProcess.getProcessHandler()
-                    );
+                    final CamelDebugProcess camelDebugProcess = new CamelDebugProcess(session, camelDebuggerSession);
 
                     //Register All Processes
                     context.put(JAVA_CONTEXT, javaDebugProcess);
@@ -161,7 +158,6 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
             }).getRunContentDescriptor();
         } else {
             debuggerSession.dispose();
-            camelDebuggerSession.dispose();
             return null;
         }
     }

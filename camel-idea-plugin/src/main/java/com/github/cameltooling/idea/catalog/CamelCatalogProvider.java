@@ -16,10 +16,10 @@
  */
 package com.github.cameltooling.idea.catalog;
 
-import java.util.List;
 import java.util.function.Supplier;
 
 import com.github.cameltooling.idea.service.CamelCatalogService;
+import com.github.cameltooling.idea.service.CamelRuntime;
 import com.github.cameltooling.idea.service.CamelService;
 import com.github.cameltooling.idea.util.ArtifactCoordinates;
 import com.intellij.openapi.diagnostic.Logger;
@@ -32,7 +32,6 @@ import org.apache.camel.catalog.karaf.KarafRuntimeProvider;
 import org.apache.camel.catalog.quarkus.QuarkusRuntimeProvider;
 import org.apache.camel.springboot.catalog.SpringBootRuntimeProvider;
 import org.apache.camel.tooling.model.MainModel;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -43,28 +42,16 @@ public enum CamelCatalogProvider {
      * The mode that automatically detects the right {@code CamelCatalogProvider} according to the libraries found
      * in the project.
      */
-    AUTO("Auto detect", null, null, List.of(), null, null) {
+    AUTO("Auto detect", null, null, null) {
         @Override
         public CamelCatalogProvider getActualProvider(final Project project) {
-            LOG.debug("Trying to automatically detect the Camel Runtime");
-            final CamelService camelService = project.getService(CamelService.class);
-            for (CamelCatalogProvider provider : CamelCatalogProvider.values()) {
-                if (provider.coreArtifactId == null) {
-                    continue;
-                }
-                if (camelService.containsLibrary(provider.coreArtifactId, false)) {
-                    LOG.info("The Camel " + provider.getName() + " Runtime has been detected");
-                    return provider;
-                }
-            }
-            LOG.info("No specific Camel Runtime has been detected, the default runtime is used");
-            return DEFAULT;
+            return CamelCatalogProvider.valueOf(CamelRuntime.getCamelRuntime(project).name());
         }
     },
     /**
      * The default mode corresponding to the legacy way to retrieve the catalog.
      */
-    DEFAULT("Default", DefaultRuntimeProvider::new, null, List.of(), null, null) {
+    DEFAULT("Default", DefaultRuntimeProvider::new, null, CamelRuntime.DEFAULT) {
         @Override
         public boolean loadRuntimeProviderVersion(Project project) {
             // No specific artifact to load
@@ -74,18 +61,11 @@ public enum CamelCatalogProvider {
     /**
      * The {@code CamelCatalogProvider} for Quarkus.
      */
-    QUARKUS(
-        "Quarkus", QuarkusRuntimeProvider::new, null, List.of("org.apache.camel.quarkus"),
-        "camel-quarkus-core", "camel-quarkus-catalog"
-    ),
+    QUARKUS("Quarkus", QuarkusRuntimeProvider::new, null, CamelRuntime.QUARKUS),
     /**
      * The {@code CamelCatalogProvider} for Karaf with an empty main model.
      */
-    KARAF(
-        "Karaf", KarafRuntimeProvider::new, null, List.of("org.apache.camel", "org.apache.camel.karaf"),
-        "camel-core-osgi", "camel-catalog-provider-karaf"
-
-    ) {
+    KARAF("Karaf", KarafRuntimeProvider::new, null, CamelRuntime.KARAF) {
         @Override
         protected CamelCatalog createCatalog(final Project project) {
             return new DefaultCamelCatalog() {
@@ -104,8 +84,7 @@ public enum CamelCatalogProvider {
      */
     SPRING_BOOT(
         "Spring Boot", SpringBootRuntimeProvider::new, "org.apache.camel.catalog.springboot.SpringBootRuntimeProvider",
-        List.of("org.apache.camel", "org.apache.camel.springboot"),
-        "camel-spring-boot", "camel-catalog-provider-springboot"
+        CamelRuntime.SPRING_BOOT
     ) {
         @Override
         protected CamelCatalog createCatalog(final Project project) {
@@ -130,19 +109,9 @@ public enum CamelCatalogProvider {
      */
     private final String name;
     /**
-     * The potential group ids of the artifacts of the Runtime Provider.
+     * The corresponding Camel Runtime.
      */
-    @NotNull
-    private final List<String> groupIds;
-    /**
-     * The id of the core artifact of the Runtime Provider.
-     */
-    @Nullable
-    private final String coreArtifactId;
-    /**
-     * The id of the artifact containing the catalog of the Runtime Provider.
-     */
-    private final String catalogArtifactId;
+    private final CamelRuntime runtime;
     /**
      * The supplier of {@code RuntimeProvider} to use to retrieve the metadata at the right location according to
      * the runtime.
@@ -161,17 +130,12 @@ public enum CamelCatalogProvider {
      * @param runtimeProviderSupplier the supplier of {@code RuntimeProvider} to use to retrieve the metadata at the
      *                                right location according to the runtime.
      * @param runtimeProviderLegacyClass the fully qualified name of the legacy {@code RuntimeProvider}.
-     * @param groupIds                the potential group ids of the artifacts of the Runtime Provider.
-     * @param coreArtifactId          the id of the core artifact of the Runtime Provider.
-     * @param catalogArtifactId       the id of the artifact containing the catalog of the Runtime Provider.
+     * @param runtime                the corresponding Camel Runtime.
      */
     CamelCatalogProvider(String name, Supplier<RuntimeProvider> runtimeProviderSupplier,
-                         @Nullable String runtimeProviderLegacyClass, @NotNull List<String> groupIds,
-                         @Nullable String coreArtifactId, String catalogArtifactId) {
+                         @Nullable String runtimeProviderLegacyClass, CamelRuntime runtime) {
         this.name = name;
-        this.groupIds = groupIds;
-        this.coreArtifactId = coreArtifactId;
-        this.catalogArtifactId = catalogArtifactId;
+        this.runtime = runtime;
         this.runtimeProviderSupplier = runtimeProviderSupplier;
         this.runtimeProviderLegacyClass = runtimeProviderLegacyClass;
     }
@@ -222,23 +186,6 @@ public enum CamelCatalogProvider {
     }
 
     /**
-     * @param project the project from which the core artifact is extracted.
-     * @return an instance of {@link ArtifactCoordinates} if the core artifact could be found in the dependency of the
-     * given project, {@code null} otherwise.
-     */
-    @Nullable
-    protected ArtifactCoordinates getCoreArtifactCoordinates(final Project project) {
-        final CamelService camelService = project.getService(CamelService.class);
-        for (String groupId : groupIds) {
-            ArtifactCoordinates coordinates = camelService.getProjectLibraryCoordinates(groupId, coreArtifactId);
-            if (coordinates != null) {
-                return coordinates;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Loads the catalog of the Runtime provider by first finding the core artifact in the dependency of the project to
      * retrieve the group id and version and if they can be found it completes them with the corresponding catalog
      * artifact id and finally load this specific Runtime provider version.
@@ -247,7 +194,7 @@ public enum CamelCatalogProvider {
      * @return {@code true} if the specific Runtime provider version could be loaded, {@code false} otherwise.
      */
     public boolean loadRuntimeProviderVersion(final Project project) {
-        final ArtifactCoordinates coordinates = getCoreArtifactCoordinates(project);
+        final ArtifactCoordinates coordinates = runtime.getCoreArtifactCoordinates(project);
         if (coordinates == null) {
             LOG.debug("No core artifact could be found in the project");
             return false;
@@ -255,6 +202,11 @@ public enum CamelCatalogProvider {
         final String version = coordinates.getVersion();
         if (version == null) {
             LOG.debug("No version of the core artifact has been set");
+            return false;
+        }
+        final String catalogArtifactId = runtime.getCatalogArtifactId();
+        if (catalogArtifactId == null) {
+            LOG.debug("The artifact id of the catalog is unknown");
             return false;
         }
         return project.getService(CamelCatalogService.class)
