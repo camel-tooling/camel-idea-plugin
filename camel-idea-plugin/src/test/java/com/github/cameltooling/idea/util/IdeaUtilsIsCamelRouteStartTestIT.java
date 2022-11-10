@@ -28,8 +28,9 @@ import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiVariable;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
+import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 
-public class IdeaUtilsIsCamelRouteStartTestIT extends LightCodeInsightFixtureTestCase {
+public class IdeaUtilsIsCamelRouteStartTestIT extends LightJavaCodeInsightFixtureTestCase {
 
     private static final String CODE = "import org.apache.camel.builder.RouteBuilder;\n"
         + "\n"

@@ -17,40 +17,23 @@
 package com.github.cameltooling.idea.service;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.testFramework.PsiTestUtil;
-import com.intellij.testFramework.exceptionCases.AbstractExceptionCase;
 
 public class CamelServiceTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     public void testScanForCamelProjectShouldSupportDependenciesWithoutVersion() throws Throwable {
-        CamelService service = getModule().getProject().getService(CamelService.class);
-        assertNoException(ArrayIndexOutOfBoundsExceptionCase.check(
-            () -> PsiTestUtil.addProjectLibrary(getModule(), "gradle::mylib:"))
+        assertNoException(
+            ArrayIndexOutOfBoundsException.class,
+            () -> PsiTestUtil.addProjectLibrary(getModule(), "gradle::mylib:")
         );
-        assertNoException(ArrayIndexOutOfBoundsExceptionCase.check(
-            () -> PsiTestUtil.addProjectLibrary(getModule(), "gradle:mygroup:myartifactId:"))
+        assertNoException(
+            ArrayIndexOutOfBoundsException.class,
+            () -> PsiTestUtil.addProjectLibrary(getModule(), "gradle:mygroup:myartifactId:")
         );
-        assertNoException(ArrayIndexOutOfBoundsExceptionCase.check(
-            () -> PsiTestUtil.addProjectLibrary(getModule(), "mygroup:myartifactId:"))
+        assertNoException(
+            ArrayIndexOutOfBoundsException.class,
+            () -> PsiTestUtil.addProjectLibrary(getModule(), "mygroup:myartifactId:")
         );
     }
 
-}
-
-abstract class ArrayIndexOutOfBoundsExceptionCase extends AbstractExceptionCase<ArrayIndexOutOfBoundsException> {
-
-    @Override
-    public Class<ArrayIndexOutOfBoundsException> getExpectedExceptionClass() {
-        return ArrayIndexOutOfBoundsException.class;
-    }
-
-    static ArrayIndexOutOfBoundsExceptionCase check(Runnable runnable) {
-        return new ArrayIndexOutOfBoundsExceptionCase() {
-            @Override
-            public void tryClosure() throws ArrayIndexOutOfBoundsException {
-                runnable.run();
-            }
-        };
-    }
 }

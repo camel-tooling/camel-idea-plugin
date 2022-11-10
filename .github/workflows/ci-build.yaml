@@ -37,8 +37,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 11
@@ -48,18 +50,17 @@ jobs:
           java-version: '11'
           cache: 'gradle'
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
-      - name: Build with Gradle
-        uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
-        with:
-          arguments: build
+        uses: gradle/wrapper-validation-action@v1.0.5
+      - name: Build against all supported versions
+        run: ./build-all.sh
+        shell: bash
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: Reports
+          name: ${{ matrix.os }}-Reports
           path: camel-idea-plugin/build/reports
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: Logs
-          path: camel-idea-plugin/target/*.log
+          name: ${{ matrix.os }}-Logs
+          path: camel-idea-plugin/build/idea-sandbox/system-test/testlog/idea.log
