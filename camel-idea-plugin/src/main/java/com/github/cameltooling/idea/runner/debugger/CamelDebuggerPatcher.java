@@ -121,6 +121,8 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
         final CamelService service = project.getService(CamelService.class);
         if (!service.isCamelPresent()) {
             LOG.debug("The project is not a camel project so no need to patch the parameters");
+        } else if (!CamelPreferenceService.getService().isEnableCamelDebugger()) {
+            LOG.debug("The Camel Debugger has been disabled so no need to patch the parameters");
         } else if (CamelPreferenceService.getService().isCamelDebuggerAutoSetup()) {
             if (service.containsLibrary("camel-debug", false)) {
                 LOG.debug("The component camel-debug has been detected in the dependencies of the project");
