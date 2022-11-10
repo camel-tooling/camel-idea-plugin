@@ -23,21 +23,21 @@ apply plugin: 'java'
 apply plugin: 'org.jetbrains.intellij'
 
 intellij {
-    version = '2021.2'
+    version = ideaVersion
     downloadSources = true
     type = project.hasProperty('intellij_type') ? project.intellij_type : 'IC'
     plugins = ['java', 'java-i18n', 'properties', 'yaml', 'maven', 'xpath']
 }
 
-// to support IDEA 2021 onwards
+// to support IDEA 2022 onwards
 // http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
 patchPluginXml {
-    sinceBuild = "212"
+    sinceBuild = "222"
     untilBuild = "222.*"
 }
 
 runPluginVerifier {
-    ideVersions = [ "2021.2", "2021.3", "2022.1" ]
+    ideVersions = [ "2022.1", "2022.2" ]
 }
 
 // publishPlugin {
@@ -45,6 +45,11 @@ runPluginVerifier {
 //    token authenticationToken
 // }
 
+tasks {
+    buildSearchableOptions {
+        enabled = false
+    }
+}
 println "Building with intellij type : ${intellij.type}"
 
 dependencies {

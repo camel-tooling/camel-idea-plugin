@@ -21,8 +21,9 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
+import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 
-public class IdeaUtilsIsCamelRouteStartExtendedTestIT extends LightCodeInsightFixtureTestCase {
+public class IdeaUtilsIsCamelRouteStartExtendedTestIT extends LightJavaCodeInsightFixtureTestCase {
 
     private static final String CODE = "import org.apache.camel.builder.RouteBuilder;\n"
         + "\n"
