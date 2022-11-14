@@ -97,7 +97,7 @@ public class CamelYamlPropertyKeyCompletion extends CamelPropertyKeyCompletion {
             // The suggestion doesn't match, so it is replaced by an empty proposal
             return LookupElementBuilder.create("");
         }
-        return LookupElementBuilder.create(String.format("%s:%n", subpartOfSuggestion))
+        return LookupElementBuilder.create(String.format("%s:\n", subpartOfSuggestion))
             .withLookupString(subpartOfSuggestion)
             .withPresentableText(subpartOfSuggestion)
             .withInsertHandler((ctx, item) -> indentSuggestion(ctx));
@@ -114,14 +114,14 @@ public class CamelYamlPropertyKeyCompletion extends CamelPropertyKeyCompletion {
         } else if (suggestion.endsWith(subpartOfSuggestion)) {
             // The current subpart of the suggestion is the last part of the key, so the description can be supplied
             return LookupElementBuilder.create(
-                new SimpleSuggestion(suggestion, descriptionSupplier, String.format("%s:%n", subpartOfSuggestion))
+                new SimpleSuggestion(suggestion, descriptionSupplier, String.format("%s:\n", subpartOfSuggestion))
             )
                 .withLookupString(subpartOfSuggestion)
                 .withPresentableText(subpartOfSuggestion)
                 .withInsertHandler((ctx, item) -> indentSuggestion(ctx));
         }
         // The current subpart of the suggestion is an intermediate part of the key, so no description is supplied
-        return LookupElementBuilder.create(String.format("%s:%n", subpartOfSuggestion))
+        return LookupElementBuilder.create(String.format("%s:\n", subpartOfSuggestion))
             .withLookupString(subpartOfSuggestion)
             .withPresentableText(subpartOfSuggestion)
             .withInsertHandler((ctx, item) -> indentSuggestion(ctx));
@@ -147,7 +147,7 @@ public class CamelYamlPropertyKeyCompletion extends CamelPropertyKeyCompletion {
                 .withPresentableText(subpartOfSuggestionInKebabCase);
         }
         // The current subpart of the suggestion is an intermediate part of the key, so no description is supplied
-        return LookupElementBuilder.create(String.format("%s:%n", subpartOfSuggestionInKebabCase))
+        return LookupElementBuilder.create(String.format("%s:\n", subpartOfSuggestionInKebabCase))
             .withLookupString(subpartOfSuggestion)
             .withLookupString(subpartOfSuggestionInKebabCase)
             .withPresentableText(subpartOfSuggestionInKebabCase)

@@ -30,7 +30,6 @@ import com.intellij.codeInsight.lookup.LookupElement;
  */
 public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
-    private static final String SUFFIX = String.format("%n");
     @Override
     protected String getTestDataPath() {
         return "src/test/resources/testData/completion/property";
@@ -108,7 +107,7 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.type("cam");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel:" + SUFFIX);
+        assertContainsElements(strings, "camel:\n");
     }
 
     /**
@@ -121,7 +120,7 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.type("camel");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel:" + SUFFIX);
+        assertContainsElements(strings, "camel:\n");
     }
 
     /**
@@ -133,7 +132,7 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "main:" + SUFFIX, "component:" + SUFFIX, "language:" + SUFFIX, "dataformat:" + SUFFIX);
+        assertContainsElements(strings, "main:\n", "component:\n", "language:\n", "dataformat:\n");
     }
 
     /**
@@ -186,8 +185,8 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.type(type);
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "main:" + SUFFIX);
-        assertDoesntContain(strings, "component:" + SUFFIX, "language:" + SUFFIX, "dataformat:" + SUFFIX);
+        assertContainsElements(strings, "main:\n");
+        assertDoesntContain(strings, "component:\n", "language:\n", "dataformat:\n");
     }
 
     /**
@@ -251,7 +250,7 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "ftp:" + SUFFIX, "bean:" + SUFFIX, "cql:" + SUFFIX);
+        assertContainsElements(strings, "ftp:\n", "bean:\n", "cql:\n");
     }
 
     /**
@@ -276,8 +275,8 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "ftp:" +  SUFFIX);
-        assertDoesntContain(strings, "bean:" +  SUFFIX, "cql:" +  SUFFIX);
+        assertContainsElements(strings, "ftp:\n");
+        assertDoesntContain(strings, "bean:\n", "cql:\n");
     }
 
     /**
@@ -325,7 +324,7 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "jsonpath:" + SUFFIX, "bean:" + SUFFIX, "xpath:" + SUFFIX);
+        assertContainsElements(strings, "jsonpath:\n", "bean:\n", "xpath:\n");
     }
 
     /**
@@ -351,8 +350,8 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.type("be");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "bean:" + SUFFIX);
-        assertDoesntContain(strings, "jsonpath:" + SUFFIX, "xpath:" + SUFFIX);
+        assertContainsElements(strings, "bean:\n");
+        assertDoesntContain(strings, "jsonpath:\n", "xpath:\n");
     }
 
     /**
@@ -402,7 +401,7 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "jackson:" + SUFFIX, "csv:" + SUFFIX, "bindyCsv:" + SUFFIX);
+        assertContainsElements(strings, "jackson:\n", "csv:\n", "bindyCsv:\n");
     }
 
     /**
@@ -428,8 +427,8 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.type("cs");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "csv:" + SUFFIX);
-        assertDoesntContain(strings, "jackson:" + SUFFIX, "xpath:" + SUFFIX);
+        assertContainsElements(strings, "csv:\n");
+        assertDoesntContain(strings, "jackson:\n", "xpath:\n");
     }
 
     /**
@@ -502,7 +501,7 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel:" + SUFFIX);
+        assertContainsElements(strings, "camel:\n");
     }
 
     /**
