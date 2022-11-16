@@ -26,6 +26,8 @@ The plugin includes:
 - Supports loading camel-catalog from third party Maven repositories define in the project Maven pom.xml file
 - Defines the Camel Runtime (set manually or detected automatically) to adapt the completion of options' key and value in properties files accordingly (by default automatic detection is enabled)
 - Auto setup of the Camel Debugger for different Camel runtimes (Standalone/Main, SpringBoot, Quarkus). In case of Camel Quarkus, it is only possible using the Camel Quarkus runner.
+- Evaluate Camel expressions and set the body, Headers or Exchange properties from the Debugger Window thanks to custom actions
+- Set the body, Headers or Exchange properties from the context menu of the Debugger Window using the Camel simple language
 
 When the plugin becomes more complete and stable then the intention is to donate the source code
 to Apache Software Foundation to be included out of the box at Apache Camel.

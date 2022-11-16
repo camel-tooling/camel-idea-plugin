@@ -18,6 +18,7 @@ package com.github.cameltooling.idea.runner.debugger.stack;
 
 
 import com.github.cameltooling.idea.runner.debugger.CamelDebuggerSession;
+import com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget;
 import com.github.cameltooling.idea.runner.debugger.evaluator.CamelExpressionEvaluator;
 import com.intellij.debugger.engine.JavaStackFrame;
 import com.intellij.icons.AllIcons;
@@ -79,13 +80,13 @@ public class CamelStackFrame extends XStackFrame {
     public void computeChildren(@NotNull XCompositeNode node) {
         final XValueChildrenList children = new XValueChildrenList();
         children.add("ExchangeId", new ObjectFieldDefinitionValue(this.session, this.camelMessageInfo.exchangeIdAsValue(), AllIcons.Debugger.Value));
-        children.add("Body", new ObjectFieldDefinitionValue(this.session, this.camelMessageInfo.getBody(), AllIcons.Debugger.Value));
-        children.add("Headers", new MapOfObjectFieldDefinitionValue(this.session, this.camelMessageInfo.getHeaders(), AllIcons.Debugger.Value));
+        children.add("Body", new ObjectFieldDefinitionValue(CamelDebuggerTarget.BODY, null, this.session, this.camelMessageInfo.getBody(), AllIcons.Debugger.Value));
+        children.add("Headers", new MapOfObjectFieldDefinitionValue(CamelDebuggerTarget.MESSAGE_HEADER, this.session, this.camelMessageInfo.getHeaders(), AllIcons.Debugger.Value));
         final var properties = this.camelMessageInfo.getProperties();
         if (properties == null) {
             children.add("WARNING: ", JavaStackFrame.createMessageNode("Exchange Properties in Debugger are only available in Camel version 3.15 or later", AllIcons.Nodes.WarningMark));
         } else {
-            children.add("Exchange Properties", new MapOfObjectFieldDefinitionValue(this.session, properties, AllIcons.Debugger.Value));
+            children.add("Exchange Properties", new MapOfObjectFieldDefinitionValue(CamelDebuggerTarget.EXCHANGE_PROPERTY, this.session, properties, AllIcons.Debugger.Value));
         }
         node.addChildren(children, true);
     }

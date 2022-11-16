@@ -89,6 +89,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget.BODY;
+import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget.EXCHANGE_PROPERTY;
+import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget.MESSAGE_HEADER;
+
 public class CamelDebuggerSession implements AbstractDebuggerSession {
     private static final Logger LOG = Logger.getInstance(CamelDebuggerSession.class);
 
@@ -225,7 +229,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         temporaryBreakpointId = null;
     }
 
-    public void setValue(String target,
+    public void setValue(CamelDebuggerTarget target,
                          @Nullable String targetName,
                          String expression,
                          String language,
@@ -238,7 +242,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
         if (breakpointElement == null) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("The breakpoint element could not be created from the position " + position);
+                LOG.debug(String.format("The breakpoint element could not be created from the position %s", position));
             }
             return;
         }
@@ -257,22 +261,22 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         try {
             Object value = evaluateExpression(expression, language, params);
             if (value != null) {
-                if ("Message Header".equals(target)) {
+                if (target == MESSAGE_HEADER) {
                     serverConnection.invoke(this.debuggerMBeanObjectName, "setMessageHeaderOnBreakpoint",
                             new Object[]{breakpointId, targetName, value},
                             new String[]{"java.lang.String", "java.lang.String", "java.lang.Object"});
-                } else if ("Exchange Property".equals(target)) {
+                } else if (target == EXCHANGE_PROPERTY) {
                     serverConnection.invoke(this.debuggerMBeanObjectName, "setExchangePropertyOnBreakpoint",
                             new Object[]{breakpointId, targetName, value},
                             new String[]{"java.lang.String", "java.lang.String", "java.lang.Object"});
-                } else if ("Body".equals(target)) {
+                } else if (target == BODY) {
                     serverConnection.invoke(this.debuggerMBeanObjectName, "setMessageBodyOnBreakpoint",
                             new Object[]{breakpointId, value},
                             new String[]{"java.lang.String", "java.lang.Object"});
                 }
             }
         } catch (Exception e) {
-            LOG.warn("Could not evaluate the expression " + expression, e);
+            LOG.warn(String.format("Could not evaluate the expression %s", expression), e);
         }
     }
 
@@ -445,6 +449,11 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         } else {
             backlogDebugger.stepBreakpoint(breakpointId);
         }
+    }
+
+    public CamelDebugProcess getCamelDebugProcess() {
+        ContextAwareDebugProcess debugProcess = (ContextAwareDebugProcess) xDebugSession.getDebugProcess();
+        return debugProcess.getDebugProcess(CamelDebuggerRunner.CAMEL_CONTEXT, CamelDebugProcess.class);
     }
 
     /**
