@@ -25,6 +25,7 @@ import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.codeInsight.daemon.GutterMark;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
@@ -44,13 +45,13 @@ public class YamlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
 
         assertEquals("Does not contain the expected amount of Camel gutters", 3, gutters.size());
 
-        Icon defaultIcon = ServiceManager.getService(CamelPreferenceService.class).getCamelIcon();
+        Icon defaultIcon = ApplicationManager.getApplication().getService(CamelPreferenceService.class).getCamelIcon();
         gutters.forEach(gutterMark -> {
             assertSame("Gutter should have the Camel icon", defaultIcon, gutterMark.getIcon());
             assertEquals("Camel route", gutterMark.getTooltipText());
         });
 
-        LineMarkerInfo.LineMarkerGutterIconRenderer firstGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(1);
+        LineMarkerInfo.LineMarkerGutterIconRenderer<?> firstGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(1);
 
         assertSame(YAMLTokenTypes.SCALAR_KEY, firstGutter.getLineMarkerInfo().getElement().getNode().getElementType());
         assertEquals("from", firstGutter.getLineMarkerInfo().getElement().getText());
@@ -61,7 +62,7 @@ public class YamlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
         assertEquals("Navigation should have one target", 1, firstGutterTargets.size());
         assertEquals("The navigation target route doesn't match", "to: file:inbox", firstGutterTargets.get(0).getElement().getText());
 
-        LineMarkerInfo.LineMarkerGutterIconRenderer secondGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(2);
+        LineMarkerInfo.LineMarkerGutterIconRenderer<?> secondGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(2);
 
         assertSame(YAMLTokenTypes.SCALAR_KEY, secondGutter.getLineMarkerInfo().getElement().getNode().getElementType());
         assertEquals("from", secondGutter.getLineMarkerInfo().getElement().getText());
@@ -81,10 +82,10 @@ public class YamlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
 
         assertEquals("Should contain 1 Camel gutter", 1, gutters.size());
 
-        assertSame("Gutter should have the Camel icon", ServiceManager.getService(CamelPreferenceService.class).getCamelIcon(), gutters.get(0).getIcon());
+        assertSame("Gutter should have the Camel icon", ApplicationManager.getApplication().getService(CamelPreferenceService.class).getCamelIcon(), gutters.get(0).getIcon());
         assertEquals("Camel route", gutters.get(0).getTooltipText());
 
-        LineMarkerInfo.LineMarkerGutterIconRenderer gutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(0);
+        LineMarkerInfo.LineMarkerGutterIconRenderer<?> gutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(0);
 
         assertSame(YAMLTokenTypes.SCALAR_KEY, gutter.getLineMarkerInfo().getElement().getNode().getElementType());
         assertEquals("from", gutter.getLineMarkerInfo().getElement().getText());

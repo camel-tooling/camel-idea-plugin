@@ -23,6 +23,7 @@ import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.daemon.GutterMark;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
@@ -41,13 +42,13 @@ public class XmlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsight
 
         assertEquals("Does not contain the expected amount of Camel gutters", 3, gutters.size());
 
-        Icon defaultIcon = ServiceManager.getService(CamelPreferenceService.class).getCamelIcon();
+        Icon defaultIcon = ApplicationManager.getApplication().getService(CamelPreferenceService.class).getCamelIcon();
         gutters.forEach(gutterMark -> {
             assertSame("Gutter should have the Camel icon", defaultIcon, gutterMark.getIcon());
             assertEquals("Camel route", gutterMark.getTooltipText());
         });
 
-        LineMarkerInfo.LineMarkerGutterIconRenderer firstGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(1);
+        LineMarkerInfo.LineMarkerGutterIconRenderer<?> firstGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(1);
 
         assertTrue(firstGutter.getLineMarkerInfo().getElement() instanceof XmlToken);
         assertEquals("The navigation start element doesn't match", "file:inbox",
@@ -59,7 +60,7 @@ public class XmlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsight
         assertEquals("The navigation target tag name doesn't match", "to",
                 GutterTestUtil.getGuttersWithXMLTarget(firstGutterTargets).get(0).getLocalName());
 
-        LineMarkerInfo.LineMarkerGutterIconRenderer secondGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(2);
+        LineMarkerInfo.LineMarkerGutterIconRenderer<?> secondGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(2);
 
         assertTrue(secondGutter.getLineMarkerInfo().getElement() instanceof XmlToken);
         assertEquals("The navigation start element doesn't match", "file:outbox",
@@ -79,10 +80,10 @@ public class XmlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsight
 
         assertEquals("Should contain 1 Camel gutter", 1, gutters.size());
 
-        assertSame("Gutter should have the Camel icon", ServiceManager.getService(CamelPreferenceService.class).getCamelIcon(), gutters.get(0).getIcon());
+        assertSame("Gutter should have the Camel icon", ApplicationManager.getApplication().getService(CamelPreferenceService.class).getCamelIcon(), gutters.get(0).getIcon());
         assertEquals("Camel route", gutters.get(0).getTooltipText());
 
-        LineMarkerInfo.LineMarkerGutterIconRenderer gutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) gutters.get(0);
+        LineMarkerInfo.LineMarkerGutterIconRenderer<?> gutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(0);
 
         assertTrue(gutter.getLineMarkerInfo().getElement() instanceof XmlToken);
         assertEquals("The navigation start element doesn't match", "file:inbox",
