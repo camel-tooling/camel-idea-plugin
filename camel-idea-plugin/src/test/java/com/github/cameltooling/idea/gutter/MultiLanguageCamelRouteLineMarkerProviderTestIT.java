@@ -41,8 +41,8 @@ public class MultiLanguageCamelRouteLineMarkerProviderTestIT extends CamelLightC
         List<GutterMark> xmlGutters = myFixture.findAllGutters("XmlCamelRouteLineMarkerProviderTestData.xml");
         assertNotNull(xmlGutters);
 
-        assertEquals("Should contain 3 Java Camel gutters", 3, javaGutters.size());
-        assertEquals("Should contain 3 XML Camel gutters", 3, xmlGutters.size());
+        assertEquals("Should contain 4 Java Camel gutters", 4, javaGutters.size());
+        assertEquals("Should contain 4 XML Camel gutters", 4, xmlGutters.size());
 
         //from Java to XML
         LineMarkerInfo.LineMarkerGutterIconRenderer<?> firstJavaGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) javaGutters.get(1);

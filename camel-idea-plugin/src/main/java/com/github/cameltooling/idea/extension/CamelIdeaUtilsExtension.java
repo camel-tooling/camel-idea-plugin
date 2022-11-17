@@ -48,6 +48,13 @@ public interface CamelIdeaUtilsExtension {
     boolean isInsideCamelRoute(PsiElement element, boolean excludeRouteStart);
 
     /**
+     * Indicates whether the given element can be marked with a line marker.
+     * @param element the element to check.
+     * @return {@code true} if it can be marked, {@code false} otherwise.
+     */
+    boolean isCamelLineMarker(PsiElement element);
+
+    /**
      * Is the given element a language of a Camel route
      *
      * @param element the element

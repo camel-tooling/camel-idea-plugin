@@ -39,9 +39,21 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
         List<GutterMark> gutters = myFixture.findAllGutters();
         assertNotNull(gutters);
 
-        assertEquals("Should contain 3 Camel gutters", 3, gutters.size());
+        assertEquals("Should contain 4 Camel gutters", 4, gutters.size());
 
         assertGuttersHasCamelIcon(gutters);
+
+        LineMarkerInfo.LineMarkerGutterIconRenderer<?> firstRestGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(0);
+
+        assertTrue(firstRestGutter.getLineMarkerInfo().getElement() instanceof PsiJavaToken);
+        assertEquals("The navigation start element doesn't match", "\"/say\"",
+            firstRestGutter.getLineMarkerInfo().getElement().getText());
+
+        LineMarkerInfo.LineMarkerGutterIconRenderer<?> secondRestGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(3);
+
+        assertTrue(secondRestGutter.getLineMarkerInfo().getElement() instanceof PsiJavaToken);
+        assertEquals("The navigation start element doesn't match", "rest",
+            secondRestGutter.getLineMarkerInfo().getElement().getText());
 
         LineMarkerInfo.LineMarkerGutterIconRenderer<?> firstGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(1);
 
@@ -54,7 +66,6 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
         assertEquals("Navigation should have one target", 1, firstGutterTargets.size());
         assertEquals("The navigation target element doesn't match", "from(\"file:outbox\")",
             GutterTestUtil.getGuttersWithJavaTarget(firstGutterTargets).get(0).getMethodExpression().getQualifierExpression().getText());
-
 
         LineMarkerInfo.LineMarkerGutterIconRenderer<?> secondGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(2);
 

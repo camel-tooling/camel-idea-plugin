@@ -18,7 +18,7 @@ package com.github.cameltooling.idea.gutter;
 
 import java.util.List;
 
-import javax.swing.*;
+import javax.swing.Icon;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
@@ -26,10 +26,7 @@ import com.intellij.codeInsight.daemon.GutterMark;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.xml.XmlTag;
-import com.intellij.psi.xml.XmlToken;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLMapping;
 
@@ -43,7 +40,7 @@ public class YamlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
         List<GutterMark> gutters = myFixture.findAllGutters();
         assertNotNull(gutters);
 
-        assertEquals("Does not contain the expected amount of Camel gutters", 3, gutters.size());
+        assertEquals("Does not contain the expected amount of Camel gutters", 4, gutters.size());
 
         Icon defaultIcon = ApplicationManager.getApplication().getService(CamelPreferenceService.class).getCamelIcon();
         gutters.forEach(gutterMark -> {

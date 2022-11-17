@@ -21,7 +21,7 @@ import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.JavaClassUtils;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.ide.highlighter.JavaFileType;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiAnnotation;
@@ -33,6 +33,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteral;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
@@ -57,14 +58,12 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     private static final String JAVA_LANG_STRING = "java.lang.String";
 
     private static final List<String> JAVA_ROUTE_BUILDERS = Arrays.asList(
-        new String[] {
-            "org.apache.camel.builder.RouteBuilder",
-            "org.apache.camel.RoutesBuilder",
-            "org.apache.camel.builder.RouteConfigurationBuilder",
-            "org.apache.camel.RouteConfigurationsBuilder",
-            "org.apache.camel.builder.AdviceWithRouteBuilder",
-            "org.apache.camel.spring.SpringRouteBuilder"
-        });
+        "org.apache.camel.builder.RouteBuilder",
+        "org.apache.camel.RoutesBuilder",
+        "org.apache.camel.builder.RouteConfigurationBuilder",
+        "org.apache.camel.RouteConfigurationsBuilder",
+        "org.apache.camel.builder.AdviceWithRouteBuilder",
+        "org.apache.camel.spring.SpringRouteBuilder");
 
     @Override
     public boolean isCamelFile(PsiFile file) {
@@ -91,7 +90,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     @Override
     public boolean isCamelRouteStartExpression(PsiElement element) {
         PsiElement routeStartParent = getIdeaUtils().findFirstParent(element, false,
-                this::isCamelRouteStart, e -> e instanceof PsiFile);
+                this::isCamelRouteStart, PsiFile.class::isInstance);
         return routeStartParent != null;
     }
 
@@ -109,6 +108,24 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     }
 
     @Override
+    public boolean isCamelLineMarker(PsiElement element) {
+        if (element instanceof PsiJavaToken) {
+            if (element.getParent() instanceof PsiLiteralExpression) {
+                return true;
+            }
+            // Check for the pattern "rest()"
+            if (element instanceof PsiIdentifier) {
+                PsiIdentifier identifier = (PsiIdentifier) element;
+                if ("rest".equals(identifier.getText())) {
+                    PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+                    return call != null && call.getArgumentList().isEmpty();
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean isCamelExpression(PsiElement element, String language) {
         // java method call
         String[] methods = null;
@@ -117,10 +134,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         } else if ("jsonpath".equals(language)) {
             methods = new String[]{"jsonpath"};
         }
-        if (getIdeaUtils().isFromJavaMethodCall(element, true, methods)) {
-            return true;
-        }
-        return false;
+        return getIdeaUtils().isFromJavaMethodCall(element, true, methods);
     }
 
     @Override
@@ -161,7 +175,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                     PsiMethod method = ((PsiMethodCallExpression) exp).resolveMethod();
                     if (method != null) {
                         String name = method.getName();
-                        return Arrays.stream(PREDICATE_EIPS).anyMatch(name::equals);
+                        return Arrays.asList(PREDICATE_EIPS).contains(name);
                     }
                 }
             }
@@ -213,31 +227,21 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         if (getIdeaUtils().isElementFromAnnotation(element, "org.apache.camel.spi.UriEndpoint")) {
             return true;
         }
-        if (getIdeaUtils().isFromJavaMethodCall(element, false, "activeMQComponent")) {
-            return true;
-        }
-        return false;
+        return getIdeaUtils().isFromJavaMethodCall(element, false, "activeMQComponent");
     }
 
     @Override
     public boolean isFromStringFormatEndpoint(PsiElement element) {
-        if (getIdeaUtils().isFromJavaMethodCall(element, false, STRING_FORMAT_ENDPOINT)) {
-            return true;
-        }
-        return false;
+        return getIdeaUtils().isFromJavaMethodCall(element, false, STRING_FORMAT_ENDPOINT);
     }
 
     @Override
     public boolean acceptForAnnotatorOrInspection(PsiElement element) {
         // skip XML limit on siblings
-        boolean xml = getIdeaUtils().isFromFileType(element, "xml");
-        if (!xml) {
-            // for programming languages you can have complex structures with concat which we dont support yet
-            int siblings = countSiblings(element);
-            if (siblings > 1) {
-                // we currently only support one liners, so check how many siblings the element has (it has 1 with ending parenthesis which is okay)
-                return false;
-            }
+        if (!getIdeaUtils().isFromFileType(element, "xml")) {
+            // for programming languages you can have complex structures with concat which we don't support yet
+            // we currently only support one liner, so check how many siblings the element has (it has 1 with ending parenthesis which is okay)
+            return countSiblings(element) <= 1;
         }
         return true;
     }
@@ -297,7 +301,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition) {
-        return findEndpoints(module, uriCondition, e -> isCamelRouteStart(e));
+        return findEndpoints(module, uriCondition, this::isCamelRouteStart);
     }
 
     @Override
@@ -311,9 +315,9 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
      * @return the {@link PsiClass} for the matching bean name by looking for classes annotated with spring Component, Service or Repository
      */
     private Optional<PsiClass> searchForMatchingBeanClass(String beanName, Project project) {
-        return getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Component", project).map(Optional::of)
-                .orElseGet(() -> getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Service", project)).map(Optional::of)
-                .orElseGet(() -> getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Repository", project));
+        return getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Component", project)
+            .or(() -> getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Service", project))
+            .or(() -> getJavaClassUtils().findBeanClassByName(beanName, "org.springframework.stereotype.Repository", project));
     }
 
     private List<PsiElement> findEndpoints(Module module, Predicate<String> uriCondition, Predicate<PsiLiteral> elementCondition) {
@@ -350,10 +354,10 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     }
 
     private IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
+        return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
 
     private JavaClassUtils getJavaClassUtils() {
-        return ServiceManager.getService(JavaClassUtils.class);
+        return ApplicationManager.getApplication().getService(JavaClassUtils.class);
     }
 }
