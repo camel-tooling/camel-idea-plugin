@@ -63,7 +63,7 @@ dependencies {
     implementation "org.apache.camel.karaf:camel-catalog-provider-karaf:${camelVersion}"
     implementation "org.apache.camel.quarkus:camel-quarkus-catalog:${camelQuarkusVersion}"
     implementation "org.apache.camel.kamelets:camel-kamelets:${camelKameletVersion}"
-    implementation "io.github.classgraph:classgraph:4.8.150"
+    implementation "io.github.classgraph:classgraph:4.8.151"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.0"
     implementation "io.fabric8:kubernetes-model-apiextensions:6.2.0"
 
