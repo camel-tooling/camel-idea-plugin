@@ -14,6 +14,7 @@
         <li>Upgrade to Camel 3.19</li>
         <li>Set the body, Headers or Exchange properties from the context menu of the Debugger Window using the Camel simple language</li>
         <li>Adapt the debugger to Camel 3.19+</li>
+        <li>Deprecated endpoint options are now marked with strike-through in endpoint URI</li>
       </ul>
     ]]>
   </change-notes>
