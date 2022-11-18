@@ -64,7 +64,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
 
 
     static {
-        final String projectRoot = System.getProperty("user.dir").substring(0, System.getProperty("user.dir").lastIndexOf('/'));
+        final String projectRoot = new File(System.getProperty("user.dir")).getParent();
         try (InputStream is = new FileInputStream(projectRoot +"/gradle.properties")) {
             Properties gradleProperties = new Properties();
             gradleProperties.load(is);

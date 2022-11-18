@@ -43,7 +43,7 @@ public class CamelYamlHeaderValueCompletion extends CamelHeaderValueCompletion {
     protected LookupElementBuilder createLookupElementBuilder(final PsiElement element,
                                                               final EndpointHeaderModel header,
                                                               final String suggestion) {
-        return LookupElementBuilder.create(new OptionSuggestion(header, String.format("%nconstant: %s", suggestion)))
+        return LookupElementBuilder.create(new OptionSuggestion(header, String.format("\nconstant: %s", suggestion)))
             .withLookupString(suggestion)
             .withPresentableText(suggestion)
             .withInsertHandler(

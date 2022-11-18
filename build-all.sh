@@ -2,7 +2,7 @@
 
 for v in "2022.1.4" "2022.2.3"; do
     echo "## Building with version $v..."
-    ./gradlew -PideaVersion="$v" clean build
+    ./gradlew --no-daemon -PideaVersion="$v" clean build
 
     status=$?
     if [[ $status -ne 0 ]]; then
