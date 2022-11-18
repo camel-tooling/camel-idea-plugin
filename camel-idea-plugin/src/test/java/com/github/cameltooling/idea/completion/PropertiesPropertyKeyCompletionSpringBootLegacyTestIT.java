@@ -16,15 +16,8 @@
  */
 package com.github.cameltooling.idea.completion;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
-import com.github.cameltooling.idea.completion.extension.PropertiesPropertyPlaceholdersSmartCompletion;
-import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.roots.ModifiableRootModel;
-import org.codehaus.plexus.util.FileUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -32,13 +25,6 @@ import org.jetbrains.annotations.Nullable;
  * the Spring Boot runtime.
  */
 public class PropertiesPropertyKeyCompletionSpringBootLegacyTestIT extends PropertiesPropertyKeyCompletionSpringBootTestIT {
-
-    private static final Logger LOG = Logger.getInstance(PropertiesPropertyKeyCompletionSpringBootLegacyTestIT.class);
-
-    /**
-     * Indicates whether the jaxb libs could be removed from the local caches.
-     */
-    private boolean couldDeleteJaxb;
 
     @Nullable
     @Override
@@ -52,44 +38,12 @@ public class PropertiesPropertyKeyCompletionSpringBootLegacyTestIT extends Prope
         };
     }
 
-    @Override
-    protected void loadDependencies(@NotNull ModifiableRootModel model) {
-        // Ugly hack to prevent Grape issues due to the absence of jaxb-core-2.3.0.jar in the local maven repository only the pom exists
-        // Here we remove jaxb-core and jaxb-impl from the local maven repository and from the Gradle cache
-        // to ensure that the jar file will properly be downloaded along with its pom file
-        try {
-            File[] files = getMavenArtifacts("com.sun.xml.bind:jaxb-core:2.3.0", "org.apache.camel:camel-core:2.25.4");
-            File parentFile = files[0].getParentFile().getParentFile().getParentFile().getParentFile();
-            List<String> artifacts = List.of("jaxb-core/2.3.0", "jaxb-impl/2.3.0");
-            // Remove the folder of jaxb-core and jaxb-impl from the Gradle cache
-            if (parentFile.getName().equals("com.sun.xml.bind")) {
-                // The artifact has been found in gradle so let's remove it
-                for (String artifact : artifacts) {
-                    FileUtils.deleteDirectory(new File(parentFile, artifact));
-                }
-            }
-            // Remove the folder of jaxb-core and jaxb-impl from the local maven repository
-            parentFile = files[1].getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
-            for (String artifact : artifacts) {
-                FileUtils.deleteDirectory(new File(parentFile, String.format("com/sun/xml/bind/%s", artifact)));
-            }
-            this.couldDeleteJaxb = true;
-        } catch (IOException e) {
-            LOG.warn("Could not delete the jaxb libs from the local caches", e);
-        }
-        super.loadDependencies(model);
-    }
-
     protected void assertComponentOptionSuggestion(List<String> strings) {
         assertContainsElements(strings, "camel.component.sql.data-source = ", "camel.component.sql.use-placeholder = ",
             "camel.component.sql.resolve-property-placeholders = ", "camel.component.sql.enabled = ");
     }
 
     protected void assertDataFormatNameSuggestion(List<String> strings) {
-        if (!couldDeleteJaxb) {
-            LOG.warn("The jaxb libs could not be removed, the test needs to be skipped");
-            return;
-        }
         assertContainsElements(strings, "camel.dataformat.json-jackson.", "camel.dataformat.csv.", "camel.dataformat.bindy-csv.");
     }
 
@@ -97,10 +51,6 @@ public class PropertiesPropertyKeyCompletionSpringBootLegacyTestIT extends Prope
      * Ensures that data format option suggestions can properly be proposed even with an old name.
      */
     public void testDataFormatOptionWithOldName() {
-        if (!couldDeleteJaxb) {
-            LOG.warn("The jaxb libs could not be removed, the test needs to be skipped");
-            return;
-        }
         myFixture.configureByFiles(getFileName("data-format-options-with-old-name"));
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();

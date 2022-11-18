@@ -80,6 +80,8 @@ dependencies {
 description = 'Apache Camel IDE :: IDEA Plugin'
 
 test {
+    // Force a specific grape configuration as temporary fix to prevent dependency retrieval issues
+    systemProperty("grape.config", "grapeConfig.xml")
 // Start: To get Grape log messages
 //    systemProperty("groovy.grape.report.downloads", "true")
 //    systemProperty("ivy.message.logger.level", "4")
