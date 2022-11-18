@@ -53,7 +53,6 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
-import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderEntry;
@@ -282,7 +281,7 @@ public class CamelService implements Disposable {
      * otherwise.
      */
     @Nullable
-    private synchronized ArtifactCoordinates getProjectCamelCoreCoordinates() {
+    public synchronized ArtifactCoordinates getProjectCamelCoreCoordinates() {
         for (ArtifactCoordinates coordinates : projectLibraries.values()) {
             if (isCamel2CoreMavenDependency(coordinates) || isCamel3CoreMavenDependency(coordinates)) {
                 return coordinates;

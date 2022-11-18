@@ -61,7 +61,15 @@ public enum CamelCatalogProvider {
     /**
      * The {@code CamelCatalogProvider} for Quarkus.
      */
-    QUARKUS("Quarkus", QuarkusRuntimeProvider::new, null, CamelRuntime.QUARKUS),
+    QUARKUS("Quarkus", QuarkusRuntimeProvider::new, null, CamelRuntime.QUARKUS) {
+
+        @Override
+        protected boolean loadRuntimeProviderCamelVersion(Project project) {
+            // The version of Camel doesn't match with the version of Camel Quarkus so the corresponding runtime
+            // provider cannot be found
+            return false;
+        }
+    },
     /**
      * The {@code CamelCatalogProvider} for Karaf with an empty main model.
      */
@@ -188,7 +196,7 @@ public enum CamelCatalogProvider {
     /**
      * Loads the catalog of the Runtime provider by first finding the core artifact in the dependency of the project to
      * retrieve the group id and version and if they can be found it completes them with the corresponding catalog
-     * artifact id and finally load this specific Runtime provider version.
+     * artifact id and finally loads this specific Runtime provider version.
      *
      * @param project the project from which the core artifact is extracted.
      * @return {@code true} if the specific Runtime provider version could be loaded, {@code false} otherwise.
@@ -197,12 +205,12 @@ public enum CamelCatalogProvider {
         final ArtifactCoordinates coordinates = runtime.getCoreArtifactCoordinates(project);
         if (coordinates == null) {
             LOG.debug("No core artifact could be found in the project");
-            return false;
+            return loadRuntimeProviderCamelVersion(project);
         }
         final String version = coordinates.getVersion();
         if (version == null) {
             LOG.debug("No version of the core artifact has been set");
-            return false;
+            return loadRuntimeProviderCamelVersion(project);
         }
         final String catalogArtifactId = runtime.getCatalogArtifactId();
         if (catalogArtifactId == null) {
@@ -211,6 +219,40 @@ public enum CamelCatalogProvider {
         }
         return project.getService(CamelCatalogService.class)
             .loadRuntimeProviderVersion(coordinates.getGroupId(), catalogArtifactId, version);
+    }
+
+    /**
+     * Loads the catalog of the Runtime provider by first finding the Camel core artifact in the dependency of the
+     * project to retrieve the version of the catalog, it completes it with the corresponding catalog
+     * artifact id and finally loads this specific Runtime provider version.
+     *
+     * @param project the project from which the Camel core artifact is extracted.
+     * @return {@code true} if the specific Runtime provider version could be loaded, {@code false} otherwise.
+     */
+    protected boolean loadRuntimeProviderCamelVersion(final Project project) {
+        final ArtifactCoordinates coordinates = project.getService(CamelService.class).getProjectCamelCoreCoordinates();
+        if (coordinates == null) {
+            LOG.debug("No Camel core artifact could be found in the project");
+            return false;
+        }
+        final String version = coordinates.getVersion();
+        if (version == null) {
+            LOG.debug("No version of the Camel core artifact has been set");
+            return false;
+        }
+        final String catalogArtifactId = runtime.getCatalogArtifactId();
+        if (catalogArtifactId == null) {
+            LOG.debug("The artifact id of the catalog is unknown");
+            return false;
+        }
+        CamelCatalogService camelCatalogService = project.getService(CamelCatalogService.class);
+        // As we cannot guess the group id, let's iterate
+        for (String group : runtime.getGroupIds()) {
+            if (camelCatalogService.loadRuntimeProviderVersion(group, catalogArtifactId, version)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

@@ -84,6 +84,18 @@ public final class ArtifactCoordinates {
     }
 
     /**
+     * Construct a {@code ArtifactCoordinates} with the given parameters.
+     * @param groupId the id of the group of the artifact.
+     * @param artifactId the id of the artifact.
+     * @param version the version of the artifact.
+     * @return the corresponding {@code ArtifactCoordinates}.
+     */
+    @NotNull
+    public static ArtifactCoordinates of(@NotNull String groupId, @NotNull String artifactId, @Nullable String version) {
+        return new ArtifactCoordinates(groupId, artifactId, version);
+    }
+
+    /**
      * @return the id of the group of the artifact.
      */
     @NotNull
