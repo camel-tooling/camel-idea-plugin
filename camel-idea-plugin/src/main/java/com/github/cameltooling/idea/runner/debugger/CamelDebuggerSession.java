@@ -36,7 +36,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -789,7 +788,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
     private String getBreakpointId(@NotNull PsiElement breakpointTag) {
         String breakpointId = null;
-        String sourceLocation = "";
+        final List<String> sourceLocations;
 
         //Obtain file name and line number
         XSourcePosition position = XDebuggerUtil.getInstance().createPositionByElement(breakpointTag);
@@ -800,21 +799,30 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         switch (virtualFile.getFileType().getName()) {
         case "XML":
         case "YAML":
-            sourceLocation = virtualFile.getPresentableUrl();
+            final String url = virtualFile.getPresentableUrl();
             if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
-                sourceLocation = String.format("file:%s", sourceLocation.replace("src/main/resources", "target/classes")); // file:/absolute/path/to/file.xml
+                sourceLocations = List.of(
+                    String.format("file:%s", url.replace("src/main/resources", "target/classes")) // file:/absolute/path/to/file.xml
+                );
             } else { //Then it must be a Jar
-                sourceLocation = String.format("classpath:%s", sourceLocation.substring(sourceLocation.lastIndexOf("!") + 2));
+                sourceLocations = List.of(String.format("classpath:%s", url.substring(url.lastIndexOf("!") + 2)));
             }
             break;
         case "JAVA":
             PsiClass psiClass = PsiTreeUtil.getParentOfType(breakpointTag, PsiClass.class);
-            sourceLocation = psiClass.getQualifiedName();
+            sourceLocations = List.of(psiClass.getQualifiedName(), virtualFile.getName());
             break;
         default: // noop
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(String.format("File type not supported: %s", virtualFile.getFileType().getName()));
+            }
+            return null;
         }
 
-        String path = "//*[@sourceLocation='" + sourceLocation + "' and @sourceLineNumber='" + lineNumber + "']";
+        String path = sourceLocations
+            .stream()
+            .map(sourceLocation -> String.format("//*[@sourceLocation='%s' and @sourceLineNumber='%d']", sourceLocation, lineNumber))
+            .collect(Collectors.joining("|"));
 
         try {
             XPath xPath = XPathFactory.newInstance().newXPath();
@@ -852,18 +860,36 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
 
         if (!filePath.startsWith("file:") && !filePath.startsWith("classpath:")) { //This is Java class
-            PsiClass psiClass = JavaPsiFacade.getInstance(project).findClass(fileName, GlobalSearchScope.everythingScope(project));
-            VirtualFile virtualFile = psiClass.getContainingFile().getVirtualFile();
-            XSourcePosition position = XDebuggerUtil.getInstance().createPosition(virtualFile, new Integer(lineNumber) - 1);
+            final VirtualFile virtualFile;
+            if (fileName.endsWith(".java")) {
+                Collection<VirtualFile> virtualFiles = FilenameIndex.getVirtualFilesByName(
+                    fileName, GlobalSearchScope.everythingScope(project)
+                );
+                if (virtualFiles.isEmpty()) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(String.format("The file %s could not be found in the project", fileName));
+                    }
+                    return null;
+                }
+                virtualFile = virtualFiles.iterator().next();
+            } else {
+                PsiClass psiClass = JavaPsiFacade.getInstance(project).findClass(fileName, GlobalSearchScope.everythingScope(project));
+                virtualFile = psiClass.getContainingFile().getVirtualFile();
+            }
+            XSourcePosition position = XDebuggerUtil.getInstance().createPosition(virtualFile, Integer.valueOf(lineNumber) - 1);
             Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
             return new CamelBreakpoint(id, breakpointElement.get(id), position);
         } else {
-            PsiFile[] psiFiles = FilenameIndex.getFilesByName(project, fileName, GlobalSearchScope.everythingScope(project));
-            if (psiFiles.length < 1) {
+            Collection<VirtualFile> virtualFiles = FilenameIndex.getVirtualFilesByName(
+                fileName, GlobalSearchScope.everythingScope(project)
+            );
+            if (virtualFiles.isEmpty()) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(String.format("The file %s could not be found in the project", fileName));
+                }
                 return null;
             }
-            for (PsiFile psiFile : psiFiles) {
-                VirtualFile virtualFile = psiFile.getVirtualFile();
+            for (VirtualFile virtualFile : virtualFiles) {
                 String url = virtualFile.getPresentableUrl();
                 if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
                     url = String.format("file:%s", url.replace("src/main/resources", "target/classes")); // file:/absolute/path/to/file.xml
