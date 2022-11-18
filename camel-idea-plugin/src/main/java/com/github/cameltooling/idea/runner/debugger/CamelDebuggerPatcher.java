@@ -297,7 +297,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
             try {
                 parameters.getClassPath().add(new File(url.toURI()));
             } catch (URISyntaxException e) {
-                LOG.debug(String.format("The URL %s could not be converted to an URI: %s", url, e.getMessage()));
+                LOG.warn(String.format("The URL %s could not be converted to an URI: %s", url, e.getMessage()));
             }
         }
     }
