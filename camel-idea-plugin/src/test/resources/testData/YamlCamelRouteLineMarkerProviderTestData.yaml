@@ -39,3 +39,17 @@
       uri: "file:outbox"
       steps:
         - to: file:inbox
+- rest:
+    get:
+      - path: "/hello"
+        to:
+          uri: "direct:hello"
+      - consumes: "application/json"
+        path: "/bye"
+        to:
+          uri: "direct:bye"
+    post:
+      - path: "/bye"
+        to:
+          uri: "mock:update"
+

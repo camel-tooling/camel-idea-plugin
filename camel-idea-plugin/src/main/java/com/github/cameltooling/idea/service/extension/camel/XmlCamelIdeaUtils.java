@@ -21,7 +21,7 @@ import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.ide.highlighter.XmlFileType;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -41,19 +41,16 @@ import java.util.function.Predicate;
 public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
 
     private static final List<String> XML_ROUTES = Arrays.asList(
-        new String[] {
-            "routes",
-            "routeConfigurations",
-            "route",
-            "routeConfiguration"
-        });
+        "routes",
+        "routeConfigurations",
+        "route",
+        "routeConfiguration");
 
     @Override
     public boolean isCamelFile(PsiFile file) {
         if (file != null && XmlFileType.INSTANCE.equals(file.getFileType())) {
-            XmlFile xmlFile = (XmlFile) file;
-            XmlTag rootTag = xmlFile.getRootTag();
-            return XML_ROUTES.contains(rootTag.getLocalName());
+            XmlTag rootTag = ((XmlFile) file).getRootTag();
+            return rootTag != null && XML_ROUTES.contains(rootTag.getLocalName());
         }
 
         return false;
@@ -71,6 +68,11 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean isCamelLineMarker(PsiElement element) {
+        return element instanceof XmlToken && element.getParent() instanceof XmlTag;
     }
 
     @Override
@@ -100,8 +102,7 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
         if (tag == null || (excludeRouteStart && isCamelRouteStartTag(tag))) {
             return false;
         }
-        PsiElement routeTag = getIdeaUtils().findFirstParent(tag, false, this::isCamelRouteTag, e -> e instanceof PsiFile);
-        return routeTag != null;
+        return getIdeaUtils().findFirstParent(tag, false, this::isCamelRouteTag, PsiFile.class::isInstance) != null;
     }
 
     @Override
@@ -250,9 +251,6 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
 
     @Override
     public PsiClass getBeanClass(PsiElement element) {
-        if (element instanceof XmlToken) {
-
-        }
         return null;
     }
 
@@ -284,6 +282,6 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
     }
 
     private IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
+        return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
 }

@@ -27,7 +27,8 @@ import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.YamlPatternConditions;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.lang.ASTNode;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.patterns.ElementPattern;
@@ -51,12 +52,10 @@ import org.jetbrains.yaml.psi.YAMLValue;
 public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
 
     private static final List<String> YAML_ROUTES = Arrays.asList(
-        new String[] {
-            "routes",
-            "routeConfigurations",
-            "route",
-            "routeConfiguration"
-        });
+        "routes",
+        "routeConfigurations",
+        "route",
+        "routeConfiguration");
     /**
      * All keys representing the potential producers.
      */
@@ -310,6 +309,16 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         return false;
     }
 
+    /**
+     * @param element the element to test.
+     * @return {@code true} if the given element is a scalar key, {@code false} otherwise.
+     */
+    @Override
+    public boolean isCamelLineMarker(PsiElement element) {
+        final ASTNode node = element.getNode();
+        return node != null && node.getElementType() == YAMLTokenTypes.SCALAR_KEY;
+    }
+
     @Override
     public boolean skipEndpointValidation(PsiElement element) {
         return false;
@@ -378,12 +387,12 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         if (keyValue == null) {
             return false;
         }
-        final String key = keyValue.getKeyText();
-        return Arrays.asList(PLACE_FOR_ENDPOINT_URI).contains(key) && isInsideCamelRoute(location, false);
+        return Arrays.asList(PLACE_FOR_ENDPOINT_URI).contains(keyValue.getKeyText())
+            && isInsideCamelRoute(location, false);
     }
 
     private IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
+        return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
 
 }

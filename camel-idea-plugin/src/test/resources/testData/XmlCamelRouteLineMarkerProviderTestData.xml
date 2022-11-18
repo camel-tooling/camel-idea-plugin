@@ -33,4 +33,15 @@
     <from uri="file:outbox"/>
     <to uri="file:inbox"/>
   </route>
+  <rest>
+    <get uri="/hello">
+      <to uri="direct:hello"/>
+    </get>
+    <get uri="/bye" consumes="application/json">
+      <to uri="direct:bye"/>
+    </get>
+    <post uri="/bye">
+      <to uri="mock:update"/>
+    </post>
+  </rest>
 </routes>

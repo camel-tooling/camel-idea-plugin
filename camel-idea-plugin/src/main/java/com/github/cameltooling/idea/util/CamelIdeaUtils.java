@@ -82,6 +82,16 @@ public final class CamelIdeaUtils implements Disposable {
             .anyMatch(extension -> extension.isCamelRouteStartExpression(element));
     }
 
+    /**
+     * Indicates whether the given element can be marked with a line marker.
+     * @param element the element to check.
+     * @return {@code true} if it can be marked, {@code false} otherwise.
+     */
+    public boolean isCamelLineMarker(PsiElement element) {
+        return enabledExtensions.stream()
+            .anyMatch(extension -> extension.isCamelLineMarker(element));
+    }
+
     public boolean isInsideCamelRoute(PsiElement element, boolean excludeRouteStart) {
         return enabledExtensions.stream()
             .anyMatch(extension -> extension.isInsideCamelRoute(element, excludeRouteStart));

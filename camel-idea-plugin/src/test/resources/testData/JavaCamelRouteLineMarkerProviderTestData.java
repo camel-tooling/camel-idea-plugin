@@ -29,5 +29,9 @@ public class JavaCamelRouteLineMarkerProviderTestData extends RouteBuilder {
                 .to("file:outbox");
         from("file:outbox")
                 .to("file:inbox");
+        rest()
+            .get("/hello").to("direct:hello")
+            .get("/bye").consumes("application/json").to("direct:bye")
+            .post("/bye").to("mock:update");
     }
 }
