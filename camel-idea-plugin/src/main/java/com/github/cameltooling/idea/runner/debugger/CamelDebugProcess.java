@@ -127,7 +127,7 @@ public class CamelDebugProcess extends XDebugProcess {
         camelDebuggerSession.runToPosition(context.getActiveExecutionStack().getTopFrame().getSourcePosition(), xSourcePosition);
     }
 
-    public void setValue(String target,
+    public void setValue(CamelDebuggerTarget target,
                          @Nullable String targetName,
                          String expression,
                          String language,

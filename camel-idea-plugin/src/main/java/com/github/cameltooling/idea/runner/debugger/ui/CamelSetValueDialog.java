@@ -18,6 +18,7 @@ package com.github.cameltooling.idea.runner.debugger.ui;
 
 import com.github.cameltooling.idea.language.CamelLanguages;
 import com.github.cameltooling.idea.runner.debugger.CamelDebugProcess;
+import com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget;
 import com.github.cameltooling.idea.runner.debugger.ContextAwareDebugProcess;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.openapi.actionSystem.CustomShortcutSet;
@@ -59,8 +60,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 public class CamelSetValueDialog extends DialogWrapper {
     public static final DataKey<CamelSetValueDialog> KEY = DataKey.create("CAMEL_SET_VALUE_DIALOG");
@@ -149,8 +148,8 @@ public class CamelSetValueDialog extends DialogWrapper {
     @Nullable
     protected ValidationInfo doValidate() {
         ValidationInfo validationInfo = null;
-        String targetType = myCamelValueTargetPanel.getTargetType();
-        if (!"Body".equals(targetType)) {
+        CamelDebuggerTarget targetType = myCamelValueTargetPanel.getTargetType();
+        if (targetType != CamelDebuggerTarget.BODY) {
             String targetName = myCamelValueTargetPanel.getTargetName();
             if (StringUtils.isEmpty(targetName)) {
                 validationInfo = new ValidationInfo(targetType + " name cannot be empty", myCamelValueTargetPanel.getTargetNameComponent());
@@ -261,8 +260,8 @@ public class CamelSetValueDialog extends DialogWrapper {
             outputMediaType = myCamelExpressionParameters.getOutputMediaTypeCombo().getItem();
         }
 
-        String target = myCamelValueTargetPanel.getTargetType();
-        String targetName = "Body".equals(target) ? null : myCamelValueTargetPanel.getTargetName();
+        CamelDebuggerTarget target = myCamelValueTargetPanel.getTargetType();
+        String targetName = myCamelValueTargetPanel.getTargetName();
 
         ContextAwareDebugProcess debugProcess = (ContextAwareDebugProcess) mySession.getDebugProcess();
         CamelDebugProcess camelDebugProcess = (CamelDebugProcess) debugProcess.getCurrentDebugProcess();

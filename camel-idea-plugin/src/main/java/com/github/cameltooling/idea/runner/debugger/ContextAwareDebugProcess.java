@@ -207,6 +207,10 @@ public class ContextAwareDebugProcess extends XDebugProcess {
         return debugProcesses.get(defaultContext);
     }
 
+    public <T extends XDebugProcess> T getDebugProcess(String name, Class<T> type) {
+        return type.cast(debugProcesses.get(name));
+    }
+
     public XDebugProcess getCurrentDebugProcess() {
         final XDebugProcess debugProcess = currentContext != null ? debugProcesses.get(currentContext) : null;
         return debugProcess != null ? debugProcess : getDefaultDebugProcess();

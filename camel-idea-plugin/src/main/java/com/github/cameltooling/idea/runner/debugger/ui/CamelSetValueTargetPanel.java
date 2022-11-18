@@ -16,27 +16,40 @@
  */
 package com.github.cameltooling.idea.runner.debugger.ui;
 
+import com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.ui.SimpleListCellRenderer;
+import org.jetbrains.annotations.NotNull;
 
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 public class CamelSetValueTargetPanel {
-    private ComboBox<String> targetComboBox;
+    private ComboBox<CamelDebuggerTarget> targetComboBox;
     private JTextField targetName;
     private JPanel myPanel;
 
     private void createUIComponents() {
-        targetComboBox = new ComboBox<>(new String[]{"Message Header", "Exchange Property", "Body"});
-        targetComboBox.addActionListener(e -> targetName.setVisible(!("Body".equals(targetComboBox.getItem()))));
+        targetComboBox = new ComboBox<>(CamelDebuggerTarget.values());
+        targetComboBox.setRenderer(
+            new SimpleListCellRenderer<>() {
+                @Override
+                public void customize(@NotNull JList<? extends CamelDebuggerTarget> list, CamelDebuggerTarget value,
+                                      int index, boolean selected, boolean hasFocus) {
+                    this.setText(value.getName());
+                }
+            }
+        );
+        targetComboBox.addActionListener(e -> targetName.setVisible(targetComboBox.getItem() != CamelDebuggerTarget.BODY));
     }
 
-    public String getTargetType() {
+    public CamelDebuggerTarget getTargetType() {
         return targetComboBox.getItem();
     }
 
     public String getTargetName() {
-        return "Body".equals(targetComboBox.getItem()) ? null : targetName.getText();
+        return targetComboBox.getItem() == CamelDebuggerTarget.BODY ? null : targetName.getText();
     }
 
     public JTextField getTargetNameComponent() {
