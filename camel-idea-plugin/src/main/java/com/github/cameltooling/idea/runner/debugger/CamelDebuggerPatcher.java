@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
@@ -293,7 +294,11 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
             }
         }
         for (URL url : downloadCamelDebugger(runtime, versionRuntime)) {
-            parameters.getClassPath().add(url.getPath());
+            try {
+                parameters.getClassPath().add(new File(url.toURI()));
+            } catch (URISyntaxException e) {
+                LOG.debug(String.format("The URL %s could not be converted to an URI: %s", url, e.getMessage()));
+            }
         }
     }
 
