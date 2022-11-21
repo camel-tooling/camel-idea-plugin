@@ -650,6 +650,10 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             return generateCamelOptionDocumentation(option);
         }
 
+        @Override
+        public String getText() {
+            return toString();
+        }
     }
 
     /**
@@ -677,6 +681,11 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         @Override
         public String toString() {
             return generateCamelSimpleDocumentation(suggestion);
+        }
+
+        @Override
+        public String getText() {
+            return toString();
         }
     }
 
