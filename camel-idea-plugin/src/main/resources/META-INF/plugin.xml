@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
-  <version>0.8.15</version>
+  <version>0.9.0</version>
   <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -9,11 +9,12 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.0.8.15
+      v.0.9.0
       <ul>
+        <li>Minimum IDEA version 2022.2</li>
         <li>Upgrade to Camel 3.19</li>
-        <li>Set the body, Headers or Exchange properties from the context menu of the Debugger Window using the Camel simple language</li>
-        <li>Adapt the debugger to Camel 3.19+</li>
+        <li>Adapt the route debugger to Camel 3.19+</li>
+        <li>Set the body, headers or exchange properties from the context menu of the Debugger window using the Camel simple language</li>
         <li>Deprecated endpoint options are now marked with strike-through in endpoint URI</li>
       </ul>
     ]]>
