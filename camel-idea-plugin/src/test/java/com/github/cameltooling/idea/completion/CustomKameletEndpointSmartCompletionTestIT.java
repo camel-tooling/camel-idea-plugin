@@ -48,7 +48,7 @@ public class CustomKameletEndpointSmartCompletionTestIT extends CamelLightCodeIn
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertDoesntContain(strings, "kamelet:webhook-source");
+        assertDoesntContain(strings, "kamelet:xxx-source");
         assertContainsElements(strings, "kamelet:chuck-norris-in-jar-source", "kamelet:ftp-source");
     }
 }
