@@ -37,7 +37,7 @@ patchPluginXml {
 }
 
 runPluginVerifier {
-    ideVersions = [ "2022.1", "2022.2" ]
+    ideVersions = [ "2022.1", "2022.2", "2022.3" ]
 }
 
 // publishPlugin {
