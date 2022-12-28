@@ -11,6 +11,7 @@
   <change-notes><![CDATA[
       v.0.9.1
       <ul>
+        <li>Support for IDEA 2022.3</li>
         <li>Upgraded to Camel 3.20.0</li>
         <li>Bug fixes</li>
       </ul>
