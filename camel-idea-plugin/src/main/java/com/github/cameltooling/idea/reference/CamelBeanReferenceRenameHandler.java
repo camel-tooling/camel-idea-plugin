@@ -19,21 +19,21 @@ package com.github.cameltooling.idea.reference;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.refactoring.rename.PsiElementRenameHandler;
+import org.jetbrains.annotations.NotNull;
 
 /**
- * Enable renaming of method names in the Camel DSL {@Code "bean(MyClass.class,"myMethod")} and
- * the actually bean method.
+ * Enable renaming of method names in the Camel DSL {@code "bean(MyClass.class,"myMethod")} and
+ * the actual bean method.
  */
 public class CamelBeanReferenceRenameHandler extends PsiElementRenameHandler {
 
     @Override
-    public boolean isAvailableOnDataContext(DataContext dataContext) {
+    public boolean isAvailableOnDataContext(@NotNull DataContext dataContext) {
         final PsiElement psiElement = findPsiElementAt(dataContext);
         if (psiElement == null) {
             return false;
@@ -60,6 +60,6 @@ public class CamelBeanReferenceRenameHandler extends PsiElementRenameHandler {
     }
 
     private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
+        return CamelIdeaUtils.getService();
     }
 }

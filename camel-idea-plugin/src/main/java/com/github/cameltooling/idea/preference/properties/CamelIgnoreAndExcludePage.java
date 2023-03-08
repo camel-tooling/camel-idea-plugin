@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.options.BaseConfigurable;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
@@ -109,7 +108,7 @@ class CamelIgnoreAndExcludePage extends BaseConfigurable implements SearchableCo
     }
 
     private CamelPreferenceService getCamelPreferenceService() {
-        return ServiceManager.getService(CamelPreferenceService.class);
+        return CamelPreferenceService.getService();
     }
 
     private JPanel createExcludePropertiesFilesTable() {
@@ -179,7 +178,7 @@ class CamelIgnoreAndExcludePage extends BaseConfigurable implements SearchableCo
         }
     }
 
-    private class CamelEditRemovePanelModel extends AddEditRemovePanel.TableModel<String> {
+    private static class CamelEditRemovePanelModel extends AddEditRemovePanel.TableModel<String> {
 
         @Override
         public int getColumnCount() {
@@ -192,7 +191,7 @@ class CamelIgnoreAndExcludePage extends BaseConfigurable implements SearchableCo
         }
 
         @Override
-        public Class getColumnClass(int columnIndex) {
+        public Class<?> getColumnClass(int columnIndex) {
             return String.class;
         }
 

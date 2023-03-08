@@ -17,7 +17,6 @@
 package com.github.cameltooling.idea.reference;
 
 import com.github.cameltooling.idea.service.CamelService;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceProvider;
@@ -29,10 +28,9 @@ import org.jetbrains.annotations.NotNull;
  */
 public abstract class CamelPsiReferenceProvider extends PsiReferenceProvider {
 
-    @NotNull
     @Override
-    public PsiReference[] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
-        if (!ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
+    public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
+        if (!element.getProject().getService(CamelService.class).isCamelPresent()) {
             return PsiReference.EMPTY_ARRAY;
         } else {
             return getCamelReferencesByElement(element, context);

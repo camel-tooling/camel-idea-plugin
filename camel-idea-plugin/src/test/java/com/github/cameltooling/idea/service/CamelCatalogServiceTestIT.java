@@ -19,7 +19,6 @@ package com.github.cameltooling.idea.service;
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.openapi.components.ServiceManager;
 import org.apache.camel.catalog.CamelCatalog;
 
 

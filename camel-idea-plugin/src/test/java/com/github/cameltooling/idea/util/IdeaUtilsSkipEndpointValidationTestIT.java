@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.github.cameltooling.idea.service.CamelService;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.testFramework.PsiTestUtil;
@@ -54,7 +53,7 @@ public class IdeaUtilsSkipEndpointValidationTestIT extends CamelLightCodeInsight
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(true);
+        myFixture.getProject().getService(CamelService.class).setCamelPresent(true);
         Stream.of(
             Maven.resolver().resolve(ACTIVEMQ_ARTIFACT, QPID_ARTIFACT)
                 .withTransitivity().asFile()
@@ -96,7 +95,7 @@ public class IdeaUtilsSkipEndpointValidationTestIT extends CamelLightCodeInsight
     }
 
     private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
+        return CamelIdeaUtils.getService();
     }
 
 }

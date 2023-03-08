@@ -29,7 +29,7 @@ import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
@@ -47,7 +47,7 @@ import org.jetbrains.annotations.NotNull;
 public class CamelJavaBeanReferenceSmartCompletion extends CompletionProvider<CompletionParameters> {
 
     @Override
-    protected void addCompletions(@NotNull CompletionParameters completionParameters, ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
+    protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
         final PsiElement element = completionParameters.getPosition();
         final PsiClass psiClass = getCamelIdeaUtils().getBean(element);
 
@@ -87,11 +87,11 @@ public class CamelJavaBeanReferenceSmartCompletion extends CompletionProvider<Co
     }
 
     private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
+        return ApplicationManager.getApplication().getService(CamelIdeaUtils.class);
     }
 
     private JavaMethodUtils getJavaMethodUtils() {
-        return ServiceManager.getService(JavaMethodUtils.class);
+        return ApplicationManager.getApplication().getService(JavaMethodUtils.class);
     }
 
 }

@@ -26,7 +26,7 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtil;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.patterns.InitialPatternCondition;
 import com.intellij.patterns.PsiFilePattern;
 import com.intellij.psi.PsiElement;
@@ -60,7 +60,7 @@ public abstract class CamelContributor extends CompletionContributor {
         public void addCompletions(@NotNull CompletionParameters parameters,
                                    ProcessingContext context,
                                    @NotNull CompletionResultSet resultSet) {
-            if (ServiceManager.getService(parameters.getOriginalFile().getProject(), CamelService.class).isCamelPresent()) {
+            if (parameters.getOriginalFile().getProject().getService(CamelService.class).isCamelPresent()) {
                 String[] tuple = parsePsiElement(parameters);
                 camelCompletionExtensions.stream()
                     .filter(p -> p.isValid(parameters, context, tuple))
@@ -81,9 +81,9 @@ public abstract class CamelContributor extends CompletionContributor {
         }
 
         public void addCompletions(@NotNull CompletionParameters parameters,
-                                   ProcessingContext context,
+                                   @NotNull ProcessingContext context,
                                    @NotNull CompletionResultSet resultSet) {
-            if (ServiceManager.getService(parameters.getOriginalFile().getProject(), CamelService.class).isCamelPresent()) {
+            if (parameters.getOriginalFile().getProject().getService(CamelService.class).isCamelPresent()) {
                 String[] tuple = parsePsiElement(parameters);
                 camelCompletionExtensions.stream()
                     .filter(p -> p.isValid(parameters, context, tuple))
@@ -159,7 +159,7 @@ public abstract class CamelContributor extends CompletionContributor {
     }
 
     private static IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
+        return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
 
 }

@@ -21,16 +21,17 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
+import com.intellij.openapi.startup.StartupActivity;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Main entry point of the Camel IDEA plugin which is a project listener,
  * to detect if Camel is present when a project is loaded.
  */
-public class CamelPluginStartup implements ProjectManagerListener, ModuleRootListener {
+public class CamelPluginStartup implements ProjectManagerListener, ModuleRootListener, StartupActivity {
 
     @Override
-    public void projectOpened(@NotNull Project project) {
+    public void runActivity(@NotNull Project project) {
         scanForCamelProject(project);
     }
 

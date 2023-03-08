@@ -35,7 +35,6 @@ import com.intellij.lang.documentation.DocumentationProviderEx;
 import com.intellij.lang.documentation.ExternalDocumentationHandler;
 import com.intellij.lang.documentation.ExternalDocumentationProvider;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
@@ -77,17 +76,17 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     private static final Logger LOG = Logger.getInstance(CamelDocumentationProvider.class);
 
     public IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
+        return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
 
     public CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
+        return ApplicationManager.getApplication().getService(CamelIdeaUtils.class);
     }
 
     @Nullable
     @Override
     public String getQuickNavigateInfo(PsiElement element, PsiElement originalElement) {
-        if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
+        if (element.getProject().getService(CamelService.class).isCamelPresent()) {
             PsiExpressionList exps = PsiTreeUtil.getNextSiblingOfType(originalElement, PsiExpressionList.class);
             if (exps != null) {
                 if (exps.getExpressions().length >= 1) {
@@ -144,7 +143,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         }
 
         String val = null;
-        if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
+        if (element.getProject().getService(CamelService.class).isCamelPresent()) {
             val = fetchLiteralForCamelDocumentation(element);
             if (val == null) {
                 return null;
@@ -196,7 +195,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             // if the option ends with a dot then its a prefixed/multi value option which we need special logic
             // find its real option name and documentation which we want to show in the quick doc window
             if (option.endsWith(".")) {
-                CamelCatalog camelCatalog = ServiceManager.getService(psiManager.getProject(), CamelCatalogService.class).get();
+                CamelCatalog camelCatalog = psiManager.getProject().getService(CamelCatalogService.class).get();
                 String json = camelCatalog.componentJSonSchema(componentName);
                 if (json == null) {
                     return null;
@@ -281,7 +280,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Override
     public boolean handleExternal(PsiElement element, PsiElement originalElement) {
         String val = fetchLiteralForCamelDocumentation(element);
-        if (val == null || !ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
+        if (val == null || !element.getProject().getService(CamelService.class).isCamelPresent()) {
             return false;
         }
         String url = externalUrl(element.getProject(), val);
@@ -295,7 +294,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     private static String externalUrl(Project project, String val) {
         String url = null;
         String name = asComponentName(val);
-        CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
+        CamelCatalog camelCatalog = project.getService(CamelCatalogService.class).get();
         if (name != null && camelCatalog.findComponentNames().contains(name)) {
             String json = camelCatalog.componentJSonSchema(name);
             ComponentModel component = JsonMapper.generateComponentModel(json);
@@ -330,20 +329,14 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         return false;
     }
 
-    @NotNull
-    @Override
-    public String fetchExternalDocumentation(@NotNull String link, @Nullable PsiElement element) {
-        return null;
-    }
-
     private boolean hasDocumentationForCamelComponent(PsiElement element) {
-        if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()) {
+        Project project = element.getProject();
+        if (project.getService(CamelService.class).isCamelPresent()) {
             String text = fetchLiteralForCamelDocumentation(element);
             if (text != null) {
                 // check if its a known Camel component
                 String name = asComponentName(text);
-                Project project = element.getProject();
-                return ServiceManager.getService(project, CamelCatalogService.class).get().findComponentNames().contains(name);
+                return project.getService(CamelCatalogService.class).get().findComponentNames().contains(name);
             }
         }
         return false;
@@ -434,7 +427,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
     private String generateCamelComponentDocumentation(String componentName, String val, int wrapLength, Project project) {
         // it is a known Camel component
-        CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
+        CamelCatalog camelCatalog = project.getService(CamelCatalogService.class).get();
         String json = camelCatalog.componentJSonSchema(componentName);
         if (json == null) {
             return null;

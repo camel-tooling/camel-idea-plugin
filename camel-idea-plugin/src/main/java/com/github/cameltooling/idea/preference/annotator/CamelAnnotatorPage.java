@@ -19,7 +19,6 @@ package com.github.cameltooling.idea.preference.annotator;
 import java.awt.*;
 import javax.swing.*;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.ui.components.JBCheckBox;
@@ -133,7 +132,7 @@ public class CamelAnnotatorPage implements SearchableConfigurable, Configurable.
     }
 
     CamelPreferenceService getCamelPreferenceService() {
-        return ServiceManager.getService(CamelPreferenceService.class);
+        return CamelPreferenceService.getService();
     }
 
     JBCheckBox getRealTimeEndpointValidationCatalogCheckBox() {

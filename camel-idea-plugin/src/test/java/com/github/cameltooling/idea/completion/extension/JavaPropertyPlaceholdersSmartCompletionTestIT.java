@@ -23,7 +23,6 @@ import java.util.List;
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.openapi.components.ServiceManager;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 
 /**
@@ -52,7 +51,7 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
     }
 
     public void testCamelIsNotPresent() {
-        ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(false);
+        myFixture.getProject().getService(CamelService.class).setCamelPresent(false);
         myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
@@ -60,7 +59,7 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
     }
 
     public void testWithExcludeFile() {
-        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("**/CompleteExclude*"));
+        CamelPreferenceService.getService().setExcludePropertyFiles(Collections.singletonList("**/CompleteExclude*"));
         myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
@@ -69,7 +68,7 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
     }
 
     public void testWithExcludeFileWithPath() {
-        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("**/src/CompleteExclude*"));
+        CamelPreferenceService.getService().setExcludePropertyFiles(Collections.singletonList("**/src/CompleteExclude*"));
         myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
@@ -78,7 +77,7 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
     }
 
     public void testWithExcludeNoMatchFileWithPath() {
-        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("my/test/CompleteExclude"));
+        CamelPreferenceService.getService().setExcludePropertyFiles(Collections.singletonList("my/test/CompleteExclude"));
         myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
@@ -87,7 +86,7 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
     }
 
     public void testWithExcludePath() {
-        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList("**/src/*"));
+        CamelPreferenceService.getService().setExcludePropertyFiles(Collections.singletonList("**/src/*"));
         myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
@@ -95,7 +94,7 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
     }
 
     public void testWithExcludeEmptyListFile() {
-        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList(""));
+        CamelPreferenceService.getService().setExcludePropertyFiles(Collections.singletonList(""));
         myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
@@ -103,7 +102,7 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
     }
 
     public void testWithExcludeSpaceListFile() {
-        ServiceManager.getService(CamelPreferenceService.class).setExcludePropertyFiles(Collections.singletonList(" "));
+        CamelPreferenceService.getService().setExcludePropertyFiles(Collections.singletonList(" "));
         myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();

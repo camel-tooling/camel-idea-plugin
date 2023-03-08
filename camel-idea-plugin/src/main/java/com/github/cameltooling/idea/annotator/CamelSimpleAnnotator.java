@@ -23,7 +23,6 @@ import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.HighlightSeverity;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
@@ -41,7 +40,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
 
     @Override
     boolean isEnabled() {
-        return ServiceManager.getService(CamelPreferenceService.class).isRealTimeSimpleValidation();
+        return CamelPreferenceService.getService().isRealTimeSimpleValidation();
     }
 
     /**
@@ -53,8 +52,8 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
         // we only want to evaluate if there is a simple function as plain text without functions dont make sense to validate
         boolean hasSimple = text.contains("${") || text.contains("$simple{");
         if (hasSimple && getCamelIdeaUtils().isCamelExpression(element, "simple")) {
-            CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
-            CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
+            CamelCatalog catalogService = element.getProject().getService(CamelCatalogService.class).get();
+            CamelService camelService = element.getProject().getService(CamelService.class);
 
             boolean predicate = false;
             try {
@@ -120,11 +119,11 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
     }
 
     private IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
+        return IdeaUtils.getService();
     }
     
     private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
+        return CamelIdeaUtils.getService();
     }
 
 }

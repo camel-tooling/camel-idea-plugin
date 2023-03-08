@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.JavaMethodUtils;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.ElementManipulators;
 import com.intellij.psi.PsiClass;
@@ -59,7 +59,7 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
 
     @NotNull
     @Override
-    public ResolveResult[] multiResolve(boolean b) {
+    public ResolveResult @NotNull [] multiResolve(boolean b) {
         List<ResolveResult> results = new ArrayList<>();
 
         final PsiMethod[] methodsByName = getPsiClass().findMethodsByName(methodNameOnly, true);
@@ -69,17 +69,17 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
             }
             results.add(new PsiElementResolveResult(psiMethod));
         }
-        return results.toArray(new ResolveResult[results.size()]);
+        return results.toArray(new ResolveResult[0]);
     }
 
     @NotNull
     @Override
-    public Object[] getVariants() {
+    public Object @NotNull [] getVariants() {
         return new Object[0];
     }
 
     @Override
-    public PsiElement handleElementRename(String newElementName) throws IncorrectOperationException {
+    public PsiElement handleElementRename(@NotNull String newElementName) throws IncorrectOperationException {
         //Find all the method with the registered method name on it's class.
 
         final PsiMethod[] methodsByName = getPsiClass().findMethodsByName(methodNameOnly, true);
@@ -102,10 +102,10 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
     }
 
     private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
+        return CamelIdeaUtils.getService();
     }
 
     private JavaMethodUtils getJavaMethodUtils() {
-        return ServiceManager.getService(JavaMethodUtils.class);
+        return ApplicationManager.getApplication().getService(JavaMethodUtils.class);
     }
 }

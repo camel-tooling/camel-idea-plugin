@@ -17,7 +17,6 @@
 package com.github.cameltooling.idea.service;
 
 import com.github.cameltooling.idea.util.StringUtils;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 
 public final class QueryUtils {
@@ -32,7 +31,7 @@ public final class QueryUtils {
         // is this a possible Camel endpoint uri which we know
         if (query != null && !query.isEmpty()) {
             String componentName = StringUtils.asComponentName(query);
-            if (componentName != null && ServiceManager.getService(project, CamelCatalogService.class).get().findComponentNames().contains(componentName)) {
+            if (componentName != null && project.getService(CamelCatalogService.class).get().findComponentNames().contains(componentName)) {
                 return true;
             }
         }

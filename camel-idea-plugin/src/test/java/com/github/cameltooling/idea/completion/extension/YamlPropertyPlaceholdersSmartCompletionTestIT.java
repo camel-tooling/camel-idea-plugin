@@ -22,7 +22,6 @@ import java.util.List;
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.openapi.components.ServiceManager;
 
 /**
  * Testing smart completion with YML property classes
@@ -42,7 +41,7 @@ public class YamlPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
     }
 
     public void testCamelIsNotPresent() {
-        ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(false);
+        myFixture.getProject().getService(CamelService.class).setCamelPresent(false);
         myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();

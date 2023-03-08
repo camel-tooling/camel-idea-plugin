@@ -28,7 +28,7 @@ import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -47,8 +47,8 @@ public class CamelBeanMethodAnnotator implements Annotator {
     private static final Logger LOG = Logger.getInstance(CamelBeanMethodAnnotator.class);
 
     boolean isEnabled(@NotNull PsiElement element) {
-        final boolean valid = ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent()
-            && ServiceManager.getService(CamelPreferenceService.class).isRealTimeBeanMethodValidationCheckBox()
+        final boolean valid = element.getProject().getService(CamelService.class).isCamelPresent()
+            && CamelPreferenceService.getService().isRealTimeSimpleValidation()
             // skip whitespace noise
             && !getIdeaUtils().isWhiteSpace(element)
             // skip java doc noise
@@ -120,18 +120,18 @@ public class CamelBeanMethodAnnotator implements Annotator {
     }
 
     private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
+        return ApplicationManager.getApplication().getService(CamelIdeaUtils.class);
     }
 
     private JavaMethodUtils getJavaMethodUtils() {
-        return ServiceManager.getService(JavaMethodUtils.class);
+        return ApplicationManager.getApplication().getService(JavaMethodUtils.class);
     }
 
     private IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
+        return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
 
     private JavaClassUtils getJavaClassUtils() {
-        return ServiceManager.getService(JavaClassUtils.class);
+        return ApplicationManager.getApplication().getService(JavaClassUtils.class);
     }
 }

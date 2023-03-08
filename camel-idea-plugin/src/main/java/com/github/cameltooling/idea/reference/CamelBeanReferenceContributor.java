@@ -18,9 +18,8 @@ package com.github.cameltooling.idea.reference;
 
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.JavaClassUtils;
-import com.github.cameltooling.idea.util.JavaMethodUtils;
 import com.github.cameltooling.idea.util.StringUtils;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.patterns.PsiJavaElementPattern;
 import com.intellij.psi.PsiClass;
@@ -36,7 +35,7 @@ import static com.intellij.patterns.PsiJavaPatterns.psiMethod;
 import static com.intellij.patterns.StandardPatterns.or;
 
 /**
- * Create a link between the Camel DSL {@Code bean(MyClass.class,"myMethod")} and the specific method
+ * Create a link between the Camel DSL {@code bean(MyClass.class,"myMethod")} and the specific method
  * in it's destination bean.
  */
 public class CamelBeanReferenceContributor extends PsiReferenceContributor {
@@ -119,15 +118,11 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
     }
 
     private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
-    }
-
-    private JavaMethodUtils getJavaMethodUtils() {
-        return ServiceManager.getService(JavaMethodUtils.class);
+        return CamelIdeaUtils.getService();
     }
 
     private JavaClassUtils getJavaClassUtils() {
-        return ServiceManager.getService(JavaClassUtils.class);
+        return ApplicationManager.getApplication().getService(JavaClassUtils.class);
     }
 
 }

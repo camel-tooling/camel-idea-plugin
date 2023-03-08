@@ -20,14 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.cameltooling.idea.service.CamelService;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiVariable;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 
 public class IdeaUtilsIsCamelRouteStartTestIT extends LightJavaCodeInsightFixtureTestCase {
@@ -74,7 +72,7 @@ public class IdeaUtilsIsCamelRouteStartTestIT extends LightJavaCodeInsightFixtur
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(true);
+        myFixture.getProject().getService(CamelService.class).setCamelPresent(true);
     }
 
     @Override
@@ -116,12 +114,12 @@ public class IdeaUtilsIsCamelRouteStartTestIT extends LightJavaCodeInsightFixtur
             return true;
         });
 
-        assertTrue(psiElements.size() == 8);
+        assertEquals(8, psiElements.size());
     }
 
     public void testStartRouteWithVariableIdentifier() {
         // caret is at start of rout in the test java file
-        PsiFile psiFile = myFixture.configureByText("DummyTestData.java", CODE_VAR_URI);
+        myFixture.configureByText("DummyTestData.java", CODE_VAR_URI);
 
         PsiVariable variable = myFixture.findElementByText("uri", PsiVariable.class);
         PsiElement identifier = myFixture.findUsages(variable).iterator().next().getElement();
@@ -131,7 +129,7 @@ public class IdeaUtilsIsCamelRouteStartTestIT extends LightJavaCodeInsightFixtur
     }
     public void testStartRouteWithConstantIdentifier() {
         // caret is at start of rout in the test java file
-        PsiFile psiFile = myFixture.configureByText("DummyTestData.java", CODE_CONST_URI);
+        myFixture.configureByText("DummyTestData.java", CODE_CONST_URI);
 
         PsiVariable variable = myFixture.findElementByText("URI", PsiVariable.class);
         PsiElement identifier = myFixture.findUsages(variable).iterator().next().getElement();
@@ -141,6 +139,6 @@ public class IdeaUtilsIsCamelRouteStartTestIT extends LightJavaCodeInsightFixtur
     }
 
     private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
+        return CamelIdeaUtils.getService();
     }
 }

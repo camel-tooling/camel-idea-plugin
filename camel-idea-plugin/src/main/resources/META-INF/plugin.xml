@@ -47,6 +47,7 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <notificationGroup id="Apache Camel" displayType="BALLOON"/>
+    <postStartupActivity implementation="com.github.cameltooling.idea.CamelPluginStartup"/>
   </extensions>
 
   <extensions defaultExtensionNs="org.intellij.intelliLang">

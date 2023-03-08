@@ -22,7 +22,7 @@ import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiPolyadicExpression;
@@ -49,7 +49,7 @@ abstract class AbstractCamelAnnotator implements Annotator {
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
-        if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent() && isEnabled()) {
+        if (element.getProject().getService(CamelService.class).isCamelPresent() && isEnabled()) {
             boolean accept = accept(element);
             if (accept) {
                 String text = getIdeaUtils().extractTextFromElement(element, true, false, false);
@@ -114,7 +114,7 @@ abstract class AbstractCamelAnnotator implements Annotator {
     abstract void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text);
 
     private IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
+        return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
 
 }

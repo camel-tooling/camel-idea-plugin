@@ -28,7 +28,6 @@ import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.ProblemsHolder;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -58,7 +57,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
     }
 
     boolean isInspectionEnabled(Project project) {
-        return forceEnabled || ServiceManager.getService(project, CamelService.class).isCamelPresent();
+        return forceEnabled || project.getService(CamelService.class).isCamelPresent();
     }
 
     /**
@@ -80,7 +79,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
         if (isInspectionEnabled(holder.getProject())) {
             return new PsiElementVisitor() {
                 @Override
-                public void visitElement(PsiElement element) {
+                public void visitElement(@NotNull PsiElement element) {
                     if (accept(element)) {
                         String text = getIdeaUtils().extractTextFromElement(element, false, false, true);
                         if (!StringUtils.isEmpty(text)) {
@@ -115,8 +114,8 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
     }
 
     private void validateSimple(@NotNull PsiElement element, final @NotNull ProblemsHolder holder, @NotNull String text, boolean isOnTheFly) {
-        CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
-        CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
+        CamelCatalog catalogService = element.getProject().getService(CamelCatalogService.class).get();
+        CamelService camelService = element.getProject().getService(CamelService.class);
 
         IElementType type = element.getNode().getElementType();
         LOG.trace("Element " + element + " of type: " + type + " to inspect simple: " + text);
@@ -152,8 +151,8 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
     }
 
     private void validateJSonPath(@NotNull PsiElement element, final @NotNull ProblemsHolder holder, @NotNull String text, boolean isOnTheFly) {
-        CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
-        CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
+        CamelCatalog catalogService = element.getProject().getService(CamelCatalogService.class).get();
+        CamelService camelService = element.getProject().getService(CamelService.class);
 
         IElementType type = element.getNode().getElementType();
         LOG.trace("Element " + element + " of type: " + type + " to inspect jsonpath: " + text);
@@ -195,7 +194,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
     }
 
     private void validateEndpoint(@NotNull PsiElement element, final @NotNull ProblemsHolder holder, @NotNull String text, boolean isOnTheFly) {
-        CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
+        CamelCatalog catalogService = element.getProject().getService(CamelCatalogService.class).get();
 
         IElementType type = element.getNode().getElementType();
         LOG.trace("Element " + element + " of type: " + type + " to inspect endpoint uri: " + text);
@@ -381,7 +380,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
      * @return the summary, or <tt>empty</tt> if no validation errors
      */
     @SuppressWarnings("unchecked")
-    private <T> String summaryErrorMessage(EndpointValidationResult result, T entry, CamelAnnotatorEndpointMessage msg) {
+    private <T> String summaryErrorMessage(EndpointValidationResult result, T entry, CamelAnnotatorEndpointMessage<T> msg) {
         if (result.getIncapable() != null) {
             return "Incapable of parsing uri: " + result.getIncapable();
         } else if (result.getSyntaxError() != null) {
@@ -394,9 +393,9 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
     }
 
     private IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
+        return IdeaUtils.getService();
     }
     private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
+        return CamelIdeaUtils.getService();
     }
 }
