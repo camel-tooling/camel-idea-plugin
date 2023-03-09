@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.JavaMethodUtils;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.ElementManipulators;
 import com.intellij.psi.PsiClass;
@@ -54,7 +53,7 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
         super(element, textRange);
         this.psiClass = psiClass;
         this.methodName = methodName;
-        this.methodNameOnly = getJavaMethodUtils().getMethodNameWithOutParameters(methodName);
+        this.methodNameOnly = JavaMethodUtils.getService().getMethodNameWithOutParameters(methodName);
     }
 
     @NotNull
@@ -63,8 +62,8 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
         List<ResolveResult> results = new ArrayList<>();
 
         final PsiMethod[] methodsByName = getPsiClass().findMethodsByName(methodNameOnly, true);
-        for (PsiMethod psiMethod : getJavaMethodUtils().getBeanMethods(Arrays.asList(methodsByName))) {
-            if (getCamelIdeaUtils().isAnnotatedWithHandler(psiMethod)) {
+        for (PsiMethod psiMethod : JavaMethodUtils.getService().getBeanMethods(Arrays.asList(methodsByName))) {
+            if (CamelIdeaUtils.getService().isAnnotatedWithHandler(psiMethod)) {
                 return new ResolveResult[] {new PsiElementResolveResult(psiMethod)};
             }
             results.add(new PsiElementResolveResult(psiMethod));
@@ -99,13 +98,5 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
 
     private PsiClass getPsiClass() {
         return psiClass;
-    }
-
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return CamelIdeaUtils.getService();
-    }
-
-    private JavaMethodUtils getJavaMethodUtils() {
-        return ApplicationManager.getApplication().getService(JavaMethodUtils.class);
     }
 }

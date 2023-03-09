@@ -75,14 +75,6 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
     private static final Logger LOG = Logger.getInstance(CamelDocumentationProvider.class);
 
-    public IdeaUtils getIdeaUtils() {
-        return ApplicationManager.getApplication().getService(IdeaUtils.class);
-    }
-
-    public CamelIdeaUtils getCamelIdeaUtils() {
-        return ApplicationManager.getApplication().getService(CamelIdeaUtils.class);
-    }
-
     @Nullable
     @Override
     public String getQuickNavigateInfo(PsiElement element, PsiElement originalElement) {
@@ -346,7 +338,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         if (element == null) {
             return null;
         }
-        return getIdeaUtils().extractTextFromElement(element);
+        return IdeaUtils.getService().extractTextFromElement(element);
     }
 
     /**
@@ -552,7 +544,8 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             PsiClassReferenceType clazz = (PsiClassReferenceType) type;
             PsiClass resolved = clazz.resolve();
             if (resolved != null) {
-                boolean language = getCamelIdeaUtils().isCamelExpressionOrLanguage(resolved);
+                final CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
+                boolean language = camelIdeaUtils.isCamelExpressionOrLanguage(resolved);
                 // try parent using some weird/nasty stub stuff which is how complex IDEA AST
                 // is when its parsing the Camel route builder
                 if (!language) {
@@ -561,7 +554,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
                         elem = elem.getParent();
                     }
                     if (elem instanceof PsiClass) {
-                        language = getCamelIdeaUtils().isCamelExpressionOrLanguage((PsiClass) elem);
+                        language = camelIdeaUtils.isCamelExpressionOrLanguage((PsiClass) elem);
                     }
                 }
                 return language;
@@ -582,9 +575,9 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
      * {@link PsiElement} used only to transfer documentation data.
      */
     static class DocumentationElement extends LightElement {
-        private PsiElement element;
-        private String endpointOption;
-        private String componentName;
+        private final PsiElement element;
+        private final String endpointOption;
+        private final String componentName;
 
         DocumentationElement(@NotNull PsiManager psiManager, @NotNull Language language, PsiElement element, String endpointOption, String componentName) {
             super(psiManager, language);

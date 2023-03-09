@@ -70,7 +70,7 @@ class CamelIgnoreAndExcludePage extends BaseConfigurable implements SearchableCo
 
     @Override
     public void apply() throws ConfigurationException {
-        CamelPreferenceService service = getCamelPreferenceService();
+        CamelPreferenceService service = CamelPreferenceService.getService();
         service.setExcludePropertyFiles(myExcludedProperties);
         service.setIgnorePropertyList(myIgnoredProperties);
 
@@ -95,20 +95,16 @@ class CamelIgnoreAndExcludePage extends BaseConfigurable implements SearchableCo
 
     private void resetExcludePropertiesTable() {
         myExcludedProperties = new ArrayList<>();
-        List<String> excludePropertyList = getCamelPreferenceService().getExcludePropertyFiles();
+        List<String> excludePropertyList = CamelPreferenceService.getService().getExcludePropertyFiles();
         myExcludedProperties.addAll(excludePropertyList);
         excludePropertyFilePanel.setData(myExcludedProperties);
     }
 
     private void resetIgnorePropertiesTable() {
         myIgnoredProperties = new ArrayList<>();
-        List<String> ignorePropertyList = getCamelPreferenceService().getIgnorePropertyList();
+        List<String> ignorePropertyList = CamelPreferenceService.getService().getIgnorePropertyList();
         myIgnoredProperties.addAll(ignorePropertyList);
         ignorePropertyFilePanel.setData(myIgnoredProperties);
-    }
-
-    private CamelPreferenceService getCamelPreferenceService() {
-        return CamelPreferenceService.getService();
     }
 
     private JPanel createExcludePropertiesFilesTable() {

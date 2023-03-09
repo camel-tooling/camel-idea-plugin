@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -264,7 +265,7 @@ public final class IdeaUtils implements Disposable {
         if (target == null) {
             return false;
         }
-        if (target.getQualifiedName().equals(fqnClassName)) {
+        if (Objects.equals(target.getQualifiedName(), fqnClassName)) {
             return true;
         } else {
             return isClassOrParentOf(target.getSuperClass(), fqnClassName);
@@ -348,7 +349,7 @@ public final class IdeaUtils implements Disposable {
             if (child != null) {
                 child = child.getLastChild();
             }
-            if (child != null && child instanceof PsiIdentifier) {
+            if (child instanceof PsiIdentifier) {
                 String name = child.getText();
                 return Arrays.asList(methods).contains(name);
             }
@@ -549,13 +550,9 @@ public final class IdeaUtils implements Disposable {
     public boolean isCaretAtEndOfLine(PsiElement element) {
         String value = extractTextFromElement(element).trim();
 
-        if (value != null) {
-            value = value.toLowerCase();
-            return value.endsWith(CompletionUtil.DUMMY_IDENTIFIER.toLowerCase())
-                || value.endsWith(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED.toLowerCase());
-        }
-
-        return false;
+        value = value.toLowerCase();
+        return value.endsWith(CompletionUtil.DUMMY_IDENTIFIER.toLowerCase())
+            || value.endsWith(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED.toLowerCase());
     }
 
     public boolean isWhiteSpace(PsiElement element) {
@@ -568,10 +565,8 @@ public final class IdeaUtils implements Disposable {
 
     public boolean isJavaDoc(PsiElement element) {
         IElementType type = element.getNode().getElementType();
-        if (IJavaDocElementType.class.isAssignableFrom(type.getClass()) || JavaDocElementType.ALL_JAVADOC_ELEMENTS.contains(element.getNode().getElementType())) {
-            return true;
-        }
-        return false;
+        return IJavaDocElementType.class.isAssignableFrom(type.getClass())
+                || JavaDocElementType.ALL_JAVADOC_ELEMENTS.contains(element.getNode().getElementType());
     }
 
     public Optional<XmlAttribute> findAttribute(XmlTag tag, String localName) {
@@ -651,7 +646,7 @@ public final class IdeaUtils implements Disposable {
         PsiElement psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
 
         //This must be indent element because the position is at the beginning of the line
-        if (psiElement != null && psiElement instanceof LeafPsiElement && "indent".equals(((LeafPsiElement) psiElement).getElementType().toString())) {
+        if (psiElement instanceof LeafPsiElement && "indent".equals(((LeafPsiElement) psiElement).getElementType().toString())) {
             psiElement = psiElement.getNextSibling(); //This must be sequence item
             Collection<YAMLKeyValue> keyValues = null;
             if (psiElement instanceof YAMLSequence) { //This is the beginning of sequence, get first item

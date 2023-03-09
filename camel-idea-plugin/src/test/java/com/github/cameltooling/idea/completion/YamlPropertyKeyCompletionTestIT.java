@@ -527,8 +527,9 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
     }
 
     private String getFileName(String fileNamePrefix) {
-        if (CamelPreferenceService.getService().getCamelCatalogProvider() == CamelCatalogProvider.AUTO) {
-            CamelPreferenceService.getService().setCamelCatalogProvider(CamelCatalogProvider.QUARKUS);
+        CamelPreferenceService preferenceService = CamelPreferenceService.getService();
+        if (preferenceService.getCamelCatalogProvider() == CamelCatalogProvider.AUTO) {
+            preferenceService.setCamelCatalogProvider(CamelCatalogProvider.QUARKUS);
         }
         return String.format("%s.yaml", fileNamePrefix);
     }

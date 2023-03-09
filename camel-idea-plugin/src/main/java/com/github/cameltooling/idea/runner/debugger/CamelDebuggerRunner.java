@@ -68,7 +68,7 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
 
     @Override
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-        CamelPreferenceService preferenceService = ApplicationManager.getApplication().getService(CamelPreferenceService.class);
+        CamelPreferenceService preferenceService = CamelPreferenceService.getService();
         if (!preferenceService.isEnableCamelDebugger()) {
             return false;
         }

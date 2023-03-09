@@ -16,8 +16,6 @@
  */
 package com.github.cameltooling.idea.annotator;
 
-import java.util.List;
-import static java.util.stream.Collectors.toList;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
@@ -28,13 +26,16 @@ import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Annotate camel bean reference with error if the method is private or does not exist
@@ -47,13 +48,14 @@ public class CamelBeanMethodAnnotator implements Annotator {
     private static final Logger LOG = Logger.getInstance(CamelBeanMethodAnnotator.class);
 
     boolean isEnabled(@NotNull PsiElement element) {
+        final IdeaUtils ideaUtils = IdeaUtils.getService();
         final boolean valid = element.getProject().getService(CamelService.class).isCamelPresent()
             && CamelPreferenceService.getService().isRealTimeSimpleValidation()
             // skip whitespace noise
-            && !getIdeaUtils().isWhiteSpace(element)
+            && !ideaUtils.isWhiteSpace(element)
             // skip java doc noise
-            && !getIdeaUtils().isJavaDoc(element)
-            && getCamelIdeaUtils().getBeanPsiElement(element) != null;
+            && !ideaUtils.isJavaDoc(element)
+            && CamelIdeaUtils.getService().getBeanPsiElement(element) != null;
         return valid;
     }
 
@@ -63,19 +65,21 @@ public class CamelBeanMethodAnnotator implements Annotator {
             return;
         }
 
-        PsiClass psiClass = getCamelIdeaUtils().getBean(element);
+        final CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
+        PsiClass psiClass = camelIdeaUtils.getBean(element);
 
         if (psiClass == null) {
             return;
         }
 
         String errorMessage;
-        final String beanName = getJavaClassUtils().getBeanName(psiClass);
+        final JavaMethodUtils javaMethodUtils = JavaMethodUtils.getService();
+        final String beanName = JavaClassUtils.getService().getBeanName(psiClass);
         final String methodNameWithParameters = StringUtils.stripDoubleQuotes(element.getText());
-        final String methodName = StringUtils.stripDoubleQuotes(getJavaMethodUtils().getMethodNameWithOutParameters(element));
+        final String methodName = StringUtils.stripDoubleQuotes(javaMethodUtils.getMethodNameWithOutParameters(element));
 
         if (methodName.equals(beanName)) {
-            //We don't want to check psiClass elements it self
+            //We don't want to check psiClass elements itself
             return;
         }
 
@@ -85,12 +89,12 @@ public class CamelBeanMethodAnnotator implements Annotator {
             errorMessage = matchMethods.isEmpty() ? String.format(METHOD_CAN_NOT_RESOLVED, methodNameWithParameters, psiClass.getQualifiedName()) : null;
         } else {
             final long privateMethods = matchMethods.stream()
-                .filter(method -> getJavaMethodUtils().isMatchOneOfModifierType(method, PsiModifier.PRIVATE))
+                .filter(method -> javaMethodUtils.isMatchOneOfModifierType(method, PsiModifier.PRIVATE))
                 .count();
 
-            final boolean isAnnotatedWithHandler = matchMethods.stream().anyMatch(psiMethod -> getCamelIdeaUtils().isAnnotatedWithHandler(psiMethod));
+            final boolean isAnnotatedWithHandler = matchMethods.stream().anyMatch(psiMethod -> camelIdeaUtils.isAnnotatedWithHandler(psiMethod));
 
-            final boolean allPrivates = privateMethods == matchMethods.size() ? true : false;
+            final boolean allPrivates = privateMethods == matchMethods.size();
 
             if (methodNameWithParameters.indexOf("(", methodName.length()) > 0 && methodNameWithParameters.endsWith(")") && !allPrivates) {
                 //TODO implement logic for matching on parameters.
@@ -112,26 +116,11 @@ public class CamelBeanMethodAnnotator implements Annotator {
 
     @NotNull
     public List<PsiMethod> getMatchingMethods(PsiClass psiClass, String methodName) {
-        return getJavaMethodUtils().getBeanMethods(getJavaMethodUtils().getMethods(psiClass))
+        final JavaMethodUtils javaMethodUtils = JavaMethodUtils.getService();
+        return javaMethodUtils.getBeanMethods(javaMethodUtils.getMethods(psiClass))
                 .stream()
                 .peek(method -> LOG.debug("element %s = %s method in bean %s", methodName, StringUtils.stripDoubleQuotes(method.getName()), psiClass.getQualifiedName()))
                 .filter(method -> StringUtils.stripDoubleQuotes(method.getName()).equals(methodName))
                 .collect(toList());
-    }
-
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return ApplicationManager.getApplication().getService(CamelIdeaUtils.class);
-    }
-
-    private JavaMethodUtils getJavaMethodUtils() {
-        return ApplicationManager.getApplication().getService(JavaMethodUtils.class);
-    }
-
-    private IdeaUtils getIdeaUtils() {
-        return ApplicationManager.getApplication().getService(IdeaUtils.class);
-    }
-
-    private JavaClassUtils getJavaClassUtils() {
-        return ApplicationManager.getApplication().getService(JavaClassUtils.class);
     }
 }

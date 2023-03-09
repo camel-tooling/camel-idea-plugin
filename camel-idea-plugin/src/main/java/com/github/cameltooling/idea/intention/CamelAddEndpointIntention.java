@@ -30,7 +30,6 @@ import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.codeInsight.intention.LowPriorityAction;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
@@ -63,17 +62,13 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
      */
     private static final Logger LOG = Logger.getInstance(CamelAddEndpointIntention.class);
 
-    public IdeaUtils getIdeaUtils() {
-        return ApplicationManager.getApplication().getService(IdeaUtils.class);
-    }
-
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
          // filter libraries to only be Camel libraries
         Set<String> artifacts = project.getService(CamelService.class).getLibraries();
 
         // find the camel component from those libraries
-        boolean consumerOnly = getCamelIdeaUtils().isConsumerEndpoint(element);
+        boolean consumerOnly = CamelIdeaUtils.getService().isConsumerEndpoint(element);
         List<String> names = findCamelComponentNamesInArtifact(artifacts, consumerOnly, project);
 
         // no camel endpoints then exit
@@ -116,16 +111,17 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
             String text = null;
 
+            final IdeaUtils ideaUtils = IdeaUtils.getService();
             // special for java token
             if (element instanceof PsiJavaToken) {
                 // if its a string literal
                 PsiJavaToken token = (PsiJavaToken) element;
                 if (token.getTokenType() == JavaTokenType.STRING_LITERAL) {
-                    text = getIdeaUtils().getInnerText(token.getText());
+                    text = ideaUtils.getInnerText(token.getText());
                 }
             } else {
                 // should be a literal element and therefore dont fallback to generic
-                text = getIdeaUtils().extractTextFromElement(element, false, false, true);
+                text = ideaUtils.extractTextFromElement(element, false, false, true);
             }
 
             return text != null && text.trim().isEmpty();
@@ -149,7 +145,7 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
     @Override
     public Icon getIcon(@IconFlags int flags) {
-        return getCamelPreferenceService().getCamelIcon();
+        return CamelPreferenceService.getService().getCamelIcon();
     }
 
     private static List<String> findCamelComponentNamesInArtifact(Set<String> artifactIds, boolean consumerOnly, Project project) {
@@ -178,14 +174,6 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         Collections.sort(names);
 
         return names;
-    }
-
-    private CamelPreferenceService getCamelPreferenceService() {
-        return ApplicationManager.getApplication().getService(CamelPreferenceService.class);
-    }
-
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return ApplicationManager.getApplication().getService(CamelIdeaUtils.class);
     }
 
 }

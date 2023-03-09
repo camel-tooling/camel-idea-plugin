@@ -36,7 +36,6 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.psi.PsiElement;
@@ -80,13 +79,15 @@ public final class CamelSmartCompletionEndpointOptions {
             if ("parameter".equals(option.getKind())) {
                 final String name = option.getName();
 
+                final CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
+
                 // if we are consumer only, then any option that has producer in the label should be skipped (as its only for producer)
-                final boolean consumerOnly = getCamelIdeaUtils().isConsumerEndpoint(element);
+                final boolean consumerOnly = camelIdeaUtils.isConsumerEndpoint(element);
                 if (consumerOnly && option.getLabel() != null && option.getLabel().contains("producer")) {
                     continue;
                 }
                 // if we are producer only, then any option that has consumer in the label should be skipped (as its only for consumer)
-                final boolean producerOnly = getCamelIdeaUtils().isProducerEndpoint(element);
+                final boolean producerOnly = camelIdeaUtils.isProducerEndpoint(element);
                 if (producerOnly && option.getLabel() != null && option.getLabel().contains("consumer")) {
                     continue;
                 }
@@ -166,7 +167,7 @@ public final class CamelSmartCompletionEndpointOptions {
 
         // show the syntax as the only choice for now
         LookupElementBuilder builder = LookupElementBuilder.create(val);
-        builder = builder.withIcon(getCamelPreferenceService().getCamelIcon());
+        builder = builder.withIcon(CamelPreferenceService.getService().getCamelIcon());
         builder = builder.withBoldness(true);
         builder = builder.withPresentableText(component.getSyntax());
 
@@ -255,7 +256,7 @@ public final class CamelSmartCompletionEndpointOptions {
     private static String removeUnknownOption(String val, final Map<String, String> existing,
                                               final PsiElement element) {
 
-        final String[] strToRemove = getIdeaUtils().getQueryParameterAtCursorPosition(element);
+        final String[] strToRemove = IdeaUtils.getService().getQueryParameterAtCursorPosition(element);
         //to compare the string against known options we need to strip it from equal sign
         String searchStr = strToRemove[0];
         if (!searchStr.isEmpty() && !searchStr.endsWith("&") && existing != null) {
@@ -276,7 +277,7 @@ public final class CamelSmartCompletionEndpointOptions {
      * from("jms:qu<caret>")
      */
     private static String removeUnknownEnum(String val, final PsiElement element) {
-        final String[] strToRemove = getIdeaUtils().getQueryParameterAtCursorPosition(element);
+        final String[] strToRemove = IdeaUtils.getService().getQueryParameterAtCursorPosition(element);
         //to compare the string against known options we need to strip it from equal sign
         strToRemove[0] = strToRemove[0].replace(":", "");
         if (!strToRemove[0].isEmpty()) {
@@ -320,18 +321,6 @@ public final class CamelSmartCompletionEndpointOptions {
                 EditorModificationUtil.moveCaretRelatively(editor, offset);
             }
         });
-    }
-
-    private static CamelPreferenceService getCamelPreferenceService() {
-        return ApplicationManager.getApplication().getService(CamelPreferenceService.class);
-    }
-
-    private static IdeaUtils getIdeaUtils() {
-        return ApplicationManager.getApplication().getService(IdeaUtils.class);
-    }
-
-    private static CamelIdeaUtils getCamelIdeaUtils() {
-        return ApplicationManager.getApplication().getService(CamelIdeaUtils.class);
     }
 
 }

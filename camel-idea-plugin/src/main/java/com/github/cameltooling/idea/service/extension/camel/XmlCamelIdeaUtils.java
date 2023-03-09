@@ -21,7 +21,6 @@ import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.ide.highlighter.XmlFileType;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
@@ -122,9 +121,10 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
             .and(e -> uriCondition.test(e.getValue()));
 
         List<PsiElement> endpointDeclarations = new ArrayList<>();
-        IdeaUtils.getService().iterateXmlDocumentRoots(module, root -> {
+        final IdeaUtils service = IdeaUtils.getService();
+        service.iterateXmlDocumentRoots(module, root -> {
             if (isAcceptedNamespace(root.getNamespace())) {
-                IdeaUtils.getService().iterateXmlNodes(root, XmlAttributeValue.class, value -> {
+                service.iterateXmlNodes(root, XmlAttributeValue.class, value -> {
                     if (endpointMatcher.test(value)) {
                         endpointDeclarations.add(value);
                     }
@@ -281,7 +281,7 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
         return true;
     }
 
-    private IdeaUtils getIdeaUtils() {
-        return ApplicationManager.getApplication().getService(IdeaUtils.class);
+    private static IdeaUtils getIdeaUtils() {
+        return IdeaUtils.getService();
     }
 }

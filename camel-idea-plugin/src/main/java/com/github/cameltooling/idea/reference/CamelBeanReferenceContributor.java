@@ -19,7 +19,6 @@ package com.github.cameltooling.idea.reference;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.JavaClassUtils;
 import com.github.cameltooling.idea.util.StringUtils;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.patterns.PsiJavaElementPattern;
 import com.intellij.psi.PsiClass;
@@ -85,7 +84,7 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
             return PsiReference.EMPTY_ARRAY;
         }
 
-        PsiClass psiClass = getCamelIdeaUtils().getBean(element);
+        PsiClass psiClass = CamelIdeaUtils.getService().getBean(element);
         if (psiClass != null) {
             String methodName = StringUtils.stripDoubleQuotes(element.getText());
             if (!methodName.isEmpty()) {
@@ -101,12 +100,12 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
             return PsiReference.EMPTY_ARRAY;
         }
 
-        PsiClass psiClass = getCamelIdeaUtils().getBean(element);
+        PsiClass psiClass = CamelIdeaUtils.getService().getBean(element);
         if (psiClass == null) {
             return PsiReference.EMPTY_ARRAY;
         }
 
-        final String beanName = getJavaClassUtils().getBeanName(psiClass);
+        final String beanName = JavaClassUtils.getService().getBeanName(psiClass);
         final String methodName = StringUtils.stripDoubleQuotes(element.getText());
 
         if (methodName.equals(beanName) || methodName.isEmpty()) {
@@ -115,14 +114,6 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
 
         return new PsiReference[] {new CamelBeanMethodReference(element, psiClass, methodName, new TextRange(1, methodName.length() + 1))};
 
-    }
-
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return CamelIdeaUtils.getService();
-    }
-
-    private JavaClassUtils getJavaClassUtils() {
-        return ApplicationManager.getApplication().getService(JavaClassUtils.class);
     }
 
 }

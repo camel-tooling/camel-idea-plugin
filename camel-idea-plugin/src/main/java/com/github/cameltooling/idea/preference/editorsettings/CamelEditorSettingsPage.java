@@ -22,7 +22,6 @@ import javax.swing.*;
 
 import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.BaseConfigurable;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
@@ -88,7 +87,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
 
     @Override
     public void apply() throws ConfigurationException {
-        final CamelPreferenceService preferenceService = getCamelPreferenceService();
+        final CamelPreferenceService preferenceService = CamelPreferenceService.getService();
         preferenceService.setDownloadCatalog(downloadCatalogCheckBox.isSelected());
         preferenceService.setScanThirdPartyComponents(scanThirdPartyComponentsCatalogCheckBox.isSelected());
         preferenceService.setShowCamelIconInGutter(camelIconInGutterCheckBox.isSelected());
@@ -101,7 +100,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
     @Override
     public boolean isModified() {
         // check boxes
-        final CamelPreferenceService preferenceService = getCamelPreferenceService();
+        final CamelPreferenceService preferenceService = CamelPreferenceService.getService();
         return preferenceService.isDownloadCatalog() != downloadCatalogCheckBox.isSelected()
                 || preferenceService.isScanThirdPartyComponents() != scanThirdPartyComponentsCatalogCheckBox.isSelected()
                 || preferenceService.isShowCamelIconInGutter() != camelIconInGutterCheckBox.isSelected()
@@ -113,7 +112,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
 
     @Override
     public void reset() {
-        final CamelPreferenceService preferenceService = getCamelPreferenceService();
+        final CamelPreferenceService preferenceService = CamelPreferenceService.getService();
         downloadCatalogCheckBox.setSelected(preferenceService.isDownloadCatalog());
         scanThirdPartyComponentsCatalogCheckBox.setSelected(preferenceService.isScanThirdPartyComponents());
         camelIconInGutterCheckBox.setSelected(preferenceService.isShowCamelIconInGutter());
@@ -133,10 +132,6 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
     @Override
     public String getDisplayName() {
         return null;
-    }
-
-    CamelPreferenceService getCamelPreferenceService() {
-        return ApplicationManager.getApplication().getService(CamelPreferenceService.class);
     }
 
     JBCheckBox getDownloadCatalogCheckBox() {

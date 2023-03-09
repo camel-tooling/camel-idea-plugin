@@ -17,6 +17,7 @@
 package com.github.cameltooling.idea.completion.header;
 
 import com.github.cameltooling.idea.completion.OptionSuggestion;
+import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.psi.JavaTokenType;
@@ -53,7 +54,7 @@ public class CamelJavaHeaderNameCompletion extends CamelHeaderNameCompletion {
             element.getParent(), PsiReferenceExpression.class, false
         );
         if (ref != null) {
-            return getIdeaUtils().extractTextFromElement(ref);
+            return IdeaUtils.getService().extractTextFromElement(ref);
         }
         return null;
     }

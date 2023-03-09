@@ -59,7 +59,7 @@ public class IdeaUtilsIsCamelRouteStartExtendedTestIT extends LightJavaCodeInsig
         // PsiElement element = myFixture.getElementAtCaret();
         PsiElement element = myFixture.findElementByText("\"file:inbox\"", PsiLiteralExpression.class);
 
-        assertTrue(getCamelIdeaUtils().isCamelRouteStart(element));
+        assertTrue(CamelIdeaUtils.getService().isCamelRouteStart(element));
     }
 
     public void testNotStartRoute() {
@@ -70,11 +70,7 @@ public class IdeaUtilsIsCamelRouteStartExtendedTestIT extends LightJavaCodeInsig
         // PsiElement element = myFixture.getElementAtCaret();
         PsiElement element = myFixture.findElementByText("\"log:out\"", PsiLiteralExpression.class);
 
-        assertFalse(getCamelIdeaUtils().isCamelRouteStart(element));
-    }
-
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return CamelIdeaUtils.getService();
+        assertFalse(CamelIdeaUtils.getService().isCamelRouteStart(element));
     }
 
 }

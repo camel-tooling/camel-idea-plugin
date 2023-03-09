@@ -25,7 +25,6 @@ import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.codeInsight.daemon.GutterMark;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLMapping;
@@ -42,7 +41,7 @@ public class YamlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
 
         assertEquals("Does not contain the expected amount of Camel gutters", 4, gutters.size());
 
-        Icon defaultIcon = ApplicationManager.getApplication().getService(CamelPreferenceService.class).getCamelIcon();
+        Icon defaultIcon = CamelPreferenceService.getService().getCamelIcon();
         gutters.forEach(gutterMark -> {
             assertSame("Gutter should have the Camel icon", defaultIcon, gutterMark.getIcon());
             assertEquals("Camel route", gutterMark.getTooltipText());
@@ -79,7 +78,7 @@ public class YamlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
 
         assertEquals("Should contain 1 Camel gutter", 1, gutters.size());
 
-        assertSame("Gutter should have the Camel icon", ApplicationManager.getApplication().getService(CamelPreferenceService.class).getCamelIcon(), gutters.get(0).getIcon());
+        assertSame("Gutter should have the Camel icon", CamelPreferenceService.getService().getCamelIcon(), gutters.get(0).getIcon());
         assertEquals("Camel route", gutters.get(0).getTooltipText());
 
         LineMarkerInfo.LineMarkerGutterIconRenderer<?> gutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(0);

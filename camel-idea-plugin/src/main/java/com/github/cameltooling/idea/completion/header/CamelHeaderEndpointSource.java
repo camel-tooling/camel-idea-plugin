@@ -37,7 +37,7 @@ public enum CamelHeaderEndpointSource {
     PRODUCER_ONLY {
         @Override
         Collection<CamelHeaderEndpoint> getEndpoints(@NotNull PsiElement element) {
-            final CamelIdeaUtils utils = getCamelIdeaUtils();
+            final CamelIdeaUtils utils = CamelIdeaUtils.getService();
             return utils.findEndpointUsages(
                 ModuleUtilCore.findModuleForPsiElement(element), e -> e.indexOf(':') != -1
             )
@@ -56,7 +56,7 @@ public enum CamelHeaderEndpointSource {
     CONSUMER_ONLY {
         @Override
         Collection<CamelHeaderEndpoint> getEndpoints(@NotNull PsiElement element) {
-            final CamelIdeaUtils utils = getCamelIdeaUtils();
+            final CamelIdeaUtils utils = CamelIdeaUtils.getService();
             return utils.findEndpointDeclarations(
                 ModuleUtilCore.findModuleForPsiElement(element), e -> e.indexOf(':') != -1
             )
@@ -89,8 +89,4 @@ public enum CamelHeaderEndpointSource {
      * @return a collection of all matching endpoints in the module corresponding to the given element.
      */
     abstract Collection<CamelHeaderEndpoint> getEndpoints(@NotNull PsiElement element);
-
-    private static CamelIdeaUtils getCamelIdeaUtils() {
-        return CamelIdeaUtils.getService();
-    }
 }

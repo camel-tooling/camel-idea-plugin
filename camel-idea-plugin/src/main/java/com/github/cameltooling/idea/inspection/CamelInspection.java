@@ -34,10 +34,6 @@ public class CamelInspection extends AbstractCamelInspection {
         super(forceEnabled);
     }
 
-    public IdeaUtils getIdeaUtils() {
-        return IdeaUtils.getService();
-    }
-
     @Override
     boolean accept(PsiElement element) {
         // skip tokens as we want to only trigger on attributes and xml value if in XML mode
@@ -46,7 +42,7 @@ public class CamelInspection extends AbstractCamelInspection {
             return false;
         }
 
-        return getIdeaUtils().isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
+        return IdeaUtils.getService().isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
     }
 
 }

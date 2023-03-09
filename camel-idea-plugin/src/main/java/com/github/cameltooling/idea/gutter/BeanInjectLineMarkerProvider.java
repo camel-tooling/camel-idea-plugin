@@ -66,7 +66,7 @@ public class BeanInjectLineMarkerProvider extends RelatedItemLineMarkerProvider 
             Icon icon = CamelPreferenceService.getService().getCamelIcon();
             NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(icon)
                     .setAlignment(GutterIconRenderer.Alignment.RIGHT)
-                    .setCellRenderer(new GutterPsiElementListCellRenderer())
+                    .setCellRenderer(GutterPsiElementListCellRenderer::new)
                     .setTooltipText(MARKER_TOOLTIP_TEXT)
                     .setPopupTitle("Choose Bean")
                     .setEmptyPopupText("Could not find the bean declaration");

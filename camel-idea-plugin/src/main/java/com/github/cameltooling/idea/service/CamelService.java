@@ -45,7 +45,6 @@ import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -111,10 +110,6 @@ public class CamelService implements Disposable {
      */
     public CamelService(Project project) {
         this.project = project;
-    }
-
-    public IdeaUtils getIdeaUtils() {
-        return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
 
     @Override
@@ -296,14 +291,15 @@ public class CamelService implements Disposable {
     public synchronized ClassLoader getCamelCoreClassloader() {
         if (camelCoreClassloader == null) {
             try {
+                final IdeaUtils ideaUtils = IdeaUtils.getService();
                 if (camel2CoreLibrary == null) {
                     // Camel 3 is assumed
                     final List<Library> list = new ArrayList<>(camel3CoreLibraries);
                     list.add(slf4jApiLibrary);
-                    camelCoreClassloader = getIdeaUtils().newURLClassLoaderForLibrary(list.toArray(new Library[0]));
+                    camelCoreClassloader = ideaUtils.newURLClassLoaderForLibrary(list.toArray(new Library[0]));
                 } else {
                     // Camel 2 has been detected
-                    camelCoreClassloader = getIdeaUtils().newURLClassLoaderForLibrary(camel2CoreLibrary, slf4jApiLibrary);
+                    camelCoreClassloader = ideaUtils.newURLClassLoaderForLibrary(camel2CoreLibrary, slf4jApiLibrary);
                 }
             } catch (Exception e) {
                 LOG.warn("Error creating URLClassLoader for loading classes from camel-core", e);
@@ -319,7 +315,7 @@ public class CamelService implements Disposable {
         if (projectClassloader == null) {
             try {
                 final Library[] libs = projectLibraries.keySet().toArray(new Library[0]);
-                projectClassloader = getIdeaUtils().newURLClassLoaderForLibrary(libs);
+                projectClassloader = IdeaUtils.getService().newURLClassLoaderForLibrary(libs);
             } catch (Exception e) {
                 LOG.warn("Error creating URLClassLoader for loading classes from the project", e);
             }
@@ -356,7 +352,7 @@ public class CamelService implements Disposable {
 
     public void showMissingJSonPathJarNotification() {
         if (camelMissingJSonPathJarNotification == null) {
-            Icon icon = getCamelPreferenceService().getCamelIcon();
+            Icon icon = CamelPreferenceService.getService().getCamelIcon();
             camelMissingJSonPathJarNotification = CAMEL_NOTIFICATION_GROUP.createNotification("camel-jsonpath is not on classpath. Cannot perform real time JSonPath validation.",
                     NotificationType.WARNING).setImportant(true).setIcon(icon);
             camelMissingJSonPathJarNotification.notify(project);
@@ -435,7 +431,7 @@ public class CamelService implements Disposable {
             // okay no special version was loaded so its the catalog version we are using
             currentVersion = camelCatalogService.get().getCatalogVersion();
         }
-        if (isThereDifferentVersionToBeLoaded(version, currentVersion) && getCamelPreferenceService().isDownloadCatalog()) {
+        if (isThereDifferentVersionToBeLoaded(version, currentVersion) && CamelPreferenceService.getService().isDownloadCatalog()) {
             if (downloadInProgress.compareAndSet(false, true)) {
                 // execute this work in a background thread
                 loadCamelCatalogInBackground(version);
@@ -452,7 +448,7 @@ public class CamelService implements Disposable {
      * @param version the version of the Camel catalog to load.
      */
     private void loadCamelCatalogInBackground(@NotNull String version) {
-        final CamelCatalogProvider provider = getCamelPreferenceService().getCamelCatalogProvider()
+        final CamelCatalogProvider provider = CamelPreferenceService.getService().getCamelCatalogProvider()
             .getActualProvider(project);
         new Task.Backgroundable(project, "Download the Camel catalog for the " + provider.getName() + " Runtime", true) {
             public void run(@NotNull ProgressIndicator indicator) {
@@ -575,7 +571,7 @@ public class CamelService implements Disposable {
      * @return the list of missing JSon schemas
      */
     private List<String> scanForCamelDependencies(@NotNull Module module) {
-        final boolean thirdParty = getCamelPreferenceService().isScanThirdPartyComponents();
+        final boolean thirdParty = CamelPreferenceService.getService().isScanThirdPartyComponents();
         final CamelCatalog camelCatalog = getCamelCatalogService().get();
         final List<String> missingJSonSchemas = new ArrayList<>();
         for (OrderEntry entry : ModuleRootManager.getInstance(module).getOrderEntries()) {
@@ -617,7 +613,7 @@ public class CamelService implements Disposable {
             String message = "The following Camel components with artifactId [" + components
                     + "] does not include component JSon schema metadata which is required for the Camel IDEA plugin to support these components.";
 
-            Icon icon = getCamelPreferenceService().getCamelIcon();
+            Icon icon = CamelPreferenceService.getService().getCamelIcon();
             camelMissingJSonSchemaNotification = CAMEL_NOTIFICATION_GROUP.createNotification(message, NotificationType.WARNING).setImportant(true).setIcon(icon);
             camelMissingJSonSchemaNotification.notify(project);
         }
@@ -676,7 +672,7 @@ public class CamelService implements Disposable {
                                                         List<String> missingJSonSchemas) {
         boolean added = false;
 
-        try (URLClassLoader classLoader = getIdeaUtils().newURLClassLoaderForLibrary(library)) {
+        try (URLClassLoader classLoader = IdeaUtils.getService().newURLClassLoaderForLibrary(library)) {
             if (classLoader != null) {
                 // is there any custom Camel components in this library?
                 Properties properties = loadComponentProperties(classLoader);
@@ -810,9 +806,6 @@ public class CamelService implements Disposable {
         return project.getService(CamelCatalogService.class);
     }
 
-    private static CamelPreferenceService getCamelPreferenceService() {
-        return ApplicationManager.getApplication().getService(CamelPreferenceService.class);
-    }
 
     /**
      * {@code CamelCatalogListener} defines a listener to notify in case the Camel catalog is ready to use.

@@ -41,7 +41,7 @@ public class CamelBeanReferenceRenameHandler extends PsiElementRenameHandler {
         //Make sure the cursor is located in the text where the method name is defined.
         return psiElement.getParent() instanceof PsiLiteralExpression
             && psiElement.getNextSibling() == null
-            && getCamelIdeaUtils().getBean(psiElement) != null;
+            && CamelIdeaUtils.getService().getBean(psiElement) != null;
     }
 
     private static PsiElement findPsiElementAt(DataContext dataContext) {
@@ -57,9 +57,5 @@ public class CamelBeanReferenceRenameHandler extends PsiElementRenameHandler {
             elementAt = file.findElementAt(editor.getCaretModel().getOffset() - 1);
         }
         return elementAt;
-    }
-
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return CamelIdeaUtils.getService();
     }
 }

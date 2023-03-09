@@ -16,9 +16,6 @@
  */
 package com.github.cameltooling.idea.completion.extension;
 
-import java.util.Collection;
-import java.util.List;
-import static java.util.stream.Collectors.toList;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.JavaMethodUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -29,12 +26,16 @@ import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Camel Java bean reference smart completion for lookup bean methods.
@@ -49,14 +50,15 @@ public class CamelJavaBeanReferenceSmartCompletion extends CompletionProvider<Co
     @Override
     protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
         final PsiElement element = completionParameters.getPosition();
-        final PsiClass psiClass = getCamelIdeaUtils().getBean(element);
+        final PsiClass psiClass = CamelIdeaUtils.getService().getBean(element);
+        final JavaMethodUtils javaMethodUtils = JavaMethodUtils.getService();
 
         if (psiClass != null) {
-            Collection<PsiMethod> methods = getJavaMethodUtils().getMethods(psiClass);
+            Collection<PsiMethod> methods = javaMethodUtils.getMethods(psiClass);
 
-            List<LookupElement> answer = getJavaMethodUtils().getBeanAccessibleMethods(methods)
+            List<LookupElement> answer = javaMethodUtils.getBeanAccessibleMethods(methods)
                 .stream()
-                .map(method -> buildLookupElement(method, getJavaMethodUtils().getPresentableMethodWithParameters(method)))
+                .map(method -> buildLookupElement(method, javaMethodUtils.getPresentableMethodWithParameters(method)))
                 .collect(toList());
 
             // are there any results then add them
@@ -75,7 +77,7 @@ public class CamelJavaBeanReferenceSmartCompletion extends CompletionProvider<Co
         builder = builder.withPresentableText(presentableMethod);
         builder = builder.withTypeText(method.getContainingClass().getName(), true);
         builder = builder.withIcon(AllIcons.Nodes.Method);
-        if (getCamelIdeaUtils().isAnnotatedWithHandler(method)) {
+        if (CamelIdeaUtils.getService().isAnnotatedWithHandler(method)) {
             //@Handle methods are marked with
             builder = builder.withBoldness(true);
         }
@@ -83,15 +85,7 @@ public class CamelJavaBeanReferenceSmartCompletion extends CompletionProvider<Co
             // mark as deprecated
             builder = builder.withStrikeoutness(true);
         }
-        return  builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE);
-    }
-
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return ApplicationManager.getApplication().getService(CamelIdeaUtils.class);
-    }
-
-    private JavaMethodUtils getJavaMethodUtils() {
-        return ApplicationManager.getApplication().getService(JavaMethodUtils.class);
+        return builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE);
     }
 
 }
