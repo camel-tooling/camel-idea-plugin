@@ -17,7 +17,6 @@
 package com.github.cameltooling.idea.annotator;
 
 import com.github.cameltooling.idea.service.CamelService;
-import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
@@ -40,9 +39,6 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
  */
 abstract class AbstractCamelAnnotator implements Annotator {
 
-    protected final IdeaUtils ideaUtils = IdeaUtils.getService();
-    protected final CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
-
     /**
      * Whether or not the annotator is enabled.
      * <p/>
@@ -55,7 +51,7 @@ abstract class AbstractCamelAnnotator implements Annotator {
         if (element.getProject().getService(CamelService.class).isCamelPresent() && isEnabled()) {
             boolean accept = accept(element);
             if (accept) {
-                String text = ideaUtils.extractTextFromElement(element, true, false, false);
+                String text = IdeaUtils.getService().extractTextFromElement(element, true, false, false);
                 if (!StringUtils.isEmpty(text)) {
                     validateText(element, holder, text);
                 }

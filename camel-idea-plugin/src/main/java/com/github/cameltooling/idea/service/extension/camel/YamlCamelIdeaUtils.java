@@ -74,7 +74,7 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
      * All keys whose value can be a URI.
      */
     private static final String[] PLACE_FOR_ENDPOINT_URI = {"uri", "dead-letter-uri", "from", "to"};
-    
+
     /**
      * The pattern to identify a camel route start corresponding to a YAMLKeyValue element
      * whose first child is the key "from" or "rest".

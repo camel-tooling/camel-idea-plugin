@@ -19,6 +19,8 @@ package com.github.cameltooling.idea.annotator;
 import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
+import com.github.cameltooling.idea.util.CamelIdeaUtils;
+import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.diagnostic.Logger;
@@ -48,6 +50,7 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
 
+        final CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
         // only validate if the element is jsonpath element
         if (camelIdeaUtils.isCamelExpression(element, "jsonpath")) {
             Project project = element.getProject();
@@ -105,7 +108,7 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
         if (element instanceof XmlAttributeValue) {
             // we can use the xml range as-is
             range = ((XmlAttributeValue) element).getValueTextRange();
-        } else if (ideaUtils.isJavaLanguage(element)) {
+        } else if (IdeaUtils.getService().isJavaLanguage(element)) {
             // all the programming languages need to have the offset adjusted by 1
             range = TextRange.create(range.getStartOffset() + 1, range.getEndOffset());
         }

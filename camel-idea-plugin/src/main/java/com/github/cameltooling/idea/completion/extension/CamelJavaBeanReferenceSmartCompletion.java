@@ -51,9 +51,9 @@ public class CamelJavaBeanReferenceSmartCompletion extends CompletionProvider<Co
     protected void addCompletions(@NotNull CompletionParameters completionParameters, @NotNull ProcessingContext processingContext, @NotNull CompletionResultSet completionResultSet) {
         final PsiElement element = completionParameters.getPosition();
         final PsiClass psiClass = CamelIdeaUtils.getService().getBean(element);
-        final JavaMethodUtils javaMethodUtils = JavaMethodUtils.getService();
 
         if (psiClass != null) {
+            final JavaMethodUtils javaMethodUtils = JavaMethodUtils.getService();
             Collection<PsiMethod> methods = javaMethodUtils.getMethods(psiClass);
 
             List<LookupElement> answer = javaMethodUtils.getBeanAccessibleMethods(methods)
