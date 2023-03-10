@@ -19,7 +19,6 @@ package com.github.cameltooling.idea.completion.extension;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.vfs.VirtualFile;
-import static com.intellij.openapi.components.ServiceManager.getService;
 
 /**
  * Completion handler for building property result set. Hook into the process when
@@ -27,7 +26,7 @@ import static com.intellij.openapi.components.ServiceManager.getService;
  */
 public interface CamelPropertyCompletion {
     /**
-     * @return true if it match the property file it should process
+     * @return true if it matches the property file it should process
      */
     boolean isValidExtension(String filename);
 
@@ -40,7 +39,7 @@ public interface CamelPropertyCompletion {
      * Test if the property is on the ignore list
      */
     default boolean isIgnored(String key) {
-        for (String ignore : getService(CamelPreferenceService.class).getIgnorePropertyList()) {
+        for (String ignore : CamelPreferenceService.getService().getIgnorePropertyList()) {
             if (key.startsWith(ignore)) {
                 return true;
             }

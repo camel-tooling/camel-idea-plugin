@@ -22,7 +22,6 @@ import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.PlainPrefixMatcher;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.FilenameUtils;
@@ -53,7 +52,7 @@ public class PropertiesPropertyPlaceholdersSmartCompletion implements CamelPrope
 
     @Override
     public boolean isValidExtension(String filename) {
-        final CamelPreferenceService preferenceService = ServiceManager.getService(CamelPreferenceService.class);
+        final CamelPreferenceService preferenceService = CamelPreferenceService.getService();
         final boolean present = preferenceService.getExcludePropertyFiles()
             .stream()
             .anyMatch(s -> !s.isEmpty() && FilenameUtils.wildcardMatch(filename, s));

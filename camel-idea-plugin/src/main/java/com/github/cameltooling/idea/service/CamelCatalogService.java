@@ -60,7 +60,7 @@ public class CamelCatalogService implements Disposable {
         if (instance == null) {
             synchronized (this) {
                 if (instance == null) {
-                    this.instance = getPreferenceService().getCamelCatalogProvider().get(project);
+                    this.instance = CamelPreferenceService.getService().getCamelCatalogProvider().get(project);
                 }
             }
         }
@@ -91,7 +91,7 @@ public class CamelCatalogService implements Disposable {
     private void updateRuntimeProvider(CamelCatalog catalog) {
         final VersionManager versionManager = catalog.getVersionManager();
         if (versionManager instanceof CamelMavenVersionManager) {
-            getPreferenceService().getCamelCatalogProvider().updateRuntimeProvider(
+            CamelPreferenceService.getService().getCamelCatalogProvider().updateRuntimeProvider(
                 project, catalog, ((CamelMavenVersionManager) versionManager).getClassLoader()
             );
         }
@@ -146,13 +146,6 @@ public class CamelCatalogService implements Disposable {
     @Override
     public void dispose() {
         instance = null;
-    }
-
-    /**
-     * @return the preference service
-     */
-    private CamelPreferenceService getPreferenceService() {
-        return ApplicationManager.getApplication().getService(CamelPreferenceService.class);
     }
 
     /**

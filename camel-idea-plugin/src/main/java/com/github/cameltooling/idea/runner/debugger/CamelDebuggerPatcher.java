@@ -122,39 +122,42 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
         final CamelService service = project.getService(CamelService.class);
         if (!service.isCamelPresent()) {
             LOG.debug("The project is not a camel project so no need to patch the parameters");
-        } else if (!CamelPreferenceService.getService().isEnableCamelDebugger()) {
-            LOG.debug("The Camel Debugger has been disabled so no need to patch the parameters");
-        } else if (CamelPreferenceService.getService().isCamelDebuggerAutoSetup()) {
-            if (service.containsLibrary("camel-debug", false)) {
-                LOG.debug("The component camel-debug has been detected in the dependencies of the project");
-                configureCamelDebugger(mode, parameters);
-                return;
-            }
-            LOG.debug("The component camel-debug could not be found in the dependencies of the project and needs to be added");
-            final String version = project.getService(CamelCatalogService.class).get().getLoadedVersion();
-            if (new ComparableVersion(version).compareTo(new ComparableVersion(MIN_CAMEL_VERSION)) < 0) {
-                //This is an older version of Camel, debugger is not supported
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("The version of camel is too old (" + version + ") to use camel-debug");
-                }
-                notify(project, MessageType.WARNING, "Camel version is " + version + ". Minimum required version for Camel Debugger is " + MIN_CAMEL_VERSION);
-            } else {
-                LOG.debug("The detected camel version is recent enough to try to add camel-debug automatically");
-                try {
-                    mode.autoAddCamelDebugger(project, parameters, version);
-                    configureCamelDebugger(mode, parameters);
-                    notify(project, MessageType.INFO, "Camel Debugger has been added automatically with success.");
-                    LOG.debug("The camel-debug has been added with success");
-                } catch (Exception e) {
-                    LOG.error("Could not add the Camel Debugger automatically", e);
-                    notify(project, MessageType.ERROR, "Camel Debugger could not be added automatically.");
-                }
-            }
         } else {
-            notify(project, MessageType.WARNING,
-                "Camel Debugger is not found in classpath. \nPlease add camel-debug or camel-debug-starter or camel-quarkus-debug"
-                    + " to your project dependencies or enable auto setup in the preferences.");
-            LOG.debug("The camel-debug is absent and should not be added automatically");
+            CamelPreferenceService preferenceService = CamelPreferenceService.getService();
+            if (!preferenceService.isEnableCamelDebugger()) {
+                LOG.debug("The Camel Debugger has been disabled so no need to patch the parameters");
+            } else if (preferenceService.isCamelDebuggerAutoSetup()) {
+                if (service.containsLibrary("camel-debug", false)) {
+                    LOG.debug("The component camel-debug has been detected in the dependencies of the project");
+                    configureCamelDebugger(mode, parameters);
+                    return;
+                }
+                LOG.debug("The component camel-debug could not be found in the dependencies of the project and needs to be added");
+                final String version = project.getService(CamelCatalogService.class).get().getLoadedVersion();
+                if (new ComparableVersion(version).compareTo(new ComparableVersion(MIN_CAMEL_VERSION)) < 0) {
+                    //This is an older version of Camel, debugger is not supported
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("The version of camel is too old (" + version + ") to use camel-debug");
+                    }
+                    notify(project, MessageType.WARNING, "Camel version is " + version + ". Minimum required version for Camel Debugger is " + MIN_CAMEL_VERSION);
+                } else {
+                    LOG.debug("The detected camel version is recent enough to try to add camel-debug automatically");
+                    try {
+                        mode.autoAddCamelDebugger(project, parameters, version);
+                        configureCamelDebugger(mode, parameters);
+                        notify(project, MessageType.INFO, "Camel Debugger has been added automatically with success.");
+                        LOG.debug("The camel-debug has been added with success");
+                    } catch (Exception e) {
+                        LOG.error("Could not add the Camel Debugger automatically", e);
+                        notify(project, MessageType.ERROR, "Camel Debugger could not be added automatically.");
+                    }
+                }
+            } else {
+                notify(project, MessageType.WARNING,
+                    "Camel Debugger is not found in classpath. \nPlease add camel-debug or camel-debug-starter or camel-quarkus-debug"
+                        + " to your project dependencies or enable auto setup in the preferences.");
+                LOG.debug("The camel-debug is absent and should not be added automatically");
+            }
         }
     }
 

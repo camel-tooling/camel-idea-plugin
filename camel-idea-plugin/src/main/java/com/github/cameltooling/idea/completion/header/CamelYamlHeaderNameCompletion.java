@@ -17,6 +17,7 @@
 package com.github.cameltooling.idea.completion.header;
 
 import com.github.cameltooling.idea.completion.OptionSuggestion;
+import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.psi.PsiElement;
@@ -37,7 +38,7 @@ public class CamelYamlHeaderNameCompletion extends CamelHeaderNameCompletion {
 
     @Override
     protected String extractTextFromElement(final PsiElement element) {
-        return getIdeaUtils().extractTextFromElement(element);
+        return IdeaUtils.getService().extractTextFromElement(element);
     }
 
     @Override

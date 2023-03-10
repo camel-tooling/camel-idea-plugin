@@ -18,9 +18,7 @@ package com.github.cameltooling.idea.reference;
 
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.JavaClassUtils;
-import com.github.cameltooling.idea.util.JavaMethodUtils;
 import com.github.cameltooling.idea.util.StringUtils;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.patterns.PsiJavaElementPattern;
 import com.intellij.psi.PsiClass;
@@ -36,7 +34,7 @@ import static com.intellij.patterns.PsiJavaPatterns.psiMethod;
 import static com.intellij.patterns.StandardPatterns.or;
 
 /**
- * Create a link between the Camel DSL {@Code bean(MyClass.class,"myMethod")} and the specific method
+ * Create a link between the Camel DSL {@code bean(MyClass.class,"myMethod")} and the specific method
  * in it's destination bean.
  */
 public class CamelBeanReferenceContributor extends PsiReferenceContributor {
@@ -86,7 +84,7 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
             return PsiReference.EMPTY_ARRAY;
         }
 
-        PsiClass psiClass = getCamelIdeaUtils().getBean(element);
+        PsiClass psiClass = CamelIdeaUtils.getService().getBean(element);
         if (psiClass != null) {
             String methodName = StringUtils.stripDoubleQuotes(element.getText());
             if (!methodName.isEmpty()) {
@@ -102,12 +100,12 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
             return PsiReference.EMPTY_ARRAY;
         }
 
-        PsiClass psiClass = getCamelIdeaUtils().getBean(element);
+        PsiClass psiClass = CamelIdeaUtils.getService().getBean(element);
         if (psiClass == null) {
             return PsiReference.EMPTY_ARRAY;
         }
 
-        final String beanName = getJavaClassUtils().getBeanName(psiClass);
+        final String beanName = JavaClassUtils.getService().getBeanName(psiClass);
         final String methodName = StringUtils.stripDoubleQuotes(element.getText());
 
         if (methodName.equals(beanName) || methodName.isEmpty()) {
@@ -116,18 +114,6 @@ public class CamelBeanReferenceContributor extends PsiReferenceContributor {
 
         return new PsiReference[] {new CamelBeanMethodReference(element, psiClass, methodName, new TextRange(1, methodName.length() + 1))};
 
-    }
-
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
-    }
-
-    private JavaMethodUtils getJavaMethodUtils() {
-        return ServiceManager.getService(JavaMethodUtils.class);
-    }
-
-    private JavaClassUtils getJavaClassUtils() {
-        return ServiceManager.getService(JavaClassUtils.class);
     }
 
 }

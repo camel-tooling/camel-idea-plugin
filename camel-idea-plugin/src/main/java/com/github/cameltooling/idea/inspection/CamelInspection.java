@@ -18,25 +18,20 @@ package com.github.cameltooling.idea.inspection;
 
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlToken;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Camel inspection to validate Camel endpoints and languages such as simple.
  */
 public class CamelInspection extends AbstractCamelInspection {
 
+    @SuppressWarnings("unused")
     public CamelInspection() {
     }
 
     public CamelInspection(boolean forceEnabled) {
         super(forceEnabled);
-    }
-
-    public IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
     }
 
     @Override
@@ -47,7 +42,7 @@ public class CamelInspection extends AbstractCamelInspection {
             return false;
         }
 
-        return getIdeaUtils().isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
+        return IdeaUtils.getService().isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
     }
 
 }

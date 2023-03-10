@@ -23,7 +23,6 @@
 //import com.github.cameltooling.idea.service.CamelCatalogService;
 //import com.github.cameltooling.idea.service.CamelService;
 //import com.intellij.openapi.application.ApplicationManager;
-//import com.intellij.openapi.components.ServiceManager;
 //import com.intellij.openapi.roots.ModuleRootModificationUtil;
 //import com.intellij.openapi.roots.OrderRootType;
 //import com.intellij.openapi.roots.libraries.Library;
@@ -79,9 +78,9 @@
 //            });
 //        }
 //
-//        disposeOnTearDown(ServiceManager.getService(getModule().getProject(), CamelCatalogService.class));
-//        disposeOnTearDown(ServiceManager.getService(getModule().getProject(), CamelService.class));
-//        ServiceManager.getService(getModule().getProject(), CamelService.class).setCamelPresent(true);
+//        disposeOnTearDown(getModule().getProject().getService(CamelCatalogService.class));
+//        disposeOnTearDown(getModule().getProject().getService(CamelService.class));
+//        getModule().getProject().getProject(CamelService.class).setCamelPresent(true);
 //    }
 //
 //    @Override

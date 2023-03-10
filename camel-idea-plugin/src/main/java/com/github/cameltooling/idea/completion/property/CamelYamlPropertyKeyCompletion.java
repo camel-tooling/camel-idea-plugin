@@ -32,7 +32,6 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -59,7 +58,7 @@ public class CamelYamlPropertyKeyCompletion extends CamelPropertyKeyCompletion {
      */
     static boolean enableCompletion(final Project project, final PsiFile file) {
         return project.getService(CamelService.class).isCamelPresent() && isCamelRuntimeCompatible(project)
-            && !ApplicationManager.getApplication().getService(CamelIdeaUtils.class).isCamelFile(file);
+            && !CamelIdeaUtils.getService().isCamelFile(file);
     }
 
     @Override
@@ -179,8 +178,7 @@ public class CamelYamlPropertyKeyCompletion extends CamelPropertyKeyCompletion {
      * @return {@code true} if the Camel Runtime of the given project is compatible, {@code false} otherwise.
      */
     private static boolean isCamelRuntimeCompatible(final Project project) {
-        final CamelCatalogProvider provider = ApplicationManager.getApplication()
-            .getService(CamelPreferenceService.class)
+        final CamelCatalogProvider provider = CamelPreferenceService.getService()
             .getCamelCatalogProvider()
             .getActualProvider(project);
         return provider == CamelCatalogProvider.QUARKUS || provider == CamelCatalogProvider.SPRING_BOOT;

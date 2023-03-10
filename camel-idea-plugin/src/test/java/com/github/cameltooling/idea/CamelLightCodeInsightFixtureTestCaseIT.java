@@ -84,12 +84,11 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
             PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myFixture.getModule(), "Maven: " + CAMEL_CORE_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
         }
         Project project = getModule().getProject();
-        ApplicationManager
-            .getApplication()
-            .executeOnPooledThread(() -> ApplicationManager.getApplication().runReadAction(() -> {
+        Application application = ApplicationManager.getApplication();
+        application
+            .executeOnPooledThread(() -> application.runReadAction(() -> {
                 disposeOnTearDown(project.getService(CamelCatalogService.class));
                 disposeOnTearDown(project.getService(CamelService.class));
-                Application application = ApplicationManager.getApplication();
                 disposeOnTearDown(application.getService(CamelPreferenceService.class));
                 disposeOnTearDown(application.getService(CamelIdeaUtils.class));
                 disposeOnTearDown(application.getService(IdeaUtils.class));

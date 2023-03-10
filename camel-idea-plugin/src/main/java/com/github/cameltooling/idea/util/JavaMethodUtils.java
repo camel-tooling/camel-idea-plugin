@@ -20,11 +20,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import com.intellij.lang.jvm.JvmModifier;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
@@ -140,5 +139,9 @@ public class JavaMethodUtils implements Disposable {
     @Override
     public void dispose() {
         // noop
+    }
+
+    public static JavaMethodUtils getService() {
+        return ApplicationManager.getApplication().getService(JavaMethodUtils.class);
     }
 }

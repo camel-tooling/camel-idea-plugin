@@ -25,7 +25,6 @@ import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.Lookup;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.psi.PsiElement;
@@ -50,7 +49,7 @@ public final class CamelSmartCompletionEndpointValue {
         boolean deprecated = option.isDeprecated();
         List<String> enums = option.getEnums();
         Object defaultValue = option.getDefaultValue();
-        String[] stringToRemove = getIdeaUtils().getQueryParameterAtCursorPosition(element);
+        String[] stringToRemove = IdeaUtils.getService().getQueryParameterAtCursorPosition(element);
         if (stringToRemove[1] != null && !stringToRemove[1].isEmpty()) {
             val = val.replace(stringToRemove[1], "");
         }
@@ -192,10 +191,6 @@ public final class CamelSmartCompletionEndpointValue {
                 }
             }
         });
-    }
-
-    private static IdeaUtils getIdeaUtils() {
-        return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
 
 }

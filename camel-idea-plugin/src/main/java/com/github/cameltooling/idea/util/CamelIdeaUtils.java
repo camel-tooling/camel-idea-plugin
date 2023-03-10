@@ -19,7 +19,7 @@ package com.github.cameltooling.idea.util;
 import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
 import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
@@ -53,7 +53,7 @@ public final class CamelIdeaUtils implements Disposable {
     }
 
     public static CamelIdeaUtils getService() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
+        return ApplicationManager.getApplication().getService(CamelIdeaUtils.class);
     }
 
     /**
@@ -262,9 +262,6 @@ public final class CamelIdeaUtils implements Disposable {
             .collect(Collectors.toList());
     }
 
-    private IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
-    }
 
     @Override
     public void dispose() {

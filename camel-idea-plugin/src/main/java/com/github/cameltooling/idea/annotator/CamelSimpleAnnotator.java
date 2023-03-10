@@ -23,7 +23,6 @@ import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.HighlightSeverity;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
@@ -41,7 +40,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
 
     @Override
     boolean isEnabled() {
-        return ServiceManager.getService(CamelPreferenceService.class).isRealTimeSimpleValidation();
+        return CamelPreferenceService.getService().isRealTimeSimpleValidation();
     }
 
     /**
@@ -50,11 +49,13 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
 
+        final CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
+
         // we only want to evaluate if there is a simple function as plain text without functions dont make sense to validate
         boolean hasSimple = text.contains("${") || text.contains("$simple{");
-        if (hasSimple && getCamelIdeaUtils().isCamelExpression(element, "simple")) {
-            CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
-            CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
+        if (hasSimple && camelIdeaUtils.isCamelExpression(element, "simple")) {
+            CamelCatalog catalogService = element.getProject().getService(CamelCatalogService.class).get();
+            CamelService camelService = element.getProject().getService(CamelService.class);
 
             boolean predicate = false;
             try {
@@ -62,7 +63,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                 ClassLoader loader = camelService.getCamelCoreClassloader();
                 if (loader != null) {
                     LanguageValidationResult result;
-                    predicate = getCamelIdeaUtils().isCamelExpressionUsedAsPredicate(element, "simple");
+                    predicate = camelIdeaUtils.isCamelExpressionUsedAsPredicate(element, "simple");
                     if (predicate) {
                         LOG.debug("Validate simple predicate: " + text);
                         result = catalogService.validateLanguagePredicate(loader, "simple", text);
@@ -97,7 +98,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
         if (element instanceof XmlAttributeValue) {
             // we can use the xml range as-is
             range = ((XmlAttributeValue) element).getValueTextRange();
-        } else if (getIdeaUtils().isJavaLanguage(element)) {
+        } else if (IdeaUtils.getService().isJavaLanguage(element)) {
             // all the programming languages need to have the offset adjusted by 1
             range = TextRange.create(range.getStartOffset() + 1, range.getEndOffset());
         }
@@ -117,14 +118,6 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
         }
         range = TextRange.create(range.getStartOffset() + result.getIndex(), endIdx);
         return range;
-    }
-
-    private IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
-    }
-    
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
     }
 
 }

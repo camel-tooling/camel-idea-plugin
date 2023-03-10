@@ -25,7 +25,6 @@ import com.github.cameltooling.idea.completion.header.CamelJavaHeaderNameComplet
 import com.github.cameltooling.idea.completion.header.CamelJavaHeaderValueCompletion;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PsiJavaPatterns;
 import com.intellij.psi.PsiFile;
@@ -48,7 +47,7 @@ public class CamelJavaReferenceContributor extends CamelContributor {
         extend(CompletionType.BASIC, psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("java"))),
             new EndpointCompletion(getCamelCompletionExtensions())
         );
-        extend(CompletionType.BASIC, psiElement(PsiJavaToken.class).with(new PatternCondition<PsiJavaToken>("CamelJavaBeanReferenceSmartCompletion") {
+        extend(CompletionType.BASIC, psiElement(PsiJavaToken.class).with(new PatternCondition<>("CamelJavaBeanReferenceSmartCompletion") {
             @Override
             public boolean accepts(@NotNull PsiJavaToken psiJavaToken, ProcessingContext processingContext) {
                 return getCamelIdeaUtils().getBeanPsiElement(psiJavaToken) != null;
@@ -96,7 +95,7 @@ public class CamelJavaReferenceContributor extends CamelContributor {
         );
     }
 
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
+    private static CamelIdeaUtils getCamelIdeaUtils() {
+        return CamelIdeaUtils.getService();
     }
 }

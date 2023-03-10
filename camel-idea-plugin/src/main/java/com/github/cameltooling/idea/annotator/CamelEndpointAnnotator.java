@@ -30,7 +30,6 @@ import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.lang.annotation.AnnotationBuilder;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.HighlightSeverity;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.markup.EffectType;
 import com.intellij.openapi.editor.markup.TextAttributes;
@@ -67,7 +66,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
 
     @Override
     boolean isEnabled() {
-        return getCamelPreferenceService().isRealTimeEndpointValidation();
+        return CamelPreferenceService.getService().isRealTimeEndpointValidation();
     }
 
     /**
@@ -81,8 +80,10 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 LOG.trace(String.format("Element %s of type: %s to validate endpoint uri: %s", element, type, uri));
             }
 
+            final CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
+
             // skip special values such as configuring ActiveMQ brokerURL
-            if (getCamelIdeaUtils().skipEndpointValidation(element)) {
+            if (camelIdeaUtils.skipEndpointValidation(element)) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug(String.format("Skipping element %s for validation with text: %s", element, uri));
                 }
@@ -90,7 +91,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
             }
 
             // camel catalog expects &amp; as & when it parses so replace all &amp; as &
-            String camelQuery = getIdeaUtils().getInnerText(uri);
+            String camelQuery = IdeaUtils.getService().getInnerText(uri);
             if (camelQuery == null) {
                 return;
             }
@@ -101,7 +102,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 camelQuery = camelQuery.substring(0, camelQuery.length() - 1);
             }
 
-            boolean stringFormat = getCamelIdeaUtils().isFromStringFormatEndpoint(element);
+            boolean stringFormat = camelIdeaUtils.isFromStringFormatEndpoint(element);
             if (stringFormat) {
                 // if the node is fromF or toF, then replace all %X with {{%X}} as we cannot parse that value
                 camelQuery = camelQuery.replace("%s", "{{%s}}");
@@ -109,8 +110,8 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 camelQuery = camelQuery.replace("%b", "{{%b}}");
             }
 
-            boolean consumerOnly = getCamelIdeaUtils().isConsumerEndpoint(element);
-            boolean producerOnly = getCamelIdeaUtils().isProducerEndpoint(element);
+            boolean consumerOnly = camelIdeaUtils.isConsumerEndpoint(element);
+            boolean producerOnly = camelIdeaUtils.isProducerEndpoint(element);
 
             if (producerOnly) {
                 validateEndpointReference(element, camelQuery, holder);
@@ -127,7 +128,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                 extractMapValue(result, result.getInvalidNumber(), uri, element, holder, new NumberErrorMsg());
                 extractMapValue(result, result.getInvalidReference(), uri, element, holder, new ReferenceErrorMsg());
                 extractSetValue(result, result.getUnknown(), uri, element, holder, new UnknownErrorMsg(), false, null);
-                extractSetValue(result, result.getLenient(), uri, element, holder, new LenientOptionMsg(getCamelPreferenceService().isHighlightCustomOptions()), true, null);
+                extractSetValue(result, result.getLenient(), uri, element, holder, new LenientOptionMsg(CamelPreferenceService.getService().isHighlightCustomOptions()), true, null);
                 extractSetValue(result, result.getNotConsumerOnly(), uri, element, holder, new NotConsumerOnlyErrorMsg(), false, null);
                 extractSetValue(result, result.getNotProducerOnly(), uri, element, holder, new NotProducerOnlyErrorMsg(), false, null);
                 extractSetValue(result, result.getDeprecated(), uri, element, holder, new DeprecatedErrorMsg(), true, DEPRECATION_ATTRIBUTES);
@@ -138,7 +139,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
     }
 
     private void validateEndpointReference(PsiElement element, String camelQuery, AnnotationHolder holder) {
-        if (!getIdeaUtils().isJavaLanguage(element)) { //no need, unresolvable references in XML are already highlighted
+        if (!IdeaUtils.getService().isJavaLanguage(element)) { //no need, unresolvable references in XML are already highlighted
             return;
         }
         if (CamelEndpoint.isDirectEndpoint(camelQuery)) { //only direct endpoints have references (for now)
@@ -237,8 +238,9 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
      * @return {@code true} if the index to use should be the normal one, {@code false} otherwise.
      */
     private boolean useNormalIndex(@NotNull PsiElement element) {
-        return getIdeaUtils().isJavaLanguage(element) || getIdeaUtils().isXmlLanguage(element)
-            || getIdeaUtils().isYamlLanguage(element) && element instanceof YAMLQuotedText;
+        IdeaUtils ideaUtils = IdeaUtils.getService();
+        return ideaUtils.isJavaLanguage(element) || ideaUtils.isXmlLanguage(element)
+            || ideaUtils.isYamlLanguage(element) && element instanceof YAMLQuotedText;
     }
 
     private static class BooleanErrorMsg implements CamelAnnotatorEndpointMessage<Map.Entry<String, String>> {
@@ -386,7 +388,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
     }
 
     /**
-     * A human readable summary of the validation.
+     * A human-readable summary of the validation.
      *
      * @return the summary, or <tt>empty</tt> if no validation errors
      */
@@ -400,18 +402,6 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
         }
 
         return msg.getErrorMessage(result, entry);
-    }
-
-    private static CamelPreferenceService getCamelPreferenceService() {
-        return ApplicationManager.getApplication().getService(CamelPreferenceService.class);
-    }
-
-    private static IdeaUtils getIdeaUtils() {
-        return ApplicationManager.getApplication().getService(IdeaUtils.class);
-    }
-
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return ApplicationManager.getApplication().getService(CamelIdeaUtils.class);
     }
 
 }

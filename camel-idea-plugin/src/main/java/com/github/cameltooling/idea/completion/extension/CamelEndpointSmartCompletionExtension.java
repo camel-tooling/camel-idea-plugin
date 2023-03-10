@@ -38,7 +38,6 @@ import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
@@ -72,10 +71,6 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         this.xmlMode = xmlMode;
     }
 
-    public IdeaUtils getIdeaUtils() {
-        return ApplicationManager.getApplication().getService(IdeaUtils.class);
-    }
-
     @Override
     public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context,
                                @NotNull CompletionResultSet resultSet, @NotNull String[] query) {
@@ -107,10 +102,11 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         // are we editing an existing parameter value
         // or are we having a list of suggested parameters to choose among
 
-        boolean caretAtEndOfLine = getIdeaUtils().isCaretAtEndOfLine(element);
+        final IdeaUtils ideaUtils = IdeaUtils.getService();
+        boolean caretAtEndOfLine = ideaUtils.isCaretAtEndOfLine(element);
         LOG.trace("Caret at end of line: " + caretAtEndOfLine);
 
-        String[] queryParameter = getIdeaUtils().getQueryParameterAtCursorPosition(element);
+        String[] queryParameter = ideaUtils.getQueryParameterAtCursorPosition(element);
         String optionValue = queryParameter[1];
 
 
@@ -142,7 +138,7 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
             LOG.warn("Error parsing Camel endpoint properties with url: " + queryAtPosition, e);
         }
         final ComponentModel componentModel = mode.componentModel(
-            project, camelCatalog, componentName, concatQuery, getCamelIdeaUtils().isConsumerEndpoint(element)
+            project, camelCatalog, componentName, concatQuery, CamelIdeaUtils.getService().isConsumerEndpoint(element)
         );
         if (componentModel == null) {
             return;
@@ -184,10 +180,6 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         Project project = parameters.getOriginalFile().getProject();
         return !query[0].endsWith("{{") && componentName != null
             && project.getService(CamelCatalogService.class).get().findComponentNames().contains(componentName);
-    }
-
-    private static CamelIdeaUtils getCamelIdeaUtils() {
-        return ApplicationManager.getApplication().getService(CamelIdeaUtils.class);
     }
 
     /**

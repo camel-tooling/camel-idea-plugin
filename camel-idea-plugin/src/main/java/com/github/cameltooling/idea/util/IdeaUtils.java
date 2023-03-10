@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -34,7 +35,7 @@ import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
@@ -105,7 +106,7 @@ public final class IdeaUtils implements Disposable {
     }
 
     public static IdeaUtils getService() {
-        return ServiceManager.getService(IdeaUtils.class);
+        return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
 
     /**
@@ -264,7 +265,7 @@ public final class IdeaUtils implements Disposable {
         if (target == null) {
             return false;
         }
-        if (target.getQualifiedName().equals(fqnClassName)) {
+        if (Objects.equals(target.getQualifiedName(), fqnClassName)) {
             return true;
         } else {
             return isClassOrParentOf(target.getSuperClass(), fqnClassName);
@@ -333,7 +334,7 @@ public final class IdeaUtils implements Disposable {
             if (containingClass != null) {
                 String name = method.getName();
                 // TODO: this code should likely be moved to something that requires it from being a Camel RouteBuilder
-                if (Arrays.stream(methods).anyMatch(name::equals)) {
+                if (Arrays.asList(methods).contains(name)) {
                     if (fromRouteBuilder) {
                         return ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME.stream().anyMatch(t -> isClassOrParentOf(containingClass, t));
                     } else {
@@ -348,9 +349,9 @@ public final class IdeaUtils implements Disposable {
             if (child != null) {
                 child = child.getLastChild();
             }
-            if (child != null && child instanceof PsiIdentifier) {
+            if (child instanceof PsiIdentifier) {
                 String name = child.getText();
-                return Arrays.stream(methods).anyMatch(name::equals);
+                return Arrays.asList(methods).contains(name);
             }
         }
         return false;
@@ -365,7 +366,7 @@ public final class IdeaUtils implements Disposable {
      */
     public boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
         String name = xml.getLocalName();
-        return Arrays.stream(methods).anyMatch(name::equals);
+        return Arrays.asList(methods).contains(name);
     }
 
     /**
@@ -526,7 +527,7 @@ public final class IdeaUtils implements Disposable {
         startIdx = Math.max(startIdx, positionText.lastIndexOf('?'));
         startIdx = Math.max(startIdx, positionText.lastIndexOf(':'));
 
-        startIdx = startIdx < 0 ? 0 : startIdx;
+        startIdx = Math.max(startIdx, 0);
 
         //Copy the option with any separator chars
         String parameter;
@@ -536,7 +537,7 @@ public final class IdeaUtils implements Disposable {
             int valueStartIdx = positionText.lastIndexOf('&', startIdx);
             valueStartIdx = Math.max(valueStartIdx, positionText.lastIndexOf('?'));
             valueStartIdx = Math.max(valueStartIdx, positionText.lastIndexOf(':'));
-            valueStartIdx = valueStartIdx < 0 ? 0 : valueStartIdx;
+            valueStartIdx = Math.max(valueStartIdx, 0);
             parameter = positionText.substring(valueStartIdx, startIdx);
         } else {
             //Copy the option with any separator chars
@@ -549,13 +550,9 @@ public final class IdeaUtils implements Disposable {
     public boolean isCaretAtEndOfLine(PsiElement element) {
         String value = extractTextFromElement(element).trim();
 
-        if (value != null) {
-            value = value.toLowerCase();
-            return value.endsWith(CompletionUtil.DUMMY_IDENTIFIER.toLowerCase())
-                || value.endsWith(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED.toLowerCase());
-        }
-
-        return false;
+        value = value.toLowerCase();
+        return value.endsWith(CompletionUtil.DUMMY_IDENTIFIER.toLowerCase())
+            || value.endsWith(CompletionUtil.DUMMY_IDENTIFIER_TRIMMED.toLowerCase());
     }
 
     public boolean isWhiteSpace(PsiElement element) {
@@ -568,10 +565,8 @@ public final class IdeaUtils implements Disposable {
 
     public boolean isJavaDoc(PsiElement element) {
         IElementType type = element.getNode().getElementType();
-        if (IJavaDocElementType.class.isAssignableFrom(type.getClass()) || JavaDocElementType.ALL_JAVADOC_ELEMENTS.contains(element.getNode().getElementType())) {
-            return true;
-        }
-        return false;
+        return IJavaDocElementType.class.isAssignableFrom(type.getClass())
+                || JavaDocElementType.ALL_JAVADOC_ELEMENTS.contains(element.getNode().getElementType());
     }
 
     public Optional<XmlAttribute> findAttribute(XmlTag tag, String localName) {
@@ -651,7 +646,7 @@ public final class IdeaUtils implements Disposable {
         PsiElement psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
 
         //This must be indent element because the position is at the beginning of the line
-        if (psiElement != null && psiElement instanceof LeafPsiElement && "indent".equals(((LeafPsiElement) psiElement).getElementType().getDebugName())) {
+        if (psiElement instanceof LeafPsiElement && "indent".equals(((LeafPsiElement) psiElement).getElementType().toString())) {
             psiElement = psiElement.getNextSibling(); //This must be sequence item
             Collection<YAMLKeyValue> keyValues = null;
             if (psiElement instanceof YAMLSequence) { //This is the beginning of sequence, get first item

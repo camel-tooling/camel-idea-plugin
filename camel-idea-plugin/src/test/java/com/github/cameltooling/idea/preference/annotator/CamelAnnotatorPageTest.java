@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.ui.components.JBCheckBox;
 
 public class CamelAnnotatorPageTest extends CamelLightCodeInsightFixtureTestCaseIT {
@@ -86,31 +87,33 @@ public class CamelAnnotatorPageTest extends CamelLightCodeInsightFixtureTestCase
     public void testShouldChangeStateOfRealTimeEndpointValidationCatalogCheckBox() {
         JBCheckBox checkBox = annotatorPage.getRealTimeEndpointValidationCatalogCheckBox();
         assertTrue(checkBox.isSelected());
-        assertTrue(annotatorPage.getCamelPreferenceService().isRealTimeEndpointValidation());
+        final CamelPreferenceService preferenceService = CamelPreferenceService.getService();
+        assertTrue(preferenceService.isRealTimeEndpointValidation());
         checkBox.setSelected(false);
         annotatorPage.apply();
         assertFalse(checkBox.isSelected());
-        assertFalse(annotatorPage.getCamelPreferenceService().isRealTimeEndpointValidation());
+        assertFalse(preferenceService.isRealTimeEndpointValidation());
     }
 
     public void testShouldChangeStateOfRealTimeSimpleValidationCatalogCheckBox() {
         JBCheckBox checkBox = annotatorPage.getRealTimeSimpleValidationCatalogCheckBox();
         assertTrue(checkBox.isSelected());
-        assertTrue(annotatorPage.getCamelPreferenceService().isRealTimeSimpleValidation());
+        final CamelPreferenceService preferenceService = CamelPreferenceService.getService();
+        assertTrue(preferenceService.isRealTimeSimpleValidation());
         checkBox.setSelected(false);
         annotatorPage.apply();
         assertFalse(checkBox.isSelected());
-        assertFalse(annotatorPage.getCamelPreferenceService().isRealTimeSimpleValidation());
+        assertFalse(preferenceService.isRealTimeSimpleValidation());
     }
 
     public void testShouldChangeStateOfHighlightCustomOptionsCheckBox() {
         JBCheckBox checkBox = annotatorPage.getHighlightCustomOptionsCheckBox();
         assertTrue(checkBox.isSelected());
-        assertTrue(annotatorPage.getCamelPreferenceService().isHighlightCustomOptions());
+        assertTrue(CamelPreferenceService.getService().isHighlightCustomOptions());
         checkBox.setSelected(false);
         annotatorPage.apply();
         assertFalse(checkBox.isSelected());
-        assertFalse(annotatorPage.getCamelPreferenceService().isHighlightCustomOptions());
+        assertFalse(CamelPreferenceService.getService().isHighlightCustomOptions());
     }
 
     public void testShouldResetRealTimeEndpointValidationCatalogCheckBox() {
@@ -139,21 +142,23 @@ public class CamelAnnotatorPageTest extends CamelLightCodeInsightFixtureTestCase
     public void testShouldChangeStateOfRealTimeJSonPathValidationCatalogCheckBox() {
         JBCheckBox checkBox = annotatorPage.getRealTimeJSonPathValidationCatalogCheckBox();
         assertTrue(checkBox.isSelected());
-        assertTrue(annotatorPage.getCamelPreferenceService().isRealTimeJSonPathValidation());
+        final CamelPreferenceService preferenceService = CamelPreferenceService.getService();
+        assertTrue(preferenceService.isRealTimeJSonPathValidation());
         checkBox.setSelected(false);
         annotatorPage.apply();
         assertFalse(checkBox.isSelected());
-        assertFalse(annotatorPage.getCamelPreferenceService().isRealTimeJSonPathValidation());
+        assertFalse(preferenceService.isRealTimeJSonPathValidation());
     }
 
     public void testShouldChangeStateOfRealTimeBeanMethodValidationCheckBox() {
         JBCheckBox checkBox = annotatorPage.getRealTimeBeanMethodValidationCheckBox();
         assertTrue(checkBox.isSelected());
-        assertTrue(annotatorPage.getCamelPreferenceService().isRealTimeBeanMethodValidationCheckBox());
+        final CamelPreferenceService preferenceService = CamelPreferenceService.getService();
+        assertTrue(preferenceService.isRealTimeBeanMethodValidationCheckBox());
         checkBox.setSelected(false);
         annotatorPage.apply();
         assertFalse(checkBox.isSelected());
-        assertFalse(annotatorPage.getCamelPreferenceService().isRealTimeBeanMethodValidationCheckBox());
+        assertFalse(preferenceService.isRealTimeBeanMethodValidationCheckBox());
     }
 
 }

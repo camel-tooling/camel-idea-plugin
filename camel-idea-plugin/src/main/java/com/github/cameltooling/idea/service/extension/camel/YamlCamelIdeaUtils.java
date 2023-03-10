@@ -28,7 +28,6 @@ import com.github.cameltooling.idea.util.YamlPatternConditions;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.lang.ASTNode;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.patterns.ElementPattern;
@@ -231,7 +230,7 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         if (keyValue == null || excludeRouteStart && isCamelRouteStart(keyValue)) {
             return false;
         }
-        return getIdeaUtils().findFirstParent(keyValue, false, this::isCamelRouteStart, PsiFile.class::isInstance) != null;
+        return IdeaUtils.getService().findFirstParent(keyValue, false, this::isCamelRouteStart, PsiFile.class::isInstance) != null;
     }
 
     @Override
@@ -262,8 +261,9 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                 return false;
             }
 
+            final IdeaUtils ideaUtils = IdeaUtils.getService();
             // special for loop which can be both expression or predicate
-            if (getIdeaUtils().hasParentYAMLKeyValue(keyValue, "loop")) {
+            if (ideaUtils.hasParentYAMLKeyValue(keyValue, "loop")) {
                 YAMLKeyValue parentYAMLKeyValue = PsiTreeUtil.getParentOfType(keyValue, YAMLKeyValue.class);
                 if (parentYAMLKeyValue != null) {
                     YAMLMapping parent = PsiTreeUtil.findChildOfType(parentYAMLKeyValue, YAMLMapping.class);
@@ -273,7 +273,7 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                     }
                 }
             }
-            return Arrays.stream(PREDICATE_EIPS).anyMatch(n -> getIdeaUtils().hasParentYAMLKeyValue(keyValue, n));
+            return Arrays.stream(PREDICATE_EIPS).anyMatch(n -> ideaUtils.hasParentYAMLKeyValue(keyValue, n));
         }
         return false;
     }
@@ -287,8 +287,9 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             keyValue = PsiTreeUtil.getParentOfType(element, YAMLKeyValue.class);
         }
         if (keyValue != null) {
-            return getIdeaUtils().hasParentYAMLKeyValue(keyValue, "poll-enrich", "pollEnrich")
-                || getIdeaUtils().isURIYAMLKeyValue(keyValue, CONSUMERS);
+            final IdeaUtils ideaUtils = IdeaUtils.getService();
+            return ideaUtils.hasParentYAMLKeyValue(keyValue, "poll-enrich", "pollEnrich")
+                || ideaUtils.isURIYAMLKeyValue(keyValue, CONSUMERS);
         }
 
         return false;
@@ -303,8 +304,9 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             keyValue = PsiTreeUtil.getParentOfType(element, YAMLKeyValue.class);
         }
         if (keyValue != null) {
-            return getIdeaUtils().hasParentYAMLKeyValue(keyValue, "enrich")
-                || getIdeaUtils().isURIYAMLKeyValue(keyValue, PRODUCERS);
+            final IdeaUtils ideaUtils = IdeaUtils.getService();
+            return ideaUtils.hasParentYAMLKeyValue(keyValue, "enrich")
+                || ideaUtils.isURIYAMLKeyValue(keyValue, PRODUCERS);
         }
         return false;
     }
@@ -389,10 +391,6 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         }
         return Arrays.asList(PLACE_FOR_ENDPOINT_URI).contains(keyValue.getKeyText())
             && isInsideCamelRoute(location, false);
-    }
-
-    private IdeaUtils getIdeaUtils() {
-        return ApplicationManager.getApplication().getService(IdeaUtils.class);
     }
 
 }

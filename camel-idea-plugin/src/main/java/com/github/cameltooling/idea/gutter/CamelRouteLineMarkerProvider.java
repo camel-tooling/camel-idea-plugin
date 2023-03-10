@@ -29,7 +29,6 @@ import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.util.Computable;
@@ -67,21 +66,18 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
     private static final String[] XML_ROUTE_CALL = {"to", "toD", "enrich", "wireTap"};
     private static final String[] YAML_ROUTE_CALL = {"to", "tod", "toD", "to-d", "enrich", "wireTap", "wire-tap"};
 
-    private IdeaUtils getIdeaUtils() {
-        return ApplicationManager.getApplication().getService(IdeaUtils.class);
-    }
-
     @Override
     protected void collectNavigationMarkers(@NotNull PsiElement element,
                                             @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
-        if (!getCamelPreferenceService().isShowCamelIconInGutter() || !element.getProject().getService(CamelService.class).isCamelPresent()
+        if (!CamelPreferenceService.getService().isShowCamelIconInGutter() || !element.getProject().getService(CamelService.class).isCamelPresent()
             || !isCamelFile(element)) {
             // The Gutter should not be shown, or it is not a Camel project or a Camel file
             return;
         }
 
+        CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
         //TODO: remove this when IdeaUtils.isFromJavaMethodCall will be fixed
-        if (getCamelIdeaUtils().isCamelLineMarker(element) || isCamelRouteStartIdentifierExpression(element)) {
+        if (camelIdeaUtils.isCamelLineMarker(element) || isCamelRouteStartIdentifierExpression(element)) {
 
             //skip the PsiLiteralExpression that are not the first operand of PsiPolyadicExpression to avoid having multiple gutter icons
             // on the same PsiPolyadicExpression
@@ -98,7 +94,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                 }
             }
 
-            if (getCamelIdeaUtils().isCamelRouteStartExpression(element)) {
+            if (camelIdeaUtils.isCamelRouteStartExpression(element)) {
 
                 // evaluate the targets lazy
                 NotNullLazyValue<Collection<? extends PsiElement>> targets = NotNullLazyValue.lazy((Computable<Collection<? extends PsiElement>>) () -> {
@@ -111,19 +107,19 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                 });
 
                 NavigationGutterIconBuilder<PsiElement> builder =
-                    NavigationGutterIconBuilder.create(getCamelPreferenceService().getCamelIcon())
+                    NavigationGutterIconBuilder.create(CamelPreferenceService.getService().getCamelIcon())
                         .setTargets(targets)
                         .setTooltipText("Camel route")
                         .setPopupTitle(String.format("Navigate to %s", findRouteFromElement(element)))
                         .setAlignment(GutterIconRenderer.Alignment.RIGHT)
-                        .setCellRenderer(new Computable.PredefinedValueComputable<>(new GutterPsiElementListCellRenderer()));
+                        .setCellRenderer(GutterPsiElementListCellRenderer::new);
                 result.add(builder.createLineMarkerInfo(element));
             }
         }
     }
 
     private boolean isCamelFile(@NotNull PsiElement element) {
-        return getIdeaUtils().isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
+        return IdeaUtils.getService().isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
     }
 
     /**
@@ -138,9 +134,6 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
             .isPresent();
     }
 
-    private CamelPreferenceService getCamelPreferenceService() {
-        return ApplicationManager.getApplication().getService(CamelPreferenceService.class);
-    }
 
     /**
      * Return the resolved reference to a {@link PsiVariable} or {@link PsiMethod}
@@ -169,7 +162,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         if (element == null) {
             return false;
         }
-        return getCamelIdeaUtils().isCamelRouteStartExpression(element);
+        return CamelIdeaUtils.getService().isCamelRouteStartExpression(element);
     }
 
     /**
@@ -383,9 +376,5 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
             }
         }
         return null;
-    }
-
-    private static CamelIdeaUtils getCamelIdeaUtils() {
-        return ApplicationManager.getApplication().getService(CamelIdeaUtils.class);
     }
 }
