@@ -47,7 +47,7 @@ subprojects {
         }
     }
 
-    sourceCompatibility = '11'
+    sourceCompatibility = '17'
 
     publishing {
         publications {
