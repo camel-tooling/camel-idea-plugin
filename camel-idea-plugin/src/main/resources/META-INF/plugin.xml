@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
-  <version>0.9.3</version>
+  <version>0.9.4</version>
   <vendor email="users@apache.camel.org" url="https://github.com/camel-idea-plugin/camel-idea-plugin">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -9,9 +9,9 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.0.9.3
+      v.0.9.4
       <ul>
-        <li>Upgrade to Camel 3.20.3</li>
+        <li>Bug fixes</li>
       </ul>
     ]]>
   </change-notes>
