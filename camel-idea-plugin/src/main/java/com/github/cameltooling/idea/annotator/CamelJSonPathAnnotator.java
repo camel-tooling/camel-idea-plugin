@@ -16,6 +16,7 @@
  */
 package com.github.cameltooling.idea.annotator;
 
+import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
 import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
@@ -38,6 +39,7 @@ import org.jetbrains.annotations.NotNull;
 public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
 
     private static final Logger LOG = Logger.getInstance(CamelEndpointAnnotator.class);
+    private CamelIdeaUtilsExtension camelIdeaUtils;
 
     @Override
     boolean isEnabled() {
@@ -49,61 +51,67 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
      * if the expression is not valid a error annotation is created and highlight the invalid value.
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
-
         final CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
         // only validate if the element is jsonpath element
         if (camelIdeaUtils.isCamelExpression(element, "jsonpath")) {
-            Project project = element.getProject();
-            CamelCatalog catalogService = project.getService(CamelCatalogService.class).get();
-            CamelService camelService = project.getService(CamelService.class);
-
-            // must have camel-json library
-            boolean jsonLib = camelService.containsLibrary("camel-jsonpath", false);
-            if (!jsonLib) {
-                camelService.showMissingJSonPathJarNotification();
-                return;
-            }
-
-            try {
-                // need to use the classloader that can load classes from the project
-                ClassLoader loader = camelService.getProjectClassloader();
-                if (loader != null) {
-                    LanguageValidationResult result;
-                    boolean predicate = camelIdeaUtils.isCamelExpressionUsedAsPredicate(element, "jsonpath");
-                    if (predicate) {
-                        LOG.debug("Inspecting jsonpath predicate: " + text);
-                        result = catalogService.validateLanguagePredicate(loader, "jsonpath", text);
-                    } else {
-                        LOG.debug("Inspecting jsonpath expression: " + text);
-                        result = catalogService.validateLanguageExpression(loader, "jsonpath", text);
-                    }
-                    if (!result.isSuccess()) {
-                        String error = result.getShortError();
-                        if ("[null]".equals(error)) {
-                            return;
-                        }
-                        if (error == null) {
-                            error = result.getError();
-                        }
-                        TextRange range = element.getTextRange();
-                        if (result.getIndex() > 0) {
-                            range = getAdjustedTextRange(element, range, text, result);
-
-                        }
-                        holder.newAnnotation(HighlightSeverity.ERROR, error)
-                                .range(range).create();
-                    }
-                }
-            } catch (Throwable e) {
-                LOG.warn("Error inspecting Camel jsonpath: " + text, e);
-            }
+            validateJsonpathExpression(element, holder, text);
         }
     }
 
+    void validateJsonpathExpression(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
+        Project project = element.getProject();
+        CamelCatalog catalogService = project.getService(CamelCatalogService.class).get();
+        CamelService camelService = project.getService(CamelService.class);
+
+        // must have camel-json library
+        boolean jsonLib = camelService.containsLibrary("camel-jsonpath", false);
+        if (!jsonLib) {
+            camelService.showMissingJSonPathJarNotification();
+            return;
+        }
+
+        try {
+            // need to use the classloader that can load classes from the project
+            ClassLoader loader = camelService.getProjectClassloader();
+            if (loader != null) {
+                LanguageValidationResult result;
+                boolean predicate = camelIdeaUtils.isCamelExpressionUsedAsPredicate(element, "jsonpath");
+                if (predicate) {
+                    LOG.debug("Inspecting jsonpath predicate: " + text);
+                    result = catalogService.validateLanguagePredicate(loader, "jsonpath", text);
+                } else {
+                    LOG.debug("Inspecting jsonpath expression: " + text);
+                    result = catalogService.validateLanguageExpression(loader, "jsonpath", text);
+                }
+                if (!result.isSuccess()) {
+                    handleJsonpathValidationFailure(element, holder, result, text);
+                }
+            }
+        } catch (Throwable e) {
+            LOG.warn("Error inspecting Camel jsonpath: " + text, e);
+        }
+    }
+
+    void handleJsonpathValidationFailure(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull LanguageValidationResult result, @NotNull String text) {
+        String error = result.getShortError();
+        if ("[null]".equals(error)) {
+            return;
+        }
+        if (error == null) {
+            error = result.getError();
+        }
+        TextRange range = element.getTextRange();
+        if (result.getIndex() > 0) {
+            range = getAdjustedTextRange(element, range, text, result);
+        }
+        holder.newAnnotation(HighlightSeverity.ERROR, error)
+                .range(range).create();
+    }
     /**
      * Adjust the text range according to the type of ${@link PsiElement}
      * @return a new text range
      */
+
     private TextRange getAdjustedTextRange(@NotNull PsiElement element, TextRange range, String text, LanguageValidationResult result) {
         if (element instanceof XmlAttributeValue) {
             // we can use the xml range as-is
@@ -112,22 +120,31 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
             // all the programming languages need to have the offset adjusted by 1
             range = TextRange.create(range.getStartOffset() + 1, range.getEndOffset());
         }
-        //we need to calculate the correct start and end position to be sure we highlight the correct word
+
+        // calculate the correct start and end position to be sure we highlight the correct word
         int startIdx = result.getIndex();
-        //test if the simple expression is closed correctly
-        int endIdx = text.indexOf("}", startIdx);
-        if (endIdx == -1) {
-            //the expression is not closed, test for first " " to see if can stop text range here
-            endIdx = text.indexOf(" ", startIdx) - 1;
-        }
-        //calc the end index for highlighted word
-        endIdx = endIdx < 0 ? (range.getEndOffset() - 1) : (range.getStartOffset() + endIdx) + 1;
+        int endIdx = calculateEndIndex(startIdx, text);
+
+        // calculate the end index for highlighted word
+        endIdx = calculateEndOffset(endIdx, range);
 
         if (endIdx <= startIdx) {
             endIdx = range.getEndOffset();
         }
+
         range = TextRange.create(range.getStartOffset() + result.getIndex(), endIdx);
         return range;
     }
 
+    private int calculateEndIndex(int startIdx, String text) {
+        int endIdx = text.indexOf("}", startIdx);
+        if (endIdx == -1) {
+            endIdx = text.indexOf(" ", startIdx) - 1;
+        }
+        return endIdx < 0 ? Integer.MAX_VALUE : endIdx;
+    }
+
+    private int calculateEndOffset(int endIdx, TextRange range) {
+        return endIdx < Integer.MAX_VALUE ? range.getStartOffset() + endIdx + 1 : range.getEndOffset() - 1;
+    }
 }
