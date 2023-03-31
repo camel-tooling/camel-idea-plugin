@@ -221,15 +221,15 @@ public final class CamelSmartCompletionEndpointOptions {
         return answer;
     }
 
-    private static double createContextPathLookupElement(List<LookupElement> answer, double priority,
-                                                         ComponentModel.EndpointOptionModel option, String name,
-                                                         String choice, String lookup,
+    private static double createContextPathLookupElement(List<LookupElement> lookupElements, double priority,
+                                                         ComponentModel.EndpointOptionModel option, String optionName,
+                                                         String optionChoice, String optionLookup,
                                                          Function<ComponentModel.EndpointOptionModel, Icon> iconProvider) {
-        LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, lookup));
+        LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, optionLookup));
         // only show the option in the UI
-        builder = builder.withPresentableText(choice);
+        builder = builder.withPresentableText(optionChoice);
         // lets use the option name as the type so its visible
-        builder = builder.withTypeText(name, true);
+        builder = builder.withTypeText(optionName, true);
         builder = builder.withIcon(iconProvider.apply(option));
 
         if (option.isDeprecated()) {
@@ -238,82 +238,83 @@ public final class CamelSmartCompletionEndpointOptions {
         }
 
         // its an enum so always auto complete the choices
-        LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.ALWAYS_AUTOCOMPLETE);
+        LookupElement lookupElement = builder.withAutoCompletionPolicy(AutoCompletionPolicy.ALWAYS_AUTOCOMPLETE);
 
         // they should be in the exact order
-        element = PrioritizedLookupElement.withPriority(element, priority);
+        lookupElement = PrioritizedLookupElement.withPriority(lookupElement, priority);
 
         priority -= 1.0d;
 
-        answer.add(element);
+        lookupElements.add(lookupElement);
         return priority;
     }
+
 
     /**
      * Remove unknown option at the cursor location from the query string
      * from("timer:trigger?repeatCount=10&del<caret>")
      */
-    private static String removeUnknownOption(String val, final Map<String, String> existing,
+    private static String removeUnknownOption(String value, final Map<String, String> knownOptions,
                                               final PsiElement element) {
-
-        final String[] strToRemove = IdeaUtils.getService().getQueryParameterAtCursorPosition(element);
+        final String[] queryParameters = IdeaUtils.getService().getQueryParameterAtCursorPosition(element);
         //to compare the string against known options we need to strip it from equal sign
-        String searchStr = strToRemove[0];
-        if (!searchStr.isEmpty() && !searchStr.endsWith("&") && existing != null) {
-            if (searchStr.startsWith("&") || searchStr.startsWith("?")) {
-                searchStr = searchStr.substring(1);
+        String optionToRemove = queryParameters[0];
+        if (!optionToRemove.isEmpty() && !optionToRemove.endsWith("&") && knownOptions != null) {
+            if (optionToRemove.startsWith("&") || optionToRemove.startsWith("?")) {
+                optionToRemove = optionToRemove.substring(1);
             }
             //check if the option is known option
-            final String optionToRemove = existing.get(searchStr);
-            if (optionToRemove == null || optionToRemove.isEmpty()) {
-                val = val.replace(searchStr, "");
+            final String knownValue = knownOptions.get(optionToRemove);
+            if (knownValue == null || knownValue.isEmpty()) {
+                value = value.replace(optionToRemove, "");
             }
         }
-        return val;
+        return value;
     }
 
     /**
      * Remove unknown option at the cursor location from the query string
      * from("jms:qu<caret>")
      */
-    private static String removeUnknownEnum(String val, final PsiElement element) {
-        final String[] strToRemove = IdeaUtils.getService().getQueryParameterAtCursorPosition(element);
-        //to compare the string against known options we need to strip it from equal sign
-        strToRemove[0] = strToRemove[0].replace(":", "");
-        if (!strToRemove[0].isEmpty()) {
-            val = val.replace(strToRemove[0], "");
+    private static String removeUnknownEnum(String value, final PsiElement element) {
+        final String[] queryParameters = IdeaUtils.getService().getQueryParameterAtCursorPosition(element);
+        //to compare the string against known options we need to strip it from colon sign
+        queryParameters[0] = queryParameters[0].replace(":", "");
+        if (!queryParameters[0].isEmpty()) {
+            value = value.replace(queryParameters[0], "");
         }
-        return val;
+        return value;
     }
+
 
     /**
      * We need special logic to determine when it should insert "=" at the end of the options
      */
     @NotNull
-    private static LookupElementBuilder addInsertHandler(final Editor editor, final LookupElementBuilder builder,
-                                                         final String suffix) {
-        return builder.withInsertHandler((context, item) -> {
+    private static LookupElementBuilder addInsertHandler(Editor editor, LookupElementBuilder lookupElementBuilder,
+                                                                  String suffix) {
+        return lookupElementBuilder.withInsertHandler((context, item) -> {
             // enforce using replace select char as we want to replace any existing option
             if (context.getCompletionChar() == Lookup.NORMAL_SELECT_CHAR) {
-                int endSelectOffBy = 0;
+                int endSelectOffset = 0;
                 if (context.getFile() instanceof PropertiesFileImpl) {
                     //if it's a property file the PsiElement does not start and end with an quot
-                    endSelectOffBy = 1;
+                    endSelectOffset = 1;
                 }
-                final char text = context
+                final char selectedText = context
                         .getDocument()
                         .getCharsSequence()
-                        .charAt(context.getSelectionEndOffset() - endSelectOffBy);
-                if (text != '=') {
+                        .charAt(context.getSelectionEndOffset() - endSelectOffset);
+                if (selectedText != '=') {
                     EditorModificationUtil.insertStringAtCaret(editor, "=");
                 }
             } else if (context.getCompletionChar() == Lookup.REPLACE_SELECT_CHAR) {
                 // we still want to keep the suffix because they are other options
                 String value = suffix;
-                final int pos = value.indexOf("&");
-                if (pos > -1) {
+                final int index = value.indexOf("&");
+                if (index > -1) {
                     // strip out first part of suffix until next option
-                    value = value.substring(pos);
+                    value = value.substring(index);
                 }
                 EditorModificationUtil.insertStringAtCaret(editor, "=" + value);
                 // and move cursor back again
@@ -322,5 +323,4 @@ public final class CamelSmartCompletionEndpointOptions {
             }
         });
     }
-
 }

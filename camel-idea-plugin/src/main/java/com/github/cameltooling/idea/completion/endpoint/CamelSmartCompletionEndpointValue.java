@@ -41,29 +41,29 @@ public final class CamelSmartCompletionEndpointValue {
     private CamelSmartCompletionEndpointValue() {
     }
 
-    public static List<LookupElement> addSmartCompletionForEndpointValue(Editor editor, String val, String suffix,
+    public static List<LookupElement> addSmartCompletionForEndpointValue(Editor editor, String currentValue, String suffix,
                                                                          ComponentModel.EndpointOptionModel option, PsiElement element, boolean xmlMode) {
-        List<LookupElement> answer = new ArrayList<>();
+        List<LookupElement> suggestions = new ArrayList<>();
 
         String javaType = option.getJavaType();
-        boolean deprecated = option.isDeprecated();
-        List<String> enums = option.getEnums();
-        Object defaultValue = option.getDefaultValue();
+        boolean isOptionDeprecated = option.isDeprecated();
+        List<String> optionEnums = option.getEnums();
+        Object optionDefaultValue = option.getDefaultValue();
         String[] stringToRemove = IdeaUtils.getService().getQueryParameterAtCursorPosition(element);
+
         if (stringToRemove[1] != null && !stringToRemove[1].isEmpty()) {
-            val = val.replace(stringToRemove[1], "");
-        }
-        if (enums != null) {
-            addEnumSuggestions(editor, option, val, suffix, answer, deprecated, enums, defaultValue, xmlMode);
-        } else if ("java.lang.Boolean".equals(javaType) || "boolean".equals(javaType)) {
-            addBooleanSuggestions(editor, option, val, suffix, answer, deprecated, defaultValue, xmlMode);
-        } else if (defaultValue != null) {
-            // for any other kind of type and if there is a default value then add that as a suggestion
-            // so its easy to see what the default value is
-            addDefaultValueSuggestions(editor, option, val, suffix, answer, deprecated, defaultValue, xmlMode);
+            currentValue = currentValue.replace(stringToRemove[1], "");
         }
 
-        return answer;
+        if (optionEnums != null) {
+            addEnumSuggestions(editor, option, currentValue, suffix, suggestions, isOptionDeprecated, optionEnums, optionDefaultValue, xmlMode);
+        } else if ("java.lang.Boolean".equals(javaType) || "boolean".equals(javaType)) {
+            addBooleanSuggestions(editor, option, currentValue, suffix, suggestions, isOptionDeprecated, optionDefaultValue, xmlMode);
+        } else if (optionDefaultValue != null) {
+            addDefaultValueSuggestions(editor, option, currentValue, suffix, suggestions, isOptionDeprecated, optionDefaultValue, xmlMode);
+        }
+
+        return suggestions;
     }
 
     private static void addEnumSuggestions(Editor editor, ComponentModel.EndpointOptionModel option, String val,
