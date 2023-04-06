@@ -64,7 +64,10 @@ public enum CamelHeaderEndpointSource {
         }
 
         abstract boolean matchesEndpointType(PsiElement element);
-        abstract CamelHeaderEndpoint createEndpoint(String componentName);
+
+        CamelHeaderEndpoint createEndpoint(String componentName) {
+            return CamelHeaderEndpoint.producerOnly(componentName);
+        }
     }
 
     private static class ProducerEndpointFinder extends EndpointFinder {
@@ -75,11 +78,6 @@ public enum CamelHeaderEndpointSource {
         @Override
         boolean matchesEndpointType(PsiElement element) {
             return CamelIdeaUtils.getService().isProducerEndpoint(element);
-        }
-
-        @Override
-        CamelHeaderEndpoint createEndpoint(String componentName) {
-            return CamelHeaderEndpoint.producerOnly(componentName);
         }
     }
 
