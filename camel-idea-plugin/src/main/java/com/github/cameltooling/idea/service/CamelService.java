@@ -71,7 +71,8 @@ import static org.apache.camel.catalog.impl.CatalogHelper.loadText;
  */
 public class CamelService implements Disposable {
 
-    private static final NotificationGroup CAMEL_NOTIFICATION_GROUP = NotificationGroupManager.getInstance().getNotificationGroup("Apache Camel");
+    private static final NotificationGroup CAMEL_NOTIFICATION_GROUP = NotificationGroupManager.getInstance()
+            .getNotificationGroup("Apache Camel");
 
     private static final Logger LOG = Logger.getInstance(CamelService.class);
 
@@ -86,11 +87,13 @@ public class CamelService implements Disposable {
     private final Set<String> processedLibraries = new HashSet<>();
     private final Map<Library, ArtifactCoordinates> projectLibraries = new HashMap<>();
     /**
-     * The class loader of the Project based only on the libraries defined as dependencies of the project's modules.
+     * The class loader of the Project based only on the libraries defined as
+     * dependencies of the project's modules.
      */
     private URLClassLoader projectClassloader;
     /**
-     * The class loader of the Project based on the sources of the project but also the libraries defined as
+     * The class loader of the Project based on the sources of the project but also
+     * the libraries defined as
      * dependencies of the project's modules.
      */
     private URLClassLoader projectCompleteClassloader;
@@ -106,6 +109,7 @@ public class CamelService implements Disposable {
 
     /**
      * Construct a {@code CamelService} with the given project.
+     * 
      * @param project the project in which the service is registered.
      */
     public CamelService(Project project) {
@@ -255,15 +259,20 @@ public class CamelService implements Disposable {
     }
 
     /**
-     * Gives the artifact defined as the project library corresponding to the given group id and artifact id.
-     * @param groupId the group id of the artifact to find.
+     * Gives the artifact defined as the project library corresponding to the given
+     * group id and artifact id.
+     * 
+     * @param groupId    the group id of the artifact to find.
      * @param artifactId the artifact id of artifact to find.
-     * @return the {@code ArtifactCoordinates} corresponding to the artifact if it could be found, {@code null} otherwise.
+     * @return the {@code ArtifactCoordinates} corresponding to the artifact if it
+     *         could be found, {@code null} otherwise.
      */
     @Nullable
     public synchronized ArtifactCoordinates getProjectLibraryCoordinates(String groupId, String artifactId) {
         for (ArtifactCoordinates coordinates : projectLibraries.values()) {
-            if (coordinates.getGroupId().equals(groupId) && coordinates.getArtifactId().equals(artifactId)) {
+            boolean isMatchingGroupId = coordinates.getGroupId().equals(groupId);
+            boolean isMatchingArtifactId = coordinates.getArtifactId().equals(artifactId);
+            if (isMatchingGroupId && isMatchingArtifactId) {
                 return coordinates;
             }
         }
@@ -271,9 +280,12 @@ public class CamelService implements Disposable {
     }
 
     /**
-     * Gives an artifact defined as the project library known as a core library of Camel.
-     * @return the {@code ArtifactCoordinates} of any matching artifact if at least one could be found, {@code null}
-     * otherwise.
+     * Gives an artifact defined as the project library known as a core library of
+     * Camel.
+     * 
+     * @return the {@code ArtifactCoordinates} of any matching artifact if at least
+     *         one could be found, {@code null}
+     *         otherwise.
      */
     @Nullable
     public synchronized ArtifactCoordinates getProjectCamelCoreCoordinates() {
@@ -286,7 +298,8 @@ public class CamelService implements Disposable {
     }
 
     /**
-     * Gets the classloader that can load classes from camel-core which is present on the project classpath
+     * Gets the classloader that can load classes from camel-core which is present
+     * on the project classpath
      */
     public synchronized ClassLoader getCamelCoreClassloader() {
         if (camelCoreClassloader == null) {
@@ -309,7 +322,8 @@ public class CamelService implements Disposable {
     }
 
     /**
-     * Gets the class loader of the Project based only on the libraries defined as dependencies of the project's modules.
+     * Gets the class loader of the Project based only on the libraries defined as
+     * dependencies of the project's modules.
      */
     public synchronized ClassLoader getProjectClassloader() {
         if (projectClassloader == null) {
@@ -324,7 +338,8 @@ public class CamelService implements Disposable {
     }
 
     /**
-     * Gets the class loader of the Project based on the sources of the project but also the libraries defined as
+     * Gets the class loader of the Project based on the sources of the project but
+     * also the libraries defined as
      * dependencies of the project's modules.
      */
     synchronized ClassLoader getProjectCompleteClassloader() {
@@ -342,7 +357,8 @@ public class CamelService implements Disposable {
                         sourceURLs.add(new URL(sourceURL));
                     }
                 }
-                projectCompleteClassloader = new URLClassLoader(sourceURLs.toArray(new URL[0]), getProjectClassloader());
+                projectCompleteClassloader = new URLClassLoader(sourceURLs.toArray(new URL[0]),
+                        getProjectClassloader());
             } catch (Exception e) {
                 LOG.warn("Error creating URLClassLoader for loading classes and resources from the project", e);
             }
@@ -353,16 +369,19 @@ public class CamelService implements Disposable {
     public void showMissingJSonPathJarNotification() {
         if (camelMissingJSonPathJarNotification == null) {
             Icon icon = CamelPreferenceService.getService().getCamelIcon();
-            camelMissingJSonPathJarNotification = CAMEL_NOTIFICATION_GROUP.createNotification("camel-jsonpath is not on classpath. Cannot perform real time JSonPath validation.",
+            camelMissingJSonPathJarNotification = CAMEL_NOTIFICATION_GROUP.createNotification(
+                    "camel-jsonpath is not on classpath. Cannot perform real time JSonPath validation.",
                     NotificationType.WARNING).setImportant(true).setIcon(icon);
             camelMissingJSonPathJarNotification.notify(project);
         }
     }
 
     /**
-     * Scan the given project to know whether it is a Camel project or not and if so, set up the {@link CamelCatalog} to
+     * Scan the given project to know whether it is a Camel project or not and if
+     * so, set up the {@link CamelCatalog} to
      * use same version of Camel as the project does.
-     * These two version needs to be aligned to offer the best tooling support on the given project.
+     * These two version needs to be aligned to offer the best tooling support on
+     * the given project.
      */
     public void scanForCamelProject() {
         final List<String> missingJSonSchemas = new ArrayList<>();
@@ -381,7 +400,8 @@ public class CamelService implements Disposable {
     }
 
     /**
-     * Scan the given module to know whether it contains Camel artifacts indicating that it is a Camel project.
+     * Scan the given module to know whether it contains Camel artifacts indicating
+     * that it is a Camel project.
      */
     private void scanForCamelProject(@NotNull Module module) {
         for (OrderEntry entry : ModuleRootManager.getInstance(module).getOrderEntries()) {
@@ -390,7 +410,8 @@ public class CamelService implements Disposable {
             }
             LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
 
-            if (!libraryOrderEntry.getScope().isForProductionCompile() && !libraryOrderEntry.getScope().isForProductionRuntime()) {
+            if (!libraryOrderEntry.getScope().isForProductionCompile()
+                    && !libraryOrderEntry.getScope().isForProductionRuntime()) {
                 continue;
             }
             final Library library = libraryOrderEntry.getLibrary();
@@ -416,8 +437,10 @@ public class CamelService implements Disposable {
     }
 
     /**
-     * Load the Camel catalog if Camel is present in the project, the version of Camel in the project is not the same
-     * as the one in the plugin and the preference indicating to download the catalog is enabled.
+     * Load the Camel catalog if Camel is present in the project, the version of
+     * Camel in the project is not the same
+     * as the one in the plugin and the preference indicating to download the
+     * catalog is enabled.
      */
     void loadCamelCatalog() {
         if (!isCamelPresent()) {
@@ -431,7 +454,8 @@ public class CamelService implements Disposable {
             // okay no special version was loaded so its the catalog version we are using
             currentVersion = camelCatalogService.get().getCatalogVersion();
         }
-        if (isThereDifferentVersionToBeLoaded(version, currentVersion) && CamelPreferenceService.getService().isDownloadCatalog()) {
+        if (isThereDifferentVersionToBeLoaded(version, currentVersion)
+                && CamelPreferenceService.getService().isDownloadCatalog()) {
             if (downloadInProgress.compareAndSet(false, true)) {
                 // execute this work in a background thread
                 loadCamelCatalogInBackground(version);
@@ -449,8 +473,9 @@ public class CamelService implements Disposable {
      */
     private void loadCamelCatalogInBackground(@NotNull String version) {
         final CamelCatalogProvider provider = CamelPreferenceService.getService().getCamelCatalogProvider()
-            .getActualProvider(project);
-        new Task.Backgroundable(project, "Download the Camel catalog for the " + provider.getName() + " Runtime", true) {
+                .getActualProvider(project);
+        new Task.Backgroundable(project, "Download the Camel catalog for the " + provider.getName() + " Runtime",
+                true) {
             public void run(@NotNull ProgressIndicator indicator) {
                 indicator.setText("Downloading camel-catalog version: " + version);
                 indicator.setIndeterminate(false);
@@ -464,7 +489,8 @@ public class CamelService implements Disposable {
                 final CamelCatalogService camelCatalogService = getCamelCatalogService();
                 // The catalog is ready to be used
                 project.getMessageBus().syncPublisher(CamelCatalogListener.TOPIC).onCamelCatalogReady();
-                // only notify this once on startup (or if a new version was successfully loaded)
+                // only notify this once on startup (or if a new version was successfully
+                // loaded)
                 if (camelVersionNotification == null) {
                     String loadedVersion = camelCatalogService.get().getLoadedVersion();
                     if (loadedVersion == null) {
@@ -481,8 +507,9 @@ public class CamelService implements Disposable {
 
     private void showCamelCatalogVersionAtPluginStart(CamelCatalogProvider provider, String currentVersion) {
         camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification(
-            "Apache Camel plugin is using the Camel catalog for the " + provider.getName() + " Runtime version "
-                + currentVersion, NotificationType.INFORMATION);
+                "Apache Camel plugin is using the Camel catalog for the " + provider.getName() + " Runtime version "
+                        + currentVersion,
+                NotificationType.INFORMATION);
         camelVersionNotification.notify(project);
     }
 
@@ -496,7 +523,8 @@ public class CamelService implements Disposable {
 
     /**
      * @param artifact the artifact to test
-     * @return {@code true} if the given artifact is the core artifact of Camel v2, {@code false} otherwise.
+     * @return {@code true} if the given artifact is the core artifact of Camel v2,
+     *         {@code false} otherwise.
      */
     private static boolean isCamel2CoreMavenDependency(ArtifactCoordinates artifact) {
         if ("org.apache.camel".equals(artifact.getGroupId()) && "camel-core".equals(artifact.getArtifactId())) {
@@ -508,27 +536,29 @@ public class CamelService implements Disposable {
 
     /**
      * @param artifact the artifact to test
-     * @return {@code true} if the given artifact is one of the core artifacts of Camel v3, {@code false} otherwise.
+     * @return {@code true} if the given artifact is one of the core artifacts of
+     *         Camel v3, {@code false} otherwise.
      */
     private static boolean isCamel3CoreMavenDependency(ArtifactCoordinates artifact) {
         if (!"org.apache.camel".equals(artifact.getGroupId())) {
             return false;
         }
         switch (artifact.getArtifactId()) {
-        case "camel-api":
-        case "camel-base":
-        case "camel-core-engine":
-        case "camel-base-engine":
-        case "camel-util":
-        case "camel-core-languages":
-        case "camel-management-api":
-        case "camel-support":
-        case "camel-core-model":
-        case "camel-core-processor":
-        case "camel-bean":
-            String version = artifact.getVersion();
-            return version == null || version.startsWith("3");
-        default: return false;
+            case "camel-api":
+            case "camel-base":
+            case "camel-core-engine":
+            case "camel-base-engine":
+            case "camel-util":
+            case "camel-core-languages":
+            case "camel-management-api":
+            case "camel-support":
+            case "camel-core-model":
+            case "camel-core-processor":
+            case "camel-bean":
+                String version = artifact.getVersion();
+                return version == null || version.startsWith("3");
+            default:
+                return false;
         }
     }
 
@@ -542,20 +572,24 @@ public class CamelService implements Disposable {
     }
 
     /**
-     * Attempt to load new version of camel-catalog and Runtime Provider to match the version from the project
-     * use catalog service to load version (which takes care of switching catalog as well)
+     * Attempt to load new version of camel-catalog and Runtime Provider to match
+     * the version from the project
+     * use catalog service to load version (which takes care of switching catalog as
+     * well)
      */
     private boolean downloadNewCamelCatalogVersion(@NotNull CamelCatalogProvider provider, @NotNull String version) {
         // find out the third party maven repositories
         final CamelCatalogService catalogService = getCamelCatalogService();
         boolean loaded = catalogService.loadVersion(version, scanThirdPartyMavenRepositories())
-            && provider.loadRuntimeProviderVersion(project);
+                && provider.loadRuntimeProviderVersion(project);
         if (!loaded) {
             // always notify if download was not possible
             camelVersionNotification = CAMEL_NOTIFICATION_GROUP.createNotification(
-                "Camel IDEA plugin cannot download the Camel catalog for the " + provider.getName() + " Runtime with version " + version
-                    + ". Will fallback and use the Camel catalog version " + catalogService.get().getCatalogVersion(),
-                NotificationType.WARNING);
+                    "Camel IDEA plugin cannot download the Camel catalog for the " + provider.getName()
+                            + " Runtime with version " + version
+                            + ". Will fallback and use the Camel catalog version "
+                            + catalogService.get().getCatalogVersion(),
+                    NotificationType.WARNING);
             camelVersionNotification.notify(project);
         }
         return loaded;
@@ -578,7 +612,8 @@ public class CamelService implements Disposable {
             if (entry instanceof LibraryOrderEntry) {
                 LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
 
-                if (libraryOrderEntry.getScope().isForProductionCompile() || libraryOrderEntry.getScope().isForProductionRuntime()) {
+                if (libraryOrderEntry.getScope().isForProductionCompile()
+                        || libraryOrderEntry.getScope().isForProductionRuntime()) {
                     final Library library = libraryOrderEntry.getLibrary();
                     if (library == null) {
                         continue;
@@ -605,7 +640,8 @@ public class CamelService implements Disposable {
     /**
      * Notify if at least one component does not include the Json schema metadata.
      *
-     * @param missingJSonSchemas the list of components that don't include their corresponding Json schema metadata.
+     * @param missingJSonSchemas the list of components that don't include their
+     *                           corresponding Json schema metadata.
      */
     private void notifyForMissingJsonSchemas(List<String> missingJSonSchemas) {
         if (!missingJSonSchemas.isEmpty()) {
@@ -614,16 +650,19 @@ public class CamelService implements Disposable {
                     + "] does not include component JSon schema metadata which is required for the Camel IDEA plugin to support these components.";
 
             Icon icon = CamelPreferenceService.getService().getCamelIcon();
-            camelMissingJSonSchemaNotification = CAMEL_NOTIFICATION_GROUP.createNotification(message, NotificationType.WARNING).setImportant(true).setIcon(icon);
+            camelMissingJSonSchemaNotification = CAMEL_NOTIFICATION_GROUP
+                    .createNotification(message, NotificationType.WARNING).setImportant(true).setIcon(icon);
             camelMissingJSonSchemaNotification.notify(project);
         }
     }
 
     /**
-     * Scans for third party maven repositories in the root pom.xml file of the project.
+     * Scans for third party maven repositories in the root pom.xml file of the
+     * project.
      *
-     * @return a map with repo id and url for each found repository. The map may be empty if no third party repository
-     * is defined in the pom.xml file
+     * @return a map with repo id and url for each found repository. The map may be
+     *         empty if no third party repository
+     *         is defined in the pom.xml file
      */
     private @NotNull Map<String, String> scanThirdPartyMavenRepositories() {
         Map<String, String> answer = new LinkedHashMap<>();
@@ -647,7 +686,8 @@ public class CamelService implements Disposable {
                             Node id = getChildNodeByTagName(node, "id");
                             Node url = getChildNodeByTagName(node, "url");
                             if (id != null && url != null) {
-                                LOG.info("Found third party Maven repository id: " + id.getTextContent() + " url:" + url.getTextContent());
+                                LOG.info("Found third party Maven repository id: " + id.getTextContent() + " url:"
+                                        + url.getTextContent());
                                 answer.put(id.getTextContent(), url.getTextContent());
                             }
                         }
@@ -669,7 +709,7 @@ public class CamelService implements Disposable {
      * @param artifactId   the artifact id of the dependency
      */
     private void addCustomCamelComponentsFromDependency(CamelCatalog camelCatalog, Library library, String artifactId,
-                                                        List<String> missingJSonSchemas) {
+            List<String> missingJSonSchemas) {
         boolean added = false;
 
         try (URLClassLoader classLoader = IdeaUtils.getService().newURLClassLoaderForLibrary(library)) {
@@ -711,7 +751,8 @@ public class CamelService implements Disposable {
     /**
      * Can the version be accepted to use for switching camel-catalog version.
      * <p/>
-     * Only newer versions of Camel is accepted, older versions do not have a camel-catalog or the catalog
+     * Only newer versions of Camel is accepted, older versions do not have a
+     * camel-catalog or the catalog
      * has invalid data.
      *
      * @param version the version from the project
@@ -720,7 +761,8 @@ public class CamelService implements Disposable {
     private static boolean acceptedVersion(String version) {
         version = version.toLowerCase();
         if (version.endsWith("snapshot")) {
-            // accept snapshot version which can be Camel team developing on latest Camel source
+            // accept snapshot version which can be Camel team developing on latest Camel
+            // source
             return true;
         }
 
@@ -752,8 +794,10 @@ public class CamelService implements Disposable {
 
     private static Properties loadComponentProperties(URLClassLoader classLoader) {
         Properties answer = new Properties();
-        try (InputStream is = classLoader.getResourceAsStream("META-INF/services/org/apache/camel/component.properties")) {
-            // load the component files using the recommended way by a component.properties file
+        try (InputStream is = classLoader
+                .getResourceAsStream("META-INF/services/org/apache/camel/component.properties")) {
+            // load the component files using the recommended way by a component.properties
+            // file
             if (is != null) {
                 answer.load(is);
             }
@@ -789,7 +833,8 @@ public class CamelService implements Disposable {
     }
 
     private static String extractComponentJavaType(URLClassLoader classLoader, String scheme) {
-        try (InputStream is = classLoader.getResourceAsStream("META-INF/services/org/apache/camel/component/" + scheme)) {
+        try (InputStream is = classLoader
+                .getResourceAsStream("META-INF/services/org/apache/camel/component/" + scheme)) {
             if (is != null) {
                 Properties props = new Properties();
                 props.load(is);
@@ -806,14 +851,15 @@ public class CamelService implements Disposable {
         return project.getService(CamelCatalogService.class);
     }
 
-
     /**
-     * {@code CamelCatalogListener} defines a listener to notify in case the Camel catalog is ready to use.
+     * {@code CamelCatalogListener} defines a listener to notify in case the Camel
+     * catalog is ready to use.
      */
     public interface CamelCatalogListener {
 
         /**
-         * The topic to subscribe to in order to be notified when the Camel catalog is ready to use.
+         * The topic to subscribe to in order to be notified when the Camel catalog is
+         * ready to use.
          */
         @Topic.ProjectLevel
         Topic<CamelCatalogListener> TOPIC = Topic.create("CamelCatalogListener", CamelCatalogListener.class);
