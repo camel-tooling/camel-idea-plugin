@@ -16,14 +16,12 @@
  */
 package com.github.cameltooling.idea.completion;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.testFramework.PsiTestUtil;
 import org.hamcrest.Matchers;
+import org.jetbrains.annotations.Nullable;
 
 import static org.junit.Assert.assertThat;
 
@@ -33,16 +31,6 @@ import static org.junit.Assert.assertThat;
 public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     private static final String SPRING_CONTEXT_MAVEN_ARTIFACT = "org.springframework:spring-context:5.1.6.RELEASE";
-
-    private static File[] springMavenArtifacts;
-
-    static {
-        try {
-            springMavenArtifacts = getMavenArtifacts(SPRING_CONTEXT_MAVEN_ARTIFACT);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     @Override
     protected String getTestDataPath() {
@@ -129,10 +117,10 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
             + "   private void thisIsVeryPrivate() {}\n"
             + "}";
 
+    @Nullable
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), getModule(), "Maven: " + SPRING_CONTEXT_MAVEN_ARTIFACT, springMavenArtifacts[0].getParent(), springMavenArtifacts[0].getName());
+    protected String[] getMavenDependencies() {
+        return new String[]{SPRING_CONTEXT_MAVEN_ARTIFACT};
     }
 
     public void testJavaBeanTestDataCompletionWithIncorrectBeanRef() {

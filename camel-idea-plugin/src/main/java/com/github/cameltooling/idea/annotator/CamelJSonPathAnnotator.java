@@ -23,8 +23,8 @@ import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.HighlightSeverity;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlAttributeValue;
@@ -41,7 +41,7 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
 
     @Override
     boolean isEnabled() {
-        return ServiceManager.getService(CamelPreferenceService.class).isRealTimeJSonPathValidation();
+        return CamelPreferenceService.getService().isRealTimeJSonPathValidation();
     }
 
     /**
@@ -50,15 +50,17 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
 
+        final CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
         // only validate if the element is jsonpath element
-        if (getCamelIdeaUtils().isCamelExpression(element, "jsonpath")) {
-            CamelCatalog catalogService = ServiceManager.getService(element.getProject(), CamelCatalogService.class).get();
-            CamelService camelService = ServiceManager.getService(element.getProject(), CamelService.class);
+        if (camelIdeaUtils.isCamelExpression(element, "jsonpath")) {
+            Project project = element.getProject();
+            CamelCatalog catalogService = project.getService(CamelCatalogService.class).get();
+            CamelService camelService = project.getService(CamelService.class);
 
             // must have camel-json library
             boolean jsonLib = camelService.containsLibrary("camel-jsonpath", false);
             if (!jsonLib) {
-                camelService.showMissingJSonPathJarNotification(element.getProject());
+                camelService.showMissingJSonPathJarNotification();
                 return;
             }
 
@@ -67,7 +69,7 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
                 ClassLoader loader = camelService.getProjectClassloader();
                 if (loader != null) {
                     LanguageValidationResult result;
-                    boolean predicate = getCamelIdeaUtils().isCamelExpressionUsedAsPredicate(element, "jsonpath");
+                    boolean predicate = camelIdeaUtils.isCamelExpressionUsedAsPredicate(element, "jsonpath");
                     if (predicate) {
                         LOG.debug("Inspecting jsonpath predicate: " + text);
                         result = catalogService.validateLanguagePredicate(loader, "jsonpath", text);
@@ -106,7 +108,7 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
         if (element instanceof XmlAttributeValue) {
             // we can use the xml range as-is
             range = ((XmlAttributeValue) element).getValueTextRange();
-        } else if (getIdeaUtils().isJavaLanguage(element)) {
+        } else if (IdeaUtils.getService().isJavaLanguage(element)) {
             // all the programming languages need to have the offset adjusted by 1
             range = TextRange.create(range.getStartOffset() + 1, range.getEndOffset());
         }
@@ -126,14 +128,6 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
         }
         range = TextRange.create(range.getStartOffset() + result.getIndex(), endIdx);
         return range;
-    }
-
-    private IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
-    }
-    
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
     }
 
 }

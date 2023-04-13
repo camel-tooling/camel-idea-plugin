@@ -19,7 +19,6 @@ package com.github.cameltooling.idea.preference.annotator;
 import java.awt.*;
 import javax.swing.*;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.ui.components.JBCheckBox;
@@ -75,34 +74,37 @@ public class CamelAnnotatorPage implements SearchableConfigurable, Configurable.
 
     @Override
     public void apply() {
-        getCamelPreferenceService().setRealTimeEndpointValidation(realTimeEndpointValidationCatalogCheckBox.isSelected());
-        getCamelPreferenceService().setHighlightCustomOptions(highlightCustomOptionsCheckBox.isSelected());
-        getCamelPreferenceService().setRealTimeSimpleValidation(realTimeSimpleValidationCatalogCheckBox.isSelected());
-        getCamelPreferenceService().setRealTimeJSonPathValidation(realTimeJSonPathValidationCatalogCheckBox.isSelected());
-        getCamelPreferenceService().setRealTimeIdReferenceTypeValidation(realTimeIdReferenceTypeValidationCheckBox.isSelected());
-        getCamelPreferenceService().setRealTimeBeanMethodValidationCheckBox(realTimeBeanMethodValidationCheckBox.isSelected());
+        final CamelPreferenceService camelPreferenceService = CamelPreferenceService.getService();
+        camelPreferenceService.setRealTimeEndpointValidation(realTimeEndpointValidationCatalogCheckBox.isSelected());
+        camelPreferenceService.setHighlightCustomOptions(highlightCustomOptionsCheckBox.isSelected());
+        camelPreferenceService.setRealTimeSimpleValidation(realTimeSimpleValidationCatalogCheckBox.isSelected());
+        camelPreferenceService.setRealTimeJSonPathValidation(realTimeJSonPathValidationCatalogCheckBox.isSelected());
+        camelPreferenceService.setRealTimeIdReferenceTypeValidation(realTimeIdReferenceTypeValidationCheckBox.isSelected());
+        camelPreferenceService.setRealTimeBeanMethodValidationCheckBox(realTimeBeanMethodValidationCheckBox.isSelected());
     }
 
     @Override
     public boolean isModified() {
         // check boxes
-        boolean b1 = getCamelPreferenceService().isRealTimeEndpointValidation() != realTimeEndpointValidationCatalogCheckBox.isSelected()
-            || getCamelPreferenceService().isHighlightCustomOptions() != highlightCustomOptionsCheckBox.isSelected()
-            || getCamelPreferenceService().isRealTimeSimpleValidation() != realTimeSimpleValidationCatalogCheckBox.isSelected()
-            || getCamelPreferenceService().isRealTimeJSonPathValidation() != realTimeJSonPathValidationCatalogCheckBox.isSelected()
-            || getCamelPreferenceService().isRealTimeIdReferenceTypeValidation() != realTimeIdReferenceTypeValidationCheckBox.isSelected()
-            || getCamelPreferenceService().isRealTimeBeanMethodValidationCheckBox() != realTimeBeanMethodValidationCheckBox.isSelected();
+        final CamelPreferenceService camelPreferenceService = CamelPreferenceService.getService();
+        boolean b1 = camelPreferenceService.isRealTimeEndpointValidation() != realTimeEndpointValidationCatalogCheckBox.isSelected()
+            || camelPreferenceService.isHighlightCustomOptions() != highlightCustomOptionsCheckBox.isSelected()
+            || camelPreferenceService.isRealTimeSimpleValidation() != realTimeSimpleValidationCatalogCheckBox.isSelected()
+            || camelPreferenceService.isRealTimeJSonPathValidation() != realTimeJSonPathValidationCatalogCheckBox.isSelected()
+            || camelPreferenceService.isRealTimeIdReferenceTypeValidation() != realTimeIdReferenceTypeValidationCheckBox.isSelected()
+            || camelPreferenceService.isRealTimeBeanMethodValidationCheckBox() != realTimeBeanMethodValidationCheckBox.isSelected();
         return b1;
     }
 
     @Override
     public void reset() {
-        realTimeEndpointValidationCatalogCheckBox.setSelected(getCamelPreferenceService().isRealTimeEndpointValidation());
-        highlightCustomOptionsCheckBox.setSelected(getCamelPreferenceService().isHighlightCustomOptions());
-        realTimeSimpleValidationCatalogCheckBox.setSelected(getCamelPreferenceService().isRealTimeSimpleValidation());
-        realTimeJSonPathValidationCatalogCheckBox.setSelected(getCamelPreferenceService().isRealTimeJSonPathValidation());
-        realTimeIdReferenceTypeValidationCheckBox.setSelected(getCamelPreferenceService().isRealTimeIdReferenceTypeValidation());
-        realTimeBeanMethodValidationCheckBox.setSelected(getCamelPreferenceService().isRealTimeBeanMethodValidationCheckBox());
+        final CamelPreferenceService camelPreferenceService = CamelPreferenceService.getService();
+        realTimeEndpointValidationCatalogCheckBox.setSelected(camelPreferenceService.isRealTimeEndpointValidation());
+        highlightCustomOptionsCheckBox.setSelected(camelPreferenceService.isHighlightCustomOptions());
+        realTimeSimpleValidationCatalogCheckBox.setSelected(camelPreferenceService.isRealTimeSimpleValidation());
+        realTimeJSonPathValidationCatalogCheckBox.setSelected(camelPreferenceService.isRealTimeJSonPathValidation());
+        realTimeIdReferenceTypeValidationCheckBox.setSelected(camelPreferenceService.isRealTimeIdReferenceTypeValidation());
+        realTimeBeanMethodValidationCheckBox.setSelected(camelPreferenceService.isRealTimeBeanMethodValidationCheckBox());
     }
 
     @Override
@@ -130,10 +132,6 @@ public class CamelAnnotatorPage implements SearchableConfigurable, Configurable.
     @Override
     public String getId() {
         return "preference.CamelConfigurable";
-    }
-
-    CamelPreferenceService getCamelPreferenceService() {
-        return ServiceManager.getService(CamelPreferenceService.class);
     }
 
     JBCheckBox getRealTimeEndpointValidationCatalogCheckBox() {

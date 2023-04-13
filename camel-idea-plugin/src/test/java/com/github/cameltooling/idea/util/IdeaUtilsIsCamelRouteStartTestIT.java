@@ -20,16 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.cameltooling.idea.service.CamelService;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiVariable;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
+import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 
-public class IdeaUtilsIsCamelRouteStartTestIT extends LightCodeInsightFixtureTestCase {
+public class IdeaUtilsIsCamelRouteStartTestIT extends LightJavaCodeInsightFixtureTestCase {
 
     private static final String CODE = "import org.apache.camel.builder.RouteBuilder;\n"
         + "\n"
@@ -73,7 +72,7 @@ public class IdeaUtilsIsCamelRouteStartTestIT extends LightCodeInsightFixtureTes
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(true);
+        myFixture.getProject().getService(CamelService.class).setCamelPresent(true);
     }
 
     @Override
@@ -89,7 +88,7 @@ public class IdeaUtilsIsCamelRouteStartTestIT extends LightCodeInsightFixtureTes
         // PsiElement element = myFixture.getElementAtCaret();
         PsiElement element = myFixture.findElementByText("\"file:inbox\"", PsiLiteralExpression.class);
 
-        assertTrue(getCamelIdeaUtils().isCamelRouteStart(element));
+        assertTrue(CamelIdeaUtils.getService().isCamelRouteStart(element));
     }
 
     public void testNotStartRoute() {
@@ -100,7 +99,7 @@ public class IdeaUtilsIsCamelRouteStartTestIT extends LightCodeInsightFixtureTes
         // PsiElement element = myFixture.getElementAtCaret();
         PsiElement element = myFixture.findElementByText("\"log:out\"", PsiLiteralExpression.class);
 
-        assertFalse(getCamelIdeaUtils().isCamelRouteStart(element));
+        assertFalse(CamelIdeaUtils.getService().isCamelRouteStart(element));
     }
 
     public void testRouteStartFinder() {
@@ -109,37 +108,33 @@ public class IdeaUtilsIsCamelRouteStartTestIT extends LightCodeInsightFixtureTes
         List<PsiElement> psiElements = new ArrayList<>();
 
         PsiTreeUtil.processElements(psiFile, element -> {
-            if (getCamelIdeaUtils().isCamelRouteStart(element)) {
+            if (CamelIdeaUtils.getService().isCamelRouteStart(element)) {
                 psiElements.add(element);
             }
             return true;
         });
 
-        assertTrue(psiElements.size() == 8);
+        assertEquals(8, psiElements.size());
     }
 
     public void testStartRouteWithVariableIdentifier() {
         // caret is at start of rout in the test java file
-        PsiFile psiFile = myFixture.configureByText("DummyTestData.java", CODE_VAR_URI);
+        myFixture.configureByText("DummyTestData.java", CODE_VAR_URI);
 
         PsiVariable variable = myFixture.findElementByText("uri", PsiVariable.class);
         PsiElement identifier = myFixture.findUsages(variable).iterator().next().getElement();
         assertInstanceOf(identifier, PsiReferenceExpression.class);
 
-        assertTrue(getCamelIdeaUtils().isCamelRouteStart(identifier));
+        assertTrue(CamelIdeaUtils.getService().isCamelRouteStart(identifier));
     }
     public void testStartRouteWithConstantIdentifier() {
         // caret is at start of rout in the test java file
-        PsiFile psiFile = myFixture.configureByText("DummyTestData.java", CODE_CONST_URI);
+        myFixture.configureByText("DummyTestData.java", CODE_CONST_URI);
 
         PsiVariable variable = myFixture.findElementByText("URI", PsiVariable.class);
         PsiElement identifier = myFixture.findUsages(variable).iterator().next().getElement();
         assertInstanceOf(identifier, PsiReferenceExpression.class);
 
-        assertTrue(getCamelIdeaUtils().isCamelRouteStart(identifier));
-    }
-
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
+        assertTrue(CamelIdeaUtils.getService().isCamelRouteStart(identifier));
     }
 }

@@ -19,12 +19,17 @@ package com.github.cameltooling.idea;
 public final class Constants {
 
     public static final String OSGI_BLUEPRINT_NAMESPACE = "http://www.osgi.org/xmlns/blueprint/v1.0.0";
+    public static final String CAMEL_NAMESPACE = "http://camel.apache.org/schema/spring";
     public static final String[] ACCEPTED_NAMESPACES = new String[]{
-        "http://camel.apache.org/schema/spring",
+        CAMEL_NAMESPACE,
         "http://camel.apache.org/schema/blueprint",
         "http://www.springframework.org/schema/beans",
         OSGI_BLUEPRINT_NAMESPACE
     };
+    /**
+     * The main group ID of the Camel artifacts.
+     */
+    public static final String CAMEL_GROUP_ID = "org.apache.camel";
 
     private Constants() {
     }

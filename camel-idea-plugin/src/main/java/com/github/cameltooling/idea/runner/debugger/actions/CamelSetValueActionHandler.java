@@ -18,13 +18,11 @@ package com.github.cameltooling.idea.runner.debugger.actions;
 
 import com.github.cameltooling.idea.language.CamelLanguages;
 import com.github.cameltooling.idea.runner.debugger.ui.CamelSetValueDialog;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.lang.Language;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.AppUIUtil;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XExpression;
-import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
 import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.frame.XStackFrame;
@@ -44,9 +42,7 @@ public class CamelSetValueActionHandler extends XDebuggerActionHandler {
             return;
         }
 
-        final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(dataContext);
-
-        AppUIUtil.invokeOnEdt(() -> showDialog(session, file, editorsProvider, stackFrame, evaluator,
+        AppUIUtil.invokeOnEdt(() -> showDialog(session, editorsProvider, stackFrame, evaluator,
                 XExpressionImpl.EMPTY_EXPRESSION));
     }
 
@@ -56,13 +52,12 @@ public class CamelSetValueActionHandler extends XDebuggerActionHandler {
     }
 
     private static void showDialog(@NotNull XDebugSession session,
-                                   VirtualFile file,
                                    XDebuggerEditorsProvider editorsProvider,
                                    XStackFrame stackFrame,
                                    XDebuggerEvaluator evaluator,
                                    @Nullable XExpression expression) {
         //Hack to register languages before deserialization of stored expressions
-        CamelLanguages.ALL.stream().map(l -> l.getID());
+        CamelLanguages.ALL.stream().map(Language::getID);
 
         if (expression == null) {
             expression = XExpressionImpl.EMPTY_EXPRESSION;
@@ -71,7 +66,6 @@ public class CamelSetValueActionHandler extends XDebuggerActionHandler {
             //Assume Camel Constant by default
             expression = new XExpressionImpl(expression.getExpression(), CamelLanguages.CONSTANT_LANGUAGE, expression.getCustomInfo(), expression.getMode());
         }
-        XSourcePosition position = stackFrame == null ? null : stackFrame.getSourcePosition();
         new CamelSetValueDialog(session, editorsProvider, expression, evaluator.isCodeFragmentEvaluationSupported()).show();
     }
 

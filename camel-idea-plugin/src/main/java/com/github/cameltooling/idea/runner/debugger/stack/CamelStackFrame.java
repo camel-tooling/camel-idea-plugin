@@ -18,10 +18,10 @@ package com.github.cameltooling.idea.runner.debugger.stack;
 
 
 import com.github.cameltooling.idea.runner.debugger.CamelDebuggerSession;
+import com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget;
 import com.github.cameltooling.idea.runner.debugger.evaluator.CamelExpressionEvaluator;
 import com.intellij.debugger.engine.JavaStackFrame;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.project.Project;
 import com.intellij.ui.ColoredTextContainer;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.xdebugger.XSourcePosition;
@@ -33,30 +33,19 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class CamelStackFrame extends XStackFrame {
-    private final Project project;
 
-    private CamelDebuggerSession session;
-    private CamelMessageInfo camelMessageInfo;
-    //    @Nullable
-    //    private ObjectFieldDefinition exceptionThrown;
+    private final CamelDebuggerSession session;
+    private final CamelMessageInfo camelMessageInfo;
 
-    public CamelStackFrame(@NotNull Project project, @NotNull CamelDebuggerSession session, CamelMessageInfo camelMessageInfo) {
+
+    public CamelStackFrame(@NotNull CamelDebuggerSession session, CamelMessageInfo camelMessageInfo) {
         this.session = session;
         this.camelMessageInfo = camelMessageInfo;
-        this.project = project;
     }
 
     public CamelMessageInfo getCamelMessageInfo() {
         return camelMessageInfo;
     }
-
-    /*
-    public CamelStackFrame(@NotNull Project project, CamelDebuggerSession session, CamelMessageInfo camelMessageInfo, @Nullable ObjectFieldDefinition exceptionThrown)
-    {
-        this(project, session, camelMessageInfo);
-        this.exceptionThrown = exceptionThrown;
-    }
-*/
 
     @Nullable
     @Override
@@ -90,19 +79,15 @@ public class CamelStackFrame extends XStackFrame {
     @Override
     public void computeChildren(@NotNull XCompositeNode node) {
         final XValueChildrenList children = new XValueChildrenList();
-        children.add("Body", new ObjectFieldDefinitionValue(this.session, this.camelMessageInfo.getBody(), AllIcons.Debugger.Value));
-        children.add("Headers", new MapOfObjectFieldDefinitionValue(this.session, this.camelMessageInfo.getHeaders(), AllIcons.Debugger.Value));
-
-        if (this.camelMessageInfo.getProperties() != null) {
-            children.add("Exchange Properties", new MapOfObjectFieldDefinitionValue(this.session, this.camelMessageInfo.getProperties(), AllIcons.Debugger.Value));
-        } else {
+        children.add("ExchangeId", new ObjectFieldDefinitionValue(this.session, this.camelMessageInfo.exchangeIdAsValue(), AllIcons.Debugger.Value));
+        children.add("Body", new ObjectFieldDefinitionValue(CamelDebuggerTarget.BODY, null, this.session, this.camelMessageInfo.getBody(), AllIcons.Debugger.Value));
+        children.add("Headers", new MapOfObjectFieldDefinitionValue(CamelDebuggerTarget.MESSAGE_HEADER, this.session, this.camelMessageInfo.getHeaders(), AllIcons.Debugger.Value));
+        final var properties = this.camelMessageInfo.getProperties();
+        if (properties == null) {
             children.add("WARNING: ", JavaStackFrame.createMessageNode("Exchange Properties in Debugger are only available in Camel version 3.15 or later", AllIcons.Nodes.WarningMark));
+        } else {
+            children.add("Exchange Properties", new MapOfObjectFieldDefinitionValue(CamelDebuggerTarget.EXCHANGE_PROPERTY, this.session, properties, AllIcons.Debugger.Value));
         }
-/*
-        if (exceptionThrown != null) {
-            children.add("Exception", new ObjectFieldDefinitionValue(this.session, exceptionThrown, AllIcons.General.Error));
-        }
-*/
         node.addChildren(children, true);
     }
 }

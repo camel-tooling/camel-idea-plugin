@@ -24,7 +24,6 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.xml.XmlToken;
-import org.junit.Ignore;
 
 import static com.github.cameltooling.idea.gutter.GutterTestUtil.getGuttersWithJavaTarget;
 import static com.github.cameltooling.idea.gutter.GutterTestUtil.getGuttersWithXMLTarget;
@@ -34,7 +33,6 @@ import static com.github.cameltooling.idea.gutter.GutterTestUtil.getGuttersWithX
  */
 public class MultiLanguageCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
-    @Ignore
     public void testCamelGutterForJavaAndXMLRoutes() {
         myFixture.configureByFiles("XmlCamelRouteLineMarkerProviderTestData.xml", "JavaCamelRouteLineMarkerProviderTestData.java");
         List<GutterMark> javaGutters = myFixture.findAllGutters("JavaCamelRouteLineMarkerProviderTestData.java");
@@ -43,14 +41,11 @@ public class MultiLanguageCamelRouteLineMarkerProviderTestIT extends CamelLightC
         List<GutterMark> xmlGutters = myFixture.findAllGutters("XmlCamelRouteLineMarkerProviderTestData.xml");
         assertNotNull(xmlGutters);
 
-        //remove first element since it is navigate to super implementation gutter icon
-        javaGutters.remove(0);
-
-        assertEquals("Should contain 3 Java Camel gutters", 3, javaGutters.size());
-        assertEquals("Should contain 2 XML Camel gutters", 3, xmlGutters.size());
+        assertEquals("Should contain 4 Java Camel gutters", 4, javaGutters.size());
+        assertEquals("Should contain 4 XML Camel gutters", 4, xmlGutters.size());
 
         //from Java to XML
-        LineMarkerInfo.LineMarkerGutterIconRenderer firstJavaGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) javaGutters.get(1);
+        LineMarkerInfo.LineMarkerGutterIconRenderer<?> firstJavaGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) javaGutters.get(1);
         assertTrue(firstJavaGutter.getLineMarkerInfo().getElement() instanceof PsiJavaToken);
         assertEquals("The navigation start element doesn't match", "\"file:inbox\"",
             firstJavaGutter.getLineMarkerInfo().getElement().getText());
@@ -63,7 +58,7 @@ public class MultiLanguageCamelRouteLineMarkerProviderTestIT extends CamelLightC
                 getGuttersWithJavaTarget(firstJavaGutterTargets).get(0).getMethodExpression().getQualifierExpression().getText());
 
         //from XML to Java
-        LineMarkerInfo.LineMarkerGutterIconRenderer firstXmlGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer) xmlGutters.get(1);
+        LineMarkerInfo.LineMarkerGutterIconRenderer<?> firstXmlGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) xmlGutters.get(1);
         assertTrue(firstXmlGutter.getLineMarkerInfo().getElement() instanceof XmlToken);
         assertEquals("The navigation start element doesn't match", "\"file:inbox\"",
                 (firstJavaGutter.getLineMarkerInfo().getElement()).getText());

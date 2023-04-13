@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
 import javax.swing.*;
 
 import com.github.cameltooling.idea.service.CamelCatalogService;
@@ -30,7 +31,7 @@ import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.codeInsight.intention.LowPriorityAction;
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.IPopupChooserBuilder;
@@ -56,17 +57,18 @@ import org.jetbrains.annotations.NotNull;
  */
 public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction implements Iconable, LowPriorityAction {
 
-    public IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
-    }
+    /**
+     * The logger.
+     */
+    private static final Logger LOG = Logger.getInstance(CamelAddEndpointIntention.class);
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
          // filter libraries to only be Camel libraries
-        Set<String> artifacts = ServiceManager.getService(project, CamelService.class).getLibraries();
+        Set<String> artifacts = project.getService(CamelService.class).getLibraries();
 
         // find the camel component from those libraries
-        boolean consumerOnly = getCamelIdeaUtils().isConsumerEndpoint(element);
+        boolean consumerOnly = CamelIdeaUtils.getService().isConsumerEndpoint(element);
         List<String> names = findCamelComponentNamesInArtifact(artifacts, consumerOnly, project);
 
         // no camel endpoints then exit
@@ -96,7 +98,7 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
-        if (ServiceManager.getService(project, CamelService.class).isCamelPresent()) {
+        if (project.getService(CamelService.class).isCamelPresent()) {
             // special for xml
             XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
             if (xml != null) {
@@ -109,16 +111,17 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
             String text = null;
 
+            final IdeaUtils ideaUtils = IdeaUtils.getService();
             // special for java token
             if (element instanceof PsiJavaToken) {
                 // if its a string literal
                 PsiJavaToken token = (PsiJavaToken) element;
                 if (token.getTokenType() == JavaTokenType.STRING_LITERAL) {
-                    text = getIdeaUtils().getInnerText(token.getText());
+                    text = ideaUtils.getInnerText(token.getText());
                 }
             } else {
                 // should be a literal element and therefore dont fallback to generic
-                text = getIdeaUtils().extractTextFromElement(element, false, false, true);
+                text = ideaUtils.extractTextFromElement(element, false, false, true);
             }
 
             return text != null && text.trim().isEmpty();
@@ -142,26 +145,26 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
     @Override
     public Icon getIcon(@IconFlags int flags) {
-        return getCamelPreferenceService().getCamelIcon();
+        return CamelPreferenceService.getService().getCamelIcon();
     }
 
     private static List<String> findCamelComponentNamesInArtifact(Set<String> artifactIds, boolean consumerOnly, Project project) {
         List<String> names = new ArrayList<>();
 
-        CamelCatalog camelCatalog = ServiceManager.getService(project, CamelCatalogService.class).get();
+        CamelCatalog camelCatalog = project.getService(CamelCatalogService.class).get();
         for (String name : camelCatalog.findComponentNames()) {
             String json = camelCatalog.componentJSonSchema(name);
+            if (json == null) {
+                LOG.debug(String.format("The JSon schema metadata of the component %s could not be found", name));
+                continue;
+            }
             ComponentModel model = JsonMapper.generateComponentModel(json);
             if (artifactIds.contains(model.getArtifactId())) {
                 boolean onlyConsume = model.isConsumerOnly();
                 boolean onlyProduce = model.isProducerOnly();
                 boolean both = !onlyConsume && !onlyProduce;
 
-                if (both) {
-                    names.add(name);
-                } else if (consumerOnly && onlyConsume) {
-                    names.add(name);
-                } else if (!consumerOnly && onlyProduce) {
+                if (both || (consumerOnly && onlyConsume) || (!consumerOnly && onlyProduce)) {
                     names.add(name);
                 }
             }
@@ -171,14 +174,6 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
         Collections.sort(names);
 
         return names;
-    }
-
-    private CamelPreferenceService getCamelPreferenceService() {
-        return ServiceManager.getService(CamelPreferenceService.class);
-    }
-
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
     }
 
 }

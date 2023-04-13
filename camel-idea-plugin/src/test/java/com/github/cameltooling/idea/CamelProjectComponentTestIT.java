@@ -16,13 +16,11 @@
  */
 package com.github.cameltooling.idea;
 
-/*
+
 import java.io.File;
-import java.io.IOException;
 
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.roots.OrderRootType;
@@ -33,19 +31,18 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.testFramework.ModuleTestCase;
+import com.intellij.testFramework.JavaProjectTestCase;
 import com.intellij.util.ui.UIUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
-*/
 /**
  * Test if the {@link CamelService} service is updated correctly when changes happen to
  * the Project and model configuration
- *//*
+ */
 
-public class CamelProjectComponentTestIT extends ModuleTestCase {
+public class CamelProjectComponentTestIT extends JavaProjectTestCase {
 
     private File root;
 
@@ -55,8 +52,8 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         root = new File(FileUtil.getTempDirectory());
     }
 
-    public void testAddLibrary() throws IOException {
-        CamelService service = ServiceManager.getService(myProject, CamelService.class);
+    public void testAddLibrary() {
+        CamelService service = myProject.getService(CamelService.class);
         assertEquals(0, service.getLibraries().size());
 
         File camelJar = createTestArchive("camel-core-2.22.0.jar");
@@ -67,11 +64,11 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
 
         UIUtil.dispatchAllInvocationEvents();
         assertEquals(1, service.getLibraries().size());
-        assertEquals(true, service.isCamelPresent());
+        assertTrue(service.isCamelPresent());
     }
 
-    public void testRemoveLibrary() throws IOException {
-        CamelService service = ServiceManager.getService(myProject, CamelService.class);
+    public void testRemoveLibrary() {
+        CamelService service = myProject.getService(CamelService.class);
         assertEquals(0, service.getLibraries().size());
 
         VirtualFile camelCoreVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(createTestArchive("camel-core-2.22.0.jar"));
@@ -80,11 +77,11 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myProject);
 
         Library springLibrary = addLibraryToModule(camelSpringVirtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-spring:2.22.0-snapshot");
-        Library coreLibrary = addLibraryToModule(camelCoreVirtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-core:2.22.0-snapshot");
+        addLibraryToModule(camelCoreVirtualFile, projectLibraryTable, "Maven: org.apache.camel:camel-core:2.22.0-snapshot");
 
         UIUtil.dispatchAllInvocationEvents();
         assertEquals(2, service.getLibraries().size());
-        assertEquals(true, service.isCamelPresent());
+        assertTrue(service.isCamelPresent());
 
         ApplicationManager.getApplication().runWriteAction(() -> projectLibraryTable.removeLibrary(springLibrary));
 
@@ -92,8 +89,8 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         assertEquals(1, service.getLibraries().size());
     }
 
-    public void testAddModule() throws IOException {
-        CamelService service = ServiceManager.getService(myProject, CamelService.class);
+    public void testAddModule() {
+        CamelService service = myProject.getService(CamelService.class);
         assertEquals(0, service.getLibraries().size());
 
         File camelJar = createTestArchive("camel-core-2.22.0.jar");
@@ -104,6 +101,7 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
             final Module moduleA = createModule("myNewModel.iml");
             Library library = projectLibraryTable.createLibrary("Maven: org.apache.camel:camel-core:2.22.0-snapshot");
             final Library.ModifiableModel libraryModifiableModel = library.getModifiableModel();
+            assertNotNull(virtualFile);
             libraryModifiableModel.addRoot(virtualFile, OrderRootType.CLASSES);
             libraryModifiableModel.commit();
             ModuleRootModificationUtil.addDependency(moduleA, library);
@@ -113,8 +111,8 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         assertEquals(1, service.getLibraries().size());
     }
 
-    public void testAddLegacyPackaging() throws IOException {
-        CamelService service = ServiceManager.getService(myProject, CamelService.class);
+    public void testAddLegacyPackaging() {
+        CamelService service = myProject.getService(CamelService.class);
         assertEquals(0, service.getLibraries().size());
 
         VirtualFile camelCoreVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(createTestArchive("camel-core-2.22.0.jar"));
@@ -127,11 +125,11 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
 
         UIUtil.dispatchAllInvocationEvents();
         assertEquals(1, service.getLibraries().size());
-        assertEquals(true, service.getLibraries().contains("camel-core"));
+        assertTrue(service.getLibraries().contains("camel-core"));
     }
 
-    public void testAddLibWithoutMavenPackaging() throws IOException {
-        CamelService service = ServiceManager.getService(myProject, CamelService.class);
+    public void testAddLibWithoutMavenPackaging() {
+        CamelService service = myProject.getService(CamelService.class);
         assertEquals(0, service.getLibraries().size());
 
         VirtualFile camelCoreVirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(createTestArchive("camel-core-2.22.0.jar"));
@@ -142,15 +140,16 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
 
         UIUtil.dispatchAllInvocationEvents();
         assertEquals(1, service.getLibraries().size());
-        assertEquals(true, service.getLibraries().contains("camel-core"));
+        assertTrue(service.getLibraries().contains("camel-core"));
 
     }
 
-    private File createTestArchive(String filename) throws IOException {
+    private File createTestArchive(String filename) {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, filename)
             .addClasses(CamelService.class);
         File file = new File(root, archive.getName());
         file.deleteOnExit();
+        file.getParentFile().mkdirs();
         archive.as(ZipExporter.class).exportTo(file, true);
         return file;
     }
@@ -166,4 +165,3 @@ public class CamelProjectComponentTestIT extends ModuleTestCase {
         });
     }
 }
-*/

@@ -31,7 +31,8 @@ public final class JavaEndpointInspectionTestData {
         @Override
         public void configure() throws Exception {
             from("file:inbox?delete=true")
-                .to("file:outbox?delete=true");
+                .to("file:outbox?delete=true")
+                .to("kamelet:avro-deserialize-action?validate=true&lazyStartProducer=true");
         }
     }
 

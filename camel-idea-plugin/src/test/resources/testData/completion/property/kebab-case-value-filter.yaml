@@ -1,0 +1,4 @@
+camel:
+  component:
+    aws2-athena:
+      include-trace: <caret>

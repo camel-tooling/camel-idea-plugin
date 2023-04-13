@@ -22,11 +22,12 @@ import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointHa
 import com.github.cameltooling.idea.runner.debugger.evaluator.CamelExpressionEvaluator;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelStackFrame;
-import com.intellij.execution.process.ProcessHandler;
+import com.google.common.base.Objects;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.ArrayUtil;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugSession;
@@ -42,27 +43,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CamelDebugProcess extends XDebugProcess {
-    private CamelDebuggerEditorsProvider camelDebuggerEditorsProvider;
 
-    private CamelBreakpointHandler camelBreakpointHandler;
-    private CamelDebuggerSession camelDebuggerSession;
-    private ProcessHandler javaProcessHandler;
+    private static final Logger LOG = Logger.getInstance(CamelDebugProcess.class);
 
-//  private final ExecutionConsole executionConsole;
-    private boolean forceRefresh;
+    private final CamelDebuggerEditorsProvider camelDebuggerEditorsProvider;
 
-    protected CamelDebugProcess(@NotNull XDebugSession session, @NotNull CamelDebuggerSession camelDebuggerSession, ProcessHandler javaProcessHandler) {
+    private final CamelBreakpointHandler camelBreakpointHandler;
+    private final CamelDebuggerSession camelDebuggerSession;
+    private volatile boolean forceRefresh;
+    private volatile CamelMessageInfo lastProcessed;
+
+    protected CamelDebugProcess(@NotNull XDebugSession session, @NotNull CamelDebuggerSession camelDebuggerSession) {
         super(session);
 
         this.camelDebuggerEditorsProvider = new CamelDebuggerEditorsProvider();
         this.camelDebuggerSession = camelDebuggerSession;
-        this.javaProcessHandler = javaProcessHandler;
-        this.camelBreakpointHandler = new CamelBreakpointHandler(session.getProject(), camelDebuggerSession);
+        this.camelBreakpointHandler = new CamelBreakpointHandler(camelDebuggerSession);
 
         try {
             init();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.warn("Could not initialize the camel debug process", e);
         }
     }
 
@@ -78,23 +79,20 @@ public class CamelDebugProcess extends XDebugProcess {
     }
 
     public void init() {
-        camelDebuggerSession.setXDebugSession(this.getSession());
-        camelDebuggerSession.connect(javaProcessHandler);
+        camelDebuggerSession.connect();
 
-        camelDebuggerSession.addMessageReceivedListener(new MessageReceivedListener() {
-            @Override
-            public void onNewMessageReceived(CamelMessageInfo camelMessageInfo) {
-                XSourcePosition topPosition = getSession().getTopFramePosition();
-                if (forceRefresh || topPosition == null || !topPosition.equals(camelMessageInfo.getXSourcePosition())) {
-                    forceRefresh = false;
-                    //List frames
-                    List<CamelStackFrame> stackFrames = new ArrayList<CamelStackFrame>();
-                    for (CamelMessageInfo info : camelMessageInfo.getStack()) {
-                        CamelStackFrame nextFrame = new CamelStackFrame(getSession().getProject(), camelDebuggerSession, info);
-                        stackFrames.add(nextFrame);
-                    }
-                    getSession().positionReached(new CamelSuspendContext(stackFrames.toArray(new CamelStackFrame[stackFrames.size()])));
+        camelDebuggerSession.addMessageReceivedListener(messages -> {
+            final CamelMessageInfo camelMessageInfo = selectCamelMessageInfo(messages);
+            if (camelMessageInfo != null) {
+                //List frames
+                List<CamelStackFrame> stackFrames = new ArrayList<>();
+                for (CamelMessageInfo info : camelMessageInfo.getStack()) {
+                    CamelStackFrame nextFrame = new CamelStackFrame(camelDebuggerSession, info);
+                    stackFrames.add(nextFrame);
                 }
+                getSession().positionReached(new CamelSuspendContext(stackFrames.toArray(new CamelStackFrame[0])));
+                this.lastProcessed = camelMessageInfo;
+                LOG.debug("New camel message processed");
             }
         });
     }
@@ -129,7 +127,7 @@ public class CamelDebugProcess extends XDebugProcess {
         camelDebuggerSession.runToPosition(context.getActiveExecutionStack().getTopFrame().getSourcePosition(), xSourcePosition);
     }
 
-    public void setValue(String target,
+    public void setValue(CamelDebuggerTarget target,
                          @Nullable String targetName,
                          String expression,
                          String language,
@@ -167,7 +165,43 @@ public class CamelDebugProcess extends XDebugProcess {
 
         AnAction evaluate = ActionManager.getInstance().getAction("EvaluateExpression");
         topToolbar.remove(evaluate);
-        //XDebugger.SetValue
+    }
 
+    /**
+     * Selects the {@code CamelMessageInfo} among the given list of message knowing that it tries to return the
+     * message corresponding to the same exchange id if possible, otherwise it returns the first message
+     * which is also the oldest message as the list of messages is sorted by timestamp.
+     *
+     * @param messages the messages among which a message is selected if possible
+     * @return the best possible message if any, {@code null} otherwise.
+     */
+    private CamelMessageInfo selectCamelMessageInfo(List<CamelMessageInfo> messages) {
+        final CamelMessageInfo current = lastProcessed;
+        if (current == null) {
+            LOG.debug("No camel message has been processed so far");
+            // The application has never stopped at any breakpoint so far, so we can take any message received
+            return messages.get(0);
+        }
+        for (CamelMessageInfo message : messages) {
+            if (Objects.equal(current.getExchangeId(), message.getExchangeId())) {
+                if (current.getXSourcePosition().equals(message.getXSourcePosition())) {
+                    if (forceRefresh) {
+                        // Same position but the stack needs to be refreshed
+                        this.forceRefresh = false;
+                        LOG.debug("The camel message needs to be refreshed");
+                        return message;
+                    }
+                    // Same position and no need to refresh so let's ignore the messages
+                    LOG.debug("The same camel message has been received, thus it will be ignored");
+                    return null;
+                }
+                // Different position but still the same exchange so let's keep this one
+                LOG.debug("Not the same camel message but the same exchange id");
+                return message;
+            }
+        }
+        // No message could be selected so far, so we can take any message received
+        LOG.debug("New camel message to process");
+        return messages.get(0);
     }
 }

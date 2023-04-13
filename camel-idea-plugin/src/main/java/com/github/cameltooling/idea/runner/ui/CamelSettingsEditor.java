@@ -17,21 +17,16 @@
 package com.github.cameltooling.idea.runner.ui;
 
 import com.github.cameltooling.idea.runner.CamelRunConfiguration;
-import com.github.cameltooling.idea.runner.CamelSpringBootRunConfigurationType;
-import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
 public class CamelSettingsEditor extends SettingsEditor<CamelRunConfiguration> {
-    private AbstractCamelRunnerConfPanel configurationPanel;
+    private final CamelRunnerConfPanel configurationPanel;
 
     public CamelSettingsEditor(CamelRunConfiguration runnerConfiguration) {
-        this.configurationPanel = CamelSpringBootRunConfigurationType.ID.equals(runnerConfiguration.getType().getId())
-                ? new CamelSpringBootRunnerConfPanel(runnerConfiguration.getProject())
-                : new CamelRunnerConfPanel(runnerConfiguration.getProject());
-
+        this.configurationPanel = new CamelRunnerConfPanel(runnerConfiguration.getProject());
         super.resetFrom(runnerConfiguration);
     }
 
@@ -41,7 +36,7 @@ public class CamelSettingsEditor extends SettingsEditor<CamelRunConfiguration> {
     }
 
     @Override
-    protected void applyEditorTo(@NotNull CamelRunConfiguration runnerConfiguration) throws ConfigurationException {
+    protected void applyEditorTo(@NotNull CamelRunConfiguration runnerConfiguration) {
         configurationPanel.setData(runnerConfiguration.getRunnerParameters());
     }
 

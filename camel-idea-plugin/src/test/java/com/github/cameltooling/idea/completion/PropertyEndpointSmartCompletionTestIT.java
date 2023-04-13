@@ -21,7 +21,6 @@ import java.util.List;
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.completion.CompletionType;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
 
 import static org.junit.Assert.assertThat;
 
@@ -39,7 +38,8 @@ public class PropertyEndpointSmartCompletionTestIT extends CamelLightCodeInsight
         myFixture.configureByText("TestData.properties", insertAfterQuestionMarkTestData);
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertTrue("There is many options", strings.size() == 1);
+        assertNotNull(strings);
+        assertEquals("There is many options", 1, strings.size());
         assertThat(strings, Matchers.contains("timer:trigger?period"));
         myFixture.type('\n');
         insertAfterQuestionMarkTestData = insertAfterQuestionMarkTestData.replace("<caret>", "iod=");
@@ -54,6 +54,7 @@ public class PropertyEndpointSmartCompletionTestIT extends CamelLightCodeInsight
         myFixture.configureByText("TestData.properties", getEndOfLineTestData());
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
         assertTrue("There is many options", strings.size() > 9);
     }
 
@@ -68,17 +69,17 @@ public class PropertyEndpointSmartCompletionTestIT extends CamelLightCodeInsight
         assertNull("Don't except any elements, because it the 're' is unique and return the repeatCount", strings);
     }
 
-    private String getfterAmpOptionsTestData() {
+    private String getAfterAmpOptionsTestData() {
         return "TIME=timer:trigger?repeatCount=10&<caret>";
     }
 
-    @Ignore
     public void testAfterAmpCompletion() {
-        myFixture.configureByText("TestData.properties", getfterAmpOptionsTestData());
+        myFixture.configureByText("TestData.properties", getAfterAmpOptionsTestData());
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertThat(strings, Matchers.not(Matchers.contains("timer:trigger?repeatCount=10")));
-        assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&bridgeErrorHandler",
+        assertNotNull(strings);
+        assertDoesntContain(strings, "timer:trigger?repeatCount=10");
+        assertContainsElements(strings, "timer:trigger?repeatCount=10&bridgeErrorHandler",
             "timer:trigger?repeatCount=10&daemon",
             "timer:trigger?repeatCount=10&delay",
             "timer:trigger?repeatCount=10&exceptionHandler",
@@ -88,7 +89,7 @@ public class PropertyEndpointSmartCompletionTestIT extends CamelLightCodeInsight
             "timer:trigger?repeatCount=10&period",
             "timer:trigger?repeatCount=10&synchronous",
             "timer:trigger?repeatCount=10&time",
-            "timer:trigger?repeatCount=10&timer"));
+            "timer:trigger?repeatCount=10&timer");
         assertTrue("There is less options", strings.size() < 13);
     }
 
@@ -100,7 +101,8 @@ public class PropertyEndpointSmartCompletionTestIT extends CamelLightCodeInsight
         myFixture.configureByText("TestData.properties", getInTheMiddleOfResolvedOptionsData());
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertTrue("Expect 0 options", strings.size() == 0);
+        assertNotNull(strings);
+        assertEquals("Expect 0 options", 0, strings.size());
     }
 
     private String getInTheMiddleUnresolvedOptionsTestData() {
@@ -114,7 +116,7 @@ public class PropertyEndpointSmartCompletionTestIT extends CamelLightCodeInsight
         assertThat(strings, Matchers.not(Matchers.contains("timer:trigger?repeatCount=10")));
         assertThat(strings, Matchers.contains("timer:trigger?repeatCount=10&exceptionHandler",
             "timer:trigger?repeatCount=10&exchangePattern"));
-        assertTrue("Expect exactly 2 options", strings.size() == 2);
+        assertEquals("Expect exactly 2 options", 2, strings.size());
         myFixture.type('\n');
         String result = getInTheMiddleUnresolvedOptionsTestData().replace("<caret>", "ceptionHandler=");
         myFixture.checkResult(result);
@@ -128,6 +130,7 @@ public class PropertyEndpointSmartCompletionTestIT extends CamelLightCodeInsight
         myFixture.configureByText("TestData.properties", getAfterValueWithOutAmpTestData());
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
         assertTrue("There is less options", strings.size() > 10);
         myFixture.type('\n');
         String result = getAfterValueWithOutAmpTestData().replace("<caret>", "&bridgeErrorHandler=");

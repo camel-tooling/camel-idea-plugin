@@ -26,7 +26,6 @@ import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.PlainPrefixMatcher;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.FilenameUtils;
@@ -60,7 +59,7 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
 
     @Override
     public boolean isValidExtension(String filename) {
-        final CamelPreferenceService preferenceService = ServiceManager.getService(CamelPreferenceService.class);
+        final CamelPreferenceService preferenceService = CamelPreferenceService.getService();
         final boolean present = preferenceService.getExcludePropertyFiles()
             .stream()
             .anyMatch(s -> !s.isEmpty() && FilenameUtils.wildcardMatch(filename, s));
@@ -73,7 +72,7 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
             final String keyStr = key;
             if (!isIgnored(key)) {
                 if (value instanceof List) {
-                    buildResultSetForList(resultSet, virtualFile, keyStr, (List) value);
+                    buildResultSetForList(resultSet, virtualFile, keyStr, (List<?>) value);
                 } else if (value instanceof LinkedHashMap) {
                     buildResultSetForLinkedHashMap(resultSet, virtualFile, keyStr, Collections.singletonList(value));
                 } else {
@@ -94,7 +93,7 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
             .flatMap(lhm -> lhm.entrySet().stream())
             .forEach(e -> {
                         Map.Entry<String, Object> entry = (Map.Entry<String, Object>) e;
-                        String flatKeyStr = keyStr + "." + String.valueOf(entry.getKey());
+                        String flatKeyStr = keyStr + "." + entry.getKey();
                         if (entry.getValue() instanceof List) {
                             buildResultSetForList(resultSet, virtualFile, flatKeyStr, (List<?>) entry.getValue());
                         } else if (entry.getValue() instanceof LinkedHashMap) {

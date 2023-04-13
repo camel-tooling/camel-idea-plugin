@@ -16,21 +16,10 @@
  */
 package com.github.cameltooling.idea.inspection;
 
-/*
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
-import com.intellij.testFramework.PsiTestUtil;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
-
-import java.io.File;
+import org.jetbrains.annotations.Nullable;
 
 public class CamelInspectXmlSimpleTestIT extends CamelInspectionTestHelper {
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        File[] mavenArtifacts =  Maven.resolver().resolve(CAMEL_CORE_MAVEN_ARTIFACT).withoutTransitivity().asFile();
-        PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myFixture.getModule(), "Maven: " + CAMEL_CORE_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
-    }
 
     public void testSimpleInspection() {
         // force Camel enabled so the inspection test can run
@@ -38,5 +27,9 @@ public class CamelInspectXmlSimpleTestIT extends CamelInspectionTestHelper {
         doTest("testData/inspectionsimplexml/", new LocalInspectionToolWrapper(inspection));
     }
 
+    @Nullable
+    @Override
+    protected String[] getMavenDependencies() {
+        return new String[]{CAMEL_CORE_MAVEN_ARTIFACT};
+    }
 }
-*/

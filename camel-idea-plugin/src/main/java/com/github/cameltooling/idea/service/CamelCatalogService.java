@@ -17,10 +17,14 @@
 package com.github.cameltooling.idea.service;
 
 import java.util.Map;
+
+import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
 import org.apache.camel.catalog.CamelCatalog;
-import org.apache.camel.catalog.DefaultCamelCatalog;
 import org.apache.camel.catalog.DefaultVersionManager;
+import org.apache.camel.catalog.VersionManager;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -28,20 +32,69 @@ import org.jetbrains.annotations.NotNull;
  */
 public class CamelCatalogService implements Disposable {
 
-    private CamelCatalog instance;
+    private volatile CamelCatalog instance;
+    /**
+     * The project in which the service is registered.
+     */
+    private final Project project;
 
     /**
-     * Gets the {@link CamelCatalog} instance to use.
+     * Construct a {@code CamelCatalogService} with the given project.
+     * @param project the project in which the service is registered.
+     */
+    public CamelCatalogService(Project project) {
+        this.project = project;
+        ApplicationManager.getApplication().getMessageBus()
+            .connect(this)
+            .subscribe(CamelPreferenceService.CamelCatalogProviderChangeListener.TOPIC, this::onCamelCatalogProviderChanged);
+        project.getMessageBus()
+            .connect(this)
+            .subscribe(CamelService.CamelCatalogListener.TOPIC, this::onCamelCatalogReady);
+    }
+
+    /**
+     * Gets the {@link CamelCatalog} instance to use according to the {@link CamelCatalogProvider} that has been
+     * defined in the preferences.
      */
     public CamelCatalog get() {
         if (instance == null) {
-            instance = new DefaultCamelCatalog(true);
+            synchronized (this) {
+                if (instance == null) {
+                    this.instance = CamelPreferenceService.getService().getCamelCatalogProvider().get(project);
+                }
+            }
         }
         return instance;
     }
 
     boolean isInstantiated() {
         return instance != null;
+    }
+
+    /**
+     * Called once the catalog is ready to use.
+     */
+    private void onCamelCatalogReady() {
+        CamelCatalog catalog = instance;
+        if (catalog != null) {
+            // Update the runtime provider is needed
+            updateRuntimeProvider(catalog);
+            // As the catalog is ready to use, the cache can be enabled
+            catalog.enableCache();
+        }
+    }
+
+    /**
+     * Updates the Camel Runtime provider if needed.
+     * @param catalog the catalog into which the Camel Runtime should be updated.
+     */
+    private void updateRuntimeProvider(CamelCatalog catalog) {
+        final VersionManager versionManager = catalog.getVersionManager();
+        if (versionManager instanceof CamelMavenVersionManager) {
+            CamelPreferenceService.getService().getCamelCatalogProvider().updateRuntimeProvider(
+                project, catalog, ((CamelMavenVersionManager) versionManager).getClassLoader()
+            );
+        }
     }
 
     /**
@@ -68,6 +121,23 @@ public class CamelCatalogService implements Disposable {
         return loaded;
     }
 
+    /**
+     * Attempt to load the runtime provider version to be used by the catalog.
+     * <p/>
+     * Loading the runtime provider JAR of the given version of choice may require internet access to download the JAR
+     * from Maven central. You can pre download the JAR and install in a local Maven repository to avoid internet access
+     * for offline environments.
+     *
+     * @param  groupId    the runtime provider Maven groupId
+     * @param  artifactId the runtime provider Maven artifactId
+     * @param  version    the runtime provider Maven version
+     * @return            <tt>true</tt> if the version was loaded, <tt>false</tt> if not.
+     */
+    public boolean loadRuntimeProviderVersion(@NotNull String groupId, @NotNull String artifactId,
+                                              @NotNull String version) {
+        return get().getVersionManager().loadRuntimeProviderVersion(groupId, artifactId, version);
+    }
+
     public void clearLoadedVersion() {
         // this will force re initialization of the catalog
         dispose();
@@ -76,5 +146,15 @@ public class CamelCatalogService implements Disposable {
     @Override
     public void dispose() {
         instance = null;
+    }
+
+    /**
+     * Force the catalog to be reloaded when the {@link CamelCatalogProvider} defined in the preferences has changed.
+     */
+    private void onCamelCatalogProviderChanged() {
+        // Clear the old catalog
+        clearLoadedVersion();
+        // Load the new catalog
+        project.getService(CamelService.class).loadCamelCatalog();
     }
 }

@@ -17,8 +17,9 @@
 package com.github.cameltooling.idea.service;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.openapi.components.ServiceManager;
+import org.apache.camel.catalog.CamelCatalog;
 
 
 /**
@@ -33,19 +34,44 @@ public class CamelCatalogServiceTestIT extends CamelLightCodeInsightFixtureTestC
         super.setUp();
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        try {
+            CamelPreferenceService.getService().setCamelCatalogProvider(null);
+        } finally {
+            super.tearDown();
+        }
+    }
+
     public void testNoCatalogInstance() {
-        ServiceManager.getService(getModule().getProject(), CamelService.class).setCamelPresent(false);
+        getModule().getProject().getService(CamelService.class).setCamelPresent(false);
         myFixture.configureByFiles("CompleteJavaEndpointConsumerTestData.java", "CompleteYmlPropertyTestData.java",
             "CompleteJavaPropertyTestData.properties", "CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
         myFixture.complete(CompletionType.BASIC, 1);
-        assertEquals(false, ServiceManager.getService(getModule().getProject(), CamelCatalogService.class).isInstantiated());
+        assertFalse(getModule().getProject().getService(CamelCatalogService.class).isInstantiated());
     }
 
     public void testCatalogInstance() {
         myFixture.configureByFiles("CompleteJavaEndpointConsumerTestData.java", "CompleteYmlPropertyTestData.java",
             "CompleteJavaPropertyTestData.properties", "CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
         myFixture.complete(CompletionType.BASIC, 1);
-        assertEquals(true, ServiceManager.getService(getModule().getProject(), CamelCatalogService.class).isInstantiated());
+        assertTrue(getModule().getProject().getService(CamelCatalogService.class).isInstantiated());
+    }
+
+    /**
+     * Ensure that the catalog is reloaded when the {@link CamelCatalogProvider} has been changed.
+     */
+    public void testCatalogChange() {
+        myFixture.configureByFiles("CompleteJavaEndpointConsumerTestData.java", "CompleteYmlPropertyTestData.java",
+            "CompleteJavaPropertyTestData.properties", "CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
+        myFixture.complete(CompletionType.BASIC, 1);
+        CamelCatalogService service = getModule().getProject().getService(CamelCatalogService.class);
+        assertTrue(service.isInstantiated());
+        CamelCatalog catalog = service.get();
+        assertSame(catalog, service.get());
+        CamelPreferenceService.getService().setCamelCatalogProvider(CamelCatalogProvider.QUARKUS);
+        assertTrue(service.isInstantiated());
+        assertNotSame(catalog, service.get());
     }
 
 }

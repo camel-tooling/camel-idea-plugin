@@ -1,0 +1,4 @@
+camel:
+  dataformat:
+    jackson:
+      <caret>

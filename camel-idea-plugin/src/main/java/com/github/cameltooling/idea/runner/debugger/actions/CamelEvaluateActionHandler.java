@@ -18,12 +18,12 @@ package com.github.cameltooling.idea.runner.debugger.actions;
 
 import com.github.cameltooling.idea.language.CamelLanguages;
 import com.github.cameltooling.idea.runner.debugger.ui.CamelDebuggerEvaluationDialog;
+import com.intellij.lang.Language;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.AppUIUtil;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XExpression;
@@ -69,29 +69,26 @@ public class CamelEvaluateActionHandler extends XDebuggerActionHandler {
             expressionTextPromise = getExpressionText(evaluator, CommonDataKeys.PROJECT.getData(dataContext), editor);
         }
 
-        final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(dataContext);
-
         EvaluationMode finalMode = mode;
         XValue value = XDebuggerTreeActionBase.getSelectedValue(dataContext);
         expressionTextPromise.onSuccess(expressionText -> {
             if (expressionText == null && value != null) {
                 value.calculateEvaluationExpression().onSuccess(
-                    expression -> AppUIUtil.invokeOnEdt(() -> showDialog(session, file, editorsProvider, stackFrame, evaluator, expression)));
+                    expression -> AppUIUtil.invokeOnEdt(() -> showDialog(session, editorsProvider, stackFrame, evaluator, expression)));
             } else {
-                AppUIUtil.invokeOnEdt(() -> showDialog(session, file, editorsProvider, stackFrame, evaluator,
+                AppUIUtil.invokeOnEdt(() -> showDialog(session, editorsProvider, stackFrame, evaluator,
                         XExpressionImpl.fromText(expressionText, finalMode)));
             }
         });
     }
 
     private static void showDialog(@NotNull XDebugSession session,
-                                   VirtualFile file,
                                    XDebuggerEditorsProvider editorsProvider,
                                    XStackFrame stackFrame,
                                    XDebuggerEvaluator evaluator,
                                    @Nullable XExpression expression) {
         //Hack to register languages before deserialization of stored expressions
-        CamelLanguages.ALL.stream().map(l -> l.getID());
+        CamelLanguages.ALL.stream().map(Language::getID);
 
         if (expression == null) {
             expression = XExpressionImpl.EMPTY_EXPRESSION;
@@ -124,15 +121,6 @@ public class CamelEvaluateActionHandler extends XDebuggerActionHandler {
             return null;
         }
         String text = expressionInfo.getExpressionText();
-        return text == null ? document.getText(expressionInfo.getTextRange()) : text;
-    }
-
-    @Nullable
-    public static String getDisplayText(@Nullable ExpressionInfo expressionInfo, @NotNull Document document) {
-        if (expressionInfo == null) {
-            return null;
-        }
-        String text = expressionInfo.getDisplayText();
         return text == null ? document.getText(expressionInfo.getTextRange()) : text;
     }
 

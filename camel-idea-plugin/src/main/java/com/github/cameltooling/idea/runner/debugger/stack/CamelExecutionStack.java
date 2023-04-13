@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class CamelExecutionStack extends XExecutionStack {
-    private List<XStackFrame> frames;
+    private final List<XStackFrame> frames;
 
     public CamelExecutionStack(@NotNull String displayName, XStackFrame... frame) {
         super(displayName, AllIcons.Debugger.ThreadSuspended);

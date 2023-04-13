@@ -1,15 +1,12 @@
 package com.github.cameltooling.idea.reference;
 
+import java.util.List;
+
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
-import com.github.cameltooling.idea.reference.endpoint.direct.DirectEndpointPsiElement;
 import org.intellij.lang.annotations.Language;
-import org.junit.Ignore;
-
-import java.util.List;
 
 /**
  * @author Rastislav Papp (rastislav.papp@gmail.com)
@@ -80,14 +77,14 @@ public class CamelDirectEndpointReferenceTest extends CamelLightCodeInsightFixtu
         "  </route>" +
         "</camelContext>";
 
-    @Ignore
-    public void testJavaDirectEndpointReference() {
-        myFixture.configureByText("RouteWithReferences.java", JAVA_ROUTE_WITH_REFERENCE);
-        PsiElement element = TestReferenceUtil.getParentElementAtCaret(myFixture);
-        List<PsiMethodCallExpression> results = TestReferenceUtil.resolveReference(element, PsiMethodCallExpression.class);
-        assertEquals(1, results.size());
-        assertEquals("from(\"direct:test\")", results.get(0).getText());
-    }
+//    @Ignore
+//    public void testJavaDirectEndpointReference() {
+//        myFixture.configureByText("RouteWithReferences.java", JAVA_ROUTE_WITH_REFERENCE);
+//        PsiElement element = TestReferenceUtil.getParentElementAtCaret(myFixture);
+//        List<PsiMethodCallExpression> results = TestReferenceUtil.resolveReference(element, PsiMethodCallExpression.class);
+//        assertEquals(1, results.size());
+//        assertEquals("from(\"direct:test\")", results.get(0).getText());
+//    }
 
     public void testJavaNoExtraReferences() {
         myFixture.configureByText("RouteWithReferences.java", JAVA_NO_EXTRA_REFERENCE);

@@ -40,7 +40,6 @@ public class CamelDebuggerEditorsProvider extends XDebuggerEditorsProvider {
     @NotNull
     @Override
     public FileType getFileType() {
-        //return XmlFileType.INSTANCE;
         return PlainTextFileType.INSTANCE;
     }
 

@@ -98,8 +98,7 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
     private EvaluationMode myMode;
     private XSourcePosition mySourcePosition;
     private final SwitchModeAction mySwitchModeAction;
-    private final boolean myIsCodeFragmentEvaluationSupported;
-    private CamelExpressionParameters myCamelExpressionParameters;
+    private final CamelExpressionParameters myCamelExpressionParameters;
 
     public CamelDebuggerEvaluationDialog(@NotNull XDebugSession session,
                                          @NotNull XDebuggerEditorsProvider editorsProvider,
@@ -124,14 +123,13 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
                                           @NotNull XDebuggerEditorsProvider editorsProvider,
                                           @NotNull XExpression text,
                                           @Nullable XSourcePosition sourcePosition,
-                                          boolean isCodeFragmentEvaluationSupported) {
+                                          boolean myIsCodeFragmentEvaluationSupported) {
         super(project, true);
         mySession = session;
         myEvaluatorSupplier = evaluatorSupplier;
         myProject = project;
         myEditorsProvider = editorsProvider;
         mySourcePosition = sourcePosition;
-        myIsCodeFragmentEvaluationSupported = isCodeFragmentEvaluationSupported;
         setModal(false);
         setOKButtonText(XDebuggerBundle.message("xdebugger.button.evaluate"));
         setCancelButtonText(XDebuggerBundle.message("xdebugger.evaluate.dialog.close"));
@@ -321,26 +319,23 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
         text = XExpressionImpl.changeMode(text, mode);
         if (mode == EvaluationMode.EXPRESSION) {
             CamelExpressionInputComponent component =
-                    new CamelExpressionInputComponent(myProject, myEditorsProvider, "evaluateExpression", mySourcePosition, text, myDisposable,
+                    new CamelExpressionInputComponent(myProject, myEditorsProvider, "evaluateExpression", mySourcePosition, text,
                             mySession != null);
             component.setResultTypeCombo(myCamelExpressionParameters.getResultTypeCombo());
             component.setBodyMediaTypeCombo(myCamelExpressionParameters.getBodyMediaTypeCombo());
             component.setOutputMediaTypeCombo(myCamelExpressionParameters.getOutputMediaTypeCombo());
 
             component.getInputEditor().setExpandHandler(() -> mySwitchModeAction.actionPerformed(null));
-            component.getInputEditor().getLanguageChooser().addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    Object newValueObj = evt.getNewValue();
-                    if (newValueObj != null) {
-                        String newValue = evt.getNewValue().toString();
-                        if ("DataSonnet".equals(newValue)) {
-                            myCamelExpressionParameters.getBodyMediaTypePanel().setVisible(true);
-                            myCamelExpressionParameters.getOutputMediaTypePanel().setVisible(true);
-                        } else if ("Simple".equals(newValue)) {
-                            myCamelExpressionParameters.getBodyMediaTypePanel().setVisible(false);
-                            myCamelExpressionParameters.getOutputMediaTypePanel().setVisible(false);
-                        }
+            component.getInputEditor().getLanguageChooser().addPropertyChangeListener(evt -> {
+                Object newValueObj = evt.getNewValue();
+                if (newValueObj != null) {
+                    String newValue = evt.getNewValue().toString();
+                    if ("DataSonnet".equals(newValue)) {
+                        myCamelExpressionParameters.getBodyMediaTypePanel().setVisible(true);
+                        myCamelExpressionParameters.getOutputMediaTypePanel().setVisible(true);
+                    } else if ("Simple".equals(newValue)) {
+                        myCamelExpressionParameters.getBodyMediaTypePanel().setVisible(false);
+                        myCamelExpressionParameters.getOutputMediaTypePanel().setVisible(false);
                     }
                 }
             });
@@ -349,15 +344,12 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
             CodeFragmentInputComponent component = new CodeFragmentInputComponent(myProject, myEditorsProvider, mySourcePosition, text,
                     getDimensionServiceKey() + ".splitter", myDisposable);
             component.getInputEditor().addCollapseButton(() -> mySwitchModeAction.actionPerformed(null));
-            component.getInputEditor().getLanguageChooser().addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    Object newValueObj = evt.getNewValue();
-                    if (newValueObj != null) {
-                        String newValue = evt.getNewValue().toString();
-                        myCamelExpressionParameters.getBodyMediaTypePanel().setVisible("DataSonnet".equals(newValue));
-                        myCamelExpressionParameters.getOutputMediaTypePanel().setVisible("DataSonnet".equals(newValue));
-                    }
+            component.getInputEditor().getLanguageChooser().addPropertyChangeListener(evt -> {
+                Object newValueObj = evt.getNewValue();
+                if (newValueObj != null) {
+                    String newValue = evt.getNewValue().toString();
+                    myCamelExpressionParameters.getBodyMediaTypePanel().setVisible("DataSonnet".equals(newValue));
+                    myCamelExpressionParameters.getOutputMediaTypePanel().setVisible("DataSonnet".equals(newValue));
                 }
             });
             return component;

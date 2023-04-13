@@ -19,9 +19,12 @@ package com.github.cameltooling.idea.runner.debugger.breakpoint;
 import com.github.cameltooling.idea.runner.debugger.CamelDebuggerEditorsProvider;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
+import com.intellij.openapi.application.ApplicationNamesInfo;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.project.DumbService;
+import com.intellij.openapi.project.IndexNotReadyException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
@@ -42,27 +45,24 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 import java.util.Arrays;
 import java.util.List;
 
-public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperties> {
+public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperties<?>> {
 
     private static final List<String> NO_BREAKPOINTS_AT = Arrays.asList(
-            new String[]{
-                "routes",
-                "route",
-                "from",
-                "routeConfiguration",
-                "routeConfigurationId",
-                "exception",
-                "handled",
-                "simple",
-                "constant",
-                "datasonnet",
-                "groovy",
-                "steps",
-                "name",
-                "constant",
-                "uri"
-            }
-    );
+        "routes",
+        "route",
+        "from",
+        "routeConfiguration",
+        "routeConfigurationId",
+        "exception",
+        "handled",
+        "simple",
+        "constant",
+        "datasonnet",
+        "groovy",
+        "steps",
+        "name",
+        "constant",
+        "uri");
 
     protected CamelBreakpointType() {
         super("camel", "Camel Breakpoints");
@@ -78,7 +78,7 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
 
         switch (file.getFileType().getName()) {
         case "XML":
-            XmlTag tag = IdeaUtils.getService().getXmlTagAt(project, position);
+            XmlTag tag = IdeaUtils.getXmlTagAt(project, position);
             if (tag == null) {
                 return false;
             }
@@ -92,7 +92,7 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
             eipName = psiElement.getText();
             break;
         case "YAML":
-            YAMLKeyValue keyValue = IdeaUtils.getService().getYamlKeyValueAt(project, position);
+            YAMLKeyValue keyValue = IdeaUtils.getYamlKeyValueAt(project, position);
             if (keyValue != null) {
                 eipName = keyValue.getKeyText();
             }
@@ -100,11 +100,17 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
         default: // noop
         }
 
-        return !NO_BREAKPOINTS_AT.contains(eipName) && CamelIdeaUtils.getService().isCamelFile(psiFile);
+        try {
+            return !NO_BREAKPOINTS_AT.contains(eipName) && CamelIdeaUtils.getService().isCamelFile(psiFile);
+        } catch (IndexNotReadyException e) {
+            DumbService.getInstance(project).showDumbModeNotification("Toggling breakpoints is disabled while " + ApplicationNamesInfo.getInstance().getProductName() + " is updating indices");
+            return false;
+        }
     }
 
     @Override
-    public XDebuggerEditorsProvider getEditorsProvider(@NotNull XLineBreakpoint<XBreakpointProperties> breakpoint, @NotNull Project project) {
+    public XDebuggerEditorsProvider getEditorsProvider(@NotNull XLineBreakpoint<XBreakpointProperties<?>> breakpoint,
+                                                       @NotNull Project project) {
         final XSourcePosition position = breakpoint.getSourcePosition();
         if (position == null) {
             return null;
@@ -120,11 +126,11 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
 
     @Nullable
     @Override
-    public XBreakpointProperties createBreakpointProperties(@NotNull VirtualFile virtualFile, int line) {
+    public XBreakpointProperties<?> createBreakpointProperties(@NotNull VirtualFile virtualFile, int line) {
         return new CamelBreakpointProperties(virtualFile.getFileType());
     }
 
-    class CamelBreakpointProperties extends XBreakpointProperties<CamelBreakpointProperties> {
+    static class CamelBreakpointProperties extends XBreakpointProperties<CamelBreakpointProperties> {
         private FileType myFileType;
 
         CamelBreakpointProperties(FileType fileType) {

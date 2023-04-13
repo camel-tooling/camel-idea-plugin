@@ -219,4 +219,28 @@ public final class StringUtils {
         return text.replace("\"", "");
     }
 
+    /**
+     * Convert the given text in Kebab Case to Camel case.
+     * @param text the text to convert in Kebab Case
+     * @return the content of the given text in Kebab Case converted in Camel case.
+     */
+    public static String fromKebabToCamelCase(String text) {
+        final int length = text.length();
+        final StringBuilder result = new StringBuilder(length);
+        boolean toUpperCase = false;
+        for (int i = 0; i < length; i++) {
+            char c = text.charAt(i);
+            if (c == '-') {
+                toUpperCase = true;
+                continue;
+            }
+            if (toUpperCase) {
+                result.append(Character.toUpperCase(c));
+                toUpperCase = false;
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
+    }
 }

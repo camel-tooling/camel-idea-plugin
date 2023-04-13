@@ -16,9 +16,19 @@
  */
 package com.github.cameltooling.idea.completion.endpoint;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import javax.swing.*;
+
+import com.github.cameltooling.idea.completion.OptionSuggestion;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
+import com.github.cameltooling.idea.util.JavaClassUtils;
 import com.intellij.codeInsight.completion.PrioritizedLookupElement;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.Lookup;
@@ -26,16 +36,11 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
 import com.intellij.lang.properties.psi.impl.PropertiesFileImpl;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorModificationUtil;
 import com.intellij.psi.PsiElement;
 import org.apache.camel.tooling.model.ComponentModel;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Smart completion for editing a Camel endpoint uri, to show a list of possible endpoint options which can be added.
@@ -48,6 +53,7 @@ public final class CamelSmartCompletionEndpointOptions {
         // static class
     }
 
+    @NotNull
     public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(final String[] query,
                                                                                    final ComponentModel component,
                                                                                    final Map<String, String> existing,
@@ -73,13 +79,15 @@ public final class CamelSmartCompletionEndpointOptions {
             if ("parameter".equals(option.getKind())) {
                 final String name = option.getName();
 
+                final CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
+
                 // if we are consumer only, then any option that has producer in the label should be skipped (as its only for producer)
-                final boolean consumerOnly = getCamelIdeaUtils().isConsumerEndpoint(element);
+                final boolean consumerOnly = camelIdeaUtils.isConsumerEndpoint(element);
                 if (consumerOnly && option.getLabel() != null && option.getLabel().contains("producer")) {
                     continue;
                 }
-                // if we are producer only, then any option that has consume in the label should be skipped (as its only for consumer)
-                final boolean producerOnly = getCamelIdeaUtils().isProducerEndpoint(element);
+                // if we are producer only, then any option that has consumer in the label should be skipped (as its only for consumer)
+                final boolean producerOnly = camelIdeaUtils.isProducerEndpoint(element);
                 if (producerOnly && option.getLabel() != null && option.getLabel().contains("consumer")) {
                     continue;
                 }
@@ -108,7 +116,7 @@ public final class CamelSmartCompletionEndpointOptions {
                     if (xmlMode) {
                         lookup = lookup.replace("&", "&amp;");
                     }
-                    LookupElementBuilder builder = LookupElementBuilder.create(lookup);
+                    LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, lookup));
                     final String suffix = query[1];
                     builder = addInsertHandler(editor, builder, suffix);
                     // only show the option in the UI
@@ -119,7 +127,7 @@ public final class CamelSmartCompletionEndpointOptions {
                             .contains("advanced");
                     builder = builder.withBoldness(!advanced);
                     if (!option.getJavaType().isEmpty()) {
-                        builder = builder.withTypeText(option.getJavaType(), true);
+                        builder = builder.withTypeText(JavaClassUtils.getService().toSimpleType(option.getJavaType()), true);
                     }
                     if (option.isDeprecated()) {
                         // mark as deprecated
@@ -147,23 +155,28 @@ public final class CamelSmartCompletionEndpointOptions {
     }
 
 
+    @NotNull
     public static List<LookupElement> addSmartCompletionSuggestionsContextPath(String val,
                                                                                final ComponentModel component,
                                                                                final Map<String, String> existing,
-                                                                               final boolean xmlMode,
-                                                                               final PsiElement psiElement) {
+                                                                               final PsiElement psiElement,
+                                                                               final Predicate<ComponentModel> componentPredicate,
+                                                                               final Predicate<ComponentModel.EndpointOptionModel> optionPredicate,
+                                                                               final Function<ComponentModel.EndpointOptionModel, Icon> iconProvider) {
         final List<LookupElement> answer = new ArrayList<>();
 
         // show the syntax as the only choice for now
         LookupElementBuilder builder = LookupElementBuilder.create(val);
-        builder = builder.withIcon(getCamelPreferenceService().getCamelIcon());
+        builder = builder.withIcon(CamelPreferenceService.getService().getCamelIcon());
         builder = builder.withBoldness(true);
         builder = builder.withPresentableText(component.getSyntax());
 
         final LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE);
         answer.add(element);
         val = removeUnknownEnum(val, psiElement);
-        final List<LookupElement> old = addSmartCompletionContextPathEnumSuggestions(val, component, existing);
+        final List<LookupElement> old = addSmartCompletionContextPathSuggestions(
+            val, component, existing, componentPredicate, optionPredicate, iconProvider
+        );
         if (!old.isEmpty()) {
             answer.addAll(old);
         }
@@ -171,54 +184,34 @@ public final class CamelSmartCompletionEndpointOptions {
         return answer;
     }
 
-    private static List<LookupElement> addSmartCompletionContextPathEnumSuggestions(final String val,
-                                                                                    final ComponentModel component,
-                                                                                    final Map<String, String> existing) {
+    private static List<LookupElement> addSmartCompletionContextPathSuggestions(final String val,
+                                                                                final ComponentModel component,
+                                                                                final Map<String, String> existing,
+                                                                                final Predicate<ComponentModel> componentPredicate,
+                                                                                final Predicate<ComponentModel.EndpointOptionModel> optionPredicate,
+                                                                                final Function<ComponentModel.EndpointOptionModel, Icon> iconProvider) {
         final List<LookupElement> answer = new ArrayList<>();
-        double priority = 100.0d;
-
-        // lets help the suggestion list if we are editing the context-path and only have 1 enum type option
-        // and the option has not been in use yet, then we can populate the list with the enum values.
-        final long enums = component
-                .getEndpointOptions()
-                .stream()
-                .filter(o -> "path".equals(o.getKind()) && o.getEnums() != null)
-                .count();
-        if (enums == 1) {
+        if (componentPredicate.test(component)) {
+            double priority = 100.0d;
             for (final ComponentModel.EndpointOptionModel option : component.getEndpointOptions()) {
                 // only add support for enum in the context-path smart completion
-                if ("path".equals(option.getKind()) && option.getEnums() != null) {
+                if ("path".equals(option.getKind()) && optionPredicate.test(option)) {
                     final String name = option.getName();
                     // only add if not already used
                     final String old = existing != null ? existing.get(name) : "";
                     if (existing == null || old == null || old.isEmpty()) {
-
-                        // add all enum as choices
-                        for (final String choice : option.getEnums()) {
-                            final String key = choice;
-                            final String lookup = val + key;
-
-                            LookupElementBuilder builder = LookupElementBuilder.create(lookup);
-                            // only show the option in the UI
-                            builder = builder.withPresentableText(choice);
-                            // lets use the option name as the type so its visible
-                            builder = builder.withTypeText(name, true);
-                            builder = builder.withIcon(AllIcons.Nodes.Enum);
-
-                            if (option.isDeprecated()) {
-                                // mark as deprecated
-                                builder = builder.withStrikeoutness(true);
+                        List<String> enums = option.getEnums();
+                        if (enums == null || enums.isEmpty()) {
+                            priority = createContextPathLookupElement(
+                                answer, priority, option, name, option.getDisplayName(), val + name, iconProvider
+                            );
+                        } else {
+                            // add all enum as choices
+                            for (final String choice : enums) {
+                                priority = createContextPathLookupElement(
+                                    answer, priority, option, name, choice, val + choice, iconProvider
+                                );
                             }
-
-                            // its an enum so always auto complete the choices
-                            LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.ALWAYS_AUTOCOMPLETE);
-
-                            // they should be in the exact order
-                            element = PrioritizedLookupElement.withPriority(element, priority);
-
-                            priority -= 1.0d;
-
-                            answer.add(element);
                         }
                     }
                 }
@@ -228,6 +221,34 @@ public final class CamelSmartCompletionEndpointOptions {
         return answer;
     }
 
+    private static double createContextPathLookupElement(List<LookupElement> answer, double priority,
+                                                         ComponentModel.EndpointOptionModel option, String name,
+                                                         String choice, String lookup,
+                                                         Function<ComponentModel.EndpointOptionModel, Icon> iconProvider) {
+        LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, lookup));
+        // only show the option in the UI
+        builder = builder.withPresentableText(choice);
+        // lets use the option name as the type so its visible
+        builder = builder.withTypeText(name, true);
+        builder = builder.withIcon(iconProvider.apply(option));
+
+        if (option.isDeprecated()) {
+            // mark as deprecated
+            builder = builder.withStrikeoutness(true);
+        }
+
+        // its an enum so always auto complete the choices
+        LookupElement element = builder.withAutoCompletionPolicy(AutoCompletionPolicy.ALWAYS_AUTOCOMPLETE);
+
+        // they should be in the exact order
+        element = PrioritizedLookupElement.withPriority(element, priority);
+
+        priority -= 1.0d;
+
+        answer.add(element);
+        return priority;
+    }
+
     /**
      * Remove unknown option at the cursor location from the query string
      * from("timer:trigger?repeatCount=10&del<caret>")
@@ -235,7 +256,7 @@ public final class CamelSmartCompletionEndpointOptions {
     private static String removeUnknownOption(String val, final Map<String, String> existing,
                                               final PsiElement element) {
 
-        final String[] strToRemove = getIdeaUtils().getQueryParameterAtCursorPosition(element);
+        final String[] strToRemove = IdeaUtils.getService().getQueryParameterAtCursorPosition(element);
         //to compare the string against known options we need to strip it from equal sign
         String searchStr = strToRemove[0];
         if (!searchStr.isEmpty() && !searchStr.endsWith("&") && existing != null) {
@@ -256,7 +277,7 @@ public final class CamelSmartCompletionEndpointOptions {
      * from("jms:qu<caret>")
      */
     private static String removeUnknownEnum(String val, final PsiElement element) {
-        final String[] strToRemove = getIdeaUtils().getQueryParameterAtCursorPosition(element);
+        final String[] strToRemove = IdeaUtils.getService().getQueryParameterAtCursorPosition(element);
         //to compare the string against known options we need to strip it from equal sign
         strToRemove[0] = strToRemove[0].replace(":", "");
         if (!strToRemove[0].isEmpty()) {
@@ -300,18 +321,6 @@ public final class CamelSmartCompletionEndpointOptions {
                 EditorModificationUtil.moveCaretRelatively(editor, offset);
             }
         });
-    }
-
-    private static CamelPreferenceService getCamelPreferenceService() {
-        return ServiceManager.getService(CamelPreferenceService.class);
-    }
-
-    private static IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
-    }
-
-    private static CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
     }
 
 }

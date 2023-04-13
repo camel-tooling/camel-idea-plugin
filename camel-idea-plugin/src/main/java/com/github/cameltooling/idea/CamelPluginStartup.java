@@ -17,42 +17,47 @@
 package com.github.cameltooling.idea;
 
 import com.github.cameltooling.idea.service.CamelService;
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManagerListener;
+import com.intellij.openapi.roots.ModuleRootEvent;
+import com.intellij.openapi.roots.ModuleRootListener;
+import com.intellij.openapi.startup.StartupActivity;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Main entry point of the Camel IDEA plugin which is a project listener,
  * to detect if Camel is present when a project is loaded.
  */
-public class CamelPluginStartup implements ProjectManagerListener {
+public class CamelPluginStartup implements ProjectManagerListener, ModuleRootListener, StartupActivity {
 
     @Override
-    public void projectOpened(@NotNull Project project) {
-        // rebuild list of libraries because the dependencies may have changed
-        getCamelIdeaService(project).setCamelPresent(false);
-        getCamelIdeaService(project).clearLibraries();
-
-        for (Module module : ModuleManager.getInstance(project).getModules()) {
-            getCamelIdeaService(project).scanForCamelProject(project, module);
-            // if its a Camel project then scan for additional Camel components
-            if (getCamelIdeaService(project).isCamelPresent()) {
-                getCamelIdeaService(project).scanForCamelDependencies(project, module);
-            }
-        }
+    public void runActivity(@NotNull Project project) {
+        scanForCamelProject(project);
     }
 
     @Override
     public void projectClosed(@NotNull Project project) {
-        getCamelIdeaService(project).setCamelPresent(false);
-        getCamelIdeaService(project).clearLibraries();
+        getCamelIdeaService(project).reset();
     }
 
-    private CamelService getCamelIdeaService(Project project) {
-        return ServiceManager.getService(project, CamelService.class);
+    @Override
+    public void rootsChanged(@NotNull ModuleRootEvent event) {
+        // A roots change has been detected, Camel could have been removed, added or modified thus a new project scan
+        // is needed
+        scanForCamelProject(event.getProject());
+    }
+
+    /**
+     * Scan the given project to know whether it is a Camel project or not and if it is, initialize it consequently.
+     * @param project the project to scan
+     */
+    private static void scanForCamelProject(@NotNull Project project) {
+        // rebuild list of libraries because the dependencies may have changed
+        getCamelIdeaService(project).scanForCamelProject();
+    }
+
+    private static CamelService getCamelIdeaService(Project project) {
+        return project.getService(CamelService.class);
     }
 
 }

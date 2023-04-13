@@ -17,6 +17,7 @@
 package com.github.cameltooling.idea.runner.debugger.stack;
 
 import com.github.cameltooling.idea.runner.debugger.CamelDebuggerSession;
+import com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget;
 import com.intellij.util.PlatformIcons;
 import com.intellij.xdebugger.frame.XCompositeNode;
 import com.intellij.xdebugger.frame.XValue;
@@ -31,11 +32,13 @@ import java.util.Map;
 
 public class MapOfObjectFieldDefinitionValue extends XValue {
 
-    private CamelDebuggerSession session;
-    private Map<String, CamelMessageInfo.Value[]> values;
-    private Icon icon;
+    private final CamelDebuggerTarget target;
+    private final CamelDebuggerSession session;
+    private final Map<String, CamelMessageInfo.Value[]> values;
+    private final Icon icon;
 
-    public MapOfObjectFieldDefinitionValue(CamelDebuggerSession session, Map<String, CamelMessageInfo.Value[]> values, Icon icon) {
+    public MapOfObjectFieldDefinitionValue(CamelDebuggerTarget target, CamelDebuggerSession session, Map<String, CamelMessageInfo.Value[]> values, Icon icon) {
+        this.target = target;
         this.session = session;
         this.values = values;
         this.icon = icon;
@@ -51,7 +54,10 @@ public class MapOfObjectFieldDefinitionValue extends XValue {
         final XValueChildrenList list = new XValueChildrenList();
         for (Map.Entry<String, CamelMessageInfo.Value[]> entry : values.entrySet()) {
             for (CamelMessageInfo.Value nextValue : entry.getValue()) {
-                list.add(entry.getKey(), new ObjectFieldDefinitionValue(session, nextValue, PlatformIcons.PROPERTY_ICON));
+                String key = entry.getKey();
+                list.add(
+                    key, new ObjectFieldDefinitionValue(target, key, session, nextValue, PlatformIcons.PROPERTY_ICON)
+                );
             }
         }
         node.addChildren(list, false);

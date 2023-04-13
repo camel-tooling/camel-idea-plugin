@@ -16,28 +16,29 @@
  */
 
 plugins {
-    id "org.jetbrains.intellij" version "1.3.1"
+    id "org.jetbrains.intellij" version "1.13.1"
 }
 
 apply plugin: 'java'
 apply plugin: 'org.jetbrains.intellij'
 
 intellij {
-    version = '2021.2'
+    version = ideaVersion
     downloadSources = true
     type = project.hasProperty('intellij_type') ? project.intellij_type : 'IC'
     plugins = ['java', 'java-i18n', 'properties', 'yaml', 'maven', 'xpath']
 }
 
-// to support IDEA 2020 onwards
+// to support IDEA 2022 onwards
 // http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
 patchPluginXml {
-    sinceBuild = "212"
-    untilBuild = "213.*"
+    sinceBuild = "223"
+    untilBuild = "231.*"
 }
 
 runPluginVerifier {
-    ideVersions = [ "2021.2", "2021.3" ]
+    ideVersions = [ "2022.3", "2023.1" ]
+
 }
 
 // publishPlugin {
@@ -45,6 +46,11 @@ runPluginVerifier {
 //    token authenticationToken
 // }
 
+tasks {
+    buildSearchableOptions {
+        enabled = false
+    }
+}
 println "Building with intellij type : ${intellij.type}"
 
 dependencies {
@@ -54,13 +60,48 @@ dependencies {
     implementation "org.apache.camel:camel-util-json:${camelVersion}"
     implementation "org.apache.camel:camel-tooling-model:${camelVersion}"
     implementation "org.apache.camel:camel-management-api:${camelVersion}"
+    implementation "org.apache.camel.springboot:camel-catalog-provider-springboot:${camelVersion}"
+    implementation "org.apache.camel.karaf:camel-catalog-provider-karaf:${camelVersion}"
+    implementation "org.apache.camel.quarkus:camel-quarkus-catalog:${camelQuarkusVersion}"
+    implementation "org.apache.camel.kamelets:camel-kamelets:${camelKameletVersion}"
+    implementation "io.github.classgraph:classgraph:4.8.157"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2"
+    implementation "io.fabric8:kubernetes-model-apiextensions:6.5.1"
 
     testImplementation "org.apache.camel:camel-core:${camelVersion}"
+    testImplementation "org.apache.camel.springboot:camel-spring-boot:${camelVersion}"
+    testImplementation "org.apache.camel.springboot:camel-file-starter:${camelVersion}"
     testImplementation 'org.jboss.shrinkwrap:shrinkwrap-depchain:1.2.6'
     testImplementation 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-depchain:3.1.4'
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
-    testImplementation 'org.springframework:spring-context:5.3.19'
+    testImplementation 'org.springframework:spring-context:5.3.26'
     testImplementation "org.apache.camel:camel-jsonpath:${camelVersion}"
 }
 
 description = 'Apache Camel IDE :: IDEA Plugin'
+
+test {
+    // Force a specific grape configuration as temporary fix to prevent dependency retrieval issues
+    systemProperty("grape.config", "grapeConfig.xml")
+// Start: To get Grape log messages
+//    systemProperty("groovy.grape.report.downloads", "true")
+//    systemProperty("ivy.message.logger.level", "4")
+//    testLogging {
+//        showStandardStreams = true
+//    }
+// End: To get Grape log messages
+// To enable the remote debug
+//    jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005'
+}
+
+runIde {
+// Start: To get Grape log messages
+//    systemProperty("groovy.grape.report.downloads", "true")
+//    systemProperty("ivy.message.logger.level", "4")
+//    testLogging {
+//        showStandardStreams = true
+//    }
+// End: To get Grape log messages
+// To enable the remote debug
+//    jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005'
+}

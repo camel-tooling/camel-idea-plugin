@@ -20,8 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
-import com.intellij.codeInsight.completion.CompletionType;
-import org.junit.Ignore;
+import com.github.cameltooling.idea.service.CamelPreferenceService;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -32,21 +31,29 @@ import static org.junit.Assert.assertThat;
 /**
  * Testing smart completion with Camel XML DSL
  */
-@SuppressWarnings("unchecked")
 public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
+
+    protected void tearDown() throws Exception {
+        try {
+            CamelPreferenceService.getService().setOnlyShowKameletOptions(true);
+        } finally {
+            super.tearDown();
+        }
+    }
 
     public void testConsumerCompletion() {
         myFixture.configureByFiles("CompleteXmlEndpointConsumerTestData.xml");
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
         assertTrue(strings.containsAll(Arrays.asList("file:inbox?autoCreate", "file:inbox?include", "file:inbox?delay", "file:inbox?delete")));
         assertFalse(strings.containsAll(Arrays.asList("file:inbox?fileExist", "file:inbox?forceWrites")));
-        assertTrue("There is many options", strings.size() > 60);
+        assertTrue("There are many options", strings.size() > 60);
     }
 
     public void testProducerCompletion() {
         myFixture.configureByFiles("CompleteXmlEndpointProducerTestData.xml");
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, not(contains(Arrays.asList("file:outbox?autoCreate", "file:outbox?include", "file:outbox?delay", "file:outbox?delete"))));
         assertThat(strings, hasItems("file:outbox?fileExist", "file:outbox?forceWrites"));
@@ -64,14 +71,15 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
 
     public void testXmlInsertAfterQuestionMarkTestData() {
         String insertAfterQuestionMarkTestData = getXmlInsertAfterQuestionMarkTestData();
-        myFixture.configureByText("JavaCaretInMiddleOptionsTestData.xml", insertAfterQuestionMarkTestData);
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.configureByText("XmlCaretInMiddleOptionsTestData.xml", insertAfterQuestionMarkTestData);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertTrue("There is many options", strings.size() == 1);
+        assertNotNull(strings);
+        assertEquals("There are many options", 1, strings.size());
         assertThat(strings, contains("timer:trigger?period"));
         myFixture.type('\n');
-        insertAfterQuestionMarkTestData = insertAfterQuestionMarkTestData.replace("<caret>", "iod=");
-        myFixture.checkResult(insertAfterQuestionMarkTestData);
+        String result = insertAfterQuestionMarkTestData.replace("<caret>", "iod=");
+        myFixture.checkResult(result);
     }
 
     private String getXmlEndOfLineTestData() {
@@ -85,9 +93,10 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
 
     public void testXmlEndOfLineOptionsCompletion() {
         myFixture.configureByText("XmlCaretInMiddleOptionsTestData.xml", getXmlEndOfLineTestData());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertTrue("There is many options", strings.size() > 9);
+        assertNotNull(strings);
+        assertTrue("There are many options", strings.size() > 9);
     }
 
     private String getXmlCaretAfterQuestionMarkWithPreDataOptionsTestData() {
@@ -101,12 +110,12 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
 
     public void testXmlAfterQuestionMarkWithPreDataOptionsCompletion() {
         myFixture.configureByText("XmlCaretInMiddleOptionsTestData.xml", getXmlCaretAfterQuestionMarkWithPreDataOptionsTestData());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNull("Don't except any elements, because it the 're' is unique and return the repeatCount", strings);
     }
 
-    private String getXmlfterAmpOptionsTestData() {
+    private String getXmlAfterAmpOptionsTestData() {
         return "<routes>\n"
             + "  <route>\n"
             + "    <from uri=\"timer:trigger?repeatCount=10&amp;<caret>\"/>\n"
@@ -115,10 +124,9 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
             + "</routes>";
     }
 
-    @Ignore
-    public void testXmlAfterAmbeCompletion() {
-        myFixture.configureByText("XmlCaretInMiddleOptionsTestData.xml", getXmlfterAmpOptionsTestData());
-        myFixture.complete(CompletionType.BASIC, 1);
+    public void testXmlAfterAmpCompletion() {
+        myFixture.configureByText("XmlCaretInMiddleOptionsTestData.xml", getXmlAfterAmpOptionsTestData());
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, not(contains("timer:trigger?repeatCount=10")));
         assertThat(strings, contains("&amp;bridgeErrorHandler",
@@ -127,6 +135,7 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
             "&amp;exceptionHandler",
             "&amp;exchangePattern",
             "&amp;fixedRate",
+            "&amp;includeMetadata",
             "&amp;pattern",
             "&amp;period",
             "&amp;synchronous",
@@ -146,9 +155,10 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
 
     public void testXmlInTheMiddleOfResolvedOptionsCompletion() {
         myFixture.configureByText("XmlCaretInMiddleOptionsTestData.xml", getXmlInTheMiddleOfResolvedOptionsData());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertTrue("There is less options", strings.size() == 0);
+        assertNotNull(strings);
+        assertEquals("There is less options", 0, strings.size());
     }
 
     private String getXmlInTheMiddleUnresolvedOptionsTestData() {
@@ -162,11 +172,11 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
 
     public void testXmlInTheMiddleUnresolvedOptionsCompletion() {
         myFixture.configureByText("XmlCaretInMiddleOptionsTestData.xml", getXmlInTheMiddleUnresolvedOptionsTestData());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertThat(strings, not(contains("timer:trigger?repeatCount=10")));
         assertThat(strings, contains("&amp;exceptionHandler", "&amp;exchangePattern"));
-        assertTrue("There is less options", strings.size() == 2);
+        assertEquals("There is less options", 2, strings.size());
         myFixture.type('\n');
         String result = getXmlInTheMiddleUnresolvedOptionsTestData().replace("<caret>", "ceptionHandler=");
         myFixture.checkResult(result);
@@ -183,8 +193,9 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
 
     public void testXmlAfterValueWithOutAmpCompletion() {
         myFixture.configureByText("XmlAfterValueWithOutAmpCompletion.xml", getXmlAfterValueWithOutAmpTestData());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
         assertTrue("There is less options", strings.size() > 10);
         myFixture.type('\n');
         String result = getXmlAfterValueWithOutAmpTestData().replace("<caret>", "&amp;bridgeErrorHandler=");
@@ -202,20 +213,20 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
             + "  </route>\n"
             + "</routes>";
     }
-    @Ignore
     public void testXmlMultilineTestData() {
         myFixture.configureByText("CamelRoute.xml", getXmlMultilineTestData());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals("There is many options", 8, strings.size());
+        assertNotNull(strings);
+        assertEquals("There are many options", 9, strings.size());
         assertThat(strings, not(containsInAnyOrder(
             "timer:trigger?repeatCount=10&",
             "&fixedRate=false",
             "&daemon=false",
             "&period=10")));
         myFixture.type('\n');
-        String xmlInsertAfterQuestionMarkTestData = getXmlMultilineTestData().replace("<caret>", "&amp;bridgeErrorHandler=");
-        myFixture.checkResult(xmlInsertAfterQuestionMarkTestData);
+        String result = getXmlMultilineTestData().replace("<caret>", "&amp;bridgeErrorHandler=");
+        myFixture.checkResult(result);
     }
 
     private String getXmlMultilineTest2Data() {
@@ -229,20 +240,20 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
             + "  </route>\n"
             + "</routes>";
     }
-    @Ignore
     public void testXmlMultilineTest2Data() {
         myFixture.configureByText("CamelRoute.xml", getXmlMultilineTest2Data());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals("There is many options", 8, strings.size());
+        assertNotNull(strings);
+        assertEquals("There are many options", 9, strings.size());
         assertThat(strings, not(containsInAnyOrder(
             "timer:trigger?repeatCount=10",
             "&amp;fixedRate=false",
             "&amp;daemon=false",
             "&amp;period=10")));
         myFixture.type('\n');
-        String xmlInsertAfterQuestionMarkTestData = getXmlMultilineTest2Data().replace("<caret>", "&amp;bridgeErrorHandler=");
-        myFixture.checkResult(xmlInsertAfterQuestionMarkTestData);
+        String result = getXmlMultilineTest2Data().replace("<caret>", "&amp;bridgeErrorHandler=");
+        myFixture.checkResult(result);
     }
 
     private String getXmlMultilineTest3Data() {
@@ -256,20 +267,20 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
             + "  </route>\n"
             + "</routes>";
     }
-    @Ignore
     public void testXmlMultilineTest3Data() {
         myFixture.configureByText("CamelRoute.xml", getXmlMultilineTest3Data());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals("There is many options", 8, strings.size());
+        assertNotNull(strings);
+        assertEquals("There are many options", 9, strings.size());
         assertThat(strings, not(containsInAnyOrder(
             "timer:trigger?repeatCount=10&amp;",
             "&amp;fixedRate=false",
             "&amp;daemon=false",
             "&amp;period=10")));
         myFixture.type('\n');
-        String xmlInsertAfterQuestionMarkTestData = getXmlMultilineTest3Data().replace("<caret>", "&amp;bridgeErrorHandler=");
-        myFixture.checkResult(xmlInsertAfterQuestionMarkTestData);
+        String result = getXmlMultilineTest3Data().replace("<caret>", "&amp;bridgeErrorHandler=");
+        myFixture.checkResult(result);
     }
 
     private String getXmlMultilineInFixSearchData() {
@@ -284,14 +295,151 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
             + "</routes>";
 
     }
-    public void testJavaMultilineInFixSearchData() {
+    public void testXmlMultilineInFixSearchData() {
         myFixture.configureByText("CamelRoute.xml", getXmlMultilineInFixSearchData());
-        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals("There is many options", 2, strings.size());
+        assertNotNull(strings);
+        assertEquals("There are many options", 2, strings.size());
         assertThat(strings, containsInAnyOrder("&amp;exceptionHandler", "&amp;exchangePattern"));
         myFixture.type('\n');
-        String xmlInsertAfterQuestionMarkTestData = getXmlMultilineInFixSearchData().replace("<caret>", "ceptionHandler=");
-        myFixture.checkResult(xmlInsertAfterQuestionMarkTestData);
+        String result = getXmlMultilineInFixSearchData().replace("<caret>", "ceptionHandler=");
+        myFixture.checkResult(result);
+    }
+
+    private String getXmlSourceKameletSuggestionsData() {
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"kamelet:<caret>\"/>"
+            + "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
+    }
+
+    /**
+     * Ensure that the name of the available source Kamelets can be suggested
+     */
+    public void testXmlSourceKameletSuggestions() {
+        myFixture.configureByText("CamelRoute.xml", getXmlSourceKameletSuggestionsData());
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertDoesntContain(strings, "kamelet:avro-deserialize-action", "kamelet:aws-sqs-sink");
+        assertContainsElements(strings, "kamelet:aws-s3-source", "kamelet:ftp-source", "kamelet:webhook-source");
+        myFixture.type("ft\n");
+        String javaMarkTestData = getXmlSourceKameletSuggestionsData().replace("<caret>", "ftp-source");
+        myFixture.checkResult(javaMarkTestData);
+    }
+
+    private String getXmlNonSourceKameletSuggestionsData() {
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"stream:in\"/>"
+            + "    <to uri=\"kamelet:<caret>\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
+    }
+
+    /**
+     * Ensure that the name of the available non source Kamelets can be suggested
+     */
+    public void testXmlNonSourceKameletSuggestions() {
+        myFixture.configureByText("CamelRoute.xml", getXmlNonSourceKameletSuggestionsData());
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertDoesntContain(strings, "kamelet:aws-s3-source", "kamelet:ftp-source", "kamelet:webhook-source");
+        assertContainsElements(strings, "kamelet:avro-deserialize-action", "kamelet:aws-sqs-sink");
+        myFixture.type("avro-d\n");
+        String javaMarkTestData = getXmlNonSourceKameletSuggestionsData().replace("<caret>", "avro-deserialize-action");
+        myFixture.checkResult(javaMarkTestData);
+    }
+
+    private String getXmlKameletOptionSuggestionsData() {
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"kamelet:ftp-source?<caret>\"/>"
+            + "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
+    }
+
+    /**
+     * Ensure that the configuration option of a given Kamelet can be suggested with other options.
+     */
+    public void testXmlKameletOptionSuggestions() {
+        CamelPreferenceService.getService().setOnlyShowKameletOptions(false);
+        myFixture.configureByText("CamelRoute.xml", getXmlKameletOptionSuggestionsData());
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertContainsElements(strings, "kamelet:ftp-source?connectionHost", "kamelet:ftp-source?connectionPort", "kamelet:ftp-source?bridgeErrorHandler");
+        myFixture.type("user\n");
+        String javaMarkTestData = getXmlKameletOptionSuggestionsData().replace("<caret>", "username=");
+        myFixture.checkResult(javaMarkTestData);
+    }
+
+    /**
+     * Ensure that the configuration option of a given Kamelet can be suggested without other options.
+     */
+    public void testXmlKameletOptionAloneSuggestions() {
+        CamelPreferenceService.getService().setOnlyShowKameletOptions(true);
+        myFixture.configureByText("CamelRoute.xml", getXmlKameletOptionSuggestionsData());
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertDoesntContain(strings, "kamelet:ftp-source?bridgeErrorHandler");
+        assertContainsElements(strings, "kamelet:ftp-source?connectionHost", "kamelet:ftp-source?connectionPort");
+        myFixture.type("connectionH\n");
+        String javaMarkTestData = getXmlKameletOptionSuggestionsData().replace("<caret>", "connectionHost=");
+        myFixture.checkResult(javaMarkTestData);
+    }
+
+    private String getXmlKameletOptionValueSuggestionsData() {
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"kamelet:ftp-source?passiveMode=<caret>\"/>"
+            + "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
+    }
+
+    /**
+     * Ensure that the values of a configuration option of a given Kamelet can be suggested
+     */
+    public void testXmlKameletOptionValueSuggestions() {
+        myFixture.configureByText("CamelRoute.xml", getXmlKameletOptionValueSuggestionsData());
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertContainsElements(strings, "kamelet:ftp-source?passiveMode=true", "kamelet:ftp-source?passiveMode=false");
+        myFixture.type('\n');
+        String javaMarkTestData = getXmlKameletOptionValueSuggestionsData().replace("<caret>", "false");
+        myFixture.checkResult(javaMarkTestData);
+    }
+
+    private String getXmlKameletOptionFilteredSuggestionsData() {
+        return "<routes>\n"
+            + "  <route>\n"
+            + "    <from uri=\"kamelet:ftp-source?passiveMode=true&amp;bridgeErrorHandler=true&amp;<caret>\"/>"
+            + "    <to uri=\"file:outbox?delete=true&amp;fileExist=Append\"/>\n"
+            + "  </route>\n"
+            + "</routes>";
+    }
+
+    /**
+     * Ensure that configuration options of a given Kamelet can be filtered
+     */
+    public void testXmlKameletOptionFilteredSuggestions() {
+        myFixture.configureByText("CamelRoute.xml", getXmlKameletOptionFilteredSuggestionsData());
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        String prefix = "&amp;";
+        assertDoesntContain(strings, prefix + "passiveMode", prefix + "bridgeErrorHandler");
+        assertContainsElements(strings, prefix + "connectionHost", prefix + "connectionPort");
+        myFixture.type("user\n");
+        String javaMarkTestData = getXmlKameletOptionFilteredSuggestionsData().replace("<caret>", "username=");
+        myFixture.checkResult(javaMarkTestData);
     }
 }

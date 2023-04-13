@@ -8,10 +8,12 @@ Plugin for Intellij IDEA to provide a set of Apache Camel related capabilities t
 
 The plugin includes:
 
-- Code completion for Camel endpoints in Java, XML, properties or yaml files (`ctrl + space`)
+- Code completion for Camel endpoints in Java, XML, properties or YAML files (`ctrl + space`)
+- Code completion for Camel message headers (available `setHeader` and `header`) in Java, XML and YAML files (`ctrl + space`) with corresponding Quick documentation (`ctrl + j`)
 - Code completion for Camel property placeholders (cursor after `{{`)
-- Real time validation for Camel endpoints in Java, XML (underline errors in red)
-- Real time validation for Camel simple language in Java, XML (underline errors in red)
+- Code completion for Camel options' key and value in properties and YAML files (`ctrl + space`) with corresponding Quick documentation (`ctrl + j`)
+- Real time validation for Camel endpoints in Java, XML, YAML (underline errors in red)
+- Real time validation for Camel simple language in Java, XML, YAML (underline errors in red)
 - Endpoint options filtered to only include applicable options when used as consumer vs producer only mode
 - Quick navigation to other Camel routes routing to this route by clicking the Camel icon in the gutter
 - Intention to add new Camel endpoint (`alt + enter` in empty string)
@@ -19,9 +21,13 @@ The plugin includes:
 - Show endpoint information in tooltip when hovering mouse over from/to etc in Java route builders
 - Supports 3rd party Camel components (if they have been properly built with Camel JSon schema metadata)
 - Attempts to use same version as camel-core dependency from the loaded project (may require download over internet)
-- Inspection (analyze code) to validate Camel endpoints in Java, XML
+- Inspection (analyze code) to validate Camel endpoints in Java, XML, YAML
 - Camel icon in gutter can be customized by choosing one of the three provided icons
-- Supports loading camel-catalog from third party Maven repositories define in the project Maven pom.xml file 
+- Supports loading camel-catalog from third party Maven repositories define in the project Maven pom.xml file
+- Defines the Camel Runtime (set manually or detected automatically) to adapt the completion of options' key and value in properties files accordingly (by default automatic detection is enabled)
+- Auto setup of the Camel Debugger for different Camel runtimes (Standalone/Main, SpringBoot, Quarkus). In case of Camel Quarkus, it is only possible using the Camel Quarkus runner.
+- Evaluate Camel expressions and set the body, Headers or Exchange properties from the Debugger Window thanks to custom actions
+- Set the body, Headers or Exchange properties from the context menu of the Debugger Window using the Camel simple language
 
 When the plugin becomes more complete and stable then the intention is to donate the source code
 to Apache Software Foundation to be included out of the box at Apache Camel.
@@ -91,12 +97,12 @@ Importing the project into IntelliJ as plug-in only require you choose ìmport f
 
 #### <a name="runningwithpreviousversion"></a>Running the plug-in with a previous versions of IDEA
 
-The plugin is tested with `IDEA 2016.2` or newer, but if you want to try with a older version you can follow this guide
+The plugin is tested with `IDEA 2022.1` or newer, but if you want to try with a older version you can follow this guide
 
 > - Follow the guide [build from source](#buildingfromsource)
-> - Change the attribute `<idea-version since-build="162.0"/>` in `camel-idea-plugin/src/main/resources/META-INF/plugin.xml` to match the version. please see [document](http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html) for build number description 
-> - Build the source with `mvn install` 
-> - The new plugin zip file `camel-idea-plugin-<version>-SNAPSHOT.jar` is located in `camel-idea-plugin/target`
+> - Change the attribute `<idea-version since-build="221"/>` in `camel-idea-plugin/src/main/resources/META-INF/plugin.xml` to match the version. please see [document](http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html) for build number description 
+> - Build the source with `./gradlew build` 
+> - The new plugin zip file `camel-idea-plugin-<version>-SNAPSHOT.jar` is located in `camel-idea-plugin/build/libs`
 > - Install the plugin from disk in IDEA preferences
 
 

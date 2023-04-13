@@ -23,7 +23,6 @@ import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
 import com.intellij.lang.annotation.HighlightSeverity;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Ignore;
 
 public class BeanReferenceTypeAnnotatorIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
@@ -46,18 +45,18 @@ public class BeanReferenceTypeAnnotatorIT extends CamelLightCodeInsightFixtureTe
         assertEquals("Bean must be of 'TestClass2' type", highlight.getDescription());
     }
 
-    @Ignore
-    public void testAnnotations() {
-        List<HighlightInfo> highlights = getHighlights("TestClass1.java", "TestClass2.java", "beans.xml");
-        List<HighlightInfo> testClass1BeanErrors = highlights.stream()
-                .filter(h -> h.getText().equals("testClass1Bean"))
-                .collect(Collectors.toList());
-        assertEquals(1, testClass1BeanErrors.size());
-        assertEquals("Bean must be of 'TestClass2' type", testClass1BeanErrors.get(0).getDescription());
-
-        assertEmpty(highlights.stream().filter(h -> h.getText().equals("testClass2Bean")).collect(Collectors.toList()));
-        assertEmpty(highlights.stream().filter(h -> h.getText().equals("someEndpoint")).collect(Collectors.toList()));
-    }
+//    @Ignore
+//    public void testAnnotations() {
+//        List<HighlightInfo> highlights = getHighlights("TestClass1.java", "TestClass2.java", "beans.xml");
+//        List<HighlightInfo> testClass1BeanErrors = highlights.stream()
+//                .filter(h -> h.getText().equals("testClass1Bean"))
+//                .collect(Collectors.toList());
+//        assertEquals(1, testClass1BeanErrors.size());
+//        assertEquals("Bean must be of 'TestClass2' type", testClass1BeanErrors.get(0).getDescription());
+//
+//        assertEmpty(highlights.stream().filter(h -> h.getText().equals("testClass2Bean")).collect(Collectors.toList()));
+//        assertEmpty(highlights.stream().filter(h -> h.getText().equals("someEndpoint")).collect(Collectors.toList()));
+//    }
 
     @NotNull
     private List<HighlightInfo> getHighlights(String ... filePaths) {

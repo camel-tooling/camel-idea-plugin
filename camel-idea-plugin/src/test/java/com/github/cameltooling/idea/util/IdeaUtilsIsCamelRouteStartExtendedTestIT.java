@@ -17,12 +17,11 @@
 package com.github.cameltooling.idea.util;
 
 import com.github.cameltooling.idea.service.CamelService;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
-import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
+import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 
-public class IdeaUtilsIsCamelRouteStartExtendedTestIT extends LightCodeInsightFixtureTestCase {
+public class IdeaUtilsIsCamelRouteStartExtendedTestIT extends LightJavaCodeInsightFixtureTestCase {
 
     private static final String CODE = "import org.apache.camel.builder.RouteBuilder;\n"
         + "\n"
@@ -44,7 +43,7 @@ public class IdeaUtilsIsCamelRouteStartExtendedTestIT extends LightCodeInsightFi
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        ServiceManager.getService(myFixture.getProject(), CamelService.class).setCamelPresent(true);
+        myFixture.getProject().getService(CamelService.class).setCamelPresent(true);
     }
 
     @Override
@@ -60,7 +59,7 @@ public class IdeaUtilsIsCamelRouteStartExtendedTestIT extends LightCodeInsightFi
         // PsiElement element = myFixture.getElementAtCaret();
         PsiElement element = myFixture.findElementByText("\"file:inbox\"", PsiLiteralExpression.class);
 
-        assertTrue(getCamelIdeaUtils().isCamelRouteStart(element));
+        assertTrue(CamelIdeaUtils.getService().isCamelRouteStart(element));
     }
 
     public void testNotStartRoute() {
@@ -71,11 +70,7 @@ public class IdeaUtilsIsCamelRouteStartExtendedTestIT extends LightCodeInsightFi
         // PsiElement element = myFixture.getElementAtCaret();
         PsiElement element = myFixture.findElementByText("\"log:out\"", PsiLiteralExpression.class);
 
-        assertFalse(getCamelIdeaUtils().isCamelRouteStart(element));
-    }
-
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
+        assertFalse(CamelIdeaUtils.getService().isCamelRouteStart(element));
     }
 
 }

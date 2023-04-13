@@ -18,6 +18,7 @@ package com.github.cameltooling.idea.runner.debugger.ui;
 
 import com.github.cameltooling.idea.language.CamelLanguages;
 import com.github.cameltooling.idea.runner.debugger.CamelDebugProcess;
+import com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget;
 import com.github.cameltooling.idea.runner.debugger.ContextAwareDebugProcess;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.openapi.actionSystem.CustomShortcutSet;
@@ -59,8 +60,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 public class CamelSetValueDialog extends DialogWrapper {
     public static final DataKey<CamelSetValueDialog> KEY = DataKey.create("CAMEL_SET_VALUE_DIALOG");
@@ -71,9 +70,8 @@ public class CamelSetValueDialog extends DialogWrapper {
     private final XDebuggerEditorsProvider myEditorsProvider;
     private EvaluationMode myMode;
     private final SwitchModeAction mySwitchModeAction;
-    private final boolean myIsCodeFragmentEvaluationSupported;
-    private CamelExpressionParameters myCamelExpressionParameters;
-    private CamelSetValueTargetPanel myCamelValueTargetPanel;
+    private final CamelExpressionParameters myCamelExpressionParameters;
+    private final CamelSetValueTargetPanel myCamelValueTargetPanel;
 
     public CamelSetValueDialog(@NotNull XDebugSession session,
                                @NotNull XDebuggerEditorsProvider editorsProvider,
@@ -86,12 +84,11 @@ public class CamelSetValueDialog extends DialogWrapper {
                                 @NotNull Project project,
                                 @NotNull XDebuggerEditorsProvider editorsProvider,
                                 @NotNull XExpression text,
-                                boolean isCodeFragmentEvaluationSupported) {
+                                boolean myIsCodeFragmentEvaluationSupported) {
         super(project, true);
         mySession = session;
         myProject = project;
         myEditorsProvider = editorsProvider;
-        myIsCodeFragmentEvaluationSupported = isCodeFragmentEvaluationSupported;
         setModal(false);
         setOKButtonText("Set Value");
         setCancelButtonText(XDebuggerBundle.message("xdebugger.evaluate.dialog.close"));
@@ -151,8 +148,8 @@ public class CamelSetValueDialog extends DialogWrapper {
     @Nullable
     protected ValidationInfo doValidate() {
         ValidationInfo validationInfo = null;
-        String targetType = myCamelValueTargetPanel.getTargetType();
-        if (!"Body".equals(targetType)) {
+        CamelDebuggerTarget targetType = myCamelValueTargetPanel.getTargetType();
+        if (targetType != CamelDebuggerTarget.BODY) {
             String targetName = myCamelValueTargetPanel.getTargetName();
             if (StringUtils.isEmpty(targetName)) {
                 validationInfo = new ValidationInfo(targetType + " name cannot be empty", myCamelValueTargetPanel.getTargetNameComponent());
@@ -219,23 +216,19 @@ public class CamelSetValueDialog extends DialogWrapper {
         text = XExpressionImpl.changeMode(text, mode);
         if (mode == EvaluationMode.EXPRESSION) {
             CamelExpressionInputComponent component =
-                    new CamelExpressionInputComponent(myProject, myEditorsProvider, "setValueExpression", null, text, myDisposable,
-                            false);
+                    new CamelExpressionInputComponent(myProject, myEditorsProvider, "setValueExpression", null, text, false);
             component.addExpressionParametersComponent(myCamelExpressionParameters.getMainPanel());
             component.setResultTypeCombo(myCamelExpressionParameters.getResultTypeCombo());
             component.setBodyMediaTypeCombo(myCamelExpressionParameters.getBodyMediaTypeCombo());
             component.setOutputMediaTypeCombo(myCamelExpressionParameters.getOutputMediaTypeCombo());
 
             component.getInputEditor().setExpandHandler(() -> mySwitchModeAction.actionPerformed(null));
-            component.getInputEditor().getLanguageChooser().addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    Object newValueObj = evt.getNewValue();
-                    if (newValueObj != null) {
-                        String newValue = evt.getNewValue().toString();
-                        myCamelExpressionParameters.getBodyMediaTypePanel().setVisible("DataSonnet".equals(newValue));
-                        myCamelExpressionParameters.getOutputMediaTypePanel().setVisible("DataSonnet".equals(newValue));
-                    }
+            component.getInputEditor().getLanguageChooser().addPropertyChangeListener(evt -> {
+                Object newValueObj = evt.getNewValue();
+                if (newValueObj != null) {
+                    String newValue = evt.getNewValue().toString();
+                    myCamelExpressionParameters.getBodyMediaTypePanel().setVisible("DataSonnet".equals(newValue));
+                    myCamelExpressionParameters.getOutputMediaTypePanel().setVisible("DataSonnet".equals(newValue));
                 }
             });
             return component;
@@ -243,15 +236,12 @@ public class CamelSetValueDialog extends DialogWrapper {
             CodeFragmentInputComponent component = new CodeFragmentInputComponent(myProject, myEditorsProvider, null, text,
                     getDimensionServiceKey() + ".splitter", myDisposable);
             component.getInputEditor().addCollapseButton(() -> mySwitchModeAction.actionPerformed(null));
-            component.getInputEditor().getLanguageChooser().addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    Object newValueObj = evt.getNewValue();
-                    if (newValueObj != null) {
-                        String newValue = evt.getNewValue().toString();
-                        myCamelExpressionParameters.getBodyMediaTypePanel().setVisible("DataSonnet".equals(newValue));
-                        myCamelExpressionParameters.getOutputMediaTypePanel().setVisible("DataSonnet".equals(newValue));
-                    }
+            component.getInputEditor().getLanguageChooser().addPropertyChangeListener(evt -> {
+                Object newValueObj = evt.getNewValue();
+                if (newValueObj != null) {
+                    String newValue = evt.getNewValue().toString();
+                    myCamelExpressionParameters.getBodyMediaTypePanel().setVisible("DataSonnet".equals(newValue));
+                    myCamelExpressionParameters.getOutputMediaTypePanel().setVisible("DataSonnet".equals(newValue));
                 }
             });
             return component;
@@ -270,8 +260,8 @@ public class CamelSetValueDialog extends DialogWrapper {
             outputMediaType = myCamelExpressionParameters.getOutputMediaTypeCombo().getItem();
         }
 
-        String target = myCamelValueTargetPanel.getTargetType();
-        String targetName = "Body".equals(target) ? null : myCamelValueTargetPanel.getTargetName();
+        CamelDebuggerTarget target = myCamelValueTargetPanel.getTargetType();
+        String targetName = myCamelValueTargetPanel.getTargetName();
 
         ContextAwareDebugProcess debugProcess = (ContextAwareDebugProcess) mySession.getDebugProcess();
         CamelDebugProcess camelDebugProcess = (CamelDebugProcess) debugProcess.getCurrentDebugProcess();

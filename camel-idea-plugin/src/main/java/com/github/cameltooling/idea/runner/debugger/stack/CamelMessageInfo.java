@@ -41,16 +41,16 @@ public class CamelMessageInfo {
 
     private Value body;
     private String exchangeId;
-
+    private String timestamp;
     private final String messageInfoAsXML;
     private final DocumentBuilder documentBuilder;
 
-    private XSourcePosition position;
-    private PsiElement tag;
+    private final XSourcePosition position;
+    private final PsiElement tag;
 
-    private String routeId;
-    private String processorId;
-    private String processor;
+    private final String routeId;
+    private final String processorId;
+    private final String processor;
 
     private List<CamelMessageInfo> stack;
 
@@ -99,6 +99,9 @@ public class CamelMessageInfo {
                 headers.put(key, new Value[]{newValue});
             }
         }
+        // Get the timestamp
+        Element timestampElement = (Element) (document.getElementsByTagName("timestamp").item(0));
+        timestamp = timestampElement.getTextContent();
         //Get Exchange ID
         Element exchangeElement = (Element) (document.getElementsByTagName("exchangeId").item(0));
         exchangeId = exchangeElement.getTextContent();
@@ -144,6 +147,14 @@ public class CamelMessageInfo {
         return exchangeId;
     }
 
+    public Value exchangeIdAsValue() {
+        return new Value("java.lang.String", exchangeId);
+    }
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+
     public XSourcePosition getXSourcePosition() {
         return this.position;
     }
@@ -173,8 +184,8 @@ public class CamelMessageInfo {
     }
 
     public static class Value {
-        private String type;
-        private Object value;
+        private final String type;
+        private final Object value;
 
         public Value(String type, Object value) {
             this.type = type;
@@ -189,6 +200,4 @@ public class CamelMessageInfo {
             return value;
         }
     }
-
-
 }

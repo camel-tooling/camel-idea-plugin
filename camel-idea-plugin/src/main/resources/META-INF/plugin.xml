@@ -1,15 +1,15 @@
 <idea-plugin url="https://github.com/camel-idea-plugin/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
-  <version>0.8.6</version>
-  <vendor email="users@apache.camel.org" url="http://camel.apache.org">Apache Camel</vendor>
+  <version>0.9.5</version>
+  <vendor email="users@apache.camel.org" url="https://github.com/camel-idea-plugin/camel-idea-plugin">Apache Camel</vendor>
 
   <description><![CDATA[
       Plugin for Intellij IDEA to provide a set of Apache Camel related capabilities to the code editor.
     ]]></description>
 
   <change-notes><![CDATA[
-      v.0.8.6
+      v.0.9.5
       <ul>
         <li>Bug fixes</li>
       </ul>
@@ -17,7 +17,7 @@
   </change-notes>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="212"/>
+  <idea-version since-build="223"/>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
@@ -39,9 +39,13 @@
   <applicationListeners>
     <listener class="com.github.cameltooling.idea.CamelPluginStartup" topic="com.intellij.openapi.project.ProjectManagerListener"/>
   </applicationListeners>
+  <projectListeners>
+    <listener class="com.github.cameltooling.idea.CamelPluginStartup" topic="com.intellij.openapi.roots.ModuleRootListener"/>
+  </projectListeners>
 
   <extensions defaultExtensionNs="com.intellij">
     <notificationGroup id="Apache Camel" displayType="BALLOON"/>
+    <postStartupActivity implementation="com.github.cameltooling.idea.CamelPluginStartup"/>
   </extensions>
 
   <extensions defaultExtensionNs="org.intellij.intelliLang">
@@ -71,6 +75,7 @@
     <!-- services which can be requested from IDEA api -->
     <projectService serviceImplementation="com.github.cameltooling.idea.service.CamelCatalogService"/>
     <projectService serviceImplementation="com.github.cameltooling.idea.service.CamelService"/>
+    <projectService serviceImplementation="com.github.cameltooling.idea.service.KameletService"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.IdeaUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.CamelIdeaUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.service.CamelPreferenceService"/>
@@ -81,14 +86,14 @@
     <!-- allow code completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelJavaReferenceContributor" order="first"/>
     <completion.contributor language="XML" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelXmlReferenceContributor"/>
-    <!-- TODO: work in progress -->
-<!--    <completion.contributor language="Properties" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertiesContributor"/>-->
-    <completion.contributor language="any" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertiesOrYamlFileReferenceContributor" order="before javaClassReference"/>
+    <completion.contributor language="Properties" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertiesFileReferenceContributor" order="before javaClassReference"/>
+    <completion.contributor language="yaml" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelYamlFileReferenceContributor" order="before javaClassReference"/>
 
     <!-- puts the Camel icon in the gutter for each line that starts a Camel route -->
     <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.github.cameltooling.idea.gutter.CamelRouteLineMarkerProvider"/>
     <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.github.cameltooling.idea.gutter.BeanInjectLineMarkerProvider"/>
     <codeInsight.lineMarkerProvider language="XML" implementationClass="com.github.cameltooling.idea.gutter.CamelRouteLineMarkerProvider"/>
+    <codeInsight.lineMarkerProvider language="yaml" implementationClass="com.github.cameltooling.idea.gutter.CamelRouteLineMarkerProvider"/>
 
     <!-- code completion of Camel property placeholders, eg {{foo}} style -->
     <completion.contributor language="any" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertyPlaceholderReferenceContributor"/>
@@ -117,9 +122,11 @@
     <!-- annotator to validate simple language -->
     <annotator language="JAVA" implementationClass="com.github.cameltooling.idea.annotator.CamelSimpleAnnotator"/>
     <annotator language="XML" implementationClass="com.github.cameltooling.idea.annotator.CamelSimpleAnnotator"/>
+    <annotator language="yaml" implementationClass="com.github.cameltooling.idea.annotator.CamelSimpleAnnotator"/>
     <!-- annotator to validate jsonpath language -->
     <annotator language="JAVA" implementationClass="com.github.cameltooling.idea.annotator.CamelJSonPathAnnotator"/>
     <annotator language="XML" implementationClass="com.github.cameltooling.idea.annotator.CamelJSonPathAnnotator"/>
+    <annotator language="yaml" implementationClass="com.github.cameltooling.idea.annotator.CamelJSonPathAnnotator"/>
     <!-- annotator to validate bean references by type -->
     <annotator language="JAVA" implementationClass="com.github.cameltooling.idea.annotator.BeanReferenceTypeAnnotator"/>
     <annotator language="XML" implementationClass="com.github.cameltooling.idea.annotator.BeanReferenceTypeAnnotator"/>
@@ -145,11 +152,9 @@
     <xdebugger.breakpointType implementation="com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointType"/>
     <programRunner id="Debug" implementation="com.github.cameltooling.idea.runner.debugger.CamelDebuggerRunner" order="first"/>
     <configurationType implementation="com.github.cameltooling.idea.runner.CamelSpringBootRunConfigurationType"/>
-    <configurationType implementation="com.github.cameltooling.idea.runner.CamelRunConfigurationType"/>
-<!--
-    <stepsBeforeRunProvider implementation="com.github.cameltooling.idea.runner.beforerun.CamelBeforeRunTasksProvider"/>
-    <stepsBeforeRunProvider implementation="com.github.cameltooling.idea.runner.beforerun.CamelSpringBootBeforeRunTasksProvider"/>
--->
+    <configurationType implementation="com.github.cameltooling.idea.runner.CamelMainRunConfigurationType"/>
+    <configurationType implementation="com.github.cameltooling.idea.runner.CamelQuarkusRunConfigurationType"/>
+    <java.programPatcher implementation="com.github.cameltooling.idea.runner.debugger.CamelDebuggerPatcher"/>
   </extensions>
 
 </idea-plugin>

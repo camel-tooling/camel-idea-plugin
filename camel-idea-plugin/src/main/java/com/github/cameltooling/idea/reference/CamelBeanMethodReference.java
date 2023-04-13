@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.JavaMethodUtils;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.ElementManipulators;
 import com.intellij.psi.PsiClass;
@@ -54,32 +53,32 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
         super(element, textRange);
         this.psiClass = psiClass;
         this.methodName = methodName;
-        this.methodNameOnly = getJavaMethodUtils().getMethodNameWithOutParameters(methodName);
+        this.methodNameOnly = JavaMethodUtils.getService().getMethodNameWithOutParameters(methodName);
     }
 
     @NotNull
     @Override
-    public ResolveResult[] multiResolve(boolean b) {
+    public ResolveResult @NotNull [] multiResolve(boolean b) {
         List<ResolveResult> results = new ArrayList<>();
 
         final PsiMethod[] methodsByName = getPsiClass().findMethodsByName(methodNameOnly, true);
-        for (PsiMethod psiMethod : getJavaMethodUtils().getBeanMethods(Arrays.asList(methodsByName))) {
-            if (getCamelIdeaUtils().isAnnotatedWithHandler(psiMethod)) {
+        for (PsiMethod psiMethod : JavaMethodUtils.getService().getBeanMethods(Arrays.asList(methodsByName))) {
+            if (CamelIdeaUtils.getService().isAnnotatedWithHandler(psiMethod)) {
                 return new ResolveResult[] {new PsiElementResolveResult(psiMethod)};
             }
             results.add(new PsiElementResolveResult(psiMethod));
         }
-        return results.toArray(new ResolveResult[results.size()]);
+        return results.toArray(new ResolveResult[0]);
     }
 
     @NotNull
     @Override
-    public Object[] getVariants() {
+    public Object @NotNull [] getVariants() {
         return new Object[0];
     }
 
     @Override
-    public PsiElement handleElementRename(String newElementName) throws IncorrectOperationException {
+    public PsiElement handleElementRename(@NotNull String newElementName) throws IncorrectOperationException {
         //Find all the method with the registered method name on it's class.
 
         final PsiMethod[] methodsByName = getPsiClass().findMethodsByName(methodNameOnly, true);
@@ -99,13 +98,5 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
 
     private PsiClass getPsiClass() {
         return psiClass;
-    }
-
-    private CamelIdeaUtils getCamelIdeaUtils() {
-        return ServiceManager.getService(CamelIdeaUtils.class);
-    }
-
-    private JavaMethodUtils getJavaMethodUtils() {
-        return ServiceManager.getService(JavaMethodUtils.class);
     }
 }

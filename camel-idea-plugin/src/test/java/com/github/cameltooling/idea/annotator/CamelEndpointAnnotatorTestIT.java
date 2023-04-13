@@ -21,11 +21,11 @@ import java.util.List;
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
 import com.intellij.lang.annotation.HighlightSeverity;
-import org.junit.Ignore;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Test Camel URI validation and the expected value is highlighted
- *
+ * <p>
  * TIP : Writing highlighting test can be tricky because if the highlight is one character off
  * it will fail, but the error messaged might still be correct. In this case it's likely the TextRange
  * is incorrect.
@@ -35,6 +35,12 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
     @Override
     protected String getTestDataPath() {
         return "src/test/resources/testData/annotator/";
+    }
+
+    @Nullable
+    @Override
+    protected String[] getMavenDependencies() {
+        return new String[]{CAMEL_CORE_MODEL_MAVEN_ARTIFACT};
     }
 
     public void testAnnotatorStringFormatValid() {
@@ -68,7 +74,6 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         myFixture.checkHighlighting(false, false, true, true);
     }
 
-    @Ignore
     public void testAnnotatorWithTheSameWordTwiceValidation() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaWithSameWordTwiceTestData());
         myFixture.checkHighlighting(false, false, true, true);
@@ -85,7 +90,6 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
     }
 
     public void testAnnotatorUnknownOptionWithConsumerAnnotationValidation() {
-        //assertTrue("Ignored until we fix the issue with running the test with SDK", true);
         myFixture.configureByText("AnnotatorTestData.java", getJavaUnknownOptionsConsumerAnnotationTestData());
         myFixture.checkHighlighting(false, false, true, true);
     }
@@ -100,15 +104,37 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         myFixture.checkHighlighting(false, false, true, true);
     }
 
-    @Ignore
     public void testAnnotatorIntegerPropertyValidation() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaInvalidIntegerPropertyTestData());
         myFixture.checkHighlighting(false, false, true, true);
     }
 
-    @Ignore
     public void testXmlAnnotatorIntegerPropertyValidation() {
         myFixture.configureByText("AnnotatorTestData.xml", getXmlInvalidIntegerPropertyTestData());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
+    public void testAnnotatorDeprecatedPropertyValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaDeprecatedPropertyTestData());
+        myFixture.checkHighlighting(false, false, true, true);
+
+        List<HighlightInfo> list = myFixture.doHighlighting();
+
+        System.out.println("list=" + list);
+        // find the warning from the highlights as checkWarning cannot do that for us for warnings
+        boolean found = list.stream().anyMatch(i -> i.getText().equals("cache")
+            && i.getDescription().equals("Deprecated option")
+            && i.getSeverity().equals(HighlightSeverity.WARNING));
+        assertTrue("Should find the warning", found);
+    }
+
+    public void testAnnotatorDurationPropertyValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaInvalidDurationPropertyTestData());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
+
+    public void testXmlAnnotatorDurationPropertyValidation() {
+        myFixture.configureByText("AnnotatorTestData.xml", getXmlInvalidDurationPropertyTestData());
         myFixture.checkHighlighting(false, false, true, true);
     }
 
@@ -236,7 +262,7 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
             + "        public void configure() throws Exception {\n"
-            + "            from(\"timer:trigger?delay=<error descr=\"Invalid integer value: foo\">foo</error>&<error descr=\"Unknown option\">foo</error>=bar\")\n"
+            + "            from(\"sql:foo?backoffErrorThreshold=<error descr=\"Invalid integer value: foo\">foo</error>&<error descr=\"Unknown option\">foo</error>=bar\")\n"
             + "                .to(\"file:test?allowNullBody=true&<error descr=\"Unknown option\">foo</error>=bar\")\n"
             + "        }\n"
             + "    }";
@@ -273,6 +299,7 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
 
     private String getJavaExpectedSymbolFunctionEndTestData() {
         return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "import org.apache.camel.Exchange;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
             + "        public void configure() throws Exception {\n"
             + "            from(\"direct:start\")\n"
@@ -308,7 +335,7 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
             + "        public void configure() throws Exception {\n"
-            + "            from(\"timer:trigger?delay=<error descr=\"Invalid integer value: ImNotANumber\">ImNotANumber</error>\")\n"
+            + "            from(\"sql:foo?backoffErrorThreshold=<error descr=\"Invalid integer value: ImNotANumber\">ImNotANumber</error>\")\n"
             + "                .to(\"file:outbox\");\n"
             + "        }\n"
             + "    }";
@@ -316,7 +343,34 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
 
     private String getXmlInvalidIntegerPropertyTestData() {
         return "<route id=\"generateOrder-route\">\n"
-            + "      <from uri=\"timer:trigger?delay=<error descr=\"Invalid integer value: ImNotANumber\">ImNotANumber</error>\"/>\n"
+            + "      <from uri=\"sql:foo?backoffErrorThreshold=<error descr=\"Invalid integer value: ImNotANumber\">ImNotANumber</error>\"/>\n"
+            + "      <to uri=\"file:outbox\"/>\n"
+            + "    </route>";
+    }
+
+    private String getJavaInvalidDurationPropertyTestData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger?delay=<error descr=\"Invalid duration value: ImNotADuration\">ImNotADuration</error>\")\n"
+            + "                .to(\"file:outbox\");\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getJavaDeprecatedPropertyTestData() {
+        return "import org.apache.camel.builder.RouteBuilder;\n"
+            + "public class MyRouteBuilder extends RouteBuilder {\n"
+            + "        public void configure() throws Exception {\n"
+            + "            from(\"timer:trigger\")\n"
+            + "                .to(\"bean:out?cache=true\");\n"
+            + "        }\n"
+            + "    }";
+    }
+
+    private String getXmlInvalidDurationPropertyTestData() {
+        return "<route id=\"generateOrder-route\">\n"
+            + "      <from uri=\"timer:trigger?delay=<error descr=\"Invalid duration value: ImNotADuration\">ImNotADuration</error>\"/>\n"
             + "      <to uri=\"file:outbox\"/>\n"
             + "    </route>";
     }

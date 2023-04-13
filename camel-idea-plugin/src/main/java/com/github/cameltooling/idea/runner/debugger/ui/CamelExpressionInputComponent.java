@@ -17,7 +17,6 @@
 package com.github.cameltooling.idea.runner.debugger.ui;
 
 import com.github.cameltooling.idea.language.CamelLanguages;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.editor.ex.util.EditorUtil;
 import com.intellij.openapi.keymap.KeymapUtil;
@@ -51,7 +50,7 @@ import java.util.stream.Collectors;
 public class CamelExpressionInputComponent extends EvaluationInputComponent {
     private final XDebuggerEditorBase myExpressionEditor;
     private final ExpressionInputForm myMainForm = new ExpressionInputForm();
-    private BorderLayoutPanel expressionPanel = JBUI.Panels.simplePanel();
+    private final BorderLayoutPanel expressionPanel = JBUI.Panels.simplePanel();
     private ComboBox<String> resultTypeCombo;
     private ComboBox<String> bodyMediaTypeCombo;
     private ComboBox<String> outputMediaTypeCombo;
@@ -61,7 +60,6 @@ public class CamelExpressionInputComponent extends EvaluationInputComponent {
                                          @Nullable String historyId,
                                          final @Nullable XSourcePosition sourcePosition,
                                          @Nullable XExpression expression,
-                                         @NotNull Disposable parentDisposable,
                                          boolean showHelp) {
         super(XDebuggerBundle.message("xdebugger.dialog.title.evaluate.expression"));
         myExpressionEditor = new XDebuggerExpressionComboBox(project, editorsProvider, historyId, sourcePosition, true, false) {

@@ -22,7 +22,6 @@ import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.properties.psi.impl.PropertyValueImpl;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiPolyadicExpression;
@@ -33,6 +32,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlElement;
 import com.intellij.psi.xml.XmlElementType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 /**
  * Validate if the URI contains a know Camel component and call the validateEndpoint method
@@ -48,10 +48,10 @@ abstract class AbstractCamelAnnotator implements Annotator {
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
-        if (ServiceManager.getService(element.getProject(), CamelService.class).isCamelPresent() && isEnabled()) {
+        if (element.getProject().getService(CamelService.class).isCamelPresent() && isEnabled()) {
             boolean accept = accept(element);
             if (accept) {
-                String text = getIdeaUtils().extractTextFromElement(element, true, false, false);
+                String text = IdeaUtils.getService().extractTextFromElement(element, true, false, false);
                 if (!StringUtils.isEmpty(text)) {
                     validateText(element, holder, text);
                 }
@@ -88,6 +88,8 @@ abstract class AbstractCamelAnnotator implements Annotator {
         // skip java doc noise
         if (JavaDocElementType.ALL_JAVADOC_ELEMENTS.contains(type)) {
             return false;
+        } else if (element instanceof YAMLKeyValue || element.getParent() instanceof YAMLKeyValue) {
+            return true;
         }
 
         boolean accept = false;
@@ -109,9 +111,5 @@ abstract class AbstractCamelAnnotator implements Annotator {
      * @param text - String to validate such as an Camel endpoint uri, or a Simple expression
      */
     abstract void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text);
-
-    private IdeaUtils getIdeaUtils() {
-        return ServiceManager.getService(IdeaUtils.class);
-    }
 
 }

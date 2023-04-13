@@ -16,13 +16,20 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
+import java.util.List;
+
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 
+/**
+ * {@code MessageReceivedListener} allows to be notified when suspended breakpoint node ids have been received.
+ */
 public interface MessageReceivedListener {
 
-    void onNewMessageReceived(CamelMessageInfo camelMessageInfo);
+    /**
+     * Calls when some suspended breakpoint node ids converted into {@link CamelMessageInfo} have been received.
+     *
+     * @param camelMessages the messages received are sorted by timestamp. It cannot be {@code null} or empty.
+     */
+    void onMessagesReceived(List<CamelMessageInfo> camelMessages);
 
-//    void onExceptionThrown(CamelMessageInfo camelMessageInfo, ObjectFieldDefinition exceptionThrown);
-//
-//    void onExecutionStopped(CamelMessageInfo camelMessageInfo, List<ObjectFieldDefinition> frame, String path, String internalPosition);
 }
