@@ -801,6 +801,11 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         case "YAML":
             final String url = virtualFile.getPresentableUrl();
             if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
+                /*
+                In Camel Quarkus, the response form camelContext.dumpRoutesAsXml() has sourceLocation attribute values
+                in form of classpath:myroutesfile.xml as opposed to file:/com/foo/bar/target/classes/myroutesfile.xml.
+                So we need to add both to the list of source locations. See issue #820.
+                 */
                 sourceLocations = List.of(
                     String.format("file:%s", url.replace("src/main/resources", "target/classes")),// file:/absolute/path/to/file.xml
                     String.format("classpath:%s", url.substring(url.lastIndexOf("src/main/resources/") + 19 ))
