@@ -802,7 +802,8 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             final String url = virtualFile.getPresentableUrl();
             if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
                 sourceLocations = List.of(
-                    String.format("file:%s", url.replace("src/main/resources", "target/classes")) // file:/absolute/path/to/file.xml
+                    String.format("file:%s", url.replace("src/main/resources", "target/classes")),// file:/absolute/path/to/file.xml
+                    String.format("classpath:%s", url.substring(url.lastIndexOf("src/main/resources/") + 19 ))
                 );
             } else { //Then it must be a Jar
                 sourceLocations = List.of(String.format("classpath:%s", url.substring(url.lastIndexOf("!") + 2)));
