@@ -807,8 +807,8 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 So we need to add both to the list of source locations. See issue #820.
                  */
                 sourceLocations = List.of(
-                    String.format("file:%s", url.replace("src/main/resources", "target/classes")),// file:/absolute/path/to/file.xml
-                    String.format("classpath:%s", url.substring(url.lastIndexOf("src/main/resources/") + 19 ))
+                    String.format("file:%s", url.replace("src/main/resources", "target/classes")), // file:/absolute/path/to/file.xml
+                    String.format("classpath:%s", url.substring(url.lastIndexOf("src/main/resources/") + 19))
                 );
             } else { //Then it must be a Jar
                 sourceLocations = List.of(String.format("classpath:%s", url.substring(url.lastIndexOf("!") + 2)));
@@ -899,7 +899,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 String url = virtualFile.getPresentableUrl();
                 if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
                     if (filePath.startsWith("classpath:")) {
-                        url = String.format("classpath:%s", url.substring(url.lastIndexOf("src/main/resources/") + 19 )); //classpath:relative/path/from/resources/file.xml
+                        url = String.format("classpath:%s", url.substring(url.lastIndexOf("src/main/resources/") + 19)); //classpath:relative/path/from/resources/file.xml
                     } else {
                         url = String.format("file:%s", url.replace("src/main/resources", "target/classes")); // file:/absolute/path/to/file.xml
                     }
