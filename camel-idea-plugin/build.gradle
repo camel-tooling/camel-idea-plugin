@@ -65,7 +65,7 @@ dependencies {
     implementation "org.apache.camel.kamelets:camel-kamelets:${camelKameletVersion}"
     implementation "io.github.classgraph:classgraph:4.8.157"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2"
-    implementation "io.fabric8:kubernetes-model-apiextensions:6.5.1"
+    implementation "io.fabric8:kubernetes-model-apiextensions:6.6.0"
 
     testImplementation "org.apache.camel:camel-core:${camelVersion}"
     testImplementation "org.apache.camel.springboot:camel-spring-boot:${camelVersion}"
