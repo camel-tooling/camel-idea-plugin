@@ -1,8 +1,9 @@
 #!/bin/bash
 
-for v in "2022.1.4" "2022.2.4" "2022.3.2"; do
+for v in "2022.2.5" "2022.3.3" "2023.1.1"; do
     echo "## Building with version $v..."
-    ./gradlew --no-daemon -PideaVersion="$v" clean build
+    ./gradlew --no-daemon clean
+    ./gradlew --no-daemon --no-parallel -PideaVersion="$v" build
 
     status=$?
     if [[ $status -ne 0 ]]; then
