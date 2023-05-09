@@ -98,6 +98,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private static final int MAX_RETRIES = 30;
     private static final String BACKLOG_DEBUGGER_LOGGING_LEVEL = "TRACE";
     private static final long FALLBACK_TIMEOUT = Long.MAX_VALUE - 1;
+    private static final String MAIN_RESOURCES_RELATIVE_PATH = "src/main/resources/";
     /**
      * All breakpoints to add that are kept in memory to register them on connect or re-connect.
      */
@@ -803,12 +804,14 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
                 /*
                 In Camel Quarkus, the response form camelContext.dumpRoutesAsXml() has sourceLocation attribute values
-                in form of classpath:myroutesfile.xml as opposed to file:/com/foo/bar/target/classes/myroutesfile.xml.
+                in form of classpath:myroutesfile.xml or file:src/main/resources/myroutesfile.xml as opposed to
+                file:/com/foo/bar/target/classes/myroutesfile.xml.
                 So we need to add both to the list of source locations. See issue #820.
                  */
                 sourceLocations = List.of(
                     String.format("file:%s", url.replace("src/main/resources", "target/classes")), // file:/absolute/path/to/file.xml
-                    String.format("classpath:%s", url.substring(url.lastIndexOf("src/main/resources/") + 19))
+                    String.format("file:%s", url.substring(url.lastIndexOf(MAIN_RESOURCES_RELATIVE_PATH))),  // file:/relative/path/to/file.xml
+                    String.format("classpath:%s", url.substring(url.lastIndexOf(MAIN_RESOURCES_RELATIVE_PATH) + MAIN_RESOURCES_RELATIVE_PATH.length()))
                 );
             } else { //Then it must be a Jar
                 sourceLocations = List.of(String.format("classpath:%s", url.substring(url.lastIndexOf("!") + 2)));
@@ -896,17 +899,23 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 return null;
             }
             for (VirtualFile virtualFile : virtualFiles) {
+                Set<String> potentialURLs;
                 String url = virtualFile.getPresentableUrl();
                 if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
                     if (filePath.startsWith("classpath:")) {
-                        url = String.format("classpath:%s", url.substring(url.lastIndexOf("src/main/resources/") + 19)); //classpath:relative/path/from/resources/file.xml
+                        //classpath:relative/path/from/resources/file.xml
+                        potentialURLs = Set.of(String.format("classpath:%s", url.substring(url.lastIndexOf(MAIN_RESOURCES_RELATIVE_PATH) + MAIN_RESOURCES_RELATIVE_PATH.length())));
                     } else {
-                        url = String.format("file:%s", url.replace("src/main/resources", "target/classes")); // file:/absolute/path/to/file.xml
+                        potentialURLs = Set.of(
+                            // file:/absolute/path/to/file.xml
+                            String.format("file:%s", url.replace("src/main/resources", "target/classes")),
+                            // file:/relative/path/to/file.xml
+                            String.format("file:%s", url.substring(url.lastIndexOf(MAIN_RESOURCES_RELATIVE_PATH))));
                     }
                 } else { //Then it must be a Jar
-                    url = String.format("classpath:%s", url.substring(url.lastIndexOf("!") + 2));
+                    potentialURLs = Set.of(String.format("classpath:%s", url.substring(url.lastIndexOf("!") + 2)));
                 }
-                if (filePath.equals(url)) {
+                if (potentialURLs.contains(filePath)) {
                     //We found our file, let's get a source position
                     XSourcePosition position = XDebuggerUtil.getInstance().createPosition(virtualFile, Integer.parseInt(lineNumber) - 1);
                     Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
