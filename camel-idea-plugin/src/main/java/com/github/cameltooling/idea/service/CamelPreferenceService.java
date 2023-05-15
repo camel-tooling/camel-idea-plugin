@@ -43,8 +43,9 @@ import org.jetbrains.annotations.NotNull;
     storages = {@Storage("apachecamelplugin.xml")})
 public class CamelPreferenceService implements PersistentStateComponent<CamelPreferenceService>, Disposable {
 
+    // Use a specific icon name to prevent naming collision with the Gradle plugin
     @Transient
-    public static final Icon CAMEL_ICON = IconLoader.getIcon("/META-INF/pluginIcon.svg", CamelPreferenceService.class);
+    public static final Icon CAMEL_ICON = IconLoader.getIcon("/META-INF/camelPluginIcon.svg", CamelPreferenceService.class);
     @Transient
     private static final String[] DEFAULT_IGNORE_PROPERTIES = {
         // ignore java and logger prefixes
