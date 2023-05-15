@@ -16,20 +16,17 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointHandler;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.debugger.DefaultDebugEnvironment;
 import com.intellij.debugger.engine.DebugProcessImpl;
-import com.intellij.debugger.engine.JavaDebugProcess;
 import com.intellij.debugger.impl.DebuggerSession;
 import com.intellij.debugger.impl.GenericDebuggerRunner;
 import com.intellij.debugger.ui.tree.render.BatchEvaluator;
-import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.configurations.RemoteConnection;
@@ -53,9 +50,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration;
 
 public class CamelDebuggerRunner extends GenericDebuggerRunner {
-
-    public static final String JAVA_CONTEXT = "Java";
-    public static final String CAMEL_CONTEXT = "Camel";
 
     private static final Logger LOG = Logger.getInstance(CamelDebuggerRunner.class);
     @NonNls
@@ -86,8 +80,9 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
                 if (camelService != null) {
                     boolean isDebug = executorId.equals(DefaultDebugExecutor.EXECUTOR_ID);
                     boolean isCamelPresent = camelService.isCamelPresent();
-                    boolean canRun = isDebug && isCamelPresent;
-                    LOG.debug("Executor ID is " + executorId + " ; Camel present = " + camelService.isCamelPresent() + " ; canRun is " + canRun);
+                    boolean hasBreakPoints = CamelBreakpointHandler.hasBreakpoints(project);
+                    boolean canRun = isDebug && isCamelPresent && hasBreakPoints;
+                    LOG.debug("Executor ID is %s ; Camel present = %s ; Camel breakpoints present = %s ; canRun is %s".formatted(executorId, isCamelPresent, hasBreakPoints, canRun));
                     return canRun;
                 }
             } catch (Exception e) {
@@ -139,27 +134,7 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
                 public XDebugProcess start(@NotNull XDebugSession session) {
                     final XDebugSessionImpl sessionImpl = (XDebugSessionImpl) session;
                     final ExecutionResult executionResult = debugProcess.getExecutionResult();
-                    final Map<String, XDebugProcess> context = new HashMap<>();
-                    final ContextAwareDebugProcess contextAwareDebugProcess = new ContextAwareDebugProcess(session, executionResult.getProcessHandler(), context, JAVA_CONTEXT);
-
-                    debuggerSession.getContextManager().addListener((newContext, event) -> contextAwareDebugProcess.setContext(JAVA_CONTEXT));
-
-                    //Init Java Debug Process
-                    sessionImpl.addExtraActions(executionResult.getActions());
-                    if (executionResult instanceof DefaultExecutionResult) {
-                        sessionImpl.addRestartActions(((DefaultExecutionResult) executionResult).getRestartActions());
-                    }
-                    final JavaDebugProcess javaDebugProcess = JavaDebugProcess.create(session, debuggerSession);
-                    final CamelDebuggerSession camelDebuggerSession = new CamelDebuggerSession(project, session, javaDebugProcess.getProcessHandler());
-                    camelDebuggerSession.addMessageReceivedListener(messages -> contextAwareDebugProcess.setContext(CAMEL_CONTEXT));
-
-                    //Init Camel Debug Process
-                    final CamelDebugProcess camelDebugProcess = new CamelDebugProcess(session, camelDebuggerSession);
-
-                    //Register All Processes
-                    context.put(JAVA_CONTEXT, javaDebugProcess);
-                    context.put(CAMEL_CONTEXT, camelDebugProcess);
-                    return contextAwareDebugProcess;
+                    return ContextAwareDebugProcess.createDebugProcess(session, project, debuggerSession, sessionImpl, executionResult);
                 }
             }).getRunContentDescriptor();
         } else {
