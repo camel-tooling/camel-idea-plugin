@@ -50,6 +50,7 @@ import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.plugins.gradle.service.execution.GradleRunConfiguration;
 
 public class CamelDebuggerRunner extends GenericDebuggerRunner {
 
@@ -70,6 +71,11 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
         CamelPreferenceService preferenceService = CamelPreferenceService.getService();
         if (!preferenceService.isEnableCamelDebugger()) {
+            return false;
+        }
+        if (profile instanceof GradleRunConfiguration) {
+            // GradleRunConfiguration must be excluded otherwise it won't be possible to debug a gradle task
+            // see https://github.com/camel-tooling/camel-idea-plugin/issues/824
             return false;
         }
         if (profile instanceof RunConfigurationBase) {

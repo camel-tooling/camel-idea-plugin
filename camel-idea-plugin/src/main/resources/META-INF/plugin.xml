@@ -11,6 +11,7 @@
   <change-notes><![CDATA[
       v.0.9.7
       <ul>
+        <li>Fixes the bug preventing the debugging of a Gradle task</li>
         <li>Bug fixes</li>
       </ul>
     ]]>
@@ -32,6 +33,7 @@
   <depends>com.intellij.java</depends>
 
   <depends>org.jetbrains.idea.maven</depends>
+  <depends>com.intellij.gradle</depends>
 
   <depends optional="true" config-file="org.apache.camel-intelliLang.xml">org.intellij.intelliLang</depends>
 

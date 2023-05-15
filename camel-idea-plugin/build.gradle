@@ -26,7 +26,7 @@ intellij {
     version = ideaVersion
     downloadSources = true
     type = project.hasProperty('intellij_type') ? project.intellij_type : 'IC'
-    plugins = ['java', 'java-i18n', 'properties', 'yaml', 'maven', 'xpath']
+    plugins = ['java', 'java-i18n', 'properties', 'yaml', 'maven', 'xpath', 'gradle']
 }
 
 // to support IDEA 2022 onwards
@@ -89,8 +89,6 @@ test {
 //        showStandardStreams = true
 //    }
 // End: To get Grape log messages
-// To enable the remote debug
-//    jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005'
 }
 
 runIde {
@@ -101,6 +99,4 @@ runIde {
 //        showStandardStreams = true
 //    }
 // End: To get Grape log messages
-// To enable the remote debug
-//    jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005'
 }
