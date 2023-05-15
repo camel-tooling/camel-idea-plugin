@@ -56,7 +56,7 @@ public class PropertiesPropertyPlaceholdersSmartCompletion implements CamelPrope
         final boolean present = preferenceService.getExcludePropertyFiles()
             .stream()
             .anyMatch(s -> !s.isEmpty() && FilenameUtils.wildcardMatch(filename, s));
-        return (!present) && (filename.endsWith(".properties"));
+        return !present && filename.endsWith(".properties");
     }
 
     @Override

@@ -164,7 +164,7 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
                 boolean onlyProduce = model.isProducerOnly();
                 boolean both = !onlyConsume && !onlyProduce;
 
-                if (both || (consumerOnly && onlyConsume) || (!consumerOnly && onlyProduce)) {
+                if (both || consumerOnly && onlyConsume || !consumerOnly && onlyProduce) {
                     names.add(name);
                 }
             }

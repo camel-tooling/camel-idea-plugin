@@ -202,7 +202,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
     private void extractMapValue(EndpointValidationResult result, Map<String, String> validationMap,
                                  String fromElement, @NotNull PsiElement element, @NotNull AnnotationHolder holder,
                                  CamelAnnotatorEndpointMessage<Map.Entry<String, String>> msg) {
-        if ((!result.isSuccess()) && validationMap != null) {
+        if (!result.isSuccess() && validationMap != null) {
 
             for (Map.Entry<String, String> entry : validationMap.entrySet()) {
                 String propertyValue = entry.getValue();

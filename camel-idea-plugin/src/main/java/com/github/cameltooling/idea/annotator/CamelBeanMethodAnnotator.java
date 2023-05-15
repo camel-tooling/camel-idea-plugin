@@ -101,7 +101,7 @@ public class CamelBeanMethodAnnotator implements Annotator {
                 return;
             }
 
-            if ((matchMethods.size() - privateMethods) > 1 && (!isAnnotatedWithHandler)) {
+            if ((matchMethods.size() - privateMethods) > 1 && !isAnnotatedWithHandler) {
                 errorMessage = String.format(METHOD_HAS_AMBIGUOUS_ACCESS, methodNameWithParameters, psiClass.getQualifiedName());
             } else {
                 errorMessage = allPrivates ? String.format(METHOD_HAS_PRIVATE_ACCESS, methodNameWithParameters, psiClass.getQualifiedName()) : null;

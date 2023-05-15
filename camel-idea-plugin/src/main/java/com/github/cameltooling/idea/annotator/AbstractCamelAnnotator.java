@@ -74,7 +74,7 @@ abstract class AbstractCamelAnnotator implements Annotator {
             return true;
         } else {
             final PsiPolyadicExpression parentOfType = PsiTreeUtil.getParentOfType(element, PsiPolyadicExpression.class);
-            if (((element instanceof PsiLiteralExpression) || (element instanceof PropertyValueImpl)) && (parentOfType == null)) {
+            if ((element instanceof PsiLiteralExpression || element instanceof PropertyValueImpl) && parentOfType == null) {
                 return true;
             }
         }
