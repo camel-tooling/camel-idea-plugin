@@ -72,6 +72,10 @@ lengths, if/try depths, etc...
         <property name="file" value="${config_loc}/suppressions.xml"/>
     </module>
 
+    <module name="LineLength">
+        <property name="max" value="200"/>
+    </module>
+
     <module name="TreeWalker">
 
 
@@ -132,9 +136,6 @@ lengths, if/try depths, etc...
         </module>
         <module name="ExecutableStatementCount">
             <property name="max" value="100"/>
-        </module>
-        <module name="LineLength">
-            <property name="max" value="200"/>
         </module>
         <module name="MethodLength">
             <property name="max" value="200"/>

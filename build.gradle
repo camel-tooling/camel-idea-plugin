@@ -19,7 +19,7 @@ allprojects {
     apply plugin: 'checkstyle'
 
     checkstyle {
-        toolVersion = '8.23'
+        toolVersion = '10.11.0'
         configDirectory = file("$rootProject.projectDir/config/checkstyle")
     }
     

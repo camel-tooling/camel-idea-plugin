@@ -98,7 +98,7 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
     @Override
     public boolean isInsideCamelRoute(PsiElement element, boolean excludeRouteStart) {
         XmlTag tag = PsiTreeUtil.getParentOfType(element, XmlTag.class);
-        if (tag == null || (excludeRouteStart && isCamelRouteStartTag(tag))) {
+        if (tag == null || excludeRouteStart && isCamelRouteStartTag(tag)) {
             return false;
         }
         return getIdeaUtils().findFirstParent(tag, false, this::isCamelRouteTag, PsiFile.class::isInstance) != null;

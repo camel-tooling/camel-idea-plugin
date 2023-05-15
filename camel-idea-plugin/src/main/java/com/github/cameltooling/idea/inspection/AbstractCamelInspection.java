@@ -247,7 +247,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
                                  String fromElement, PsiElement element, final @NotNull ProblemsHolder holder,
                                  boolean isOnTheFly, CamelAnnotatorEndpointMessage msg) {
 
-        if ((!result.isSuccess()) && validationSet != null) {
+        if (!result.isSuccess() && validationSet != null) {
             for (String entry : validationSet) {
                 String desc = summaryErrorMessage(result, entry, msg);
                 holder.registerProblem(element, desc);
@@ -259,7 +259,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
                                  String fromElement, @NotNull PsiElement element, final @NotNull ProblemsHolder holder,
                                  boolean isOnTheFly, CamelAnnotatorEndpointMessage msg) {
 
-        if ((!result.isSuccess()) && validationMap != null) {
+        if (!result.isSuccess() && validationMap != null) {
             for (Map.Entry<String, String> entry : validationMap.entrySet()) {
                 String desc = summaryErrorMessage(result, entry, msg);
                 holder.registerProblem(element, desc);
