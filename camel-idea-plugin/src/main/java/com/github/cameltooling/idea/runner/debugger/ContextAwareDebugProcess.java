@@ -16,9 +16,14 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
+import com.intellij.debugger.engine.JavaDebugProcess;
+import com.intellij.debugger.impl.DebuggerSession;
+import com.intellij.execution.DefaultExecutionResult;
+import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ExecutionConsole;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.project.Project;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XSourcePosition;
@@ -27,6 +32,7 @@ import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
 import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.frame.XSuspendContext;
 import com.intellij.xdebugger.frame.XValueMarkerProvider;
+import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.intellij.xdebugger.stepping.XSmartStepIntoHandler;
 import com.intellij.xdebugger.ui.XDebugTabLayouter;
 import org.jetbrains.annotations.NotNull;
@@ -37,17 +43,21 @@ import javax.swing.event.HyperlinkListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-public class ContextAwareDebugProcess extends XDebugProcess {
-    private final ProcessHandler processHandler;
-    private final Map<String, XDebugProcess> debugProcesses;
-    private String currentContext;
-    private final String defaultContext;
+import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerContext.CAMEL;
+import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerContext.JAVA;
 
-    public ContextAwareDebugProcess(@NotNull XDebugSession session, ProcessHandler processHandler,
-                                    Map<String, XDebugProcess> debugProcesses, String defaultContext) {
+public final class ContextAwareDebugProcess extends XDebugProcess {
+    private final ProcessHandler processHandler;
+    private final Map<CamelDebuggerContext, XDebugProcess> debugProcesses;
+    private CamelDebuggerContext currentContext;
+    private final CamelDebuggerContext defaultContext;
+
+    private ContextAwareDebugProcess(@NotNull XDebugSession session, ProcessHandler processHandler,
+                                    Map<CamelDebuggerContext, XDebugProcess> debugProcesses, CamelDebuggerContext defaultContext) {
         super(session);
         this.processHandler = processHandler;
         this.debugProcesses = debugProcesses;
@@ -55,13 +65,12 @@ public class ContextAwareDebugProcess extends XDebugProcess {
         this.defaultContext = defaultContext;
     }
 
-    public void setContext(String context) {
+    public void setContext(CamelDebuggerContext context) {
         this.currentContext = context;
     }
 
     @Override
-    @NotNull
-    public XBreakpointHandler<?>[] getBreakpointHandlers() {
+    public XBreakpointHandler<?>@NotNull[] getBreakpointHandlers() {
         List<XBreakpointHandler<?>> breakpointHandlers = new ArrayList<>();
         final Collection<XDebugProcess> values = debugProcesses.values();
         for (XDebugProcess value : values) {
@@ -207,7 +216,7 @@ public class ContextAwareDebugProcess extends XDebugProcess {
         return debugProcesses.get(defaultContext);
     }
 
-    public <T extends XDebugProcess> T getDebugProcess(String name, Class<T> type) {
+    public <T extends XDebugProcess> T getDebugProcess(CamelDebuggerContext name, Class<T> type) {
         return type.cast(debugProcesses.get(name));
     }
 
@@ -216,7 +225,28 @@ public class ContextAwareDebugProcess extends XDebugProcess {
         return debugProcess != null ? debugProcess : getDefaultDebugProcess();
     }
 
-    public Map<String, XDebugProcess> getAllDebugProcesses() {
-        return debugProcesses;
+
+    @NotNull
+    static XDebugProcess createDebugProcess(@NotNull XDebugSession session, Project project, DebuggerSession debuggerSession, XDebugSessionImpl sessionImpl, ExecutionResult executionResult) {
+        final Map<CamelDebuggerContext, XDebugProcess> context = new EnumMap<>(CamelDebuggerContext.class);
+        final ContextAwareDebugProcess contextAwareDebugProcess = new ContextAwareDebugProcess(session, executionResult.getProcessHandler(), context, JAVA);
+
+        debuggerSession.getContextManager().addListener((newContext, event) -> contextAwareDebugProcess.setContext(JAVA));
+
+        sessionImpl.addExtraActions(executionResult.getActions());
+        if (executionResult instanceof DefaultExecutionResult defaultExecutionResult) {
+            sessionImpl.addRestartActions(defaultExecutionResult.getRestartActions());
+        }
+        final JavaDebugProcess javaDebugProcess = JavaDebugProcess.create(session, debuggerSession);
+        final CamelDebuggerSession camelDebuggerSession = new CamelDebuggerSession(project, session, javaDebugProcess.getProcessHandler());
+        camelDebuggerSession.addMessageReceivedListener(messages -> contextAwareDebugProcess.setContext(CAMEL));
+
+        //Init Camel Debug Process
+        final CamelDebugProcess camelDebugProcess = new CamelDebugProcess(session, camelDebuggerSession);
+
+        //Register All Processes
+        context.put(JAVA, javaDebugProcess);
+        context.put(CAMEL, camelDebugProcess);
+        return contextAwareDebugProcess;
     }
 }

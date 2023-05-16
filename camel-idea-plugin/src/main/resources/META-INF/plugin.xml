@@ -12,6 +12,7 @@
       v.0.9.7
       <ul>
         <li>Fixes the bug preventing the debugging of a Gradle task</li>
+        <li>Add Camel Debugger support to Gradle project</li>
         <li>Bug fixes</li>
       </ul>
     ]]>
@@ -153,6 +154,8 @@
     <!-- Debugger -->
     <xdebugger.breakpointType implementation="com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointType"/>
     <programRunner id="Debug" implementation="com.github.cameltooling.idea.runner.debugger.CamelDebuggerRunner" order="first"/>
+    <programRunner id="ExternalSystemTaskDebugRunner" implementation="com.github.cameltooling.idea.runner.debugger.CamelExternalSystemTaskDebugRunner" order="first"/>
+    <projectTaskRunner implementation="com.github.cameltooling.idea.runner.debugger.CamelProjectTaskPatcher" order="first"/>
     <configurationType implementation="com.github.cameltooling.idea.runner.CamelSpringBootRunConfigurationType"/>
     <configurationType implementation="com.github.cameltooling.idea.runner.CamelMainRunConfigurationType"/>
     <configurationType implementation="com.github.cameltooling.idea.runner.CamelQuarkusRunConfigurationType"/>

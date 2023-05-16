@@ -17,6 +17,11 @@
 package com.github.cameltooling.idea.runner.debugger.breakpoint;
 
 import com.github.cameltooling.idea.runner.debugger.CamelDebuggerSession;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
+import com.intellij.xdebugger.XDebuggerManager;
 import com.intellij.xdebugger.breakpoints.XBreakpointHandler;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint;
@@ -38,5 +43,21 @@ public class CamelBreakpointHandler extends XBreakpointHandler<XLineBreakpoint<X
     @Override
     public void unregisterBreakpoint(@NotNull XLineBreakpoint<XBreakpointProperties<?>> xBreakpoint, boolean temporary) {
         debuggerSession.removeBreakpoint(xBreakpoint);
+    }
+
+    /**
+     * Indicates whether the given project has Camel breakpoints.
+     *
+     * @param project the project to check
+     * @return {@code true} if at least one Camel breakpoint exists, {@code false} otherwise or
+     * the method is called .
+     */
+    public static boolean hasBreakpoints(Project project) {
+        return ApplicationManager.getApplication().runReadAction(
+            (Computable<Boolean>) () -> !XDebuggerManager.getInstance(project)
+                .getBreakpointManager()
+                .getBreakpoints(CamelBreakpointType.class)
+                .isEmpty()
+        );
     }
 }

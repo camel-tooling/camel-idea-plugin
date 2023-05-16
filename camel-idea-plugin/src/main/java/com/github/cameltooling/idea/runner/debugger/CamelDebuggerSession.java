@@ -88,6 +88,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerContext.CAMEL;
 import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget.BODY;
 import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget.EXCHANGE_PROPERTY;
 import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget.MESSAGE_HEADER;
@@ -453,7 +454,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
     public CamelDebugProcess getCamelDebugProcess() {
         ContextAwareDebugProcess debugProcess = (ContextAwareDebugProcess) xDebugSession.getDebugProcess();
-        return debugProcess.getDebugProcess(CamelDebuggerRunner.CAMEL_CONTEXT, CamelDebugProcess.class);
+        return debugProcess.getDebugProcess(CAMEL, CamelDebugProcess.class);
     }
 
     /**
@@ -563,10 +564,14 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         }
     }
 
-    private JMXConnector getLocalJavaProcessJMXConnector() {
+    /**
+     * @return the {@link JMXConnector} corresponding to the Java process. In case the process id
+     * cannot be found, it calls {@link #getJMXConnectorFromServiceURL()} as fallback.
+     */
+    private JMXConnector getJMXConnectorFromLocalJavaProcess() {
         final String javaProcessPID = getPID(javaProcessHandler);
         if (javaProcessPID == null) {
-            return null;
+            return getJMXConnectorFromServiceURL();
         }
         try {
             final VirtualMachine vm = VirtualMachine.attach(javaProcessPID);
@@ -589,15 +594,21 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         if (CamelRuntime.getCamelRuntime(project) == CamelRuntime.QUARKUS) {
             // In case of Quarkus, the application runs in a forked process such that the JMXConnector needs to be
             // retrieved from a URL corresponding to a remote process
-            try {
-                return JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi/camel"));
-            } catch (Exception e) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Could not retrieve the JMX API connector", e);
-                }
+            return getJMXConnectorFromServiceURL();
+        }
+        return getJMXConnectorFromLocalJavaProcess();
+    }
+
+    @Nullable
+    private static JMXConnector getJMXConnectorFromServiceURL() {
+        try {
+            return JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi/camel"));
+        } catch (Exception e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Could not retrieve the JMX API connector", e);
             }
         }
-        return getLocalJavaProcessJMXConnector();
+        return null;
     }
 
     private static String getPID(ProcessHandler handler) {
@@ -809,7 +820,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 So we need to add both to the list of source locations. See issue #820.
                  */
                 sourceLocations = List.of(
-                    String.format("file:%s", url.replace("src/main/resources", "target/classes")), // file:/absolute/path/to/file.xml
+                    // file:/absolute/path/to/file.xml
+                    String.format("file:%s", url.replace("src/main/resources", "target/classes")), // maven
+                    String.format("file:%s", url.replace("src/main/resources", "build/resources/main")), // gradle
                     String.format("file:%s", url.substring(url.lastIndexOf(MAIN_RESOURCES_RELATIVE_PATH))),  // file:/relative/path/to/file.xml
                     String.format("classpath:%s", url.substring(url.lastIndexOf(MAIN_RESOURCES_RELATIVE_PATH) + MAIN_RESOURCES_RELATIVE_PATH.length()))
                 );
@@ -908,7 +921,8 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                     } else {
                         potentialURLs = Set.of(
                             // file:/absolute/path/to/file.xml
-                            String.format("file:%s", url.replace("src/main/resources", "target/classes")),
+                            String.format("file:%s", url.replace("src/main/resources", "target/classes")), // maven
+                            String.format("file:%s", url.replace("src/main/resources", "build/resources/main")), // gradle
                             // file:/relative/path/to/file.xml
                             String.format("file:%s", url.substring(url.lastIndexOf(MAIN_RESOURCES_RELATIVE_PATH))));
                     }
@@ -932,7 +946,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         Map<String, PsiElement> breakpointElement = null;
         String breakpointId;
         PsiElement psiElement = null;
-
+        if (position == null) {
+            return null;
+        }
         VirtualFile file = position.getFile();
         switch (file.getFileType().getName()) {
         case "XML":
