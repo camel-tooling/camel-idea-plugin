@@ -159,59 +159,32 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
      */
     private static void patchGradleRunConfigurationOnDebug(Project project, GradleRunConfiguration configuration) {
         JavaParameters parameters = new JavaParameters();
-        File moduleRootDir = getModuleRootDir(configuration);
-        if (moduleRootDir != null) {
+        ExternalSystemTaskExecutionSettings settings = configuration.getSettings();
+        File moduleRootDir = new File(settings.getExternalProjectPath());
+        if (moduleRootDir.exists()) {
             parameters.setWorkingDirectory(moduleRootDir);
+        } else {
+            LOG.warn("The external project path %s doesn't exist".formatted(settings.getExternalProjectPath()));
         }
-        String sScriptParametersBefore = configuration.getSettings().getScriptParameters();
+        parameters.getProgramParametersList().addAll(settings.getTaskNames());
+        String sScriptParametersBefore = settings.getScriptParameters();
         parameters.getProgramParametersList().addAll(Arrays.asList(sScriptParametersBefore.split(" ")));
         patchJavaParametersOnDebug(project, ExecutionMode.GRADLE_GENERIC, parameters);
         Map<String, String> env = parameters.getEnv();
         if (env.isEmpty()) {
             return;
         }
-        Map<String, String> before = configuration.getSettings().getEnv();
+        Map<String, String> before = settings.getEnv();
         // The map from getEnv() is immutable so let's create a new map
-        Map<String, String> after = new HashMap<>(configuration.getSettings().getEnv());
+        Map<String, String> after = new HashMap<>(settings.getEnv());
         after.putAll(env);
-        configuration.getSettings().setEnv(after);
-        configuration.getSettings().setScriptParameters(String.join(" ", parameters.getProgramParametersList().getParameters()));
+        settings.setEnv(after);
+        settings.setScriptParameters(String.join(" ", parameters.getProgramParametersList().getParameters()));
         registerCleanUpTask(project, () -> {
             LOG.debug("Restore the environment variables and script parameters");
-            configuration.getSettings().setEnv(before);
-            configuration.getSettings().setScriptParameters(sScriptParametersBefore);
+            settings.setEnv(before);
+            settings.setScriptParameters(sScriptParametersBefore);
         });
-    }
-
-    /**
-     * @param configuration the configuration from which the root directory of the module is extracted.
-     * @return the inferred root directory of the module if it was possible, {@code null} otherwise.
-     */
-    private static @Nullable File getModuleRootDir(GradleRunConfiguration configuration) {
-        ExternalSystemTaskExecutionSettings settings = configuration.getSettings();
-        File result = new File(settings.getExternalProjectPath());
-        if (!result.exists()) {
-            LOG.warn("The external project path doesn't exist");
-            return null;
-        }
-        for (String taskName : settings.getTaskNames()) {
-            if (taskName.startsWith("-") || taskName.startsWith("\"")) {
-                continue;
-            }
-            if (taskName.startsWith(":")) {
-                taskName = taskName.substring(1);
-            }
-            String[] tokens = taskName.split(":");
-            for (int i = 0; i < tokens.length - 1; i++) {
-                result = new File(result, tokens[i]);
-                if (!result.exists()) {
-                    LOG.warn("The sub project %s cannot be found".formatted(result));
-                    return null;
-                }
-            }
-            break;
-        }
-        return result;
     }
 
     /**
@@ -344,7 +317,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
      */
     private static void autoAddCamelDebuggerToCustomPom(ExecutionMode mode, Project project, JavaParameters parameters,
                                                         String version) throws IOException, XmlPullParserException {
-        autoDelete(project, generatePomFileWithCamelDebugger(mode, project, parameters, version));
+        autoDelete(project, List.of(generatePomFileWithCamelDebugger(mode, project, parameters, version)));
     }
 
     /**
@@ -364,7 +337,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
                                                          String version) throws IOException, XmlPullParserException {
         final Model model;
         final ParametersList parametersList = parameters.getProgramParametersList();
-        final int index = parametersList.getParameters().indexOf("-f");
+        final int index = Math.max(parametersList.getParameters().indexOf("-f"), parametersList.getParameters().indexOf("--file"));
         String targetFileName = index == -1 ? "pom.xml" : parametersList.get(index + 1);
         try (FileReader fileReader = new FileReader(new File(parameters.getWorkingDirectory(), targetFileName))) {
             model = new MavenXpp3Reader().read(fileReader);
@@ -399,7 +372,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
      */
     private static void autoAddCamelDebuggerToCustomGradleBuild(ExecutionMode mode, Project project, JavaParameters parameters,
                                                                 String version) throws IOException {
-        autoDelete(project, generateBuildFileWithCamelDebugger(mode, project, parameters, version));
+        autoDelete(project, generateBuildFilesWithCamelDebugger(mode, project, parameters, version));
     }
 
     /**
@@ -410,50 +383,112 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
      * @param project    the project for which the Camel debugger is added.
      * @param parameters the parameters to patch to take into account the generated gradle build file.
      * @param version    the default version of the artifacts to add.
-     * @return a {@code File} corresponding to the generated gradle build file. {@code null} if the working directory could not be found.
-     * @throws IOException            if the generated gradle build file could not be generated due to an IO error.
+     * @return a list of {@code File} corresponding to the generated gradle build file and potentially the settings file. An empty list
+     * if the working directory could not be found.
+     * @throws IOException            if the gradle build file or settings file could not be generated due to an IO error.
      */
-    private static File generateBuildFileWithCamelDebugger(ExecutionMode mode, Project project, JavaParameters parameters,
-                                                           String version) throws IOException {
+    private static List<File> generateBuildFilesWithCamelDebugger(ExecutionMode mode, Project project, JavaParameters parameters,
+                                                                  String version) throws IOException {
         String workingDirectory = parameters.getWorkingDirectory();
         if (workingDirectory == null) {
-            return null;
+            return List.of();
         }
         Path parent = Path.of(workingDirectory);
         final ParametersList parametersList = parameters.getProgramParametersList();
-        final int index = parametersList.getParameters().indexOf("-b");
+        List<String> listParameters = parametersList.getParameters();
+        final int indexBuildFile = Math.max(listParameters.indexOf("-b"), listParameters.indexOf("--build-file"));
         final GradleBuildWriter writer;
-        final String targetFileName;
-        if (index == -1) {
-            if (Files.exists(parent.resolve("build.gradle.kts"))) {
-                targetFileName = "build.gradle.kts";
+        final String targetBuildFileName;
+        if (indexBuildFile == -1) {
+            if (Files.exists(parent.resolve("build.gradle.kts")) || Files.exists(parent.resolve("settings.gradle.kts"))) {
+                targetBuildFileName = "build.gradle.kts";
                 writer = GradleBuildWriter.KOTLIN;
             } else {
-                targetFileName = "build.gradle";
+                targetBuildFileName = "build.gradle";
                 writer = GradleBuildWriter.GROOVY;
             }
         } else {
-            targetFileName = parametersList.get(index + 1);
-            if (targetFileName.endsWith(".kts")) {
+            targetBuildFileName = parametersList.get(indexBuildFile + 1);
+            if (targetBuildFileName.endsWith(".kts")) {
                 writer = GradleBuildWriter.KOTLIN;
             } else {
                 writer = GradleBuildWriter.GROOVY;
             }
         }
-        final String fileName = String.format("%s%s", GENERATED_FILE_NAME_PREFIX, targetFileName);
-        Path target = parent.resolve(fileName);
-        Files.copy(parent.resolve(targetFileName), target, StandardCopyOption.REPLACE_EXISTING);
-        try (FileWriter fileWriter = new FileWriter(target.toFile(), true)) {
-            writer.write(fileWriter, mode.createCamelDebugDependency(project, version));
-            writer.write(fileWriter, mode.createCamelManagementDependency(project, version));
+
+        Path buildFile = createGeneratedFile(parent, targetBuildFileName);
+        boolean added = false;
+        try (FileWriter fileWriter = new FileWriter(buildFile.toFile(), true)) {
+            for (String parameter : listParameters) {
+                if (parameter.startsWith("-") || parameter.startsWith("\"")) {
+                    continue;
+                }
+                int expectedLength = parameter.startsWith(":") ? 3 : 2;
+                if (parameter.split(":").length >= expectedLength) {
+                    added = true;
+                    String projectName = parameter.substring(0, parameter.lastIndexOf(':'));
+                    writer.write(
+                        fileWriter, List.of(mode.createCamelDebugDependency(project, version),
+                            mode.createCamelManagementDependency(project, version)), projectName
+                    );
+                }
+            }
+            if (!added) {
+                writer.write(fileWriter, mode.createCamelDebugDependency(project, version));
+                writer.write(fileWriter, mode.createCamelManagementDependency(project, version));
+            }
         }
-        if (index == -1) {
+        if (indexBuildFile == -1) {
             parametersList.add("-b");
-            parametersList.add(fileName);
+            parametersList.add(buildFile.getFileName().toString());
         } else {
-            parametersList.set(index + 1, fileName);
+            parametersList.set(indexBuildFile + 1, buildFile.getFileName().toString());
         }
-        return target.toFile();
+        if (added) {
+            final int indexSettingsFile = Math.max(listParameters.indexOf("-c"), listParameters.indexOf("--settings-file"));
+            final String targetSettingsFileName;
+            if (indexSettingsFile == -1) {
+                if (writer == GradleBuildWriter.KOTLIN) {
+                    targetSettingsFileName = "settings.gradle.kts";
+                } else {
+                    targetSettingsFileName = "settings.gradle";
+                }
+            } else {
+                targetSettingsFileName = parametersList.get(indexSettingsFile + 1);
+            }
+            Path settingsFile =  createGeneratedFile(parent, targetSettingsFileName);
+            try (FileWriter fileWriter = new FileWriter(settingsFile.toFile(), true)) {
+                writer.write(fileWriter, buildFile);
+            }
+            if (indexSettingsFile == -1) {
+                parametersList.add("-c");
+                parametersList.add(settingsFile.getFileName().toString());
+            } else {
+                parametersList.set(indexSettingsFile + 1, settingsFile.getFileName().toString());
+            }
+            return List.of(buildFile.toFile(), settingsFile.toFile());
+        } else {
+            return List.of(buildFile.toFile());
+        }
+    }
+
+    /**
+     * Creates a new generated file initialized with the content of the given source file if it
+     * exists. The file is created directly under the given parent path.
+     *
+     * @param parent the parent folder of the generated file.
+     * @param sourceFileName the name of the source file
+     * @return the created file.
+     * @throws IOException if the file could not be created.
+     */
+    private static Path createGeneratedFile(Path parent, String sourceFileName) throws IOException {
+        final String generatedFileName = String.format("%s%s", GENERATED_FILE_NAME_PREFIX, sourceFileName);
+        Path target = parent.resolve(generatedFileName);
+        Path source = parent.resolve(sourceFileName);
+        if (Files.exists(source)) {
+            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+        }
+        return target;
     }
 
     /**
@@ -472,20 +507,22 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
     }
 
     /**
-     * Deletes automatically the given temporary file when the debug process is stopped.
+     * Deletes automatically the given temporary files when the debug process is stopped.
      *
      * @param project          the project for which the topic {@link XDebuggerManager#TOPIC} is observed to trigger the
      *                         deletion.
-     * @param temporaryFile the temporary file to automatically delete.
+     * @param temporaryFiles the temporary files to automatically delete.
      */
-    private static void autoDelete(Project project, File temporaryFile) {
-        if (temporaryFile == null) {
+    private static void autoDelete(Project project, List<File> temporaryFiles) {
+        if (temporaryFiles.isEmpty()) {
             return;
         }
         registerCleanUpTask(project, () -> {
-            if (!temporaryFile.delete()) {
-                LOG.debug("The temporary build file could not be deleted");
-                temporaryFile.deleteOnExit();
+            for (File temporaryFile : temporaryFiles) {
+                if (!temporaryFile.delete()) {
+                    LOG.debug("The temporary file %s could not be deleted".formatted(temporaryFile));
+                    temporaryFile.deleteOnExit();
+                }
             }
         });
     }
@@ -952,9 +989,52 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
                 writer.write(
                     String.format(
                         """
-                        project.dependencies.add('implementation', '%s:%s:%s')
+                        project.dependencies.add('runtimeOnly', '%s:%s:%s')
                         """,
                         dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion()
+                    )
+                );
+            }
+
+            @Override
+            void write(Writer writer, List<Dependency> dependencies, String projectName) throws IOException {
+                writer.write(
+                    String.format(
+                        """
+                        project('%s') {
+                            plugins.withType(JavaPlugin.class) {
+                                dependencies {
+                        """,
+                        projectName
+                    )
+                );
+                for (Dependency dependency : dependencies) {
+                    writer.write(
+                        String.format(
+                            """
+                                        runtimeOnly '%s:%s:%s'
+                            """,
+                            dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion()
+                        )
+                    );
+                }
+                writer.write(
+                    """
+                            }
+                        }
+                    }
+                    """
+                );
+            }
+
+            @Override
+            void write(Writer writer, Path buildFile) throws IOException {
+                writer.write(
+                    String.format(
+                        """
+                        rootProject.buildFileName = '%s'
+                        """,
+                        buildFile.getFileName()
                     )
                 );
             }
@@ -968,9 +1048,52 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
                 writer.write(
                     String.format(
                         """
-                        project.dependencies.add("implementation", "%s:%s:%s")
+                        project.dependencies.add("runtimeOnly", "%s:%s:%s")
                         """,
                         dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion()
+                    )
+                );
+            }
+
+            @Override
+            void write(Writer writer, List<Dependency> dependencies, String projectName) throws IOException {
+                writer.write(
+                    String.format(
+                        """
+                        project("%s") {
+                            plugins.withType<JavaPlugin>() {
+                                dependencies {
+                        """,
+                        projectName
+                    )
+                );
+                for (Dependency dependency : dependencies) {
+                    writer.write(
+                        String.format(
+                            """
+                                        add("runtimeOnly", "%s:%s:%s")
+                            """,
+                            dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion()
+                        )
+                    );
+                }
+                writer.write(
+                    """
+                            }
+                        }
+                    }
+                    """
+                );
+            }
+
+            @Override
+            void write(Writer writer, Path buildFile) throws IOException {
+                writer.write(
+                    String.format(
+                        """
+                        rootProject.buildFileName = "%s"
+                        """,
+                        buildFile.getFileName()
                     )
                 );
             }
@@ -984,5 +1107,24 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
          * @throws IOException if the dependency could not be written
          */
         abstract void write(Writer writer, Dependency dependency) throws IOException;
+
+        /**
+         * Writes the given dependencies of a specific project to the given writer.
+         *
+         * @param writer the target writer
+         * @param dependencies the dependencies to write
+         * @param projectName the target project name
+         * @throws IOException if the dependencies could not be written
+         */
+        abstract void write(Writer writer, List<Dependency> dependencies, String projectName) throws IOException;
+
+        /**
+         * Writes the location of the new build file.
+         *
+         * @param writer the target writer
+         * @param buildFile the new build file to configure.
+         * @throws IOException if the location of the build file could not be written
+         */
+        abstract void write(Writer writer, Path buildFile) throws IOException;
     }
 }

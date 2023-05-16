@@ -12,7 +12,7 @@
       v.0.9.7
       <ul>
         <li>Fixes the bug preventing the debugging of a Gradle task</li>
-        <li>Add Camel Debugger support to Gradle project</li>
+        <li>Make Camel Debugger support Gradle</li>
         <li>Bug fixes</li>
       </ul>
     ]]>
