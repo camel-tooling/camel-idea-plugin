@@ -13,6 +13,7 @@
       <ul>
         <li>Fixes the bug preventing the debugging of a Gradle task</li>
         <li>Make Camel Debugger support Gradle</li>
+        <li>Allow to enable manually the code assistance for camel k / camel-jbang</li>
         <li>Bug fixes</li>
       </ul>
     ]]>
@@ -79,6 +80,7 @@
     <projectService serviceImplementation="com.github.cameltooling.idea.service.CamelCatalogService"/>
     <projectService serviceImplementation="com.github.cameltooling.idea.service.CamelService"/>
     <projectService serviceImplementation="com.github.cameltooling.idea.service.KameletService"/>
+    <projectService serviceImplementation="com.github.cameltooling.idea.service.CamelProjectPreferenceService"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.IdeaUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.CamelIdeaUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.service.CamelPreferenceService"/>
@@ -142,7 +144,7 @@
     <!-- preference -->
     <applicationConfigurable id="camel" groupId="language" displayName="Apache Camel" instance="com.github.cameltooling.idea.preference.CamelPreferenceEntryPage"/>
     <applicationConfigurable parentId="camel" id="camel.annotator" groupId="language" displayName="Validation" instance="com.github.cameltooling.idea.preference.annotator.CamelAnnotatorPage"/>
-    <applicationConfigurable parentId="camel" id="camel.misc" groupId="language" displayName="Miscellaneous" instance="com.github.cameltooling.idea.preference.editorsettings.CamelEditorSettingsPage"/>
+    <projectConfigurable parentId="camel" id="camel.misc" groupId="language" displayName="Miscellaneous" instance="com.github.cameltooling.idea.preference.editorsettings.CamelEditorSettingsPage"/>
     <applicationConfigurable parentId="camel" id="camel.properties" groupId="language" displayName="Ignore &amp; Exclude Properties" instance="com.github.cameltooling.idea.preference.properties.CamelIgnoreAndExcludePage"/>
 
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.CamelBeanReferenceContributor"/>

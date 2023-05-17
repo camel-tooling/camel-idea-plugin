@@ -57,7 +57,7 @@ public class CamelYamlPropertyKeyCompletion extends CamelPropertyKeyCompletion {
      * @return {@code true} if the requirements are fulfilled such that the completion is enabled, {@code false} otherwise
      */
     static boolean enableCompletion(final Project project, final PsiFile file) {
-        return project.getService(CamelService.class).isCamelPresent() && isCamelRuntimeCompatible(project)
+        return project.getService(CamelService.class).isCamelProject() && isCamelRuntimeCompatible(project)
             && !CamelIdeaUtils.getService().isCamelFile(file);
     }
 

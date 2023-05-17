@@ -48,7 +48,7 @@ abstract class AbstractCamelAnnotator implements Annotator {
 
     @Override
     public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
-        if (element.getProject().getService(CamelService.class).isCamelPresent() && isEnabled()) {
+        if (element.getProject().getService(CamelService.class).isCamelProject() && isEnabled()) {
             boolean accept = accept(element);
             if (accept) {
                 String text = IdeaUtils.getService().extractTextFromElement(element, true, false, false);

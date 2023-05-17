@@ -69,7 +69,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
     @Override
     protected void collectNavigationMarkers(@NotNull PsiElement element,
                                             @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
-        if (!CamelPreferenceService.getService().isShowCamelIconInGutter() || !element.getProject().getService(CamelService.class).isCamelPresent()
+        if (!CamelPreferenceService.getService().isShowCamelIconInGutter() || !element.getProject().getService(CamelService.class).isCamelProject()
             || !isCamelFile(element)) {
             // The Gutter should not be shown, or it is not a Camel project or a Camel file
             return;

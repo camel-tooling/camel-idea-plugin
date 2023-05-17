@@ -59,7 +59,7 @@ public abstract class CamelContributor extends CompletionContributor {
         public void addCompletions(@NotNull CompletionParameters parameters,
                                    ProcessingContext context,
                                    @NotNull CompletionResultSet resultSet) {
-            if (parameters.getOriginalFile().getProject().getService(CamelService.class).isCamelPresent()) {
+            if (parameters.getOriginalFile().getProject().getService(CamelService.class).isCamelProject()) {
                 String[] tuple = parsePsiElement(parameters);
                 camelCompletionExtensions.stream()
                     .filter(p -> p.isValid(parameters, context, tuple))
@@ -82,7 +82,7 @@ public abstract class CamelContributor extends CompletionContributor {
         public void addCompletions(@NotNull CompletionParameters parameters,
                                    @NotNull ProcessingContext context,
                                    @NotNull CompletionResultSet resultSet) {
-            if (parameters.getOriginalFile().getProject().getService(CamelService.class).isCamelPresent()) {
+            if (parameters.getOriginalFile().getProject().getService(CamelService.class).isCamelProject()) {
                 String[] tuple = parsePsiElement(parameters);
                 camelCompletionExtensions.stream()
                     .filter(p -> p.isValid(parameters, context, tuple))

@@ -79,10 +79,10 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
                 final CamelService camelService = project.getService(CamelService.class);
                 if (camelService != null) {
                     boolean isDebug = executorId.equals(DefaultDebugExecutor.EXECUTOR_ID);
-                    boolean isCamelPresent = camelService.isCamelPresent();
+                    boolean isCamelProject = camelService.isCamelProject();
                     boolean hasBreakPoints = CamelBreakpointHandler.hasBreakpoints(project);
-                    boolean canRun = isDebug && isCamelPresent && hasBreakPoints;
-                    LOG.debug("Executor ID is %s ; Camel present = %s ; Camel breakpoints present = %s ; canRun is %s".formatted(executorId, isCamelPresent, hasBreakPoints, canRun));
+                    boolean canRun = isDebug && isCamelProject && hasBreakPoints;
+                    LOG.debug("Executor ID is %s ; Camel project = %s ; Camel breakpoints present = %s ; canRun is %s".formatted(executorId, isCamelProject, hasBreakPoints, canRun));
                     return canRun;
                 }
             } catch (Exception e) {

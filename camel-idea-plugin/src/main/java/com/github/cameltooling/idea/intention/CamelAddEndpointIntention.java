@@ -98,7 +98,7 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
     @Override
     public boolean isAvailable(@NotNull Project project, Editor editor, @NotNull PsiElement element) {
-        if (project.getService(CamelService.class).isCamelPresent()) {
+        if (project.getService(CamelService.class).isCamelProject()) {
             // special for xml
             XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
             if (xml != null) {

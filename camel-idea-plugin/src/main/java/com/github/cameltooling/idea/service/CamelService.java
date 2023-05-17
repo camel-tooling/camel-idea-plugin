@@ -110,6 +110,9 @@ public class CamelService implements Disposable {
      */
     public CamelService(Project project) {
         this.project = project;
+        project.getMessageBus()
+            .connect(this)
+            .subscribe(CamelProjectPreferenceService.CamelCatalogVersionChangeListener.TOPIC, this::loadCamelCatalog);
     }
 
     @Override
@@ -164,6 +167,14 @@ public class CamelService implements Disposable {
                 projectClassloader = null;
             }
         }
+    }
+
+    /**
+     * @return true if the current project is a Camel project, {@code false} otherwise.
+     */
+    public boolean isCamelProject() {
+        final Boolean isCamelProject = CamelProjectPreferenceService.getService(project).isCamelProject();
+        return isCamelProject == null ? isCamelPresent() : isCamelProject;
     }
 
     /**
@@ -416,10 +427,17 @@ public class CamelService implements Disposable {
     }
 
     /**
+     * Loads the Camel catalog version corresponding to the project settings.
+     */
+    void loadCamelCatalog() {
+        loadCamelCatalog(project.getService(CamelProjectPreferenceService.class).getCatalogVersion());
+    }
+
+    /**
      * Load the Camel catalog if Camel is present in the project, the version of Camel in the project is not the same
      * as the one in the plugin and the preference indicating to download the catalog is enabled.
      */
-    void loadCamelCatalog() {
+    private void loadAutoDetectedCamelCatalogVersion() {
         if (!isCamelPresent()) {
             return;
         }
@@ -804,6 +822,24 @@ public class CamelService implements Disposable {
 
     private CamelCatalogService getCamelCatalogService() {
         return project.getService(CamelCatalogService.class);
+    }
+
+    /**
+     * Loads the given version of the Camel catalog. A {@code null} value indicates that the version needs to be
+     * auto-detected.
+     *
+     * @param version the version of the catalog to load.
+     */
+    private void loadCamelCatalog(String version) {
+        if (version == null) {
+            // Auto detect
+            loadAutoDetectedCamelCatalogVersion();
+        } else {
+            if (downloadInProgress.compareAndSet(false, true)) {
+                // execute this work in a background thread
+                loadCamelCatalogInBackground(version);
+            }
+        }
     }
 
 

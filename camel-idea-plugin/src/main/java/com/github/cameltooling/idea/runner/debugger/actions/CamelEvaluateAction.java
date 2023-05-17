@@ -46,8 +46,8 @@ public class CamelEvaluateAction extends XDebuggerActionBase {
                 return;
             }
             final CamelService camelService = project.getService(CamelService.class);
-            event.getPresentation().setEnabled(camelService.isCamelPresent());
-            event.getPresentation().setVisible(camelService.isCamelPresent());
+            event.getPresentation().setEnabled(camelService.isCamelProject());
+            event.getPresentation().setVisible(camelService.isCamelProject());
         }
     }
 }

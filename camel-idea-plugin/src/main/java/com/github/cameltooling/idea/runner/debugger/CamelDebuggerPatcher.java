@@ -232,7 +232,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
     private static void patchJavaParametersOnDebug(Project project, ExecutionMode mode, JavaParameters parameters) {
         mode.addRequiredParameters(parameters);
         final CamelService service = project.getService(CamelService.class);
-        if (!service.isCamelPresent()) {
+        if (!service.isCamelProject()) {
             LOG.debug("The project is not a camel project so no need to patch the parameters");
         } else if (mode.canCheckCamelBreakpoints() && !CamelBreakpointHandler.hasBreakpoints(project)) {
             LOG.debug("The project has no camel breakpoints so no need to patch the parameters");
