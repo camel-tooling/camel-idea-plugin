@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.util.messages.MessageBusConnection;
 
 /**
@@ -32,7 +32,7 @@ public class CamelPreferenceServiceTestIT extends CamelLightCodeInsightFixtureTe
 
     @Override
     protected void tearDown() throws Exception {
-        CamelPreferenceService.getService().setCamelCatalogProvider(null);
+        CamelProjectPreferenceService.getService(getProject()).setCamelCatalogProvider(null);
         if (connection != null) {
             connection.disconnect();
         }
@@ -43,7 +43,7 @@ public class CamelPreferenceServiceTestIT extends CamelLightCodeInsightFixtureTe
      * Ensure that the default {@link CamelCatalogProvider} is {@link CamelCatalogProvider#AUTO}
      */
     public void testAutoByDefault() {
-        assertEquals(CamelCatalogProvider.AUTO, CamelPreferenceService.getService().getCamelCatalogProvider());
+        assertEquals(CamelCatalogProvider.AUTO, CamelProjectPreferenceService.getService(getProject()).getCamelCatalogProvider());
     }
 
     /**
@@ -51,10 +51,11 @@ public class CamelPreferenceServiceTestIT extends CamelLightCodeInsightFixtureTe
      */
     public void testChangeNotification() {
         AtomicInteger counter = new AtomicInteger();
-        CamelPreferenceService.CamelCatalogProviderChangeListener listener = counter::incrementAndGet;
-        CamelPreferenceService service = CamelPreferenceService.getService();
-        connection = ApplicationManager.getApplication().getMessageBus().connect();
-        connection.subscribe(CamelPreferenceService.CamelCatalogProviderChangeListener.TOPIC, listener);
+        CamelProjectPreferenceService.CamelCatalogProviderChangeListener listener = counter::incrementAndGet;
+        Project project = getProject();
+        CamelProjectPreferenceService service = CamelProjectPreferenceService.getService(project);
+        connection = project.getMessageBus().connect();
+        connection.subscribe(CamelProjectPreferenceService.CamelCatalogProviderChangeListener.TOPIC, listener);
         assertEquals(0, counter.get());
         service.setCamelCatalogProvider(CamelCatalogProvider.AUTO);
         assertEquals(0, counter.get());

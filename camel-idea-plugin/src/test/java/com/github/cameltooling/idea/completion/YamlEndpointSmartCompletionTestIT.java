@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
-import com.github.cameltooling.idea.service.CamelPreferenceService;
+import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -35,7 +35,7 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
 
     protected void tearDown() throws Exception {
         try {
-            CamelPreferenceService.getService().setOnlyShowKameletOptions(true);
+            CamelProjectPreferenceService.getService(getProject()).setOnlyShowKameletOptions(true);
         } finally {
             super.tearDown();
         }
@@ -359,7 +359,7 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
      * Ensure that the configuration option of a given Kamelet can be suggested with other options.
      */
     public void testYamlKameletOptionSuggestions() {
-        CamelPreferenceService.getService().setOnlyShowKameletOptions(false);
+        CamelProjectPreferenceService.getService(getProject()).setOnlyShowKameletOptions(false);
         myFixture.configureByText("CamelRoute.yaml", getYamlKameletOptionSuggestionsData());
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
@@ -374,7 +374,7 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
      * Ensure that the configuration option of a given Kamelet can be suggested without other options.
      */
     public void testYamlKameletOptionAloneSuggestions() {
-        CamelPreferenceService.getService().setOnlyShowKameletOptions(true);
+        CamelProjectPreferenceService.getService(getProject()).setOnlyShowKameletOptions(true);
         myFixture.configureByText("CamelRoute.yaml", getYamlKameletOptionSuggestionsData());
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();

@@ -20,7 +20,6 @@ import java.util.Map;
 
 import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultVersionManager;
@@ -44,9 +43,9 @@ public class CamelCatalogService implements Disposable {
      */
     public CamelCatalogService(Project project) {
         this.project = project;
-        ApplicationManager.getApplication().getMessageBus()
+        project.getMessageBus()
             .connect(this)
-            .subscribe(CamelPreferenceService.CamelCatalogProviderChangeListener.TOPIC, this::onCamelCatalogProviderChanged);
+            .subscribe(CamelProjectPreferenceService.CamelCatalogProviderChangeListener.TOPIC, this::onCamelCatalogProviderChanged);
         project.getMessageBus()
             .connect(this)
             .subscribe(CamelService.CamelCatalogListener.TOPIC, this::onCamelCatalogReady);
@@ -60,7 +59,7 @@ public class CamelCatalogService implements Disposable {
         if (instance == null) {
             synchronized (this) {
                 if (instance == null) {
-                    this.instance = CamelPreferenceService.getService().getCamelCatalogProvider().get(project);
+                    this.instance = CamelProjectPreferenceService.getService(project).getCamelCatalogProvider().get(project);
                 }
             }
         }
@@ -90,9 +89,9 @@ public class CamelCatalogService implements Disposable {
      */
     private void updateRuntimeProvider(CamelCatalog catalog) {
         final VersionManager versionManager = catalog.getVersionManager();
-        if (versionManager instanceof CamelMavenVersionManager) {
-            CamelPreferenceService.getService().getCamelCatalogProvider().updateRuntimeProvider(
-                project, catalog, ((CamelMavenVersionManager) versionManager).getClassLoader()
+        if (versionManager instanceof CamelMavenVersionManager mavenVersionManager) {
+            CamelProjectPreferenceService.getService(project).getCamelCatalogProvider().updateRuntimeProvider(
+                project, catalog, mavenVersionManager.getClassLoader()
             );
         }
     }

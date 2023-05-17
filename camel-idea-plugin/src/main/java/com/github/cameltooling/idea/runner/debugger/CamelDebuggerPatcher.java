@@ -42,6 +42,7 @@ import com.github.cameltooling.idea.runner.CamelSpringBootRunConfigurationType;
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointHandler;
 import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
+import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.github.cameltooling.idea.service.CamelRuntime;
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.execution.Executor;
@@ -237,7 +238,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
         } else if (mode.canCheckCamelBreakpoints() && !CamelBreakpointHandler.hasBreakpoints(project)) {
             LOG.debug("The project has no camel breakpoints so no need to patch the parameters");
         } else {
-            CamelPreferenceService preferenceService = CamelPreferenceService.getService();
+            CamelProjectPreferenceService preferenceService = CamelProjectPreferenceService.getService(project);
             if (!preferenceService.isEnableCamelDebugger()) {
                 LOG.debug("The Camel Debugger has been disabled so no need to patch the parameters");
             } else if (preferenceService.isCamelDebuggerAutoSetup()) {

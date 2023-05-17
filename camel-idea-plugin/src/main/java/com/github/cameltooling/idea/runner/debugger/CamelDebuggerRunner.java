@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointHandler;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
+import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.debugger.DebuggerManagerEx;
 import com.intellij.debugger.DefaultDebugEnvironment;
@@ -63,10 +64,6 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
 
     @Override
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-        CamelPreferenceService preferenceService = CamelPreferenceService.getService();
-        if (!preferenceService.isEnableCamelDebugger()) {
-            return false;
-        }
         if (profile instanceof GradleRunConfiguration) {
             // GradleRunConfiguration must be excluded otherwise it won't be possible to debug a gradle task
             // see https://github.com/camel-tooling/camel-idea-plugin/issues/824
@@ -76,6 +73,9 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
             try {
                 final RunConfigurationBase<?> base = (RunConfigurationBase<?>) profile;
                 final Project project = base.getProject();
+                if (!CamelProjectPreferenceService.getService(project).isEnableCamelDebugger()) {
+                    return false;
+                }
                 final CamelService camelService = project.getService(CamelService.class);
                 if (camelService != null) {
                     boolean isDebug = executorId.equals(DefaultDebugExecutor.EXECUTOR_ID);
