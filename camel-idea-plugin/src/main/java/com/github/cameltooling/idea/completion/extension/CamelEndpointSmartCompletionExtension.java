@@ -29,7 +29,7 @@ import javax.swing.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.cameltooling.idea.service.CamelCatalogService;
-import com.github.cameltooling.idea.service.CamelPreferenceService;
+import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.github.cameltooling.idea.service.KameletService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
@@ -237,7 +237,7 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
                 }
                 final ComponentModel componentModel = JsonMapper.generateComponentModel(json);
                 final KameletService service = project.getService(KameletService.class);
-                if (CamelPreferenceService.getService().isOnlyShowKameletOptions()) {
+                if (CamelProjectPreferenceService.getService(project).isOnlyShowKameletOptions()) {
                     componentModel.getEndpointOptions().clear();
                 }
                 // Add the list of name of Kamelets available according to the type of endpoint

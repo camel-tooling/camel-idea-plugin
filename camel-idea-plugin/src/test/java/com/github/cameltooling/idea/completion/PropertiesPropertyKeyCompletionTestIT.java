@@ -21,7 +21,7 @@ import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
-import com.github.cameltooling.idea.service.CamelPreferenceService;
+import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.intellij.codeInsight.lookup.LookupElement;
 
 /**
@@ -38,7 +38,7 @@ public class PropertiesPropertyKeyCompletionTestIT extends CamelLightCodeInsight
     @Override
     protected void tearDown() throws Exception {
         try {
-            CamelPreferenceService.getService().setCamelCatalogProvider(null);
+            CamelProjectPreferenceService.getService(getProject()).setCamelCatalogProvider(null);
         } finally {
             super.tearDown();
         }
@@ -125,7 +125,7 @@ public class PropertiesPropertyKeyCompletionTestIT extends CamelLightCodeInsight
      * Ensures that group suggestions for default Camel Runtime matches with the expectations.
      */
     public void testGroupSuggestionForDefaultCamelRuntime() {
-        CamelPreferenceService.getService().setCamelCatalogProvider(CamelCatalogProvider.DEFAULT);
+        CamelProjectPreferenceService.getService(getProject()).setCamelCatalogProvider(CamelCatalogProvider.DEFAULT);
         testGroupSuggestionWithFullFirstKeyWithSeparator();
     }
 
@@ -133,7 +133,7 @@ public class PropertiesPropertyKeyCompletionTestIT extends CamelLightCodeInsight
      * Ensures that group suggestions for Quarkus Camel Runtime matches with the expectations.
      */
     public void testGroupSuggestionForQuarkusCamelRuntime() {
-        CamelPreferenceService.getService().setCamelCatalogProvider(CamelCatalogProvider.QUARKUS);
+        CamelProjectPreferenceService.getService(getProject()).setCamelCatalogProvider(CamelCatalogProvider.QUARKUS);
         testGroupSuggestionWithFullFirstKeyWithSeparator();
     }
 
@@ -141,7 +141,7 @@ public class PropertiesPropertyKeyCompletionTestIT extends CamelLightCodeInsight
      * Ensures that group suggestions for Karaf Camel Runtime matches with the expectations.
      */
     public void testGroupSuggestionForKarafCamelRuntime() {
-        CamelPreferenceService.getService().setCamelCatalogProvider(CamelCatalogProvider.KARAF);
+        CamelProjectPreferenceService.getService(getProject()).setCamelCatalogProvider(CamelCatalogProvider.KARAF);
         myFixture.configureByFiles(getFileName("full-first-key-with-separator"));
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();

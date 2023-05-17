@@ -20,6 +20,7 @@ import java.net.ServerSocket;
 
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointHandler;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
+import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.build.BuildView;
 import com.intellij.debugger.DebugEnvironment;
@@ -32,6 +33,7 @@ import com.intellij.debugger.impl.GenericDebuggerRunner;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.configurations.RemoteConnection;
+import com.intellij.execution.configurations.RunConfigurationBase;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.executors.DefaultDebugExecutor;
@@ -72,8 +74,8 @@ public class CamelExternalSystemTaskDebugRunner extends GenericDebuggerRunner {
 
     @Override
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-        CamelPreferenceService preferenceService = CamelPreferenceService.getService();
-        if (!preferenceService.isEnableCamelDebugger()) {
+        if (profile instanceof RunConfigurationBase<?> configuration
+            && !CamelProjectPreferenceService.getService(configuration.getProject()).isEnableCamelDebugger()) {
             return false;
         }
         if (profile instanceof ExternalSystemRunConfiguration configuration) {

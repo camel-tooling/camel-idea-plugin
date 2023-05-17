@@ -24,7 +24,6 @@ import javax.swing.*;
 import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
-import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.options.BaseConfigurable;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
@@ -125,11 +124,11 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         preferenceService.setDownloadCatalog(downloadCatalogCheckBox.isSelected());
         preferenceService.setScanThirdPartyComponents(scanThirdPartyComponentsCatalogCheckBox.isSelected());
         preferenceService.setShowCamelIconInGutter(camelIconInGutterCheckBox.isSelected());
-        preferenceService.setEnableCamelDebugger(enableDebuggerCheckBox.isSelected());
-        preferenceService.setCamelDebuggerAutoSetup(camelDebuggerAutoSetupCheckBox.isSelected());
-        preferenceService.setOnlyShowKameletOptions(onlyShowKameletOptionsCheckBox.isSelected());
-        preferenceService.setCamelCatalogProvider((CamelCatalogProvider) camelRuntimeProviderComboBox.getSelectedItem());
         CamelProjectPreferenceService projectPreferenceService = CamelProjectPreferenceService.getService(project);
+        projectPreferenceService.setEnableCamelDebugger(enableDebuggerCheckBox.isSelected());
+        projectPreferenceService.setCamelDebuggerAutoSetup(camelDebuggerAutoSetupCheckBox.isSelected());
+        projectPreferenceService.setOnlyShowKameletOptions(onlyShowKameletOptionsCheckBox.isSelected());
+        projectPreferenceService.setCamelCatalogProvider((CamelCatalogProvider) camelRuntimeProviderComboBox.getSelectedItem());
         projectPreferenceService.setCamelProject((Boolean) isCamelProjectComboBox.getSelectedItem());
         projectPreferenceService.setCatalogVersion(catalogVersion.getText());
     }
@@ -146,10 +145,10 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         return preferenceService.isDownloadCatalog() != downloadCatalogCheckBox.isSelected()
                 || preferenceService.isScanThirdPartyComponents() != scanThirdPartyComponentsCatalogCheckBox.isSelected()
                 || preferenceService.isShowCamelIconInGutter() != camelIconInGutterCheckBox.isSelected()
-                || preferenceService.isEnableCamelDebugger() != enableDebuggerCheckBox.isSelected()
-                || preferenceService.isCamelDebuggerAutoSetup() != camelDebuggerAutoSetupCheckBox.isSelected()
-                || preferenceService.isOnlyShowKameletOptions() != onlyShowKameletOptionsCheckBox.isSelected()
-                || preferenceService.getCamelCatalogProvider() != camelRuntimeProviderComboBox.getSelectedItem()
+                || projectPreferenceService.isEnableCamelDebugger() != enableDebuggerCheckBox.isSelected()
+                || projectPreferenceService.isCamelDebuggerAutoSetup() != camelDebuggerAutoSetupCheckBox.isSelected()
+                || projectPreferenceService.isOnlyShowKameletOptions() != onlyShowKameletOptionsCheckBox.isSelected()
+                || projectPreferenceService.getCamelCatalogProvider() != camelRuntimeProviderComboBox.getSelectedItem()
                 || isCamelProjectComboBox.getSelectedItem() != projectPreferenceService.isCamelProject()
                 || !Objects.equals(catalogVersionText, projectPreferenceService.getCatalogVersion());
     }
@@ -160,12 +159,12 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         downloadCatalogCheckBox.setSelected(preferenceService.isDownloadCatalog());
         scanThirdPartyComponentsCatalogCheckBox.setSelected(preferenceService.isScanThirdPartyComponents());
         camelIconInGutterCheckBox.setSelected(preferenceService.isShowCamelIconInGutter());
-        enableDebuggerCheckBox.setSelected(preferenceService.isEnableCamelDebugger());
-        camelDebuggerAutoSetupCheckBox.setSelected(preferenceService.isCamelDebuggerAutoSetup());
-        onlyShowKameletOptionsCheckBox.setSelected(preferenceService.isOnlyShowKameletOptions());
-        camelRuntimeProviderComboBox.setSelectedItem(preferenceService.getCamelCatalogProvider());
         CamelProjectPreferenceService projectPreferenceService = CamelProjectPreferenceService.getService(project);
         if (projectPreferenceService != null) {
+            enableDebuggerCheckBox.setSelected(projectPreferenceService.isEnableCamelDebugger());
+            camelDebuggerAutoSetupCheckBox.setSelected(projectPreferenceService.isCamelDebuggerAutoSetup());
+            onlyShowKameletOptionsCheckBox.setSelected(projectPreferenceService.isOnlyShowKameletOptions());
+            camelRuntimeProviderComboBox.setSelectedItem(projectPreferenceService.getCamelCatalogProvider());
             isCamelProjectComboBox.setSelectedItem(projectPreferenceService.isCamelProject());
             catalogVersion.setText(projectPreferenceService.getCatalogVersion());
         }

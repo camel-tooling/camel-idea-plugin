@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
 import com.github.cameltooling.idea.completion.OptionSuggestion;
 import com.github.cameltooling.idea.completion.SimpleSuggestion;
-import com.github.cameltooling.idea.service.CamelPreferenceService;
+import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
 import com.github.cameltooling.idea.service.extension.idea.YamlIdeaUtils;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
@@ -178,7 +178,7 @@ public class CamelYamlPropertyKeyCompletion extends CamelPropertyKeyCompletion {
      * @return {@code true} if the Camel Runtime of the given project is compatible, {@code false} otherwise.
      */
     private static boolean isCamelRuntimeCompatible(final Project project) {
-        final CamelCatalogProvider provider = CamelPreferenceService.getService()
+        final CamelCatalogProvider provider = CamelProjectPreferenceService.getService(project)
             .getCamelCatalogProvider()
             .getActualProvider(project);
         return provider == CamelCatalogProvider.QUARKUS || provider == CamelCatalogProvider.SPRING_BOOT;

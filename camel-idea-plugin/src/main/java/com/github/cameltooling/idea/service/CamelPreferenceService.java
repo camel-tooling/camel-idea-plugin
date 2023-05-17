@@ -23,14 +23,12 @@ import java.util.Objects;
 
 import javax.swing.*;
 
-import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.util.IconLoader;
-import com.intellij.util.messages.Topic;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Transient;
 import org.jetbrains.annotations.NotNull;
@@ -70,19 +68,6 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     private boolean downloadCatalog = true;
     private boolean scanThirdPartyComponents = true;
     private boolean showCamelIconInGutter = true;
-    private boolean enableCamelDebugger = true;
-    /**
-     * The flag indicating whether the Camel Debugger should be automatically setup.
-     */
-    private boolean camelDebuggerAutoSetup = true;
-    /**
-     * Flag indicating whether only the options of the Kamelet should be proposed.
-     */
-    private boolean onlyShowKameletOptions = true;
-    /**
-     * The {@link CamelCatalogProvider} set in the preferences.
-     */
-    private CamelCatalogProvider camelCatalogProvider;
     private List<String> ignorePropertyList = new ArrayList<>();
     private List<String> excludePropertyFiles = new ArrayList<>();
 
@@ -156,30 +141,6 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
         this.showCamelIconInGutter = showCamelIconInGutter;
     }
 
-    public boolean isEnableCamelDebugger() {
-        return enableCamelDebugger;
-    }
-
-    public void setEnableCamelDebugger(boolean enableCamelDebugger) {
-        this.enableCamelDebugger = enableCamelDebugger;
-    }
-
-    public boolean isOnlyShowKameletOptions() {
-        return onlyShowKameletOptions;
-    }
-
-    public void setOnlyShowKameletOptions(boolean onlyShowKameletOptions) {
-        this.onlyShowKameletOptions = onlyShowKameletOptions;
-    }
-
-    public void setCamelDebuggerAutoSetup(boolean camelDebuggerAutoSetup) {
-        this.camelDebuggerAutoSetup = camelDebuggerAutoSetup;
-    }
-
-    public boolean isCamelDebuggerAutoSetup() {
-        return camelDebuggerAutoSetup;
-    }
-
     public List<String> getIgnorePropertyList() {
         if (ignorePropertyList.isEmpty()) {
             ignorePropertyList = new ArrayList<>(Arrays.asList(DEFAULT_IGNORE_PROPERTIES));
@@ -202,34 +163,6 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     // called with reflection when loadState is called
     public void setExcludePropertyFiles(List<String> excludePropertyFiles) {
         this.excludePropertyFiles = excludePropertyFiles;
-    }
-
-    /**
-     * @return the {@link CamelCatalogProvider} defined in the preferences, {@link CamelCatalogProvider#AUTO} by default.
-     */
-    public CamelCatalogProvider getCamelCatalogProvider() {
-        return getCamelCatalogProvider(camelCatalogProvider);
-    }
-
-    /**
-     * Set the {@link CamelCatalogProvider} to use. The change listeners are notified in case the value has changed.
-     * @param camelCatalogProvider the new {@link CamelCatalogProvider} to use
-     */
-    public void setCamelCatalogProvider(CamelCatalogProvider camelCatalogProvider) {
-        final boolean hasChanged = getCamelCatalogProvider() != getCamelCatalogProvider(camelCatalogProvider);
-        this.camelCatalogProvider = camelCatalogProvider;
-        if (hasChanged) {
-            ApplicationManager.getApplication().getMessageBus().syncPublisher(CamelCatalogProviderChangeListener.TOPIC)
-                .onChange();
-        }
-    }
-
-    /**
-     * @return {@link CamelCatalogProvider#AUTO} if the given {@link CamelCatalogProvider} is {@code null}, the
-     * given {@link CamelCatalogProvider} otherwise.
-     */
-    private CamelCatalogProvider getCamelCatalogProvider(CamelCatalogProvider camelCatalogProvider) {
-        return camelCatalogProvider == null ? CamelCatalogProvider.AUTO : camelCatalogProvider;
     }
 
     public Icon getCamelIcon() {
@@ -270,9 +203,6 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
             && downloadCatalog == that.downloadCatalog
             && scanThirdPartyComponents == that.scanThirdPartyComponents
             && showCamelIconInGutter == that.showCamelIconInGutter
-            && camelCatalogProvider == that.camelCatalogProvider
-            && onlyShowKameletOptions == that.onlyShowKameletOptions
-            && camelDebuggerAutoSetup == that.camelDebuggerAutoSetup
             && Objects.equals(ignorePropertyList, that.ignorePropertyList)
             && Objects.equals(excludePropertyFiles, that.excludePropertyFiles);
     }
@@ -280,8 +210,8 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     @Override
     public int hashCode() {
         return Objects.hash(realTimeEndpointValidation, realTimeSimpleValidation, realTimeJSonPathValidation,
-            realTimeIdReferenceTypeValidation, downloadCatalog, scanThirdPartyComponents, camelCatalogProvider,
-            onlyShowKameletOptions, camelDebuggerAutoSetup, ignorePropertyList, excludePropertyFiles);
+            realTimeIdReferenceTypeValidation, downloadCatalog, scanThirdPartyComponents,
+            ignorePropertyList, excludePropertyFiles);
     }
 
     public boolean isRealTimeBeanMethodValidationCheckBox() {
@@ -290,25 +220,5 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
 
     public void setRealTimeBeanMethodValidationCheckBox(boolean realTimeBeanMethodValidationCheckBox) {
         this.realTimeBeanMethodValidationCheckBox = realTimeBeanMethodValidationCheckBox;
-    }
-
-    /**
-     * {@code CamelCatalogProviderChangeListener} defines a listener to notify in case the {@link CamelCatalogProvider}
-     * defined in the preferences has changed.
-     */
-    public interface CamelCatalogProviderChangeListener {
-
-        /**
-         * The topic to subscribe to in order to be notified when the {@link CamelCatalogProvider} has changed.
-         */
-        @Topic.AppLevel
-        Topic<CamelCatalogProviderChangeListener> TOPIC = Topic.create(
-            "CamelCatalogProviderChangeListener", CamelCatalogProviderChangeListener.class
-        );
-
-        /**
-         * Called when the {@link CamelCatalogProvider} defined in the preferences has changed.
-         */
-        void onChange();
     }
 }

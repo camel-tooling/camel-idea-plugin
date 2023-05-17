@@ -21,7 +21,7 @@ import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
-import com.github.cameltooling.idea.service.CamelPreferenceService;
+import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.intellij.codeInsight.lookup.LookupElement;
 
 /**
@@ -38,7 +38,7 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
     @Override
     protected void tearDown() throws Exception {
         try {
-            CamelPreferenceService.getService().setCamelCatalogProvider(null);
+            CamelProjectPreferenceService.getService(getProject()).setCamelCatalogProvider(null);
         } finally {
             super.tearDown();
         }
@@ -364,17 +364,17 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
         assertNullOrEmpty(strings);
     }
 
-    private static String getFileName(FileType type, String fileNamePrefix) {
+    private String getFileName(FileType type, String fileNamePrefix) {
         if (type == FileType.YAML) {
             // Switch to Quarkus mode
             return getFileName(type, fileNamePrefix, CamelCatalogProvider.QUARKUS);
         }
         return getFileName(type, fileNamePrefix, null);
     }
-    private static String getFileName(FileType type, String fileNamePrefix, CamelCatalogProvider provider) {
+    private String getFileName(FileType type, String fileNamePrefix, CamelCatalogProvider provider) {
         if (provider != null) {
             // Switch to Quarkus mode
-            CamelPreferenceService.getService().setCamelCatalogProvider(provider);
+            CamelProjectPreferenceService.getService(getProject()).setCamelCatalogProvider(provider);
         }
         return String.format("%s.%s", fileNamePrefix, type.name().toLowerCase());
     }

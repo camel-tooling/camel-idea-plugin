@@ -37,25 +37,25 @@ public class CamelCatalogServiceTestIT extends CamelLightCodeInsightFixtureTestC
     @Override
     protected void tearDown() throws Exception {
         try {
-            CamelPreferenceService.getService().setCamelCatalogProvider(null);
+            CamelProjectPreferenceService.getService(getProject()).setCamelCatalogProvider(null);
         } finally {
             super.tearDown();
         }
     }
 
     public void testNoCatalogInstance() {
-        getModule().getProject().getService(CamelService.class).setCamelPresent(false);
+        getProject().getService(CamelService.class).setCamelPresent(false);
         myFixture.configureByFiles("CompleteJavaEndpointConsumerTestData.java", "CompleteYmlPropertyTestData.java",
             "CompleteJavaPropertyTestData.properties", "CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
         myFixture.complete(CompletionType.BASIC, 1);
-        assertFalse(getModule().getProject().getService(CamelCatalogService.class).isInstantiated());
+        assertFalse(getProject().getService(CamelCatalogService.class).isInstantiated());
     }
 
     public void testCatalogInstance() {
         myFixture.configureByFiles("CompleteJavaEndpointConsumerTestData.java", "CompleteYmlPropertyTestData.java",
             "CompleteJavaPropertyTestData.properties", "CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
         myFixture.complete(CompletionType.BASIC, 1);
-        assertTrue(getModule().getProject().getService(CamelCatalogService.class).isInstantiated());
+        assertTrue(getProject().getService(CamelCatalogService.class).isInstantiated());
     }
 
     /**
@@ -65,11 +65,11 @@ public class CamelCatalogServiceTestIT extends CamelLightCodeInsightFixtureTestC
         myFixture.configureByFiles("CompleteJavaEndpointConsumerTestData.java", "CompleteYmlPropertyTestData.java",
             "CompleteJavaPropertyTestData.properties", "CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
         myFixture.complete(CompletionType.BASIC, 1);
-        CamelCatalogService service = getModule().getProject().getService(CamelCatalogService.class);
+        CamelCatalogService service = getProject().getService(CamelCatalogService.class);
         assertTrue(service.isInstantiated());
         CamelCatalog catalog = service.get();
         assertSame(catalog, service.get());
-        CamelPreferenceService.getService().setCamelCatalogProvider(CamelCatalogProvider.QUARKUS);
+        CamelProjectPreferenceService.getService(getProject()).setCamelCatalogProvider(CamelCatalogProvider.QUARKUS);
         assertTrue(service.isInstantiated());
         assertNotSame(catalog, service.get());
     }

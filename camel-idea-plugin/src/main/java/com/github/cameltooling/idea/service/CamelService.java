@@ -430,7 +430,7 @@ public class CamelService implements Disposable {
      * Loads the Camel catalog version corresponding to the project settings.
      */
     void loadCamelCatalog() {
-        loadCamelCatalog(project.getService(CamelProjectPreferenceService.class).getCatalogVersion());
+        loadCamelCatalog(CamelProjectPreferenceService.getService(project).getCatalogVersion());
     }
 
     /**
@@ -466,7 +466,8 @@ public class CamelService implements Disposable {
      * @param version the version of the Camel catalog to load.
      */
     private void loadCamelCatalogInBackground(@NotNull String version) {
-        final CamelCatalogProvider provider = CamelPreferenceService.getService().getCamelCatalogProvider()
+        final CamelCatalogProvider provider = CamelProjectPreferenceService.getService(project)
+            .getCamelCatalogProvider()
             .getActualProvider(project);
         new Task.Backgroundable(project, "Download the Camel catalog for the " + provider.getName() + " Runtime", true) {
             public void run(@NotNull ProgressIndicator indicator) {

@@ -18,6 +18,7 @@ package com.github.cameltooling.idea.service;
 
 import java.util.Objects;
 
+import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
@@ -44,6 +45,19 @@ public class CamelProjectPreferenceService implements PersistentStateComponent<C
          * The version of the catalog to use. A {@code null} value indicates that it needs to be auto-detected.
          */
         public String catalogVersion;
+        public boolean enableCamelDebugger = true;
+        /**
+         * The flag indicating whether the Camel Debugger should be automatically setup.
+         */
+        public boolean camelDebuggerAutoSetup = true;
+        /**
+         * Flag indicating whether only the options of the Kamelet should be proposed.
+         */
+        public boolean onlyShowKameletOptions = true;
+        /**
+         * The {@link CamelCatalogProvider} set in the preferences.
+         */
+        public CamelCatalogProvider camelCatalogProvider;
     }
 
     private final Project project;
@@ -79,6 +93,58 @@ public class CamelProjectPreferenceService implements PersistentStateComponent<C
             project.getMessageBus().syncPublisher(CamelCatalogVersionChangeListener.TOPIC)
                 .onCamelCatalogVersionChange(catalogVersion);
         }
+    }
+
+    public boolean isEnableCamelDebugger() {
+        return state.enableCamelDebugger;
+    }
+
+    public void setEnableCamelDebugger(boolean enableCamelDebugger) {
+        this.state.enableCamelDebugger = enableCamelDebugger;
+    }
+
+    public boolean isOnlyShowKameletOptions() {
+        return state.onlyShowKameletOptions;
+    }
+
+    public void setOnlyShowKameletOptions(boolean onlyShowKameletOptions) {
+        this.state.onlyShowKameletOptions = onlyShowKameletOptions;
+    }
+
+    public void setCamelDebuggerAutoSetup(boolean camelDebuggerAutoSetup) {
+        this.state.camelDebuggerAutoSetup = camelDebuggerAutoSetup;
+    }
+
+    public boolean isCamelDebuggerAutoSetup() {
+        return state.camelDebuggerAutoSetup;
+    }
+
+    /**
+     * @return the {@link CamelCatalogProvider} defined in the preferences, {@link CamelCatalogProvider#AUTO} by default.
+     */
+    public CamelCatalogProvider getCamelCatalogProvider() {
+        return getCamelCatalogProvider(state.camelCatalogProvider);
+    }
+
+    /**
+     * Set the {@link CamelCatalogProvider} to use. The change listeners are notified in case the value has changed.
+     * @param camelCatalogProvider the new {@link CamelCatalogProvider} to use
+     */
+    public void setCamelCatalogProvider(CamelCatalogProvider camelCatalogProvider) {
+        final boolean hasChanged = getCamelCatalogProvider() != getCamelCatalogProvider(camelCatalogProvider);
+        this.state.camelCatalogProvider = camelCatalogProvider;
+        if (hasChanged) {
+            project.getMessageBus().syncPublisher(CamelCatalogProviderChangeListener.TOPIC)
+                .onCamelCatalogProviderChange();
+        }
+    }
+
+    /**
+     * @return {@link CamelCatalogProvider#AUTO} if the given {@link CamelCatalogProvider} is {@code null}, the
+     * given {@link CamelCatalogProvider} otherwise.
+     */
+    private CamelCatalogProvider getCamelCatalogProvider(CamelCatalogProvider camelCatalogProvider) {
+        return camelCatalogProvider == null ? CamelCatalogProvider.AUTO : camelCatalogProvider;
     }
 
     @Override
@@ -117,5 +183,25 @@ public class CamelProjectPreferenceService implements PersistentStateComponent<C
          *                auto-detected
          */
         void onCamelCatalogVersionChange(String version);
+    }
+
+    /**
+     * {@code CamelCatalogProviderChangeListener} defines a listener to notify in case the {@link CamelCatalogProvider}
+     * defined in the preferences has changed.
+     */
+    public interface CamelCatalogProviderChangeListener {
+
+        /**
+         * The topic to subscribe to in order to be notified when the {@link CamelCatalogProvider} has changed.
+         */
+        @Topic.ProjectLevel
+        Topic<CamelCatalogProviderChangeListener> TOPIC = Topic.create(
+            "CamelCatalogProviderChangeListener", CamelCatalogProviderChangeListener.class
+        );
+
+        /**
+         * Called when the {@link CamelCatalogProvider} defined in the preferences has changed.
+         */
+        void onCamelCatalogProviderChange();
     }
 }
