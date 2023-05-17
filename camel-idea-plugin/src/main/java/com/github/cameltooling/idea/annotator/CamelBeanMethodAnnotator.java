@@ -49,7 +49,7 @@ public class CamelBeanMethodAnnotator implements Annotator {
 
     boolean isEnabled(@NotNull PsiElement element) {
         final IdeaUtils ideaUtils = IdeaUtils.getService();
-        final boolean valid = element.getProject().getService(CamelService.class).isCamelPresent()
+        final boolean valid = element.getProject().getService(CamelService.class).isCamelProject()
             && CamelPreferenceService.getService().isRealTimeSimpleValidation()
             // skip whitespace noise
             && !ideaUtils.isWhiteSpace(element)

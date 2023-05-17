@@ -22,9 +22,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import com.intellij.openapi.command.impl.DummyProject;
 import com.intellij.ui.components.JBCheckBox;
 
 public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTestCaseIT {
@@ -34,7 +34,7 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        editorSettingsPage = new CamelEditorSettingsPage();
+        editorSettingsPage = new CamelEditorSettingsPage(DummyProject.getInstance());
         editorSettingsPage.createComponent();
         super.initCamelPreferencesService();
     }
@@ -46,7 +46,7 @@ public class CamelEditorSettingsPageTest extends CamelLightCodeInsightFixtureTes
         try {
             List<String> lines = Files.readAllLines(Paths.get("src/main/resources/META-INF/plugin.xml"), StandardCharsets.UTF_8);
             List<String> trimmedStrings =
-                    lines.stream().map(String::trim).collect(Collectors.toList());
+                    lines.stream().map(String::trim).toList();
             int indexOfApplicationConfigurable = trimmedStrings.indexOf("<applicationConfigurable id=\"camel\" groupId=\"language\" displayName=\"Apache Camel\" instance=\"com.github.cameltooling.idea.preference.CamelPreferenceEntryPage\"/>");
 
             assertTrue(indexOfApplicationConfigurable > 0);

@@ -45,7 +45,7 @@ public class CamelPropertiesPropertyKeyCompletion extends CamelPropertyKeyComple
 
     @Override
     protected boolean isEnabled(Project project, PsiFile file) {
-        return project.getService(CamelService.class).isCamelPresent();
+        return project.getService(CamelService.class).isCamelProject();
     }
 
     @Override

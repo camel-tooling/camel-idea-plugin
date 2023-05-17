@@ -30,7 +30,7 @@ public abstract class CamelPsiReferenceProvider extends PsiReferenceProvider {
 
     @Override
     public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
-        if (!element.getProject().getService(CamelService.class).isCamelPresent()) {
+        if (!element.getProject().getService(CamelService.class).isCamelProject()) {
             return PsiReference.EMPTY_ARRAY;
         } else {
             return getCamelReferencesByElement(element, context);

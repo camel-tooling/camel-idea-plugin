@@ -78,7 +78,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Nullable
     @Override
     public String getQuickNavigateInfo(PsiElement element, PsiElement originalElement) {
-        if (element.getProject().getService(CamelService.class).isCamelPresent()) {
+        if (element.getProject().getService(CamelService.class).isCamelProject()) {
             PsiExpressionList exps = PsiTreeUtil.getNextSiblingOfType(originalElement, PsiExpressionList.class);
             if (exps != null) {
                 if (exps.getExpressions().length >= 1) {
@@ -135,7 +135,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         }
 
         String val = null;
-        if (element.getProject().getService(CamelService.class).isCamelPresent()) {
+        if (element.getProject().getService(CamelService.class).isCamelProject()) {
             val = fetchLiteralForCamelDocumentation(element);
             if (val == null) {
                 return null;
@@ -272,7 +272,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
     @Override
     public boolean handleExternal(PsiElement element, PsiElement originalElement) {
         String val = fetchLiteralForCamelDocumentation(element);
-        if (val == null || !element.getProject().getService(CamelService.class).isCamelPresent()) {
+        if (val == null || !element.getProject().getService(CamelService.class).isCamelProject()) {
             return false;
         }
         String url = externalUrl(element.getProject(), val);
@@ -323,7 +323,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
 
     private boolean hasDocumentationForCamelComponent(PsiElement element) {
         Project project = element.getProject();
-        if (project.getService(CamelService.class).isCamelPresent()) {
+        if (project.getService(CamelService.class).isCamelProject()) {
             String text = fetchLiteralForCamelDocumentation(element);
             if (text != null) {
                 // check if its a known Camel component

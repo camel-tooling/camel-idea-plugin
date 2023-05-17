@@ -57,7 +57,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
     }
 
     boolean isInspectionEnabled(Project project) {
-        return forceEnabled || project.getService(CamelService.class).isCamelPresent();
+        return forceEnabled || project.getService(CamelService.class).isCamelProject();
     }
 
     /**
