@@ -51,6 +51,7 @@ import org.jetbrains.yaml.psi.YAMLValue;
 public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
 
     private static final List<String> YAML_ROUTES = Arrays.asList(
+        "from",
         "routes",
         "routeConfigurations",
         "route",

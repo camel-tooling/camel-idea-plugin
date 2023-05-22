@@ -80,6 +80,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -819,13 +820,22 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 file:/com/foo/bar/target/classes/myroutesfile.xml.
                 So we need to add both to the list of source locations. See issue #820.
                  */
-                sourceLocations = List.of(
+                sourceLocations = new ArrayList<>();
+                String sourcesPath = "src/main/resources";
+                if (url.contains(sourcesPath)) {
                     // file:/absolute/path/to/file.xml
-                    String.format("file:%s", url.replace("src/main/resources", "target/classes")), // maven
-                    String.format("file:%s", url.replace("src/main/resources", "build/resources/main")), // gradle
-                    String.format("file:%s", url.substring(url.lastIndexOf(MAIN_RESOURCES_RELATIVE_PATH))),  // file:/relative/path/to/file.xml
-                    String.format("classpath:%s", url.substring(url.lastIndexOf(MAIN_RESOURCES_RELATIVE_PATH) + MAIN_RESOURCES_RELATIVE_PATH.length()))
-                );
+                    sourceLocations.add(String.format("file:%s", url.replace(sourcesPath, "target/classes"))); // maven
+                    sourceLocations.add(String.format("file:%s", url.replace(sourcesPath, "build/resources/main"))); // gradle
+                }
+                int index = url.lastIndexOf(MAIN_RESOURCES_RELATIVE_PATH);
+                if (index != -1) {
+                    sourceLocations.add(String.format("file:%s", url.substring(index))); // file:/relative/path/to/file.xml
+                    sourceLocations.add(String.format("classpath:%s", url.substring(index + MAIN_RESOURCES_RELATIVE_PATH.length())));
+                }
+                String basePath = getProject().getBasePath();
+                if (basePath != null && url.startsWith(basePath)) {
+                    sourceLocations.add(String.format("file:%s", url.substring(basePath.length() + 1))); // file:file.xml
+                }
             } else { //Then it must be a Jar
                 sourceLocations = List.of(String.format("classpath:%s", url.substring(url.lastIndexOf("!") + 2)));
             }
@@ -916,15 +926,29 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 String url = virtualFile.getPresentableUrl();
                 if (virtualFile.isInLocalFileSystem()) { //TODO - we need a better way to match source to target
                     if (filePath.startsWith("classpath:")) {
-                        //classpath:relative/path/from/resources/file.xml
-                        potentialURLs = Set.of(String.format("classpath:%s", url.substring(url.lastIndexOf(MAIN_RESOURCES_RELATIVE_PATH) + MAIN_RESOURCES_RELATIVE_PATH.length())));
+                        int index = url.lastIndexOf(MAIN_RESOURCES_RELATIVE_PATH);
+                        if (index != -1) {
+                            //classpath:relative/path/from/resources/file.xml
+                            potentialURLs = Set.of(String.format("classpath:%s", url.substring(index + MAIN_RESOURCES_RELATIVE_PATH.length())));
+                        } else {
+                            potentialURLs = Set.of();
+                        }
                     } else {
-                        potentialURLs = Set.of(
+                        potentialURLs = new HashSet<>();
+                        String sourcesPath = "src/main/resources";
+                        if (url.contains(sourcesPath)) {
                             // file:/absolute/path/to/file.xml
-                            String.format("file:%s", url.replace("src/main/resources", "target/classes")), // maven
-                            String.format("file:%s", url.replace("src/main/resources", "build/resources/main")), // gradle
-                            // file:/relative/path/to/file.xml
-                            String.format("file:%s", url.substring(url.lastIndexOf(MAIN_RESOURCES_RELATIVE_PATH))));
+                            potentialURLs.add(String.format("file:%s", url.replace(sourcesPath, "target/classes"))); // maven
+                            potentialURLs.add(String.format("file:%s", url.replace(sourcesPath, "build/resources/main"))); // gradle
+                        }
+                        int index = url.lastIndexOf(MAIN_RESOURCES_RELATIVE_PATH);
+                        if (index != -1) {
+                            potentialURLs.add(String.format("file:%s", url.substring(index))); // file:/relative/path/to/file.xml
+                        }
+                        String basePath = getProject().getBasePath();
+                        if (basePath != null && url.startsWith(basePath)) {
+                            potentialURLs.add(String.format("file:%s", url.substring(basePath.length() + 1))); // file:file.xml
+                        }
                     }
                 } else { //Then it must be a Jar
                     potentialURLs = Set.of(String.format("classpath:%s", url.substring(url.lastIndexOf("!") + 2)));

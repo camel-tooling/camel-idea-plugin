@@ -41,7 +41,6 @@ import com.github.cameltooling.idea.runner.CamelRunConfiguration;
 import com.github.cameltooling.idea.runner.CamelSpringBootRunConfigurationType;
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointHandler;
 import com.github.cameltooling.idea.service.CamelCatalogService;
-import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.github.cameltooling.idea.service.CamelRuntime;
 import com.github.cameltooling.idea.service.CamelService;

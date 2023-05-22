@@ -156,6 +156,13 @@ public enum CamelCatalogProvider {
     }
 
     /**
+     * @return the corresponding runtime
+     */
+    public CamelRuntime getRuntime() {
+        return runtime == null ? CamelRuntime.DEFAULT : runtime;
+    }
+
+    /**
      * @param project the project used to find the actual {@code CamelCatalogProvider}.
      * @return the actual {@code CamelCatalogProvider} in case of an automatic detection mode, {@code this} otherwise.
      */

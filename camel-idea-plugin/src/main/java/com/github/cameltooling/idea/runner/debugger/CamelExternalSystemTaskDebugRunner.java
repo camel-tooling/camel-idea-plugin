@@ -19,7 +19,6 @@ package com.github.cameltooling.idea.runner.debugger;
 import java.net.ServerSocket;
 
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointHandler;
-import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.build.BuildView;
