@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-tooling/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
-  <version>0.9.7</version>
+  <version>0.9.8</version>
   <vendor email="users@apache.camel.org" url="https://camel.apache.org/">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -9,11 +9,8 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.0.9.7
+      v.0.9.8
       <ul>
-        <li>Fixes the bug preventing the debugging of a Gradle task</li>
-        <li>Make Camel Debugger support Gradle</li>
-        <li>Allow to enable manually the code assistance for camel k / camel-jbang</li>
         <li>Bug fixes</li>
       </ul>
     ]]>
