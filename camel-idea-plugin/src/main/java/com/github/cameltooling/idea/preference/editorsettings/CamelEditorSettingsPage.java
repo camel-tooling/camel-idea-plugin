@@ -48,7 +48,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
     private JBCheckBox onlyShowKameletOptionsCheckBox;
     private JComboBox<Boolean> isCamelProjectComboBox;
     private JComboBox<CamelCatalogProvider> camelRuntimeProviderComboBox;
-    private JBTextField catalogVersion;
+    private JBTextField camelVersion;
 
     private final Project project;
 
@@ -91,15 +91,13 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
                 }
             }
         );
-        catalogVersion = new JBTextField();
+        camelVersion = new JBTextField();
         // use mig layout which is like a spreadsheet with 2 columns, which we can span if we only have one element
         JPanel panel = new JPanel(new MigLayout("fillx,wrap 2", "[left]rel[grow,fill]"));
         panel.setOpaque(false);
 
         final String constraintsForCheckBox = "span 2";
         panel.add(downloadCatalogCheckBox, constraintsForCheckBox);
-        panel.add(new JLabel("Camel Catalog Version"));
-        panel.add(catalogVersion);
         panel.add(scanThirdPartyComponentsCatalogCheckBox, constraintsForCheckBox);
         panel.add(camelIconInGutterCheckBox, constraintsForCheckBox);
         panel.add(enableDebuggerCheckBox, constraintsForCheckBox);
@@ -111,6 +109,9 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
 
         panel.add(new JLabel("Is Camel Project"));
         panel.add(isCamelProjectComboBox);
+
+        panel.add(new JLabel("Camel Version"));
+        panel.add(camelVersion);
 
         JPanel result = new JPanel(new BorderLayout());
         result.add(panel, BorderLayout.NORTH);
@@ -130,7 +131,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         projectPreferenceService.setOnlyShowKameletOptions(onlyShowKameletOptionsCheckBox.isSelected());
         projectPreferenceService.setCamelCatalogProvider((CamelCatalogProvider) camelRuntimeProviderComboBox.getSelectedItem());
         projectPreferenceService.setCamelProject((Boolean) isCamelProjectComboBox.getSelectedItem());
-        projectPreferenceService.setCatalogVersion(catalogVersion.getText());
+        projectPreferenceService.setCamelVersion(camelVersion.getText());
     }
 
     @Override
@@ -138,9 +139,9 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         // check boxes
         final CamelPreferenceService preferenceService = CamelPreferenceService.getService();
         CamelProjectPreferenceService projectPreferenceService = CamelProjectPreferenceService.getService(project);
-        String catalogVersionText = this.catalogVersion.getText();
-        if (catalogVersionText != null && catalogVersionText.isBlank()) {
-            catalogVersionText = null;
+        String camelVersionText = this.camelVersion.getText();
+        if (camelVersionText != null && camelVersionText.isBlank()) {
+            camelVersionText = null;
         }
         return preferenceService.isDownloadCatalog() != downloadCatalogCheckBox.isSelected()
                 || preferenceService.isScanThirdPartyComponents() != scanThirdPartyComponentsCatalogCheckBox.isSelected()
@@ -150,7 +151,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
                 || projectPreferenceService.isOnlyShowKameletOptions() != onlyShowKameletOptionsCheckBox.isSelected()
                 || projectPreferenceService.getCamelCatalogProvider() != camelRuntimeProviderComboBox.getSelectedItem()
                 || isCamelProjectComboBox.getSelectedItem() != projectPreferenceService.isCamelProject()
-                || !Objects.equals(catalogVersionText, projectPreferenceService.getCatalogVersion());
+                || !Objects.equals(camelVersionText, projectPreferenceService.getCamelVersion());
     }
 
     @Override
@@ -166,7 +167,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
             onlyShowKameletOptionsCheckBox.setSelected(projectPreferenceService.isOnlyShowKameletOptions());
             camelRuntimeProviderComboBox.setSelectedItem(projectPreferenceService.getCamelCatalogProvider());
             isCamelProjectComboBox.setSelectedItem(projectPreferenceService.isCamelProject());
-            catalogVersion.setText(projectPreferenceService.getCatalogVersion());
+            camelVersion.setText(projectPreferenceService.getCamelVersion());
         }
     }
 

@@ -44,7 +44,7 @@ public class CamelProjectPreferenceService implements PersistentStateComponent<C
         /**
          * The version of the catalog to use. A {@code null} value indicates that it needs to be auto-detected.
          */
-        public String catalogVersion;
+        public String camelVersion;
         public boolean enableCamelDebugger = true;
         /**
          * The flag indicating whether the Camel Debugger should be automatically setup.
@@ -80,18 +80,18 @@ public class CamelProjectPreferenceService implements PersistentStateComponent<C
         state.isCamelProject = camelProject;
     }
 
-    public String getCatalogVersion() {
-        return state.catalogVersion;
+    public String getCamelVersion() {
+        return state.camelVersion;
     }
 
-    public void setCatalogVersion(String catalogVersion) {
-        if (catalogVersion != null && catalogVersion.isBlank()) {
-            catalogVersion = null;
+    public void setCamelVersion(String camelVersion) {
+        if (camelVersion != null && camelVersion.isBlank()) {
+            camelVersion = null;
         }
-        if (!Objects.equals(this.state.catalogVersion, catalogVersion)) {
-            this.state.catalogVersion = catalogVersion;
-            project.getMessageBus().syncPublisher(CamelCatalogVersionChangeListener.TOPIC)
-                .onCamelCatalogVersionChange(catalogVersion);
+        if (!Objects.equals(this.state.camelVersion, camelVersion)) {
+            this.state.camelVersion = camelVersion;
+            project.getMessageBus().syncPublisher(CamelVersionChangeListener.TOPIC)
+                .onCamelVersionChange(camelVersion);
         }
     }
 
@@ -164,25 +164,23 @@ public class CamelProjectPreferenceService implements PersistentStateComponent<C
 
 
     /**
-     * {@code CamelCatalogVersionChangeListener} defines a listener to notify in case the version of the Camel catalog
+     * {@code CamelVersionChangeListener} defines a listener to notify in case the version of Camel
      * defined in the preferences has changed.
      */
-    public interface CamelCatalogVersionChangeListener {
+    public interface CamelVersionChangeListener {
 
         /**
-         * The topic to subscribe to in order to be notified when the version of the Camel catalog has changed.
+         * The topic to subscribe to in order to be notified when the version of the Camel version has changed.
          */
         @Topic.ProjectLevel
-        Topic<CamelCatalogVersionChangeListener> TOPIC = Topic.create(
-            "CamelCatalogVersionChangeListener", CamelCatalogVersionChangeListener.class
-        );
+        Topic<CamelVersionChangeListener> TOPIC = Topic.create("CamelVersionChangeListener", CamelVersionChangeListener.class);
 
         /**
-         * Called when the version of the Camel catalog defined in the preferences has changed.
-         * @param version the new version of the Camel catalog. a {@code null} value indicates that it needs to be
+         * Called when the version of Camel defined in the preferences has changed.
+         * @param version the new version of Camel. a {@code null} value indicates that it needs to be
          *                auto-detected
          */
-        void onCamelCatalogVersionChange(String version);
+        void onCamelVersionChange(String version);
     }
 
     /**

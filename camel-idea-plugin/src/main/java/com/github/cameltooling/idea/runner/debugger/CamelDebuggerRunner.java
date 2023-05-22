@@ -18,8 +18,8 @@ package com.github.cameltooling.idea.runner.debugger;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.github.cameltooling.idea.runner.CamelJBangRunProfileState;
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointHandler;
-import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.debugger.DebuggerManagerEx;
@@ -92,6 +92,16 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
         }
         LOG.debug("Camel Debugger cannot run, profile is not RunConfiguration");
         return false;
+    }
+
+    @Nullable
+    protected RunContentDescriptor createContentDescriptor(@NotNull RunProfileState state,
+                                                           @NotNull ExecutionEnvironment environment) throws ExecutionException {
+        if (state instanceof CamelJBangRunProfileState connection) {
+            return attachVirtualMachine(state, environment, connection.createRemoteConnection(), false);
+        }
+
+        return super.createContentDescriptor(state, environment);
     }
 
     @Override

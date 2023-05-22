@@ -161,6 +161,7 @@
     <configurationType implementation="com.github.cameltooling.idea.runner.CamelSpringBootRunConfigurationType"/>
     <configurationType implementation="com.github.cameltooling.idea.runner.CamelMainRunConfigurationType"/>
     <configurationType implementation="com.github.cameltooling.idea.runner.CamelQuarkusRunConfigurationType"/>
+    <configurationType implementation="com.github.cameltooling.idea.runner.CamelJBangRunConfigurationType"/>
     <java.programPatcher implementation="com.github.cameltooling.idea.runner.debugger.CamelDebuggerPatcher"/>
   </extensions>
 
