@@ -2,7 +2,7 @@
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
   <version>0.9.8</version>
-  <vendor email="users@apache.camel.org" url="https://camel.apache.org/">Apache Camel</vendor>
+  <vendor email="users@apache.camel.org" url="https://github.com/camel-tooling/camel-idea-plugin">Apache Camel</vendor>
 
   <description><![CDATA[
       Plugin for Intellij IDEA to provide a set of Apache Camel related capabilities to the code editor.
