@@ -21,11 +21,13 @@ import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.codeStyle.CodeStyleSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -49,7 +51,7 @@ public final class CamelIdeaUtils implements Disposable {
     private CamelIdeaUtils() {
         enabledExtensions = Arrays.stream(CamelIdeaUtilsExtension.EP_NAME.getExtensions())
             .filter(CamelIdeaUtilsExtension::isExtensionEnabled)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     public static CamelIdeaUtils getService() {
@@ -248,7 +250,7 @@ public final class CamelIdeaUtils implements Disposable {
         return enabledExtensions.stream()
             .map(e -> e.findEndpointUsages(module, uriCondition))
             .flatMap(List::stream)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     public List<PsiElement> findEndpointDeclarations(Module module, CamelEndpoint endpoint) {
@@ -259,12 +261,30 @@ public final class CamelIdeaUtils implements Disposable {
         return enabledExtensions.stream()
             .map(e -> e.findEndpointDeclarations(module, uriCondition))
             .flatMap(List::stream)
-            .collect(Collectors.toList());
+            .toList();
     }
 
 
     @Override
     public void dispose() {
 
+    }
+
+    /**
+     * Process the source PSI file within the given text range.
+     *
+     * @param source          The source PSI file.
+     * @param rangeToReformat The range within which the changes can be made.
+     * @param settings        The root code style settings to use.
+     *
+     * @return The updated text range after the changes.
+     */
+    public TextRange processText(PsiFile source, TextRange rangeToReformat, CodeStyleSettings settings) {
+        for (CamelIdeaUtilsExtension extension : enabledExtensions) {
+            if (extension.isCamelFile(source)) {
+                return extension.processText(source, rangeToReformat, settings);
+            }
+        }
+        return rangeToReformat;
     }
 }
