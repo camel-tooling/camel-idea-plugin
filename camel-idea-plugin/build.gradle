@@ -99,4 +99,6 @@ runIde {
 //        showStandardStreams = true
 //    }
 // End: To get Grape log messages
+ // Allow to have access to the PSI Structure...
+    systemProperty("idea.is.internal", "true")
 }

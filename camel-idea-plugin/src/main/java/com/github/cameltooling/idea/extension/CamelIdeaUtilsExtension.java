@@ -18,9 +18,11 @@ package com.github.cameltooling.idea.extension;
 
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.codeStyle.CodeStyleSettings;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -123,4 +125,16 @@ public interface CamelIdeaUtilsExtension {
      */
     boolean isPlaceForEndpointUri(PsiElement location);
 
+    /**
+     * Process the source PSI file within the given text range.
+     *
+     * @param source          The source PSI file.
+     * @param rangeToReformat The range within which the changes can be made.
+     * @param settings        The root code style settings to use.
+     *
+     * @return The updated text range after the changes.
+     */
+    default TextRange processText(PsiFile source, TextRange rangeToReformat, CodeStyleSettings settings) {
+        return rangeToReformat;
+    }
 }

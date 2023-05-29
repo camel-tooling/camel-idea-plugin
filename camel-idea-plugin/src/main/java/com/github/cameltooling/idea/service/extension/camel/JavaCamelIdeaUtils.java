@@ -21,13 +21,23 @@ import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.JavaClassUtils;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.ide.highlighter.JavaFileType;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.JavaResolveResult;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
 import com.intellij.psi.PsiExpressionList;
+import com.intellij.psi.PsiExpressionStatement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
@@ -40,22 +50,60 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
+import com.intellij.psi.codeStyle.CodeStyleSettings;
+import com.intellij.psi.impl.source.PostprocessReformattingAspect;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.util.ClassUtil;
 import com.intellij.psi.util.InheritanceUtil;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.testFramework.LightVirtualFile;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
 
+    /**
+     * The logger.
+     */
+    private static final Logger LOG = Logger.getInstance(JavaCamelIdeaUtils.class);
     private static final String JAVA_LANG_STRING = "java.lang.String";
-
+    /**
+     * The pattern corresponding to a method call in Java.
+     */
+    private static final Pattern METHOD_CALL_PATTERN = Pattern.compile("(?s)(\\s*)\\.(\\s*)(\\w+)(\\s*)\\(");
+    /**
+     * Name of the methods indicating that the next method call needs to be indented one more time.
+     */
+    private static final Set<String> ADD_INDENT = Set.of("choice", "doTry", "pipeline", "multicast", "split",
+        "circuitBreaker", "intercept", "interceptFrom", "interceptSendToEndpoint", "aggregate", "loadBalance", "loop",
+        "kamelet", "step", "transacted", "saga", "route", "resequence", "policy", "onException", "onCompletion");
+    /**
+     * Name of the methods indicating that the next method call needs to be indented the same way as before but the
+     * method call itself must be indented one less time.
+     */
+    private static final Set<String> NEW_BLOCK = Set.of("otherwise", "doCatch", "doFinally", "onFallback");
+    /**
+     * Name of the methods indicating that the expected behavior is either {@link #ADD_INDENT} or {@link #NEW_BLOCK}
+     * according to last method name. If it is the same name as the last name, {@link #NEW_BLOCK} is expected, {@link #ADD_INDENT}
+     * otherwise.
+     */
+    private static final Set<String> ADD_INDENT_OR_NEW_BLOCK = Set.of("when");
+    /**
+     * Name of the methods indicating that the next method call needs to be indented one less time.
+     */
+    private static final Set<String> REMOVE_INDENT = Set.of("endChoice", "end");
     private static final List<String> JAVA_ROUTE_BUILDERS = Arrays.asList(
         "org.apache.camel.builder.RouteBuilder",
         "org.apache.camel.RoutesBuilder",
@@ -355,5 +403,199 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             beanName = StringUtils.stripDoubleQuotes(PsiTreeUtil.getChildOfAnyType(referenceElement.getReference().resolve(), PsiLiteralExpression.class).getText());
         }
         return beanName;
+    }
+
+    @Override
+    public TextRange processText(PsiFile source, TextRange rangeToReformat, CodeStyleSettings settings) {
+        Document document = PsiDocumentManager.getInstance(source.getProject()).getDocument(source);
+        if (document != null && !PostprocessReformattingAspect.getInstance(source.getProject()).isViewProviderLocked(source.getViewProvider())) {
+            format(source, document, rangeToReformat.getStartOffset(), rangeToReformat.getEndOffset(), settings);
+        }
+        return rangeToReformat;
+    }
+
+    /**
+     * Formats the routes that could be found between the given indexes.
+     *
+     * @param file the file that contains the text to format.
+     * @param document the document that contains the text to format.
+     * @param startOffset the start offset of the text format
+     * @param endOffset the end offset of the text format
+     * @param settings the settings to apply when formatting the text.
+     */
+    private void format(PsiFile file, Document document, int startOffset, int endOffset, CodeStyleSettings settings) {
+        final VirtualFile vFile = FileDocumentManager.getInstance().getFile(document);
+        if ((vFile == null || vFile instanceof LightVirtualFile) && !ApplicationManager.getApplication().isUnitTestMode()) {
+            // we assume that control flow reaches this place when the document is backed by a "virtual" file so any changes made by
+            // a formatter affect only PSI and it is out of sync with a document text
+            return;
+        }
+
+        try {
+            ApplicationManager.getApplication().runWriteAction(() -> formatText(file, document, startOffset, endOffset, settings));
+        } finally {
+            PsiDocumentManager documentManager = PsiDocumentManager.getInstance(file.getProject());
+            if (documentManager.isUncommited(document)) {
+                documentManager.commitDocument(document);
+            }
+        }
+    }
+
+    /**
+     * Formats the routes that could be found between the given indexes.
+     *
+     * @param file the file that contains the text to format.
+     * @param document the document that contains the text to format.
+     * @param startOffset the start offset of the text format
+     * @param endOffset the end offset of the text format
+     * @param settings the settings to apply when formatting the text.
+     */
+    private void formatText(PsiFile file, Document document, int startOffset, int endOffset,
+                            CodeStyleSettings settings) {
+        Module module = ModuleUtilCore.findModuleForPsiElement(file.getOriginalElement());
+        List<PsiElement> endpointDeclarations = findEndpointDeclarations(module, e -> true);
+        Deque<Consumer<Document>> changes = new ArrayDeque<>();
+        boolean useTabCharacter = settings.useTabCharacter(JavaFileType.INSTANCE);
+        int indentSize = settings.getIndentSize(JavaFileType.INSTANCE);
+        for (PsiElement endpoint : endpointDeclarations) {
+            int textOffset = endpoint.getTextOffset();
+            if (startOffset <= textOffset && textOffset < endOffset) {
+                PsiExpressionStatement parent = PsiTreeUtil.getParentOfType(endpoint, PsiExpressionStatement.class);
+                if (parent == null) {
+                    LOG.debug("The parent PsiExpressionStatement of the element '%s' cannot be found".formatted(endpoint.getText()));
+                    continue;
+                }
+
+                TextRange textRange = parent.getTextRange();
+                CharSequence charsSequence = document.getCharsSequence();
+                CharSequence contentToFormat = charsSequence.subSequence(textRange.getStartOffset(), textRange.getEndOffset());
+                CharSequence linePrefix = charsSequence.subSequence(document.getLineStartOffset(document.getLineNumber(textOffset)), textRange.getStartOffset());
+                CharSequence result = formatText(file, textRange.getStartOffset(), endOffset, contentToFormat, linePrefix, useTabCharacter, indentSize);
+                // Ensure to apply the last changes first to avoid having to deal with offset change
+                changes.addFirst(doc -> doc.replaceString(textRange.getStartOffset(), textRange.getEndOffset(), result));
+            }
+        }
+        Consumer<Document> change = changes.poll();
+        while (change != null) {
+            change.accept(document);
+            change = changes.poll();
+        }
+    }
+
+    /**
+     *
+     * Formats the given {@code CharSequence} corresponding to entire route written in Java DSL.
+     *
+     * @param file the file in which the route has been defined.
+     * @param startOffset the start offset of the route definition.
+     * @param endOffset the limit of the offset beyond which the text can be formatted.
+     * @param contentToFormat the content to format.
+     * @param linePrefix the first characters to add to a new line.
+     * @param useTabCharacter indicates whether tab should be used to indent a line.
+     * @param indentSize the size of an ident in spaces.
+     * @return the content of the route formatted according to the Java DSL.
+     */
+    private CharSequence formatText(PsiFile file, int startOffset, int endOffset, CharSequence contentToFormat,
+                                    CharSequence linePrefix, boolean useTabCharacter, int indentSize) {
+        StringBuilder result = new StringBuilder(contentToFormat.length());
+        Matcher matcher = METHOD_CALL_PATTERN.matcher(contentToFormat);
+        int indent = 1;
+        int lastIndex = 0;
+        Deque<String> stack = new ArrayDeque<>();
+        while (matcher.find()) {
+            String methodName = matcher.group(3);
+            int startGroup = matcher.start(3);
+            int startMatch = matcher.start();
+            int offset = startOffset + startGroup;
+            if (endOffset <= offset) {
+                // The limit is reached, no need to format beyond
+                break;
+            } else if (isDSLMethod(file, offset)) {
+                int currentIndent = indent;
+                if (ADD_INDENT.contains(methodName) || ADD_INDENT_OR_NEW_BLOCK.contains(methodName) && !methodName.equals(stack.peek())) {
+                    stack.push(methodName);
+                    indent++;
+                } else if (REMOVE_INDENT.contains(methodName)) {
+                    stack.pop();
+                    indent--;
+                    currentIndent--;
+                } else if (NEW_BLOCK.contains(methodName) || ADD_INDENT_OR_NEW_BLOCK.contains(methodName) && methodName.equals(stack.peek())) {
+                    currentIndent--;
+                    stack.pop();
+                    stack.push(methodName);
+                }
+                result.append(contentToFormat.subSequence(lastIndex, startMatch));
+                appendNewLine(result, linePrefix, useTabCharacter, indentSize, currentIndent);
+                result.append('.');
+                result.append(methodName);
+                result.append('(');
+                lastIndex = matcher.end();
+                continue;
+            }
+            result.append(contentToFormat.subSequence(lastIndex, matcher.end()));
+            lastIndex = matcher.end();
+        }
+        result.append(contentToFormat.subSequence(lastIndex, contentToFormat.length()));
+        return result;
+    }
+
+    /**
+     * Appends a new line to the given {@code StringBuilder}
+     * @param builder to builder to which the new line must be added.
+     * @param linePrefix the first characters to add to a new line.
+     * @param useTabCharacter indicates whether tab should be used to indent a line.
+     * @param indentSize the size of an ident in spaces.
+     * @param indent the indentation to apply to the new line to append.
+     */
+    private static void appendNewLine(StringBuilder builder, CharSequence linePrefix, boolean useTabCharacter,
+                                      int indentSize, int indent) {
+        builder.append('\n');
+        builder.append(linePrefix);
+        for (int i = 0; i < indent; i++) {
+            if (useTabCharacter) {
+                builder.append('\t');
+            } else {
+                builder.append(" ".repeat(Math.max(0, indentSize)));
+            }
+        }
+    }
+
+    /**
+     * Indicates whether the {@code PsiElement} located at the given {@code offset} is part of the methods corresponding
+     * to the Camel Java DSL.
+     *
+     * @param file the file in which the method is located.
+     * @param offset the offset of the method to check.
+     * @return {@code true} if it is part of the Java DSL, {@code false} otherwise.
+     */
+    private static boolean isDSLMethod(PsiFile file, int offset) {
+        PsiElement element = file.findElementAt(offset);
+        if (element == null) {
+            LOG.debug("No element cannot be found at index %d".formatted(offset));
+        } else if (element instanceof PsiIdentifier) {
+            PsiMethodCallExpression parent = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+            if (parent == null) {
+                LOG.debug("The parent PsiMethodCallExpression of the element at index %d cannot be found".formatted(offset));
+            } else {
+                JavaResolveResult[] results = parent.getMethodExpression().multiResolve(false);
+                if (results.length == 0) {
+                    LOG.debug("The method corresponding to the element at index %d cannot be resolved".formatted(offset));
+                } else if (Arrays.stream(results).map(JavaResolveResult::getElement)
+                    .filter(PsiMethod.class::isInstance)
+                    .map(PsiMethod.class::cast)
+                    .map(PsiMethod::getContainingClass)
+                    .filter(Objects::nonNull)
+                    .map(PsiClass::getQualifiedName)
+                    .filter(Objects::nonNull)
+                    .anyMatch(name -> name.startsWith("org.apache.camel.model.") || name.startsWith("org.apache.camel.builder."))) {
+                    return true;
+                } else {
+                    LOG.trace("The method is not part of the DSL");
+                }
+            }
+        } else {
+            LOG.trace("The element at index %d is not a PsiIdentifier".formatted(offset));
+        }
+        return false;
     }
 }
