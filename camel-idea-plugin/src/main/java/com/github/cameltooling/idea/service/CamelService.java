@@ -75,12 +75,11 @@ public class CamelService implements Disposable {
 
     private static final Logger LOG = Logger.getInstance(CamelService.class);
 
-    private static final int MIN_MAJOR_VERSION = 2;
-    private static final int MIN_MINOR_VERSION = 16;
+    private static final int MIN_MAJOR_VERSION = 3;
+    private static final int MIN_MINOR_VERSION = 1;
 
     private final AtomicBoolean downloadInProgress = new AtomicBoolean();
-    private Library camel2CoreLibrary;
-    private List<Library> camel3CoreLibraries = new ArrayList<>();
+    private List<Library> camelCoreLibraries = new ArrayList<>();
     private Library slf4jApiLibrary;
     private URLClassLoader camelCoreClassloader;
     private final Set<String> processedLibraries = new HashSet<>();
@@ -142,8 +141,7 @@ public class CamelService implements Disposable {
                 camelCoreClassloader = null;
             }
         }
-        camel2CoreLibrary = null;
-        camel3CoreLibraries = null;
+        camelCoreLibraries = null;
         slf4jApiLibrary = null;
         // Close the child Class Loader first
         if (projectCompleteClassloader != null) {
@@ -243,9 +241,8 @@ public class CamelService implements Disposable {
                 camelCoreClassloader = null;
             }
         }
-        camel2CoreLibrary = null;
         slf4jApiLibrary = null;
-        camel3CoreLibraries = new ArrayList<>();
+        camelCoreLibraries = new ArrayList<>();
         camelPresent = false;
     }
 
@@ -289,7 +286,7 @@ public class CamelService implements Disposable {
     @Nullable
     public synchronized ArtifactCoordinates getProjectCamelCoreCoordinates() {
         for (ArtifactCoordinates coordinates : projectLibraries.values()) {
-            if (isCamel2CoreMavenDependency(coordinates) || isCamel3CoreMavenDependency(coordinates)) {
+            if (isCamelCoreMavenDependency(coordinates)) {
                 return coordinates;
             }
         }
@@ -302,16 +299,9 @@ public class CamelService implements Disposable {
     public synchronized ClassLoader getCamelCoreClassloader() {
         if (camelCoreClassloader == null) {
             try {
-                final IdeaUtils ideaUtils = IdeaUtils.getService();
-                if (camel2CoreLibrary == null) {
-                    // Camel 3 is assumed
-                    final List<Library> list = new ArrayList<>(camel3CoreLibraries);
-                    list.add(slf4jApiLibrary);
-                    camelCoreClassloader = ideaUtils.newURLClassLoaderForLibrary(list.toArray(new Library[0]));
-                } else {
-                    // Camel 2 has been detected
-                    camelCoreClassloader = ideaUtils.newURLClassLoaderForLibrary(camel2CoreLibrary, slf4jApiLibrary);
-                }
+                final List<Library> list = new ArrayList<>(camelCoreLibraries);
+                list.add(slf4jApiLibrary);
+                camelCoreClassloader = IdeaUtils.getService().newURLClassLoaderForLibrary(list.toArray(new Library[0]));
             } catch (Exception e) {
                 LOG.warn("Error creating URLClassLoader for loading classes from camel-core", e);
             }
@@ -414,12 +404,8 @@ public class CamelService implements Disposable {
 
             if (isSlf4jMavenDependency(coordinates)) {
                 slf4jApiLibrary = library;
-            } else if (isCamel2CoreMavenDependency(coordinates)) {
-                // okay it is a camel v2 project
-                camel2CoreLibrary = library;
-                setCamelPresent(true);
-            } else if (isCamel3CoreMavenDependency(coordinates)) {
-                camel3CoreLibraries.add(library);
+            } else if (isCamelCoreMavenDependency(coordinates)) {
+                camelCoreLibraries.add(library);
                 // okay it is a camel v3 project
                 setCamelPresent(true);
             }
@@ -515,40 +501,18 @@ public class CamelService implements Disposable {
 
     /**
      * @param artifact the artifact to test
-     * @return {@code true} if the given artifact is the core artifact of Camel v2, {@code false} otherwise.
+     * @return {@code true} if the given artifact is one of the core artifacts of Camel v3+, {@code false} otherwise.
      */
-    private static boolean isCamel2CoreMavenDependency(ArtifactCoordinates artifact) {
-        if ("org.apache.camel".equals(artifact.getGroupId()) && "camel-core".equals(artifact.getArtifactId())) {
-            String version = artifact.getVersion();
-            return version == null || version.startsWith("2");
-        }
-        return false;
-    }
-
-    /**
-     * @param artifact the artifact to test
-     * @return {@code true} if the given artifact is one of the core artifacts of Camel v3, {@code false} otherwise.
-     */
-    private static boolean isCamel3CoreMavenDependency(ArtifactCoordinates artifact) {
+    private static boolean isCamelCoreMavenDependency(ArtifactCoordinates artifact) {
         if (!"org.apache.camel".equals(artifact.getGroupId())) {
             return false;
         }
-        switch (artifact.getArtifactId()) {
-        case "camel-api":
-        case "camel-base":
-        case "camel-core-engine":
-        case "camel-base-engine":
-        case "camel-util":
-        case "camel-core-languages":
-        case "camel-management-api":
-        case "camel-support":
-        case "camel-core-model":
-        case "camel-core-processor":
-        case "camel-bean":
-            String version = artifact.getVersion();
-            return version == null || version.startsWith("3");
-        default: return false;
-        }
+        return switch (artifact.getArtifactId()) {
+        case "camel-api", "camel-base", "camel-core", "camel-core-engine", "camel-base-engine", "camel-util",
+            "camel-core-languages", "camel-management-api", "camel-support", "camel-core-model", "camel-core-processor", "camel-bean" ->
+            true;
+        default -> false;
+        };
     }
 
     private void expireOldCamelCatalogVersion() {
@@ -741,11 +705,6 @@ public class CamelService implements Disposable {
         if (version.endsWith("snapshot")) {
             // accept snapshot version which can be Camel team developing on latest Camel source
             return true;
-        }
-
-        // special issue with 2.16.0 which does not work
-        if ("2.16.0".equals(version)) {
-            return false;
         }
 
         int major = -1;

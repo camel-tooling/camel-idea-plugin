@@ -291,9 +291,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
             String json = camelCatalog.componentJSonSchema(name);
             ComponentModel component = JsonMapper.generateComponentModel(json);
             String version = component.getVersion();
-            if (version.startsWith("2")) {
-                version = "2.x";
-            } else if (version.startsWith("3.4")) {
+            if (version.startsWith("3.4")) {
                 version = "3.4.x"; // LTS
             } else if (version.startsWith("3.7")) {
                 version = "3.7.x"; // LTS
