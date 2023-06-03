@@ -59,7 +59,7 @@ public final class ArtifactCoordinates {
      */
     @NotNull
     public static ArtifactCoordinates parse(LibraryOrderEntry libraryOrderEntry) {
-        String presentableName = libraryOrderEntry.getPresentableName().toLowerCase();
+        String presentableName = libraryOrderEntry.getPresentableName();
         String[] split = presentableName.split(":");
         if (split.length < 3) {
             return new ArtifactCoordinates("$", presentableName, null);
