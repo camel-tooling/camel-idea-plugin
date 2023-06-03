@@ -30,6 +30,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -47,7 +48,7 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
     @NotNull
     private Map<String, Object> getProperties(VirtualFile virtualFile) {
         Map<String, Object> result = new HashMap<>();
-        Yaml yaml = new Yaml(new SafeConstructor());
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         try {
             // Parse the YAML file and return the output as a series of Maps and Lists
             result = yaml.load(virtualFile.getInputStream());
