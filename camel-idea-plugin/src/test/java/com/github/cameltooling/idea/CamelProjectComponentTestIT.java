@@ -20,6 +20,7 @@ package com.github.cameltooling.idea;
 import java.io.File;
 
 import com.github.cameltooling.idea.service.CamelService;
+import com.github.cameltooling.idea.util.ArtifactCoordinates;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
@@ -137,11 +138,17 @@ public class CamelProjectComponentTestIT extends JavaProjectTestCase {
         final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(myProject);
 
         addLibraryToModule(camelCoreVirtualFile, projectLibraryTable, "org.apache.camel:camel-core:4.0.0-snapshot");
+        addLibraryToModule(camelCoreVirtualFile, projectLibraryTable, "org.apache.camel:camel-core-engine:4.0.0-M3");
 
         UIUtil.dispatchAllInvocationEvents();
-        assertEquals(1, service.getLibraries().size());
+        assertEquals(2, service.getLibraries().size());
         assertTrue(service.getLibraries().contains("camel-core"));
-
+        ArtifactCoordinates coreArtifact = service.getProjectLibraryCoordinates("org.apache.camel", "camel-core");
+        assertNotNull(coreArtifact);
+        assertEquals("4.0.0-SNAPSHOT", coreArtifact.getVersion());
+        ArtifactCoordinates coreEngineArtifact = service.getProjectLibraryCoordinates("org.apache.camel", "camel-core-engine");
+        assertNotNull(coreEngineArtifact);
+        assertEquals("4.0.0-M3", coreEngineArtifact.getVersion());
     }
 
     private File createTestArchive(String filename) {
