@@ -32,15 +32,15 @@ public class PropertiesPropertyKeyCompletionSpringBootLegacyTestIT extends Prope
         return new String[]{
             "com.sun.xml.bind:jaxb-core:2.3.0",
             "com.sun.xml.bind:jaxb-impl:2.3.0",
-            "org.apache.camel:camel-core:2.25.4",
-            "org.apache.camel:camel-spring-boot:2.25.4",
-            "org.apache.camel:camel-sql-starter:2.25.4"
+            "org.apache.camel:camel-core:3.1.0",
+            "org.apache.camel.springboot:camel-spring-boot:3.1.0",
+            "org.apache.camel.springboot:camel-sql-starter:3.1.0"
         };
     }
 
     protected void assertComponentOptionSuggestion(List<String> strings) {
-        assertContainsElements(strings, "camel.component.sql.data-source = ", "camel.component.sql.use-placeholder = ",
-            "camel.component.sql.resolve-property-placeholders = ", "camel.component.sql.enabled = ");
+        assertContainsElements(strings, "camel.component.sql.data-source = ", "camel.component.sql.enabled = ",
+            "camel.component.sql.use-placeholder = ");
     }
 
     protected void assertDataFormatNameSuggestion(List<String> strings) {

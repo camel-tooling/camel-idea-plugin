@@ -27,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public abstract class CamelInspectionTestHelper extends JavaInspectionTestCase {
 
-    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:2.22.0";
+    public static final String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:3.20.0";
 
     @NotNull
     @Override
