@@ -52,6 +52,7 @@ import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
 import com.intellij.psi.impl.source.PostprocessReformattingAspect;
+import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.util.ClassUtil;
 import com.intellij.psi.util.InheritanceUtil;
@@ -82,13 +83,18 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     /**
      * The pattern corresponding to a method call in Java.
      */
-    private static final Pattern METHOD_CALL_PATTERN = Pattern.compile("(?s)(\\s*)\\.(\\s*)(\\w+)(\\s*)\\(");
+    private static final Pattern METHOD_CALL_PATTERN = Pattern.compile("(?s)(\\s*\\)\\s*\\))?(\\s*)(\\.)?(\\s*)(\\w+)(\\s*)\\(");
     /**
      * Name of the methods indicating that the next method call needs to be indented one more time.
      */
     private static final Set<String> ADD_INDENT = Set.of("choice", "doTry", "pipeline", "multicast", "split",
         "circuitBreaker", "intercept", "interceptFrom", "interceptSendToEndpoint", "aggregate", "loadBalance", "loop",
-        "kamelet", "step", "transacted", "saga", "route", "resequence", "policy", "onException", "onCompletion");
+        "kamelet", "step", "transacted", "saga", "route", "resequence", "policy", "onException", "onCompletion",
+        "from", "rest", "restConfiguration");
+    /**
+     * Name of the methods corresponding to root element of sub DSL.
+     */
+    private static final Set<String> SUB_DSL_ROOTS = Set.of("expression", "dataFormat");
     /**
      * Name of the methods indicating that the next method call needs to be indented the same way as before but the
      * method call itself must be indented one less time.
@@ -103,7 +109,8 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     /**
      * Name of the methods indicating that the next method call needs to be indented one less time.
      */
-    private static final Set<String> REMOVE_INDENT = Set.of("endChoice", "end");
+    private static final Set<String> REMOVE_INDENT = Set.of("endChoice", "end", "endParent", "endDoTry", "endDoCatch",
+        "endCircuitBreaker");
     private static final List<String> JAVA_ROUTE_BUILDERS = Arrays.asList(
         "org.apache.camel.builder.RouteBuilder",
         "org.apache.camel.RoutesBuilder",
@@ -139,7 +146,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     @Override
     public boolean isCamelRouteStartExpression(PsiElement element) {
         PsiElement routeStartParent = IdeaUtils.getService().findFirstParent(element, false,
-                this::isCamelRouteStart, PsiFile.class::isInstance);
+            this::isCamelRouteStart, PsiFile.class::isInstance);
         return routeStartParent != null;
     }
 
@@ -359,7 +366,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     public boolean isPlaceForEndpointUri(PsiElement location) {
         PsiLiteralExpression expression = PsiTreeUtil.getParentOfType(location, PsiLiteralExpression.class, false);
         return expression != null
-                && isInsideCamelRoute(expression, false);
+            && isInsideCamelRoute(expression, false);
     }
 
     /**
@@ -380,7 +387,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         List<PsiElement> results = new ArrayList<>();
         if (routeBuilderClass != null) {
             Collection<PsiClass> routeBuilders = ClassInheritorsSearch.search(routeBuilderClass, module.getModuleScope(), true)
-                    .findAll();
+                .findAll();
             for (PsiClass routeBuilder : routeBuilders) {
                 Collection<PsiLiteralExpression> literals = PsiTreeUtil.findChildrenOfType(routeBuilder, PsiLiteralExpression.class);
                 for (PsiLiteralExpression literal : literals) {
@@ -417,11 +424,11 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     /**
      * Formats the routes that could be found between the given indexes.
      *
-     * @param file the file that contains the text to format.
-     * @param document the document that contains the text to format.
+     * @param file        the file that contains the text to format.
+     * @param document    the document that contains the text to format.
      * @param startOffset the start offset of the text format
-     * @param endOffset the end offset of the text format
-     * @param settings the settings to apply when formatting the text.
+     * @param endOffset   the end offset of the text format
+     * @param settings    the settings to apply when formatting the text.
      */
     private void format(PsiFile file, Document document, int startOffset, int endOffset, CodeStyleSettings settings) {
         final VirtualFile vFile = FileDocumentManager.getInstance().getFile(document);
@@ -444,11 +451,11 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     /**
      * Formats the routes that could be found between the given indexes.
      *
-     * @param file the file that contains the text to format.
-     * @param document the document that contains the text to format.
+     * @param file        the file that contains the text to format.
+     * @param document    the document that contains the text to format.
      * @param startOffset the start offset of the text format
-     * @param endOffset the end offset of the text format
-     * @param settings the settings to apply when formatting the text.
+     * @param endOffset   the end offset of the text format
+     * @param settings    the settings to apply when formatting the text.
      */
     private void formatText(PsiFile file, Document document, int startOffset, int endOffset,
                             CodeStyleSettings settings) {
@@ -483,55 +490,90 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     }
 
     /**
-     *
      * Formats the given {@code CharSequence} corresponding to entire route written in Java DSL.
      *
-     * @param file the file in which the route has been defined.
-     * @param startOffset the start offset of the route definition.
-     * @param endOffset the limit of the offset beyond which the text can be formatted.
+     * @param file            the file in which the route has been defined.
+     * @param startOffset     the start offset of the route definition.
+     * @param endOffset       the limit of the offset beyond which the text can be formatted.
      * @param contentToFormat the content to format.
-     * @param linePrefix the first characters to add to a new line.
+     * @param linePrefix      the first characters to add to a new line.
      * @param useTabCharacter indicates whether tab should be used to indent a line.
-     * @param indentSize the size of an ident in spaces.
+     * @param indentSize      the size of an ident in spaces.
      * @return the content of the route formatted according to the Java DSL.
      */
     private CharSequence formatText(PsiFile file, int startOffset, int endOffset, CharSequence contentToFormat,
                                     CharSequence linePrefix, boolean useTabCharacter, int indentSize) {
         StringBuilder result = new StringBuilder(contentToFormat.length());
         Matcher matcher = METHOD_CALL_PATTERN.matcher(contentToFormat);
-        int indent = 1;
+        int indent = 0;
         int lastIndex = 0;
         Deque<String> stack = new ArrayDeque<>();
+        String previousMethod = null;
+        boolean lastProcessedMethodIsFormatted = false;
         while (matcher.find()) {
-            String methodName = matcher.group(3);
-            int startGroup = matcher.start(3);
+            String methodName = matcher.group(5);
+            int startGroup = matcher.start(5);
             int startMatch = matcher.start();
+            boolean hasDot = Objects.nonNull(matcher.group(3));
             int offset = startOffset + startGroup;
             if (endOffset <= offset) {
                 // The limit is reached, no need to format beyond
                 break;
-            } else if (isDSLMethod(file, offset)) {
+            } else if (isMethodToFormat(file, offset)) {
                 int currentIndent = indent;
-                if (ADD_INDENT.contains(methodName) || ADD_INDENT_OR_NEW_BLOCK.contains(methodName) && !methodName.equals(stack.peek())) {
+                String lastMethodName = stack.peek();
+                if (!hasDot && SUB_DSL_ROOTS.contains(methodName)) {
+                    stack.push(methodName);
+                    indent++;
+                    if (Objects.nonNull(previousMethod) && !ADD_INDENT.contains(previousMethod) && !SUB_DSL_ROOTS.contains(previousMethod)) {
+                        indent++;
+                        currentIndent++;
+                    }
+                } else if (ADD_INDENT.contains(methodName) || ADD_INDENT_OR_NEW_BLOCK.contains(methodName) && !methodName.equals(lastMethodName)) {
                     stack.push(methodName);
                     indent++;
                 } else if (REMOVE_INDENT.contains(methodName)) {
-                    stack.pop();
-                    indent--;
-                    currentIndent--;
-                } else if (NEW_BLOCK.contains(methodName) || ADD_INDENT_OR_NEW_BLOCK.contains(methodName) && methodName.equals(stack.peek())) {
-                    currentIndent--;
-                    stack.pop();
-                    stack.push(methodName);
+                    if (stack.size() > 1) {
+                        stack.pop();
+                        indent--;
+                        currentIndent--;
+                    } else {
+                        LOG.debug("The method at index %d is invalid".formatted(offset));
+                        break;
+                    }
+                } else if (NEW_BLOCK.contains(methodName) || ADD_INDENT_OR_NEW_BLOCK.contains(methodName) && methodName.equals(lastMethodName)) {
+                    if (stack.size() > 1) {
+                        currentIndent--;
+                        stack.pop();
+                        stack.push(methodName);
+                    } else {
+                        LOG.debug("The method at index %d is invalid".formatted(offset));
+                        break;
+                    }
                 }
                 result.append(contentToFormat.subSequence(lastIndex, startMatch));
-                appendNewLine(result, linePrefix, useTabCharacter, indentSize, currentIndent);
-                result.append('.');
+                boolean hasDoubleParenthesis = Objects.nonNull(matcher.group(1));
+                if (hasDoubleParenthesis) {
+                    result.append("))");
+                    if (hasDot && lastProcessedMethodIsFormatted) {
+                        indent--;
+                        currentIndent--;
+                    }
+                }
+                if (currentIndent > 0) {
+                    appendNewLine(result, linePrefix, useTabCharacter, indentSize, currentIndent);
+                }
+                if (hasDot) {
+                    result.append('.');
+                }
                 result.append(methodName);
                 result.append('(');
                 lastIndex = matcher.end();
+                previousMethod = methodName;
+                lastProcessedMethodIsFormatted = true;
                 continue;
             }
+            lastProcessedMethodIsFormatted = false;
             result.append(contentToFormat.subSequence(lastIndex, matcher.end()));
             lastIndex = matcher.end();
         }
@@ -541,11 +583,12 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     /**
      * Appends a new line to the given {@code StringBuilder}
-     * @param builder to builder to which the new line must be added.
-     * @param linePrefix the first characters to add to a new line.
+     *
+     * @param builder         to builder to which the new line must be added.
+     * @param linePrefix      the first characters to add to a new line.
      * @param useTabCharacter indicates whether tab should be used to indent a line.
-     * @param indentSize the size of an ident in spaces.
-     * @param indent the indentation to apply to the new line to append.
+     * @param indentSize      the size of an ident in spaces.
+     * @param indent          the indentation to apply to the new line to append.
      */
     private static void appendNewLine(StringBuilder builder, CharSequence linePrefix, boolean useTabCharacter,
                                       int indentSize, int indent) {
@@ -561,14 +604,13 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     }
 
     /**
-     * Indicates whether the {@code PsiElement} located at the given {@code offset} is part of the methods corresponding
-     * to the Camel Java DSL.
+     * Indicates whether the {@code PsiElement} located at the given {@code offset} is part of the methods to format.
      *
-     * @param file the file in which the method is located.
+     * @param file   the file in which the method is located.
      * @param offset the offset of the method to check.
-     * @return {@code true} if it is part of the Java DSL, {@code false} otherwise.
+     * @return {@code true} if it is method to format, {@code false} otherwise.
      */
-    private static boolean isDSLMethod(PsiFile file, int offset) {
+    private static boolean isMethodToFormat(PsiFile file, int offset) {
         PsiElement element = file.findElementAt(offset);
         if (element == null) {
             LOG.debug("No element cannot be found at index %d".formatted(offset));
@@ -583,19 +625,108 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                 } else if (Arrays.stream(results).map(JavaResolveResult::getElement)
                     .filter(PsiMethod.class::isInstance)
                     .map(PsiMethod.class::cast)
-                    .map(PsiMethod::getContainingClass)
-                    .filter(Objects::nonNull)
-                    .map(PsiClass::getQualifiedName)
-                    .filter(Objects::nonNull)
-                    .anyMatch(name -> name.startsWith("org.apache.camel.model.") || name.startsWith("org.apache.camel.builder."))) {
+                    .anyMatch(JavaCamelIdeaUtils::isMethodToFormat)) {
                     return true;
                 } else {
-                    LOG.trace("The method is not part of the DSL");
+                    LOG.trace("The method is not part of the methods to format");
                 }
             }
         } else {
             LOG.trace("The element at index %d is not a PsiIdentifier".formatted(offset));
         }
         return false;
+    }
+
+    /**
+     * Indicates whether the given class only contains methods to format.
+     *
+     * @param name the fully qualified name of the class to test
+     * @return {@code true} if the class only contains method to format, {@code false} otherwise.
+     */
+    private static boolean isContainingClassOfMethodToFormat(String name) {
+        // The class is part of the Java DSL and is not an expression
+        return (name.startsWith("org.apache.camel.model.")
+            || name.startsWith("org.apache.camel.builder.")
+            || name.startsWith("org.apache.camel.support.builder."))
+            && !"org.apache.camel.builder.ExpressionClause".equals(name);
+    }
+
+    /**
+     * Indicates whether the given method with the given return type is a method to format.
+     *
+     * @param methodName the name of the method to check
+     * @param returnType the type returned by the method
+     * @return {@code true} if it is a method to format, {@code false} otherwise.
+     */
+    private static boolean isReturnTypeOfMethodToFormat(String methodName, String returnType) {
+        if (returnType == null) {
+            LOG.trace("The return type of the method cannot be found");
+            // By default, it is accepted
+            return true;
+        }
+        return !"org.apache.camel.builder.ValueBuilder".equals(returnType) || "expression".equals(methodName);
+    }
+
+    /**
+     * Indicates whether the given method is a method to format.
+     *
+     * @param method the method to check
+     * @return {@code true} if it is a method to format, {@code false} otherwise.
+     */
+    private static boolean isMethodToFormat(PsiMethod method) {
+        String containingClass = getContainingClass(method);
+        if (containingClass == null) {
+            LOG.trace("The containing class of the method cannot be found");
+            return false;
+        }
+        return isMethodToFormat(method.getName(), containingClass, getReturnType(method));
+    }
+
+    /**
+     * Indicates whether the method with the given name, containing class and returned type is a method to format.
+     *
+     * @param name            the name of the method to check
+     * @param containingClass the class containing the method
+     * @param returnType      the type returned by the method
+     * @return {@code true} if it is a method to format, {@code false} otherwise.
+     */
+    private static boolean isMethodToFormat(String name, String containingClass, String returnType) {
+        return isContainingClassOfMethodToFormat(containingClass) && isReturnTypeOfMethodToFormat(name, returnType);
+    }
+
+    /**
+     * Gives the containing class of the given method.
+     *
+     * @param method the method for which the containing class is expected
+     * @return the fully qualified name of the containing class if it could be found, {@code null} otherwise.
+     */
+    private static String getContainingClass(PsiMethod method) {
+        PsiClass psiClass = method.getContainingClass();
+        if (Objects.nonNull(psiClass)) {
+            return psiClass.getQualifiedName();
+        }
+        LOG.trace("The containing class of the method cannot be found");
+        return null;
+    }
+
+    /**
+     * Gives the returned type of the given method
+     *
+     * @param method the method for which the returned type is expected
+     * @return the fully qualified name of the returned type if it could be found, {@code null} otherwise.
+     */
+    private static String getReturnType(PsiMethod method) {
+        PsiType psiType = method.getReturnType();
+        if (psiType instanceof PsiClassReferenceType referenceType) {
+            PsiClass returnType = referenceType.resolve();
+            if (returnType == null) {
+                LOG.trace("The return type of the method cannot be resolved");
+            } else {
+                return returnType.getQualifiedName();
+            }
+        } else {
+            LOG.trace("The return type of the method is not a reference type");
+        }
+        return null;
     }
 }

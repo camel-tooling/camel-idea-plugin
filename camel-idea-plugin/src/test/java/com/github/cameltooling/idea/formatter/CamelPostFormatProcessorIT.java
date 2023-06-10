@@ -33,6 +33,29 @@ import org.jetbrains.annotations.Nullable;
  */
 public class CamelPostFormatProcessorIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
+    private static final String CAMEL_SUPPORT_MAVEN_ARTIFACT = String.format("org.apache.camel:camel-support:%s", CAMEL_VERSION);
+
+    /**
+     * Ensures that expressions are not formatted and the language DSL is supported.
+     */
+    public void testRouteWithExpressions() {
+        doTest("RouteWithExpressions", null);
+    }
+
+    /**
+     * Ensures that the data format DSL is supported.
+     */
+    public void testRouteWithDataFormatDSL() {
+        doTest("RouteWithDataFormatDSL", null);
+    }
+
+    /**
+     * Ensures that a malformed route won't make the formatter fail.
+     */
+    public void testMalformedRoute() {
+        doTest("MalformedRoute", null);
+    }
+
     /**
      * Ensures that an entire file can be formatted using the default settings.
      */
@@ -57,7 +80,7 @@ public class CamelPostFormatProcessorIT extends CamelLightCodeInsightFixtureTest
     @Nullable
     @Override
     protected String[] getMavenDependencies() {
-        return new String[]{CAMEL_CORE_MODEL_MAVEN_ARTIFACT};
+        return new String[]{CAMEL_CORE_MODEL_MAVEN_ARTIFACT, CAMEL_SUPPORT_MAVEN_ARTIFACT};
     }
 
     @Override
