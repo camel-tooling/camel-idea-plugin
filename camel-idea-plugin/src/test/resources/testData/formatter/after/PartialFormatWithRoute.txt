@@ -43,8 +43,7 @@ public class EntireFile extends RouteBuilder {
                 .when(credentialsValid)
                     .process(createNumbersResponseFromBGResponse)
                 .otherwise()
-                    .setHeader(Exchange.HTTP_RESPONSE_CODE)
-                    .constant(401)
+                    .setHeader(Exchange.HTTP_RESPONSE_CODE).constant(401)
                 .end();
 
         from("direct:start-conditional-bean")
