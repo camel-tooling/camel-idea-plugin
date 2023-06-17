@@ -168,7 +168,9 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
         }
         parameters.getProgramParametersList().addAll(settings.getTaskNames());
         String sScriptParametersBefore = settings.getScriptParameters();
-        parameters.getProgramParametersList().addAll(Arrays.asList(sScriptParametersBefore.split(" ")));
+        if (sScriptParametersBefore != null) {
+            parameters.getProgramParametersList().addAll(Arrays.asList(sScriptParametersBefore.split(" ")));
+        }
         patchJavaParametersOnDebug(project, ExecutionMode.GRADLE_GENERIC, parameters);
         Map<String, String> env = parameters.getEnv();
         if (env.isEmpty()) {
