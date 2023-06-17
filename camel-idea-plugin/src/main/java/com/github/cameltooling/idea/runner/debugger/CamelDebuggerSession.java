@@ -660,7 +660,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 LOG.debug("Collecting suspended breakpoint nodes ids");
                 @SuppressWarnings("unchecked")
                 Collection<String> suspendedBreakpointIDs = (Collection<String>) serverConnection.invoke(
-                    this.debuggerMBeanObjectName, "getSuspendedBreakpointNodeIds", new Object[]{}, new String[]{}
+                    this.debuggerMBeanObjectName, "suspendedBreakpointNodeIds", new Object[]{}, new String[]{}
                 );
                 if (suspendedBreakpointIDs != null && !suspendedBreakpointIDs.isEmpty()) {
                     LOG.debug("Found suspended breakpoint nodes ids: ", suspendedBreakpointIDs.size());
