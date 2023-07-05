@@ -225,6 +225,21 @@ public final class ContextAwareDebugProcess extends XDebugProcess {
         return debugProcess != null ? debugProcess : getDefaultDebugProcess();
     }
 
+    @NotNull
+    static XDebugProcess createRemoteDebugProcess(@NotNull XDebugSession session, Project project, String jmxHost, int jmxPort) {
+        final Map<CamelDebuggerContext, XDebugProcess> context = new EnumMap<>(CamelDebuggerContext.class);
+        final ContextAwareDebugProcess contextAwareDebugProcess = new ContextAwareDebugProcess(session, null, context, CAMEL);
+
+        final CamelDebuggerSession camelDebuggerSession = new CamelDebuggerSession(project, session, jmxHost, jmxPort);
+        camelDebuggerSession.addMessageReceivedListener(messages -> contextAwareDebugProcess.setContext(CAMEL));
+
+        //Init Camel Debug Process
+        final CamelDebugProcess camelDebugProcess = new CamelDebugProcess(session, camelDebuggerSession);
+
+        //Register Process
+        context.put(CAMEL, camelDebugProcess);
+        return contextAwareDebugProcess;
+    }
 
     @NotNull
     static XDebugProcess createDebugProcess(@NotNull XDebugSession session, Project project, DebuggerSession debuggerSession, XDebugSessionImpl sessionImpl, ExecutionResult executionResult) {
