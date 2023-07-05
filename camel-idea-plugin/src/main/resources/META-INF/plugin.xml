@@ -11,6 +11,7 @@
   <change-notes><![CDATA[
       v.1.0.2
       <ul>
+        <li>Add a Camel Remote Debugger</li>
         <li>Bug fixes</li>
       </ul>
     ]]>
@@ -160,6 +161,7 @@
     <configurationType implementation="com.github.cameltooling.idea.runner.CamelMainRunConfigurationType"/>
     <configurationType implementation="com.github.cameltooling.idea.runner.CamelQuarkusRunConfigurationType"/>
     <configurationType implementation="com.github.cameltooling.idea.runner.CamelJBangRunConfigurationType"/>
+    <configurationType implementation="com.github.cameltooling.idea.runner.CamelRemoteRunConfigurationType"/>
     <java.programPatcher implementation="com.github.cameltooling.idea.runner.debugger.CamelDebuggerPatcher"/>
   </extensions>
 
