@@ -127,12 +127,29 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private volatile String temporaryBreakpointId;
 
     private final XDebugSession xDebugSession;
+    @Nullable
     private final ProcessHandler javaProcessHandler;
+    private final String jmxHost;
+    private final int jmxPort;
 
-    public CamelDebuggerSession(Project project, XDebugSession session, ProcessHandler javaProcessHandler) {
+    public CamelDebuggerSession(Project project, XDebugSession session, @NotNull ProcessHandler javaProcessHandler) {
         this.project = project;
         this.xDebugSession = session;
         this.javaProcessHandler = javaProcessHandler;
+        this.jmxHost = "localhost";
+        this.jmxPort = 1099;
+    }
+
+    public CamelDebuggerSession(Project project, XDebugSession session, String jmxHost, int jmxPort) {
+        this.project = project;
+        this.xDebugSession = session;
+        this.javaProcessHandler = null;
+        this.jmxHost = jmxHost;
+        this.jmxPort = jmxPort;
+    }
+
+    public String getJMXServiceURL() {
+        return "service:jmx:rmi:///jndi/rmi://%s:%d/jmxrmi/camel".formatted(jmxHost, jmxPort);
     }
 
     public boolean isConnected() {
@@ -465,7 +482,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
      * @return {@code true} if it could connect to the JMX connector server, {@code false} otherwise.
      */
     private boolean tryToConnect() {
-        for (int i = 0; i < MAX_RETRIES && !javaProcessHandler.isProcessTerminated() && !javaProcessHandler.isProcessTerminating(); i++) {
+        for (int i = 0; i < MAX_RETRIES && canConnect(); i++) {
             LOG.debug("Trying to connect to the JMX connector server");
             if (doConnect()) {
                 LOG.debug("Connected with success to the JMX connector server");
@@ -479,6 +496,13 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             }
         }
         return false;
+    }
+
+    private boolean canConnect() {
+        if (javaProcessHandler == null) {
+            return !xDebugSession.isStopped();
+        }
+        return !javaProcessHandler.isProcessTerminated() && !javaProcessHandler.isProcessTerminating();
     }
 
     private boolean doConnect() {
@@ -518,7 +542,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                     }
 
                     //Init DOM Documents
-                    String routes = camelContext.dumpRoutesAsXml(false, true);
+                    String routes = camelContext.dumpRoutesAsXml(false);
                     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
                     DocumentBuilder documentBuilder = dbf.newDocumentBuilder();
                     InputStream targetStream = new ByteArrayInputStream(routes.getBytes());
@@ -601,9 +625,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     @Nullable
-    private static JMXConnector getJMXConnectorFromServiceURL() {
+    private JMXConnector getJMXConnectorFromServiceURL() {
         try {
-            return JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi/camel"));
+            return JMXConnectorFactory.connect(new JMXServiceURL(getJMXServiceURL()));
         } catch (Exception e) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Could not retrieve the JMX API connector", e);
@@ -613,6 +637,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     private static String getPID(ProcessHandler handler) {
+        if (handler == null) {
+            return null;
+        }
         String cmdLine = handler.toString();
         for (ProcessInfo info : OSProcessUtil.getProcessList()) {
             if (info.getCommandLine().equals(cmdLine)) {

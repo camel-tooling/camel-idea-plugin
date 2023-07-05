@@ -19,6 +19,8 @@ package com.github.cameltooling.idea.runner.debugger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.cameltooling.idea.runner.CamelJBangRunProfileState;
+import com.github.cameltooling.idea.runner.CamelRemoteRunConfigurationOptions;
+import com.github.cameltooling.idea.runner.CamelRemoteRunProfileState;
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointHandler;
 import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
@@ -99,6 +101,21 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
                                                            @NotNull ExecutionEnvironment environment) throws ExecutionException {
         if (state instanceof CamelJBangRunProfileState connection) {
             return attachVirtualMachine(state, environment, connection.createRemoteConnection(), false);
+        } else if (state instanceof CamelRemoteRunProfileState connection) {
+            AtomicReference<ExecutionException> ex = new AtomicReference<>();
+            AtomicReference<RunContentDescriptor> result = new AtomicReference<>();
+
+            ApplicationManager.getApplication().invokeAndWait(() -> {
+                try {
+                    result.set(attachRemoteServer(connection, environment));
+                } catch (ExecutionException e) {
+                    ex.set(e);
+                }
+            });
+            if (ex.get() != null) {
+                throw ex.get();
+            }
+            return result.get();
         }
 
         return super.createContentDescriptor(state, environment);
@@ -151,5 +168,18 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
             debuggerSession.dispose();
             return null;
         }
+    }
+
+    private RunContentDescriptor attachRemoteServer(final CamelRemoteRunProfileState state, final @NotNull ExecutionEnvironment env)
+            throws ExecutionException {
+        LOG.debug("Attaching Remote Server...");
+        Project project = env.getProject();
+        return XDebuggerManager.getInstance(project).startSession(env, new XDebugProcessStarter() {
+            @NotNull
+            public XDebugProcess start(@NotNull XDebugSession session) {
+                CamelRemoteRunConfigurationOptions options = state.getConfiguration().getOptions();
+                return ContextAwareDebugProcess.createRemoteDebugProcess(session, project, options.getHost(), options.getPort());
+            }
+        }).getRunContentDescriptor();
     }
 }
