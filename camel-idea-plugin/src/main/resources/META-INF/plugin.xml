@@ -11,6 +11,7 @@
   <change-notes><![CDATA[
       v.1.0.2
       <ul>
+        <li>Upgrade to Camel 3.21.0</li>
         <li>Bug fixes</li>
       </ul>
     ]]>
