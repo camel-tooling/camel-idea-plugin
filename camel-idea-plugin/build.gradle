@@ -33,11 +33,11 @@ intellij {
 // http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
 patchPluginXml {
     sinceBuild = "222"
-    untilBuild = "231.*"
+    untilBuild = "232.*"
 }
 
 runPluginVerifier {
-    ideVersions = [ "2022.2", "2022.3", "2023.1" ]
+    ideVersions = [ "2022.3", "2023.1", "2023.2" ]
 }
 
 // publishPlugin {
