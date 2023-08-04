@@ -22,7 +22,7 @@ allprojects {
         toolVersion = '10.11.0'
         configDirectory = file("$rootProject.projectDir/config/checkstyle")
     }
-    
+
     group = 'com.github.camel-tooling'
     version = '1.0.2'
 }
@@ -62,8 +62,15 @@ subprojects {
             logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
         }
     }
-    
+
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
+    }
+
+    tasks.withType(Test).configureEach {
+        jvmArgs = [
+                // avoid JBUIScale "Must be precomputed" error, because IDE is not started (LoadingState.APP_STARTED.isOccurred is false)
+                '-Djava.awt.headless=true'
+        ]
     }
 }
