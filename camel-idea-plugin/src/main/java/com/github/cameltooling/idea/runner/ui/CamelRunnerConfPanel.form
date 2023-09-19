@@ -28,7 +28,7 @@
             <properties>
               <componentClass value="com.intellij.ui.EditorTextField"/>
               <labelLocation value="West"/>
-              <text resource-bundle="messages/MavenConfigurableBundle" key="maven.settings.runner.profiles"/>
+              <text resource-bundle="messages/LegacyMavenConfigurableBundle" key="maven.settings.runner.profiles"/>
             </properties>
           </component>
           <component id="3c5c0" class="com.intellij.ui.components.JBLabel">
@@ -40,7 +40,7 @@
               <fontColor value="BRIGHTER"/>
               <horizontalAlignment value="2"/>
               <horizontalTextPosition value="2"/>
-              <text resource-bundle="messages/MavenConfigurableBundle" key="maven.settings.runner.profiles.notes"/>
+              <text resource-bundle="messages/LegacyMavenConfigurableBundle" key="maven.settings.runner.profiles.notes"/>
             </properties>
           </component>
           <component id="2561b" class="com.intellij.ui.components.JBLabel" binding="myFakeLabel">
@@ -66,13 +66,13 @@
             <properties>
               <componentClass value="com.intellij.openapi.ui.TextFieldWithBrowseButton"/>
               <labelLocation value="West"/>
-              <text resource-bundle="messages/MavenConfigurableBundle" key="maven.settings.working.directory"/>
+              <text resource-bundle="messages/LegacyMavenConfigurableBundle" key="maven.settings.working.directory"/>
             </properties>
           </component>
           <component id="b7a16" class="com.intellij.openapi.ui.FixedSizeButton" binding="showProjectTreeButton">
             <constraints border-constraint="East"/>
             <properties>
-              <toolTipText resource-bundle="messages/MavenConfigurableBundle" key="maven.settings.working.directory.tooltip"/>
+              <toolTipText resource-bundle="messages/LegacyMavenConfigurableBundle" key="maven.settings.working.directory.tooltip"/>
             </properties>
           </component>
         </children>
