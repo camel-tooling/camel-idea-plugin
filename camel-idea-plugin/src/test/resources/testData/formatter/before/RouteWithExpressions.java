@@ -42,6 +42,7 @@ public class RouteWithExpressions extends RouteBuilder {
         from("direct:b").setBody().expression(expression().simple().expression("Hello World Out").end()).to("mock:b");
         from("direct:c").setBody(expression().simple().expression("Hello World In").end()).to("mock:c");
         from("direct:d").filter(expression(expression().header().expression("foo").end()).isEqualTo("bar")).to("mock:d");
+        from("direct:e").choice().when(expression(expression().header().expression("foo").end()).isEqualTo("bar")).to("mock:e1").otherwise().to("mock:e2");
 
         AdviceWith.adviceWith(context, "advice-with-on-exception-transacted-test-route", a -> {
             a.weaveAddFirst().transform(constant("Bye World"));
