@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 public class CamelPostFormatProcessorIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     private static final String CAMEL_SUPPORT_MAVEN_ARTIFACT = String.format("org.apache.camel:camel-support:%s", CAMEL_VERSION);
+    private static final String CAMEL_API_MAVEN_ARTIFACT = String.format("org.apache.camel:camel-api:%s", CAMEL_VERSION);
 
     /**
      * Ensures that expressions are not formatted and the language DSL is supported.
@@ -64,6 +65,14 @@ public class CamelPostFormatProcessorIT extends CamelLightCodeInsightFixtureTest
     }
 
     /**
+     * Ensures that the test case defined in <a href="https://github.com/camel-tooling/camel-idea-plugin/issues/879">#879</a>
+     * is properly fixed.
+     */
+    public void testFormatting879() {
+        doTest("Formatting879", null);
+    }
+
+    /**
      * Ensures that a partial format not including a route has no effect.
      */
     public void testPartialFormat() {
@@ -80,7 +89,7 @@ public class CamelPostFormatProcessorIT extends CamelLightCodeInsightFixtureTest
     @Nullable
     @Override
     protected String[] getMavenDependencies() {
-        return new String[]{CAMEL_CORE_MODEL_MAVEN_ARTIFACT, CAMEL_SUPPORT_MAVEN_ARTIFACT};
+        return new String[]{CAMEL_CORE_MODEL_MAVEN_ARTIFACT, CAMEL_SUPPORT_MAVEN_ARTIFACT, CAMEL_API_MAVEN_ARTIFACT};
     }
 
     @Override
@@ -92,19 +101,23 @@ public class CamelPostFormatProcessorIT extends CamelLightCodeInsightFixtureTest
         var before = "before/%s.java".formatted(name);
         var after = "after/%s.txt".formatted(name);
         myFixture.configureByFile(before);
-        if (range == null) {
-            range = getFile().getTextRange();
-        }
-        performReformatting(getProject(), getFile(), range);
+        performReformatting(range);
         myFixture.checkResultByFile(after);
         //check idempotence of formatter
-        performReformatting(getProject(), getFile(), range);
+        performReformatting(range);
         myFixture.checkResultByFile(after);
     }
 
-    private void performReformatting(Project project, PsiFile file, TextRange range) {
+    private void performReformatting(TextRange range) {
+        Project project = getProject();
         WriteCommandAction.runWriteCommandAction(
-            project, () -> CodeStyleManager.getInstance(project).reformatText(file, List.of(range))
+            project, () -> {
+                TextRange textRange = range;
+                if (textRange == null) {
+                    textRange = getFile().getTextRange();
+                }
+                CodeStyleManager.getInstance(project).reformatText(getFile(), List.of(textRange));
+            }
         );
         PlatformTestUtil.dispatchAllInvocationEventsInIdeEventQueue();
     }

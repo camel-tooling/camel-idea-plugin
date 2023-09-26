@@ -50,6 +50,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.PsiType;
+import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
 import com.intellij.psi.impl.source.PostprocessReformattingAspect;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
@@ -63,6 +64,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
@@ -460,7 +462,11 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     private void formatText(PsiFile file, Document document, int startOffset, int endOffset,
                             CodeStyleSettings settings) {
         Module module = ModuleUtilCore.findModuleForPsiElement(file.getOriginalElement());
-        List<PsiElement> endpointDeclarations = findEndpointDeclarations(module, e -> true);
+        List<PsiElement> endpointDeclarations = findEndpointDeclarations(module, e -> true)
+            .stream()
+            .filter(e -> file.equals(e.getContainingFile()))
+            .sorted(Comparator.comparingInt(PsiElement::getTextOffset))
+            .toList();
         Deque<Consumer<Document>> changes = new ArrayDeque<>();
         boolean useTabCharacter = settings.useTabCharacter(JavaFileType.INSTANCE);
         int indentSize = settings.getIndentSize(JavaFileType.INSTANCE);
@@ -475,11 +481,13 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
                 TextRange textRange = parent.getTextRange();
                 CharSequence charsSequence = document.getCharsSequence();
-                CharSequence contentToFormat = charsSequence.subSequence(textRange.getStartOffset(), textRange.getEndOffset());
-                CharSequence linePrefix = charsSequence.subSequence(document.getLineStartOffset(document.getLineNumber(textOffset)), textRange.getStartOffset());
-                CharSequence result = formatText(file, textRange.getStartOffset(), endOffset, contentToFormat, linePrefix, useTabCharacter, indentSize);
+                int textRangeStartOffset = textRange.getStartOffset();
+                int textRangeEndOffset = textRange.getEndOffset();
+                CharSequence contentToFormat = charsSequence.subSequence(textRangeStartOffset, textRangeEndOffset);
+                CharSequence linePrefix = charsSequence.subSequence(document.getLineStartOffset(document.getLineNumber(textOffset)), textRangeStartOffset);
+                CharSequence result = formatText(file, textRangeStartOffset, endOffset, contentToFormat, linePrefix, useTabCharacter, indentSize);
                 // Ensure to apply the last changes first to avoid having to deal with offset change
-                changes.addFirst(doc -> doc.replaceString(textRange.getStartOffset(), textRange.getEndOffset(), result));
+                changes.addFirst(doc -> doc.replaceString(textRangeStartOffset, textRangeEndOffset, result));
             }
         }
         Consumer<Document> change = changes.poll();
@@ -525,7 +533,8 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                 if (!hasDot && SUB_DSL_ROOTS.contains(methodName)) {
                     stack.push(methodName);
                     indent++;
-                    if (Objects.nonNull(previousMethod) && !ADD_INDENT.contains(previousMethod) && !SUB_DSL_ROOTS.contains(previousMethod)) {
+                    if (Objects.nonNull(previousMethod) && !ADD_INDENT.contains(previousMethod) && !SUB_DSL_ROOTS.contains(previousMethod)
+                        && !ADD_INDENT_OR_NEW_BLOCK.contains(previousMethod)) {
                         indent++;
                         currentIndent++;
                     }
@@ -560,7 +569,8 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                         currentIndent--;
                     }
                 }
-                if (currentIndent > 0) {
+                boolean isShortPredicate = isShortPredicate(file, offset, result);
+                if (currentIndent > 0 && !isShortPredicate) {
                     appendNewLine(result, linePrefix, useTabCharacter, indentSize, currentIndent);
                 }
                 if (hasDot) {
@@ -570,7 +580,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                 result.append('(');
                 lastIndex = matcher.end();
                 previousMethod = methodName;
-                lastProcessedMethodIsFormatted = true;
+                lastProcessedMethodIsFormatted = !isShortPredicate && !isPredicateOfWhenClause(file, offset);
                 continue;
             }
             lastProcessedMethodIsFormatted = false;
@@ -611,6 +621,19 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
      * @return {@code true} if it is method to format, {@code false} otherwise.
      */
     private static boolean isMethodToFormat(PsiFile file, int offset) {
+        return testMethod(file, offset, JavaCamelIdeaUtils::isMethodToFormat);
+    }
+
+    /**
+     * Indicates whether the {@code PsiElement} located at the given {@code offset} is a method that matches with the
+     * given predicate.
+     *
+     * @param file   the file in which the method is located.
+     * @param offset the offset of the method to check.
+     * @param predicate the predicate to evaluate
+     * @return {@code true} if it is method matches with the predicate, {@code false} otherwise.
+     */
+    private static boolean testMethod(PsiFile file, int offset, Predicate<? super PsiMethod> predicate) {
         PsiElement element = file.findElementAt(offset);
         if (element == null) {
             LOG.debug("No element cannot be found at index %d".formatted(offset));
@@ -625,14 +648,70 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                 } else if (Arrays.stream(results).map(JavaResolveResult::getElement)
                     .filter(PsiMethod.class::isInstance)
                     .map(PsiMethod.class::cast)
-                    .anyMatch(JavaCamelIdeaUtils::isMethodToFormat)) {
+                    .anyMatch(predicate)) {
                     return true;
                 } else {
-                    LOG.trace("The method is not part of the methods to format");
+                    LOG.trace("The method doesn't match with the predicate");
                 }
             }
         } else {
             LOG.trace("The element at index %d is not a PsiIdentifier".formatted(offset));
+        }
+        return false;
+    }
+
+    /**
+     * Indicates whether the {@code PsiElement} located at the given {@code offset} is a predicate that can be inlined.
+     *
+     * @param file   the file in which the method is located.
+     * @param offset the offset of the method to check.
+     * @param currentContent the current formatted content
+     * @return {@code true} if it is a predicate that can be inlined, {@code false} otherwise.
+     */
+    private static boolean isShortPredicate(PsiFile file, int offset, StringBuilder currentContent) {
+        return checkPredicate(file, offset, methodName -> currentContent.lastIndexOf(methodName) > currentContent.lastIndexOf("\n"));
+    }
+
+    /**
+     * Indicates whether the {@code PsiElement} located at the given {@code offset} is a predicate of a where clause.
+     *
+     * @param file   the file in which the method is located.
+     * @param offset the offset of the method to check.
+     * @return {@code true} if it is a predicate of a where clause, {@code false} otherwise.
+     */
+    private static boolean isPredicateOfWhenClause(PsiFile file, int offset) {
+        return checkPredicate(file, offset, "when"::equals);
+    }
+
+    /**
+     * Indicates whether the {@code PsiElement} located at the given {@code offset} is a Camel predicate that matches with the
+     * given predicate.
+     *
+     * @param file   the file in which the method is located.
+     * @param offset the offset of the method to check.
+     * @param predicate the predicate to evaluate
+     * @return {@code true} if it is method matches with the predicate, {@code false} otherwise.
+     */
+    private static boolean checkPredicate(PsiFile file, int offset, Predicate<String> predicate) {
+        if (testMethod(file, offset, JavaCamelIdeaUtils::isPredicate)) {
+            PsiExpressionList parent = PsiTreeUtil.getParentOfType(file.findElementAt(offset), PsiExpressionList.class);
+            if (parent == null) {
+                LOG.debug("The parent PsiExpressionList of the element at index %d cannot be found".formatted(offset));
+            } else {
+                PsiMethodCallExpression parentMethodCallExpression = PsiTreeUtil.getParentOfType(parent.getPrevSibling(), PsiMethodCallExpression.class);
+                if (parentMethodCallExpression == null) {
+                    LOG.debug("The parent method corresponding to the element at index %d cannot be resolved".formatted(offset));
+                } else {
+                    String methodName = parentMethodCallExpression.getMethodExpression().getReferenceName();
+                    if (methodName == null) {
+                        LOG.debug("The name of the parent method corresponding to the element at index %d cannot be found".formatted(offset));
+                    } else {
+                        return predicate.test(methodName);
+                    }
+                }
+            }
+        } else {
+            LOG.trace("The element at index %d is not a Predicate".formatted(offset));
         }
         return false;
     }
@@ -695,6 +774,16 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     }
 
     /**
+     * Indicates whether the given method is a predicate
+     *
+     * @param method the method to check
+     * @return {@code true} if the method is a predicate, {@code false} otherwise.
+     */
+    private static boolean isPredicate(PsiMethod method) {
+        return "org.apache.camel.Predicate".equals(getReturnType(method));
+    }
+
+    /**
      * Gives the containing class of the given method.
      *
      * @param method the method for which the containing class is expected
@@ -721,6 +810,13 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             PsiClass returnType = referenceType.resolve();
             if (returnType == null) {
                 LOG.trace("The return type of the method cannot be resolved");
+            } else if (returnType instanceof PsiTypeParameter type) {
+                PsiClass superClass = type.getSuperClass();
+                if (superClass == null) {
+                    LOG.trace("The super class of the type parameter of the method cannot be resolved");
+                } else {
+                    return superClass.getQualifiedName();
+                }
             } else {
                 return returnType.getQualifiedName();
             }
