@@ -19,7 +19,7 @@
       uri: jms:queue
       steps:
         - set-header:
-            name: "cmis:action"
+            name: "CamelGrapeCommand"
             expression:
-              constant: CREATE
-        - to: "cmis://label"
+              constant: listPatches
+        - to: "grape:defaultCoordinates"

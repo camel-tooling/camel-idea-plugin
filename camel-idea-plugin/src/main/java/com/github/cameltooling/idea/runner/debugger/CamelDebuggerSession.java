@@ -379,7 +379,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             Element routeElement = getParentRouteId(breakpointId);
             String routeId = routeElement.getAttribute("id");
             //Get current stack and find the caller in the stack
-            List<CamelMessageInfo> stack = getStack(breakpointId, backlogDebugger.dumpTracedMessagesAsXml(breakpointId));
+            List<CamelMessageInfo> stack = getStack(breakpointId, dumpTracedMessagesAsXml(breakpointId));
             CamelMessageInfo callerStackFrame = stack.stream()
                     .filter(info -> !info.getRouteId().equals(routeId) && info.getProcessorId().startsWith("to"))
                     .findFirst()
@@ -778,12 +778,17 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         String xml;
         try {
             // If the Camel version is 3.15 or later, the exchange properties are included
-            xml = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "dumpTracedMessagesAsXml", new Object[]{id, true},
-                    new String[]{"java.lang.String", "boolean"});
+            xml = backlogDebugger.dumpTracedMessagesAsXml(id, true);
         } catch (Exception e) {
             LOG.warn("Could not invoke dumpTracedMessagesAsXml(" + id + ", true)", e);
             // Could not invoke the dumpTracedMessagesAsXml with the new signature let's try the old one
-            xml = backlogDebugger.dumpTracedMessagesAsXml(id);
+            try {
+                xml = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "dumpTracedMessagesAsXml", new Object[]{id},
+                    new String[]{"java.lang.String"});
+            } catch (Exception ex) {
+                LOG.error("Could not invoke dumpTracedMessagesAsXml(" + id + ")", e);
+                return "";
+            }
         }
         return xml;
     }

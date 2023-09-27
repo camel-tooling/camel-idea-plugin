@@ -167,7 +167,7 @@ class CamelMavenVersionManager implements VersionManager {
         // Nothing to do
     }
 
-    ClassLoader getClassLoader() {
+    public ClassLoader getClassLoader() {
         return classLoader;
     }
 

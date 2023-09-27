@@ -21,10 +21,10 @@
 
     <route>
         <from uri="jms:queue"/>
-        <setHeader name="cmis:action">
-            <constant>CREATE</constant>
+        <setHeader name="CamelGrapeCommand">
+            <constant>listPatches</constant>
         </setHeader>
-        <to uri="cmis://label"/>
+        <to uri="grape:defaultCoordinates"/>
     </route>
 
 </routes>

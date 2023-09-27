@@ -22,7 +22,7 @@ public final class HeaderValueEnumSuggestionsWithFullyQualifiedConstantAsName ex
     @Override
     public void configure() {
         from("jms:queue")
-            .setHeader(org.apache.camel.component.cmis.CamelCMISConstants.CMIS_ACTION, constant(org.apache.camel.component.cmis.CamelCMISActions.CREATE))
-            .to("cmis://label");
+            .setHeader(org.apache.camel.component.grape.GrapeConstants.GRAPE_COMMAND, constant(org.apache.camel.component.grape.GrapeCommand.listPatches))
+            .to("grape:defaultCoordinates");
     }
 }

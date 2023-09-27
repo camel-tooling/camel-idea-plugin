@@ -22,7 +22,7 @@ import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.completion.CompletionType;
 import org.hamcrest.Matchers;
 
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Testing smart completion with Camel Java DSL
@@ -94,9 +94,8 @@ public class JavaEndpointSmartCompletionValueTestIT extends CamelLightCodeInsigh
         assertDoesntContain(strings, "timer:trigger?repeatCount=10");
         assertContainsElements(strings,
             "timer:trigger?exchangePattern=InOut",
-            "timer:trigger?exchangePattern=InOnly",
-            "timer:trigger?exchangePattern=InOptionalOut");
-        assertEquals(3, strings.size());
+            "timer:trigger?exchangePattern=InOnly");
+        assertEquals(2, strings.size());
     }
 
 }

@@ -221,10 +221,10 @@ public class JavaHeaderValueCompletionTestIT extends CamelLightCodeInsightFixtur
     private void testEnumCompletionWithUnknownComponent(TestType type) {
         myFixture.configureByFiles(type.getFilePath("HeaderValueEnumSuggestionsUnknownComponent"));
         myFixture.completeBasic();
-        myFixture.type("crea");
+        myFixture.type("list");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertTrue("Should contain 'CREATE'", strings.stream().anyMatch(s -> s.contains("CREATE")));
+        assertTrue("Should contain 'listPatches'", strings.stream().anyMatch(s -> s.contains("listPatches")));
         myFixture.type('\n');
         myFixture.checkResultByFile(type.getFilePath("HeaderValueEnumSuggestionsUnknownComponentResult"));
     }
@@ -237,10 +237,10 @@ public class JavaHeaderValueCompletionTestIT extends CamelLightCodeInsightFixtur
         TestType type = TestType.JAVA;
         myFixture.configureByFiles(type.getFilePath("HeaderValueEnumSuggestionsWithFullyQualifiedConstantAsName"));
         myFixture.completeBasic();
-        myFixture.type("crea");
+        myFixture.type("list");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertTrue("Should contain 'CREATE'", strings.stream().anyMatch(s -> s.contains("CREATE")));
+        assertTrue("Should contain 'listPatches'", strings.stream().anyMatch(s -> s.contains("listPatches")));
         myFixture.type('\n');
         myFixture.checkResultByFile(type.getFilePath("HeaderValueEnumSuggestionsWithFullyQualifiedConstantAsNameResult"));
     }
