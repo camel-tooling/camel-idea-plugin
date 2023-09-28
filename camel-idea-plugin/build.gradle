@@ -68,7 +68,7 @@ dependencies {
     implementation "io.fabric8:kubernetes-model-apiextensions:6.8.1"
     // To remove once https://github.com/camel-tooling/camel-idea-plugin/issues/751 will be implemented
     runtimeOnly "org.apache.ivy:ivy:2.5.2"
-    runtimeOnly "org.apache.groovy:groovy:4.0.14"
+    runtimeOnly "org.apache.groovy:groovy:4.0.15"
 
     testImplementation "org.apache.camel:camel-core:${camelVersion}"
     testImplementation "org.apache.camel.springboot:camel-spring-boot:${camelVersion}"
