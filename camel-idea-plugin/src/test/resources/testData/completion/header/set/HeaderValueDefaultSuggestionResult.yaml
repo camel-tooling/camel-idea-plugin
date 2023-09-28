@@ -19,7 +19,7 @@
       uri: jms:queue
       steps:
         - set-header:
-            name: CamelCMISFolderPath
+            name: CamelHttpProtocolVersion
             expression:
-              constant: /
-        - to: "cmis://label"
+              constant: HTTP/1.1
+        - to: "netty-http:http://localhost:8080/admin"

@@ -22,7 +22,7 @@ public final class HeaderValueEnumSuggestionsUnknownComponent extends RouteBuild
     @Override
     public void configure() {
         from("jms:queue")
-            .setHeader("cmis:action", <caret>)
-            .to("cmis://label");
+            .setHeader("CamelGrapeCommand", <caret>)
+            .to("grape:defaultCoordinates");
     }
 }

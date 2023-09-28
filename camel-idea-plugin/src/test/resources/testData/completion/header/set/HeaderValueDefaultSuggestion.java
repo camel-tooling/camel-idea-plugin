@@ -22,7 +22,7 @@ public final class HeaderValueDefaultSuggestion extends RouteBuilder {
     @Override
     public void configure() {
         from("jms:queue")
-            .setHeader("CamelCMISFolderPath", <caret>)
-            .to("cmis://label");
+            .setHeader("CamelHttpProtocolVersion", <caret>)
+            .to("netty-http:http://localhost:8080/admin");
     }
 }

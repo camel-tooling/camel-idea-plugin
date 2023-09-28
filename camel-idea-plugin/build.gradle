@@ -60,12 +60,15 @@ dependencies {
     implementation "org.apache.camel:camel-tooling-model:${camelVersion}"
     implementation "org.apache.camel:camel-management-api:${camelVersion}"
     implementation "org.apache.camel.springboot:camel-catalog-provider-springboot:${camelVersion}"
-    implementation "org.apache.camel.karaf:camel-catalog-provider-karaf:${camelVersion}"
+    implementation "org.apache.camel.karaf:camel-catalog-provider-karaf:${camelKarafVersion}"
     implementation "org.apache.camel.quarkus:camel-quarkus-catalog:${camelQuarkusVersion}"
     implementation "org.apache.camel.kamelets:camel-kamelets:${camelKameletVersion}"
     implementation "io.github.classgraph:classgraph:4.8.162"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.3"
     implementation "io.fabric8:kubernetes-model-apiextensions:6.7.2"
+    // To remove once https://github.com/camel-tooling/camel-idea-plugin/issues/751 will be implemented
+    runtimeOnly "org.apache.ivy:ivy:2.5.2"
+    runtimeOnly "org.apache.groovy:groovy:4.0.14"
 
     testImplementation "org.apache.camel:camel-core:${camelVersion}"
     testImplementation "org.apache.camel.springboot:camel-spring-boot:${camelVersion}"

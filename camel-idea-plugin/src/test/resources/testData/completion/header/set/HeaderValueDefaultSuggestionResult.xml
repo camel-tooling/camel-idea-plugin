@@ -21,10 +21,10 @@
 
     <route>
         <from uri="jms:queue"/>
-        <setHeader name="CamelCMISFolderPath">
-            <constant>/</constant>
+        <setHeader name="CamelHttpProtocolVersion">
+            <constant>HTTP/1.1</constant>
         </setHeader>
-        <to uri="cmis://label"/>
+        <to uri="netty-http:http://localhost:8080/admin"/>
     </route>
 
 </routes>

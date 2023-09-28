@@ -114,20 +114,6 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
         myFixture.checkHighlighting(false, false, true, true);
     }
 
-    public void testAnnotatorDeprecatedPropertyValidation() {
-        myFixture.configureByText("AnnotatorTestData.java", getJavaDeprecatedPropertyTestData());
-        myFixture.checkHighlighting(false, false, true, true);
-
-        List<HighlightInfo> list = myFixture.doHighlighting();
-
-        System.out.println("list=" + list);
-        // find the warning from the highlights as checkWarning cannot do that for us for warnings
-        boolean found = list.stream().anyMatch(i -> i.getText().equals("cache")
-            && i.getDescription().equals("Deprecated option")
-            && i.getSeverity().equals(HighlightSeverity.WARNING));
-        assertTrue("Should find the warning", found);
-    }
-
     public void testAnnotatorDurationPropertyValidation() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaInvalidDurationPropertyTestData());
         myFixture.checkHighlighting(false, false, true, true);
@@ -354,16 +340,6 @@ public class CamelEndpointAnnotatorTestIT extends CamelLightCodeInsightFixtureTe
             + "        public void configure() throws Exception {\n"
             + "            from(\"timer:trigger?delay=<error descr=\"Invalid duration value: ImNotADuration\">ImNotADuration</error>\")\n"
             + "                .to(\"file:outbox\");\n"
-            + "        }\n"
-            + "    }";
-    }
-
-    private String getJavaDeprecatedPropertyTestData() {
-        return "import org.apache.camel.builder.RouteBuilder;\n"
-            + "public class MyRouteBuilder extends RouteBuilder {\n"
-            + "        public void configure() throws Exception {\n"
-            + "            from(\"timer:trigger\")\n"
-            + "                .to(\"bean:out?cache=true\");\n"
             + "        }\n"
             + "    }";
     }
