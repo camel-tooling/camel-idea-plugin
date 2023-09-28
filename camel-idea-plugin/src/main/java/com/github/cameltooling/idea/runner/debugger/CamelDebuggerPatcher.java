@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -44,6 +43,7 @@ import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.github.cameltooling.idea.service.CamelRuntime;
 import com.github.cameltooling.idea.service.CamelService;
+import com.github.cameltooling.idea.service.MavenArtifactRetrieverContext;
 import com.intellij.execution.Executor;
 import com.intellij.execution.JavaRunConfigurationBase;
 import com.intellij.execution.application.ApplicationConfiguration;
@@ -62,8 +62,6 @@ import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.intellij.xdebugger.XDebuggerManagerListener;
-import groovy.grape.Grape;
-import groovy.lang.GroovyClassLoader;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
@@ -590,26 +588,19 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
      */
     @NotNull
     private static List<URL> downloadCamelDebugger(@NotNull CamelRuntime runtime, @NotNull String version) throws IOException {
-        try (URLClassLoader classLoader = new GroovyClassLoader()) {
+        try (MavenArtifactRetrieverContext context = new MavenArtifactRetrieverContext()) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Trying to download %s %s", runtime.getDebugArtifactId(), version));
             }
-            Grape.setEnableAutoDownload(true);
 
-            final Map<String, Object> param = new HashMap<>();
             List<String> groupIds = runtime.getGroupIds();
             // Use the last group id as it is only supported in recent versions
-            param.put("group", groupIds.get(groupIds.size() - 1));
-            param.put("module", runtime.getDebugArtifactId());
-            param.put("version", version);
-            param.put("classLoader", classLoader);
-
-            Grape.grab(param);
+            context.add(groupIds.get(groupIds.size() - 1), runtime.getDebugArtifactId(), version);
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("The %s %s has been downloaded", runtime.getDebugArtifactId(), version));
             }
-            return Arrays.asList(classLoader.getURLs());
+            return Arrays.asList(context.getClassLoader().getURLs());
         }
     }
 

@@ -20,12 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.intellij.openapi.diagnostic.Logger;
-import groovy.grape.Grape;
-import groovy.lang.GroovyClassLoader;
 import org.apache.camel.catalog.VersionManager;
 
 /**
@@ -38,7 +34,7 @@ class CamelMavenVersionManager implements VersionManager {
      * The logger.
      */
     private static final Logger LOG = Logger.getInstance(CamelMavenVersionManager.class);
-    private final ClassLoader classLoader = new GroovyClassLoader();
+    private final MavenArtifactRetrieverContext context = new MavenArtifactRetrieverContext();
     private String version;
     private String runtimeProviderVersion;
 
@@ -49,10 +45,7 @@ class CamelMavenVersionManager implements VersionManager {
      * @param url  the repository url
      */
     void addMavenRepository(String name, String url) {
-        Map<String, Object> repo = new HashMap<>();
-        repo.put("name", name);
-        repo.put("root", url);
-        Grape.addResolver(repo);
+        context.addMavenRepository(name, url);
     }
 
     @Override
@@ -66,12 +59,8 @@ class CamelMavenVersionManager implements VersionManager {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Trying to load the catalog version: " + version);
             }
-            Grape.setEnableAutoDownload(true);
 
-            final Map<String, Object> param = createMapDependency("org.apache.camel", "camel-catalog", version);
-            param.put("classLoader", classLoader);
-
-            Grape.grab(param);
+            context.add("org.apache.camel", "camel-catalog", version);
 
             this.version = version;
             if (LOG.isDebugEnabled()) {
@@ -97,12 +86,8 @@ class CamelMavenVersionManager implements VersionManager {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Trying to load the runtime provider " + groupId + ":" + artifactId + ":" + version);
             }
-            Grape.setEnableAutoDownload(true);
 
-            final Map<String, Object> param = createMapDependency(groupId, artifactId, version);
-            param.put("classLoader", classLoader);
-
-            Grape.grab(param);
+            context.add(groupId, artifactId, version);
 
             this.runtimeProviderVersion = version;
             if (LOG.isDebugEnabled()) {
@@ -144,7 +129,7 @@ class CamelMavenVersionManager implements VersionManager {
 
         try {
             URL found = null;
-            Enumeration<URL> urls = classLoader.getResources(name);
+            Enumeration<URL> urls = context.getClassLoader().getResources(name);
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
                 if (url.getPath().contains(version)) {
@@ -168,21 +153,7 @@ class CamelMavenVersionManager implements VersionManager {
     }
 
     public ClassLoader getClassLoader() {
-        return classLoader;
-    }
-
-    /**
-     * @param groupId the group id of the dependency to download
-     * @param artifactId the artifact id of the dependency to download
-     * @param version the version of the dependency to download
-     * @return the maven coordinates of the dependency to download as a {@code Map}.
-     */
-    private static Map<String, Object> createMapDependency(String groupId, String artifactId, String version) {
-        final Map<String, Object> param = new HashMap<>();
-        param.put("group", groupId);
-        param.put("module", artifactId);
-        param.put("version", version);
-        return param;
+        return context.getClassLoader();
     }
 }
 
