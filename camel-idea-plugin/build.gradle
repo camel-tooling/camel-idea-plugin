@@ -64,7 +64,7 @@ dependencies {
     implementation "org.apache.camel.quarkus:camel-quarkus-catalog:${camelQuarkusVersion}"
     implementation "org.apache.camel.kamelets:camel-kamelets:${camelKameletVersion}"
     implementation "io.github.classgraph:classgraph:4.8.162"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.3"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2"
     implementation "io.fabric8:kubernetes-model-apiextensions:6.8.1"
     // To remove once https://github.com/camel-tooling/camel-idea-plugin/issues/751 will be implemented
     runtimeOnly "org.apache.ivy:ivy:2.5.2"
