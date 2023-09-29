@@ -24,6 +24,7 @@ import java.util.Set;
 
 import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.github.cameltooling.idea.service.CamelRuntime;
+import com.github.cameltooling.idea.util.ArtifactCoordinates;
 import com.intellij.debugger.impl.DebuggerManagerImpl;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
@@ -164,8 +165,12 @@ public class CamelJBangRunProfileState extends CommandLineState implements Targe
         Set<String> dependencies = new HashSet<>(options.getDependencies());
         if (debug) {
             CamelRuntime runtime = preferenceService.getCamelCatalogProvider().getRuntime();
-            dependencies.add(runtime.getDebugArtifactId());
-            dependencies.add(runtime.getManagementArtifactId());
+            dependencies.add(runtime.getDebugArtifact().getArtifactId());
+            dependencies.add(runtime.getManagementArtifact().getArtifactId());
+            ArtifactCoordinates additionalArtifact = runtime.getAdditionalArtifact();
+            if (additionalArtifact != null) {
+                dependencies.add(additionalArtifact.getArtifactId());
+            }
         }
         if (!dependencies.isEmpty()) {
             builder.addParameter(String.format("--deps=%s", String.join(",", dependencies)));

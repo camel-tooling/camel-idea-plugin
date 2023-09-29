@@ -26,6 +26,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,6 +45,7 @@ import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.github.cameltooling.idea.service.CamelRuntime;
 import com.github.cameltooling.idea.service.CamelService;
 import com.github.cameltooling.idea.service.MavenArtifactRetrieverContext;
+import com.github.cameltooling.idea.util.ArtifactCoordinates;
 import com.intellij.execution.Executor;
 import com.intellij.execution.JavaRunConfigurationBase;
 import com.intellij.execution.application.ApplicationConfiguration;
@@ -346,6 +348,14 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
         model.getDependencies().removeIf(CamelDebuggerPatcher::isCamelManagement);
         model.getDependencies().add(mode.createCamelDebugDependency(project, version));
         model.getDependencies().add(mode.createCamelManagementDependency(project, version));
+        Dependency additionalDependency = mode.createAdditionalDependency(project, version);
+        if (additionalDependency != null) {
+            // Remove additional dependency from the dependencies to prevent conflicts
+            model.getDependencies().removeIf(dependency ->
+                additionalDependency.getGroupId().equals(dependency.getGroupId())
+                && additionalDependency.getArtifactId().equals(dependency.getArtifactId()));
+            model.getDependencies().add(additionalDependency);
+        }
         final String fileName = String.format("%s%s", GENERATED_FILE_NAME_PREFIX, targetFileName);
         final File generatedPom = new File(parameters.getWorkingDirectory(), fileName);
         try (FileWriter writer = new FileWriter(generatedPom)) {
@@ -419,6 +429,14 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
         Path buildFile = createGeneratedFile(parent, targetBuildFileName);
         boolean added = false;
         try (FileWriter fileWriter = new FileWriter(buildFile.toFile(), true)) {
+            List<Dependency> dependencies = List.of(
+                mode.createCamelDebugDependency(project, version), mode.createCamelManagementDependency(project, version)
+            );
+            Dependency additional = mode.createAdditionalDependency(project, version);
+            if (additional != null) {
+                dependencies = new ArrayList<>(dependencies);
+                dependencies.add(additional);
+            }
             for (String parameter : listParameters) {
                 if (parameter.startsWith("-") || parameter.startsWith("\"")) {
                     continue;
@@ -427,15 +445,13 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
                 if (parameter.split(":").length >= expectedLength) {
                     added = true;
                     String projectName = parameter.substring(0, parameter.lastIndexOf(':'));
-                    writer.write(
-                        fileWriter, List.of(mode.createCamelDebugDependency(project, version),
-                            mode.createCamelManagementDependency(project, version)), projectName
-                    );
+                    writer.write(fileWriter, dependencies, projectName);
                 }
             }
             if (!added) {
-                writer.write(fileWriter, mode.createCamelDebugDependency(project, version));
-                writer.write(fileWriter, mode.createCamelManagementDependency(project, version));
+                for (Dependency dependency : dependencies) {
+                    writer.write(fileWriter, dependency);
+                }
             }
         }
         if (indexBuildFile == -1) {
@@ -482,6 +498,9 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
      * @throws IOException if the file could not be created.
      */
     private static Path createGeneratedFile(Path parent, String sourceFileName) throws IOException {
+        if (sourceFileName.startsWith(GENERATED_FILE_NAME_PREFIX)) {
+            sourceFileName = sourceFileName.substring(GENERATED_FILE_NAME_PREFIX.length());
+        }
         final String generatedFileName = String.format("%s%s", GENERATED_FILE_NAME_PREFIX, sourceFileName);
         Path target = parent.resolve(generatedFileName);
         Path source = parent.resolve(sourceFileName);
@@ -499,7 +518,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
      */
     private static boolean isCamelManagement(Dependency dependency) {
         for (CamelRuntime runtime : CamelRuntime.values()) {
-            if (runtime.getManagementArtifactId().equals(dependency.getArtifactId())) {
+            if (runtime.getManagementArtifact().getArtifactId().equals(dependency.getArtifactId())) {
                 return runtime.getGroupIds().stream().anyMatch(groupId -> groupId.equals(dependency.getGroupId()));
             }
         }
@@ -564,7 +583,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
             runtime = CamelRuntime.DEFAULT;
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    String.format("Using the default %s component as dependency", runtime.getDebugArtifactId())
+                    String.format("Using the default %s component as dependency", runtime.getDebugArtifact())
                 );
             }
         }
@@ -589,16 +608,20 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
     @NotNull
     private static List<URL> downloadCamelDebugger(@NotNull CamelRuntime runtime, @NotNull String version) throws IOException {
         try (MavenArtifactRetrieverContext context = new MavenArtifactRetrieverContext()) {
+            ArtifactCoordinates debugArtifact = runtime.getDebugArtifact();
             if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("Trying to download %s %s", runtime.getDebugArtifactId(), version));
+                LOG.debug(String.format("Trying to download %s %s with all its dependencies", debugArtifact, version));
             }
 
-            List<String> groupIds = runtime.getGroupIds();
-            // Use the last group id as it is only supported in recent versions
-            context.add(groupIds.get(groupIds.size() - 1), runtime.getDebugArtifactId(), version);
+            context.add(debugArtifact.getGroupId(), debugArtifact.getArtifactId(), version);
+
+            ArtifactCoordinates additionalArtifact = runtime.getAdditionalArtifact();
+            if (additionalArtifact != null) {
+                context.add(additionalArtifact.getGroupId(), additionalArtifact.getArtifactId(), version);
+            }
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug(String.format("The %s %s has been downloaded", runtime.getDebugArtifactId(), version));
+                LOG.debug(String.format("The %s %s has been downloaded with all its dependencies", debugArtifact, version));
             }
             return Arrays.asList(context.getClassLoader().getURLs());
         }
@@ -834,17 +857,18 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
         }
 
         /**
-         * Creates a {@code Dependency} instance corresponding to the artifact provided by {@code artifactIdProvider}
+         * Creates a {@code Dependency} instance corresponding to the artifact provided by {@code artifactProvider}
          * that matches the best with the execution mode. If the version of the underlying runtime cannot be
          * found, by default the {@code Dependency} instance is created from the artifact of the default Camel runtime
          * with the provided version.
          *
          * @param project            the project for which the {@code Dependency} is created.
          * @param version            the default version of the artifact to use.
-         * @param artifactIdProvider the provider of artifact id according to the Camel runtime used.
-         * @return a new instance of {@code Dependency} matching with the context.
+         * @param artifactProvider the provider of artifact according to the Camel runtime used.
+         * @return a new instance of {@code Dependency} matching with the context or {@code null} if no
+         * corresponding artifact id could be found.
          */
-        private Dependency createDependency(Project project, String version, Function<CamelRuntime, String> artifactIdProvider) {
+        private Dependency createDependency(Project project, String version, Function<CamelRuntime, ArtifactCoordinates> artifactProvider) {
             CamelRuntime currentRuntime = runtime;
             if (currentRuntime == null) {
                 currentRuntime = CamelRuntime.getCamelRuntime(project);
@@ -853,26 +877,21 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
             Dependency dependency = new Dependency();
             final CamelRuntime actualRuntime;
             if (versionRuntime == null) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(
-                        String.format("Using the default %s component as dependency", artifactIdProvider.apply(CamelRuntime.DEFAULT))
-                    );
-                }
                 actualRuntime = CamelRuntime.DEFAULT;
                 dependency.setVersion(version);
             } else {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(
-                        String.format("Using the specific %s component as dependency", artifactIdProvider.apply(CamelRuntime.DEFAULT))
-                    );
-                }
                 actualRuntime = currentRuntime;
                 dependency.setVersion(versionRuntime);
             }
-            List<String> groupIds = actualRuntime.getGroupIds();
-            // Use the last group id as it is only supported in recent versions
-            dependency.setGroupId(groupIds.get(groupIds.size() - 1));
-            dependency.setArtifactId(artifactIdProvider.apply(actualRuntime));
+            final ArtifactCoordinates artifact = artifactProvider.apply(actualRuntime);
+            if (artifact == null) {
+                return null;
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(String.format("Using the artifact %s component as dependency", artifact));
+            }
+            dependency.setGroupId(artifact.getGroupId());
+            dependency.setArtifactId(artifact.getArtifactId());
             return dependency;
         }
 
@@ -885,7 +904,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
          * {@code camel-debug}.
          */
         Dependency createCamelDebugDependency(Project project, String version) {
-            return createDependency(project, version, CamelRuntime::getDebugArtifactId);
+            return createDependency(project, version, CamelRuntime::getDebugArtifact);
         }
 
         /**
@@ -897,7 +916,20 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
          * {@code camel-management}.
          */
         Dependency createCamelManagementDependency(Project project, String version) {
-            return createDependency(project, version, CamelRuntime::getManagementArtifactId);
+            return createDependency(project, version, CamelRuntime::getManagementArtifact);
+        }
+
+        /**
+         * Creates a {@code Dependency} instance corresponding to the additional debug dependency if
+         * it exists.
+         *
+         * @param project the project for which the {@code Dependency} is created.
+         * @param version the default version of the artifact to use.
+         * @return a new instance of {@code Dependency} matching with the context and corresponding to the additional
+         * debug dependency if it exists, {@code null} otherwise.
+         */
+        Dependency createAdditionalDependency(Project project, String version) {
+            return createDependency(project, version, CamelRuntime::getAdditionalArtifact);
         }
 
         /**
