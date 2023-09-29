@@ -616,12 +616,22 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
      * @return the {@link JMXConnector} that matches the best with the current context.
      */
     private JMXConnector getJMXConnector() {
-        if (CamelRuntime.getCamelRuntime(project) == CamelRuntime.QUARKUS) {
-            // In case of Quarkus, the application runs in a forked process such that the JMXConnector needs to be
-            // retrieved from a URL corresponding to a remote process
+        if (remoteAccess()) {
             return getJMXConnectorFromServiceURL();
         }
         return getJMXConnectorFromLocalJavaProcess();
+    }
+
+    /**
+     * Indicates whether the {@link JMXConnector} should be built from a JMX Service URL.
+     *
+     * @return {@code true} if it is a remote access, {@code false} otherwise.
+     */
+    private boolean remoteAccess() {
+        // In case of Quarkus and Camel SpringBoot 4, the application runs in a forked process such
+        // that the JMXConnector needs to be retrieved from a URL corresponding to a remote process
+        CamelRuntime camelRuntime = CamelRuntime.getCamelRuntime(project);
+        return camelRuntime == CamelRuntime.QUARKUS || camelRuntime == CamelRuntime.SPRING_BOOT;
     }
 
     @Nullable
@@ -874,7 +884,11 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             break;
         case "JAVA":
             PsiClass psiClass = PsiTreeUtil.getParentOfType(breakpointTag, PsiClass.class);
-            sourceLocations = List.of(psiClass.getQualifiedName(), virtualFile.getName());
+            if (psiClass == null || psiClass.getQualifiedName() == null) {
+                sourceLocations = List.of();
+            } else {
+                sourceLocations = List.of(psiClass.getQualifiedName(), virtualFile.getName());
+            }
             break;
         default: // noop
             if (LOG.isDebugEnabled()) {

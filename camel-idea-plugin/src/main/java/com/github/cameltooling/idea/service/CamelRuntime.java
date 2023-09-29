@@ -33,7 +33,7 @@ public enum CamelRuntime {
     /**
      * The default Camel Runtime.
      */
-    DEFAULT(List.of(CAMEL_GROUP_ID), null, null, "camel-debug", "camel-management", "camel:run") {
+    DEFAULT(List.of(CAMEL_GROUP_ID), null, null, "camel-debug", "camel-management", "camel:run", null) {
         @Override
         @Nullable
         public String getVersion(final Project project) {
@@ -45,21 +45,22 @@ public enum CamelRuntime {
      */
     QUARKUS(
         List.of("org.apache.camel.quarkus"), "camel-quarkus-core", "camel-quarkus-catalog", "camel-quarkus-debug",
-        "camel-quarkus-management", "quarkus:dev"
+        "camel-quarkus-management", "quarkus:dev", null
     ),
     /**
      * The Karaf Runtime.
      */
     KARAF(
         List.of(CAMEL_GROUP_ID, "org.apache.camel.karaf"), "camel-core-osgi", "camel-catalog-provider-karaf",
-        "camel-debug", "camel-management", null
+        "camel-debug", "camel-management", null, null
     ),
     /**
      * The SpringBoot Runtime
      */
     SPRING_BOOT(
         List.of(CAMEL_GROUP_ID, "org.apache.camel.springboot"), "camel-spring-boot",
-        "camel-catalog-provider-springboot", "camel-debug-starter", "camel-management-starter", "spring-boot:run"
+        "camel-catalog-provider-springboot", "camel-debug-starter", "camel-management-starter", "spring-boot:run",
+        ArtifactCoordinates.of(CAMEL_GROUP_ID, "camel-spring-xml", null)
     );
     /**
      * The logger.
@@ -81,15 +82,20 @@ public enum CamelRuntime {
     @Nullable
     private final String catalogArtifactId;
     /**
-     * The id of the artifact containing Camel Debug.
+     * The artifact containing Camel Debug.
      */
     @NotNull
-    private final String debugArtifactId;
+    private final ArtifactCoordinates debugArtifact;
     /**
-     * The id of the artifact containing Camel Management.
+     * The artifact containing Camel Management.
      */
     @NotNull
-    private final String managementArtifactId;
+    private final ArtifactCoordinates managementArtifact;
+    /**
+     * The artifact of the additional debug dependency.
+     */
+    @Nullable
+    private final ArtifactCoordinates additionalArtifact;
     /**
      * The pair {@code maven-plugin-name:goal-name} to call to launch the Camel runtime when applicable, {@code null}
      * otherwise.
@@ -107,15 +113,20 @@ public enum CamelRuntime {
      * @param managementArtifactId the id of the artifact containing Camel Management.
      * @param pluginGoal           the pair {@code maven-plugin-name:goal-name} to call to launch the Camel runtime when applicable, {@code null}
      *                             otherwise.
+     * @param additionalArtifact the artifact of the additional debug dependency.
      */
     CamelRuntime(@NotNull List<String> groupIds, @Nullable String coreArtifactId, @Nullable String catalogArtifactId,
-                 @NotNull String debugArtifactId, @NotNull String managementArtifactId, @Nullable String pluginGoal) {
+                 @NotNull String debugArtifactId, @NotNull String managementArtifactId, @Nullable String pluginGoal,
+                 @Nullable ArtifactCoordinates additionalArtifact) {
         this.groupIds = groupIds;
         this.coreArtifactId = coreArtifactId;
         this.catalogArtifactId = catalogArtifactId;
-        this.debugArtifactId = debugArtifactId;
-        this.managementArtifactId = managementArtifactId;
+        // Use the last group id as it is only supported in recent versions
+        String groupId = groupIds.get(groupIds.size() - 1);
+        this.debugArtifact = ArtifactCoordinates.of(groupId, debugArtifactId, null);
+        this.managementArtifact = ArtifactCoordinates.of(groupId, managementArtifactId, null);
         this.pluginGoal = pluginGoal;
+        this.additionalArtifact = additionalArtifact;
     }
 
     @NotNull
@@ -134,13 +145,18 @@ public enum CamelRuntime {
     }
 
     @NotNull
-    public String getDebugArtifactId() {
-        return debugArtifactId;
+    public ArtifactCoordinates getDebugArtifact() {
+        return debugArtifact;
     }
 
     @NotNull
-    public String getManagementArtifactId() {
-        return managementArtifactId;
+    public ArtifactCoordinates getManagementArtifact() {
+        return managementArtifact;
+    }
+
+    @Nullable
+    public ArtifactCoordinates getAdditionalArtifact() {
+        return additionalArtifact;
     }
 
     @Nullable

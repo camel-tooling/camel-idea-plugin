@@ -118,4 +118,12 @@ public final class ArtifactCoordinates {
     public String getVersion() {
         return version;
     }
+
+    @Override
+    public String toString() {
+        if (version == null) {
+            return String.format("%s:%s", groupId, artifactId);
+        }
+        return String.format("%s:%s:%s", groupId, artifactId, version);
+    }
 }
