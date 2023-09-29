@@ -33,6 +33,7 @@ import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.impl.ImaginaryEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.IPopupChooserBuilder;
 import com.intellij.openapi.ui.popup.JBPopup;
@@ -64,7 +65,10 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
 
     @Override
     public void invoke(@NotNull Project project, Editor editor, @NotNull PsiElement element) throws IncorrectOperationException {
-         // filter libraries to only be Camel libraries
+        if (editor == null || editor instanceof ImaginaryEditor) {
+            return;
+        }
+        // filter libraries to only be Camel libraries
         Set<String> artifacts = project.getService(CamelService.class).getLibraries();
 
         // find the camel component from those libraries
@@ -76,24 +80,23 @@ public class CamelAddEndpointIntention extends PsiElementBaseIntentionAction imp
             return;
         }
 
-        // show popup to chose the component
-        IPopupChooserBuilder<String> builder = JBPopupFactory.getInstance().createPopupChooserBuilder(names);
-        builder.setAdText(names.size() + " components");
-        builder.setTitle("Add Camel Endpoint");
-        builder.setItemChosenCallback(line -> {
-            int pos = editor.getCaretModel().getCurrentCaret().getOffset();
-            if (pos > 0) {
-                // must run this as write action because we change the source code
-                WriteCommandAction.writeCommandAction(project, element.getContainingFile()).run(() -> {
-                    String text = line + ":";
-                    editor.getDocument().insertString(pos, text);
-                    editor.getCaretModel().moveToOffset(pos + text.length());
-                });
-            }
-        });
-
-        JBPopup popup = builder.createPopup();
-        popup.showInBestPositionFor(editor);
+        // show popup to choose the component
+        JBPopupFactory.getInstance().createPopupChooserBuilder(names)
+            .setAdText(names.size() + " components")
+            .setTitle("Add Camel Endpoint")
+            .setItemChosenCallback(line -> {
+                int pos = editor.getCaretModel().getCurrentCaret().getOffset();
+                if (pos > 0) {
+                    // must run this as write action because we change the source code
+                    WriteCommandAction.writeCommandAction(project, element.getContainingFile()).run(() -> {
+                        String text = line + ":";
+                        editor.getDocument().insertString(pos, text);
+                        editor.getCaretModel().moveToOffset(pos + text.length());
+                    });
+                }
+            })
+            .createPopup()
+            .showInBestPositionFor(editor);
     }
 
     @Override
