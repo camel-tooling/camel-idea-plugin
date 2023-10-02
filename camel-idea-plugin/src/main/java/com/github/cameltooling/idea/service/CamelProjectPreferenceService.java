@@ -42,6 +42,11 @@ public class CamelProjectPreferenceService implements PersistentStateComponent<C
          */
         public Boolean isCamelProject;
         /**
+         * The flag indicating whether the project is a Camel JBang project. A {@code null} value indicates
+         * that it needs to be auto-detected.
+         */
+        public Boolean isJBangProject;
+        /**
          * The version of the catalog to use. A {@code null} value indicates that it needs to be auto-detected.
          */
         public String camelVersion;
@@ -78,6 +83,14 @@ public class CamelProjectPreferenceService implements PersistentStateComponent<C
 
     public void setCamelProject(Boolean camelProject) {
         state.isCamelProject = camelProject;
+    }
+
+    public Boolean isJBangProject() {
+        return state.isJBangProject;
+    }
+
+    public void setJBangProject(Boolean jbangProject) {
+        state.isJBangProject = jbangProject;
     }
 
     public String getCamelVersion() {

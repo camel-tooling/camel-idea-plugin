@@ -887,7 +887,18 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             if (psiClass == null || psiClass.getQualifiedName() == null) {
                 sourceLocations = List.of();
             } else {
-                sourceLocations = List.of(psiClass.getQualifiedName(), virtualFile.getName());
+                sourceLocations = new ArrayList<>();
+                sourceLocations.add(psiClass.getQualifiedName());
+                String basePath = getProject().getBasePath();
+                String path = virtualFile.getPath();
+                String relativePath;
+                if (basePath != null && path.startsWith(basePath)) {
+                    relativePath = path.substring(basePath.length() + 1);
+                } else {
+                    relativePath = virtualFile.getName();
+                }
+                sourceLocations.add(relativePath); // file.xml
+                sourceLocations.add(String.format("file:%s", relativePath)); // file:file.xml
             }
             break;
         default: // noop

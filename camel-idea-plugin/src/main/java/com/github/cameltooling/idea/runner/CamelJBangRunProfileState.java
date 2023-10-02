@@ -16,12 +16,14 @@
  */
 package com.github.cameltooling.idea.runner;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.github.cameltooling.idea.service.CamelJBangService;
 import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.github.cameltooling.idea.service.CamelRuntime;
 import com.github.cameltooling.idea.util.ArtifactCoordinates;
@@ -45,6 +47,7 @@ import com.intellij.execution.target.TargetedCommandLineBuilder;
 import com.intellij.execution.target.local.LocalTargetEnvironmentRequest;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.EmptyProgressIndicator;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 public class CamelJBangRunProfileState extends CommandLineState implements TargetEnvironmentAwareRunProfileState {
@@ -69,13 +72,14 @@ public class CamelJBangRunProfileState extends CommandLineState implements Targe
     }
 
     private static int findPort() {
-        try (ServerSocket ss = new ServerSocket()) {
-            ss.setReuseAddress(false);
-            ss.bind(new InetSocketAddress(0));
-            return ss.getLocalPort();
-        } catch (IOException e) {
-            LOG.debug("Could not find a port", e);
-        }
+//        Restore me when https://github.com/jbangdev/jbang/issues/1689 will be fixed
+//        try (ServerSocket ss = new ServerSocket()) {
+//            ss.setReuseAddress(false);
+//            ss.bind(new InetSocketAddress(0));
+//            return ss.getLocalPort();
+//        } catch (IOException e) {
+//            LOG.debug("Could not find a port", e);
+//        }
         return 4004;
     }
 
@@ -102,7 +106,14 @@ public class CamelJBangRunProfileState extends CommandLineState implements Targe
             try {
                 // Don't close the reader since the process is still running
                 String line = process.inputReader().readLine();
-                LOG.debug("The line contains the expected pattern: " + line.contains("Listening for transport"));
+                if (line == null) {
+                    LOG.warn("Could not debug the Camel JBang application");
+                    try (BufferedReader reader = process.errorReader()) {
+                        reader.lines().forEach(LOG::warn);
+                    }
+                } else {
+                    LOG.debug("The line contains the expected pattern: " + line.contains("Listening for transport"));
+                }
             } catch (IOException e) {
                 LOG.debug("Could not ensure that the debug port is ready to accept connection");
             }
@@ -154,8 +165,8 @@ public class CamelJBangRunProfileState extends CommandLineState implements Targe
             builder.addParameter("-Dorg.apache.camel.debugger.suspend=true");
             builder.addParameter("-Dorg.apache.camel.jmx.disabled=false");
         }
-        CamelProjectPreferenceService preferenceService = CamelProjectPreferenceService.getService(configuration.getProject());
-        String version = preferenceService.getCamelVersion();
+        Project project = configuration.getProject();
+        String version = project.getService(CamelJBangService.class).getCamelJBangVersion();
         if (version != null) {
             builder.addParameter(String.format("-Dcamel.jbang.version=%s", version));
         }
@@ -164,6 +175,7 @@ public class CamelJBangRunProfileState extends CommandLineState implements Targe
         options.getCmdOptions().forEach(builder::addParameter);
         Set<String> dependencies = new HashSet<>(options.getDependencies());
         if (debug) {
+            CamelProjectPreferenceService preferenceService = CamelProjectPreferenceService.getService(project);
             CamelRuntime runtime = preferenceService.getCamelCatalogProvider().getRuntime();
             dependencies.add(runtime.getDebugArtifact().getArtifactId());
             dependencies.add(runtime.getManagementArtifact().getArtifactId());
@@ -176,7 +188,10 @@ public class CamelJBangRunProfileState extends CommandLineState implements Targe
             builder.addParameter(String.format("--deps=%s", String.join(",", dependencies)));
         }
         options.getFiles().forEach(builder::addParameter);
-        builder.setWorkingDirectory(configuration.getProject().getBasePath());
+        String basePath = project.getBasePath();
+        if (basePath != null) {
+            builder.setWorkingDirectory(basePath);
+        }
         return builder;
     }
 }

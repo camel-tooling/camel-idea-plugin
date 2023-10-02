@@ -47,6 +47,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
     private JBCheckBox camelDebuggerAutoSetupCheckBox;
     private JBCheckBox onlyShowKameletOptionsCheckBox;
     private JComboBox<Boolean> isCamelProjectComboBox;
+    private JComboBox<Boolean> isJBangProjectComboBox;
     private JComboBox<CamelCatalogProvider> camelRuntimeProviderComboBox;
     private JBTextField camelVersion;
 
@@ -75,22 +76,23 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
                 }
             }
         );
-        isCamelProjectComboBox = new ComboBox<>(new Boolean[]{null, Boolean.TRUE, Boolean.FALSE});
-        isCamelProjectComboBox.setRenderer(
-            new SimpleListCellRenderer<>() {
-                @Override
-                public void customize(@NotNull JList<? extends Boolean> list, Boolean value,
-                                      int index, boolean selected, boolean hasFocus) {
-                    if (value == null) {
-                        this.setText("Auto Detect");
-                    } else if (value == Boolean.TRUE) {
-                        this.setText("Yes");
-                    } else {
-                        this.setText("No");
-                    }
+        SimpleListCellRenderer<Boolean> booleanRenderer = new SimpleListCellRenderer<>() {
+            @Override
+            public void customize(@NotNull JList<? extends Boolean> list, Boolean value,
+                                  int index, boolean selected, boolean hasFocus) {
+                if (value == null) {
+                    this.setText("Auto Detect");
+                } else if (value == Boolean.TRUE) {
+                    this.setText("Yes");
+                } else {
+                    this.setText("No");
                 }
             }
-        );
+        };
+        isCamelProjectComboBox = new ComboBox<>(new Boolean[]{null, Boolean.TRUE, Boolean.FALSE});
+        isCamelProjectComboBox.setRenderer(booleanRenderer);
+        isJBangProjectComboBox = new ComboBox<>(new Boolean[]{null, Boolean.TRUE, Boolean.FALSE});
+        isJBangProjectComboBox.setRenderer(booleanRenderer);
         camelVersion = new JBTextField();
         // use mig layout which is like a spreadsheet with 2 columns, which we can span if we only have one element
         JPanel panel = new JPanel(new MigLayout("fillx,wrap 2", "[left]rel[grow,fill]"));
@@ -109,6 +111,9 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
 
         panel.add(new JLabel("Is Camel Project"));
         panel.add(isCamelProjectComboBox);
+
+        panel.add(new JLabel("Is JBang Project"));
+        panel.add(isJBangProjectComboBox);
 
         panel.add(new JLabel("Camel Version"));
         panel.add(camelVersion);
@@ -131,6 +136,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
         projectPreferenceService.setOnlyShowKameletOptions(onlyShowKameletOptionsCheckBox.isSelected());
         projectPreferenceService.setCamelCatalogProvider((CamelCatalogProvider) camelRuntimeProviderComboBox.getSelectedItem());
         projectPreferenceService.setCamelProject((Boolean) isCamelProjectComboBox.getSelectedItem());
+        projectPreferenceService.setJBangProject((Boolean) isJBangProjectComboBox.getSelectedItem());
         projectPreferenceService.setCamelVersion(camelVersion.getText());
     }
 
@@ -151,6 +157,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
                 || projectPreferenceService.isOnlyShowKameletOptions() != onlyShowKameletOptionsCheckBox.isSelected()
                 || projectPreferenceService.getCamelCatalogProvider() != camelRuntimeProviderComboBox.getSelectedItem()
                 || isCamelProjectComboBox.getSelectedItem() != projectPreferenceService.isCamelProject()
+                || isJBangProjectComboBox.getSelectedItem() != projectPreferenceService.isJBangProject()
                 || !Objects.equals(camelVersionText, projectPreferenceService.getCamelVersion());
     }
 
@@ -167,6 +174,7 @@ public class CamelEditorSettingsPage extends BaseConfigurable implements Searcha
             onlyShowKameletOptionsCheckBox.setSelected(projectPreferenceService.isOnlyShowKameletOptions());
             camelRuntimeProviderComboBox.setSelectedItem(projectPreferenceService.getCamelCatalogProvider());
             isCamelProjectComboBox.setSelectedItem(projectPreferenceService.isCamelProject());
+            isJBangProjectComboBox.setSelectedItem(projectPreferenceService.isJBangProject());
             camelVersion.setText(projectPreferenceService.getCamelVersion());
         }
     }

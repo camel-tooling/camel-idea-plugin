@@ -20,14 +20,18 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
+import com.github.cameltooling.idea.util.ArtifactCoordinates;
 import org.apache.camel.tooling.maven.MavenArtifact;
 import org.apache.camel.tooling.maven.MavenDownloader;
 import org.apache.camel.tooling.maven.MavenDownloaderImpl;
+import org.apache.camel.tooling.maven.MavenGav;
 import org.apache.camel.tooling.maven.MavenResolutionException;
 
 /**
@@ -40,6 +44,7 @@ public class MavenArtifactRetrieverContext implements Closeable {
     private final MavenDownloader downloader;
     private final Map<String, String> repositories = new LinkedHashMap<>();
     private final MavenClassLoader classLoader = new MavenClassLoader();
+    private final Map<ArtifactCoordinates, URL> allArtifacts = new HashMap<>();
 
     public MavenArtifactRetrieverContext() {
         this.downloader = new MavenDownloaderImpl();
@@ -73,11 +78,18 @@ public class MavenArtifactRetrieverContext implements Closeable {
                 new LinkedHashSet<>(repositories.values()), true, version.contains("SNAPSHOT")
             );
             for (MavenArtifact artifact : artifacts) {
-                classLoader.addURL(artifact.getFile().toURI().toURL());
+                URL url = artifact.getFile().toURI().toURL();
+                MavenGav gav = artifact.getGav();
+                allArtifacts.put(ArtifactCoordinates.of(gav.getGroupId(), gav.getArtifactId(), gav.getVersion()), url);
+                classLoader.addURL(url);
             }
         } catch (MavenResolutionException e) {
             throw new IOException(e);
         }
+    }
+
+    public Map<ArtifactCoordinates, URL> getArtifacts() {
+        return Collections.unmodifiableMap(allArtifacts);
     }
 
     public URLClassLoader getClassLoader() {

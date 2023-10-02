@@ -16,6 +16,8 @@
  */
 package com.github.cameltooling.idea.service;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -71,7 +73,7 @@ import static org.apache.camel.catalog.impl.CatalogHelper.loadText;
  */
 public class CamelService implements Disposable {
 
-    private static final NotificationGroup CAMEL_NOTIFICATION_GROUP = NotificationGroupManager.getInstance().getNotificationGroup("Apache Camel");
+    static final NotificationGroup CAMEL_NOTIFICATION_GROUP = NotificationGroupManager.getInstance().getNotificationGroup("Apache Camel");
 
     private static final Logger LOG = Logger.getInstance(CamelService.class);
 
