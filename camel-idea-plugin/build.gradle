@@ -64,7 +64,7 @@ dependencies {
     implementation "org.apache.camel.quarkus:camel-quarkus-catalog:${camelQuarkusVersion}"
     implementation "org.apache.camel.kamelets:camel-kamelets:${camelKameletVersion}"
     // Needed to avoid conflicts with the version of the maven resolver used by IntelliJ
-    implementation "org.apache.maven.resolver:maven-resolver-api:1.9.14"
+    implementation "org.apache.maven.resolver:maven-resolver-api:1.9.16"
     implementation "org.apache.maven.resolver:maven-resolver-impl:1.9.14"
     implementation "io.github.classgraph:classgraph:4.8.162"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2"
