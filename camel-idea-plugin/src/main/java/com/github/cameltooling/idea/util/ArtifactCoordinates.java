@@ -16,6 +16,8 @@
  */
 package com.github.cameltooling.idea.util;
 
+import java.util.Objects;
+
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -125,5 +127,22 @@ public final class ArtifactCoordinates {
             return String.format("%s:%s", groupId, artifactId);
         }
         return String.format("%s:%s:%s", groupId, artifactId, version);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ArtifactCoordinates that = (ArtifactCoordinates) o;
+        return Objects.equals(groupId, that.groupId) && Objects.equals(artifactId, that.artifactId) && Objects.equals(version, that.version);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(groupId, artifactId, version);
     }
 }

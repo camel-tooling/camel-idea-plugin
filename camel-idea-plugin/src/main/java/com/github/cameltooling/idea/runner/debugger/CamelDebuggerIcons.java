@@ -23,6 +23,8 @@ import javax.swing.Icon;
 public final class CamelDebuggerIcons {
     public static final Icon EVALUATE_EXPRESSION_ICON = IconLoader.getIcon("/META-INF/evaluateCamelExpression.png", CamelDebuggerIcons.class);
     public static final Icon SET_VALUE_ICON = IconLoader.getIcon("/META-INF/setValue.png", CamelDebuggerIcons.class);
+    public static final Icon CAMEL_ICON = IconLoader.getIcon("/META-INF/camelPluginIcon.svg", CamelDebuggerIcons.class);
+
 
     private CamelDebuggerIcons() {
     }

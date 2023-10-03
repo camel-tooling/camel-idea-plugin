@@ -12,6 +12,7 @@
       v.1.1.0
       <ul>
         <li>Upgraded to Camel 4</li>
+        <li>Add a Camel JBang dependency loader</li>
       </ul>
     ]]>
   </change-notes>
@@ -78,6 +79,7 @@
     <projectService serviceImplementation="com.github.cameltooling.idea.service.CamelService"/>
     <projectService serviceImplementation="com.github.cameltooling.idea.service.KameletService"/>
     <projectService serviceImplementation="com.github.cameltooling.idea.service.CamelProjectPreferenceService"/>
+    <projectService serviceImplementation="com.github.cameltooling.idea.service.CamelJBangService"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.IdeaUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.CamelIdeaUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.service.CamelPreferenceService"/>
@@ -164,4 +166,13 @@
     <java.programPatcher implementation="com.github.cameltooling.idea.runner.debugger.CamelDebuggerPatcher"/>
   </extensions>
 
+  <actions>
+    <action id="com.github.cameltooling.idea.action.CamelJBangDependencyLoader"
+            class="com.github.cameltooling.idea.action.CamelJBangDependencyLoader"
+            text="Load Camel JBand Dependencies"
+            description="Load all the Camel JBang dependencies of the project"
+            icon="com.github.cameltooling.idea.runner.debugger.CamelDebuggerIcons.CAMEL_ICON">
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+    </action>
+  </actions>
 </idea-plugin>
