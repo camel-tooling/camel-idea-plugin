@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,17 +41,21 @@ import com.intellij.execution.target.local.LocalTargetEnvironmentRequest;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.progress.EmptyProgressIndicator;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.JarFileSystem;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import org.jetbrains.annotations.NotNull;
@@ -124,33 +129,50 @@ public class CamelJBangService implements Disposable {
      */
     public void addDependencies() {
         try {
-            // 1. Execute the Camel JBang command to get the list of dependencies
+            ModuleManager manager = ModuleManager.getInstance(project);
+            // 1. Identify the module to which the dependencies must be added
+            Module[] modules = manager.getModules();
+            if (modules.length == 0) {
+                modules = new Module[]{createNewModule(manager)};
+            }
+            // 2. Execute the Camel JBang command to get the list of dependencies
             Process process = executeCommand();
-            // 2. Extract the dependencies for the output
+            // 3. Extract the dependencies for the output
             List<ArtifactCoordinates> dependencies = extractDependencies(process);
             if (dependencies.isEmpty()) {
-                LOG.debug("No dependency could be found");
-                return;
-            }
-            // 3. Identify the module to which the dependencies must be added
-            Module[] modules = ModuleManager.getInstance(project).getModules();
-            if (modules.length == 0) {
-                LOG.debug("No module could be found");
+                notifyError("No dependency could be found");
                 return;
             }
             // 4. Download the dependencies
             Map<ArtifactCoordinates, URL> libraries = downloadArtifacts(dependencies);
             if (libraries.isEmpty()) {
-                LOG.debug("No library could be found");
+                notifyError("No library could be found");
                 return;
             }
             // 5. Add the libraries to the first module available
             addLibraries(modules[0], libraries);
-            // 6. Notify that the libraries could be added
+            // 6. Add a source folder to the module if it does not exist
+            addSourceFolderIfMissing(modules[0]);
+            // 7. Notify that the libraries could be added
             notifySuccess();
-        } catch (IOException e) {
+        } catch (Exception e) {
             notifyError(e.getMessage());
         }
+    }
+
+    /**
+     * Create a new module with the name of the project.
+     *
+     * @param manager the module manager to use to create the module.
+     * @return the newly created module.
+     */
+    private Module createNewModule(ModuleManager manager) {
+        String basePath = project.getBasePath();
+        if (basePath == null) {
+            throw new IllegalStateException("A new module cannot be created without a base path");
+        }
+        Computable<Module> moduleSupplier = () -> manager.newModule(Path.of(basePath), project.getName());
+        return ApplicationManager.getApplication().runWriteAction(moduleSupplier);
     }
 
     /**
@@ -177,6 +199,32 @@ public class CamelJBangService implements Disposable {
         notification = CAMEL_NOTIFICATION_GROUP.createNotification(notificationMessage, NotificationType.ERROR)
             .setImportant(true).setIcon(CamelPreferenceService.getService().getCamelIcon());
         notification.notify(project);
+    }
+
+    /**
+     * Add a source folder to the given module if it does not exist.
+     *
+     * @param module the module to which the source folder must be added.
+     */
+    private void addSourceFolderIfMissing(Module module) {
+        ModuleRootModificationUtil.updateModel(module, model -> {
+            // Check if the module already has a source folder
+            for (ContentEntry e : model.getContentEntries()) {
+                if (e.getSourceFolders().length > 0) {
+                    return;
+                }
+            }
+            // If not, add the base path of the project as a source folder
+            String basePath = project.getBasePath();
+            if (basePath != null) {
+                VirtualFile sourceFolderVirtualFile = LocalFileSystem.getInstance()
+                    .refreshAndFindFileByIoFile(new File(basePath));
+                if (sourceFolderVirtualFile != null) {
+                    model.addContentEntry(sourceFolderVirtualFile)
+                        .addSourceFolder(sourceFolderVirtualFile, false);
+                }
+            }
+        });
     }
 
     /**
