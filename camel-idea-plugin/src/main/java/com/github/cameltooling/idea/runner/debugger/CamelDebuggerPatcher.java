@@ -644,6 +644,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
      */
     private static void addCamelDebuggerEnvironmentVariable(JavaParameters parameters) {
         parameters.getEnv().put("CAMEL_DEBUGGER_SUSPEND", "true");
+        parameters.getEnv().put("CAMEL_MAIN_DEBUGGING", "true");
     }
 
     /**
@@ -711,7 +712,10 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
 
             @Override
             void addRequiredParameters(JavaParameters parameters) {
-                super.addRequiredMavenGoals(parameters);
+                // Avoid to compile as it can prevent the automatic addition of the Camel Debugger from working properly
+                // Indeed otherwise, the addition of the Camel Debugger to a custom pom file is simply ignored
+                parameters.getProgramParametersList().addAt(0, "clean");
+                parameters.getProgramParametersList().addAt(1, runtime.getPluginGoal());
             }
 
             @Override
@@ -845,7 +849,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
         /**
          * The corresponding Camel Runtime.
          */
-        private final CamelRuntime runtime;
+        protected final CamelRuntime runtime;
 
         /**
          * Constructs a {@code ExecutionMode} with the given Camel Runtime.
