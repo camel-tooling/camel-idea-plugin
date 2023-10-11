@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.service;
+package com.github.cameltooling.idea.maven;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,30 +22,25 @@ import java.net.URL;
 import java.util.Enumeration;
 
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import org.apache.camel.catalog.VersionManager;
 
 /**
- * A copy of {@link org.apache.camel.catalog.maven.MavenVersionManager} as IDEA cannot use this class at runtime,
+ * A copy of {@code org.apache.camel.catalog.maven.MavenVersionManager} as IDEA cannot use this class at runtime,
  * so we use a simpler copy here.
  */
-class CamelMavenVersionManager implements VersionManager {
+public class CamelMavenVersionManager implements VersionManager {
 
     /**
      * The logger.
      */
     private static final Logger LOG = Logger.getInstance(CamelMavenVersionManager.class);
-    private final MavenArtifactRetrieverContext context = new MavenArtifactRetrieverContext();
+    private final MavenArtifactRetrieverContext context;
     private String version;
     private String runtimeProviderVersion;
 
-    /**
-     * To add a 3rd party Maven repository.
-     *
-     * @param name the repository name
-     * @param url  the repository url
-     */
-    void addMavenRepository(String name, String url) {
-        context.addMavenRepository(name, url);
+    public CamelMavenVersionManager(Project project) {
+        this.context = new MavenArtifactRetrieverContext(project);
     }
 
     @Override

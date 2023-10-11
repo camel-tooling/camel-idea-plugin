@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.github.cameltooling.idea.maven.MavenArtifactRetrieverContext;
 import com.github.cameltooling.idea.util.ArtifactCoordinates;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.process.KillableColoredProcessHandler;
