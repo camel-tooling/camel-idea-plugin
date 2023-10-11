@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.service;
+package com.github.cameltooling.idea.maven;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -28,11 +28,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.github.cameltooling.idea.util.ArtifactCoordinates;
+import com.intellij.openapi.project.Project;
 import org.apache.camel.tooling.maven.MavenArtifact;
 import org.apache.camel.tooling.maven.MavenDownloader;
 import org.apache.camel.tooling.maven.MavenDownloaderImpl;
 import org.apache.camel.tooling.maven.MavenGav;
 import org.apache.camel.tooling.maven.MavenResolutionException;
+
+import static com.github.cameltooling.idea.maven.MavenUtil.scanThirdPartyMavenRepositories;
 
 /**
  * {@code MavenArtifactRetrieverContext} is meant to be used to download artifacts from maven repositories.
@@ -40,7 +43,6 @@ import org.apache.camel.tooling.maven.MavenResolutionException;
  * {@code URLClassLoader} to be able to have access to the local path of the artifacts.
  */
 public class MavenArtifactRetrieverContext implements Closeable {
-
     private final MavenDownloader downloader;
     private final Map<String, String> repositories = new LinkedHashMap<>();
     private final MavenClassLoader classLoader = new MavenClassLoader();
@@ -51,13 +53,18 @@ public class MavenArtifactRetrieverContext implements Closeable {
         ((MavenDownloaderImpl) downloader).build();
     }
 
+    public MavenArtifactRetrieverContext(Project project) {
+        this();
+        scanThirdPartyMavenRepositories(project).forEach(this::addMavenRepository);
+    }
+
     /**
      * To add a 3rd party Maven repository.
      *
      * @param name the repository name
      * @param url  the repository url
      */
-    public void addMavenRepository(String name, String url) {
+    private void addMavenRepository(String name, String url) {
         repositories.put(name, url);
     }
 

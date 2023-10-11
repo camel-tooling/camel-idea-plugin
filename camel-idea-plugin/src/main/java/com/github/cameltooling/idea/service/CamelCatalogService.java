@@ -16,9 +16,8 @@
  */
 package com.github.cameltooling.idea.service;
 
-import java.util.Map;
-
 import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
+import com.github.cameltooling.idea.maven.CamelMavenVersionManager;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.Project;
 import org.apache.camel.catalog.CamelCatalog;
@@ -100,16 +99,12 @@ public class CamelCatalogService implements Disposable {
      * Loads a specific Camel version into the Catalog to use.
      *
      * @param version the version to load
-     * @param repos   any third party maven repositories
      */
-    boolean loadVersion(@NotNull String version, @NotNull Map<String, String> repos) {
+    boolean loadVersion(@NotNull String version) {
         // we should load a new version of the catalog, and therefore must discard the old version
         dispose();
         // use maven to be able to load the version dynamic
-        CamelMavenVersionManager maven = new CamelMavenVersionManager();
-
-        // add support for the maven repos
-        repos.forEach(maven::addMavenRepository);
+        CamelMavenVersionManager maven = new CamelMavenVersionManager(project);
 
         get().setVersionManager(maven);
         boolean loaded = get().getVersionManager().loadVersion(version);
