@@ -11,7 +11,8 @@
   <change-notes><![CDATA[
       v.1.1.2
       <ul>
-        <li>Improve the support of third party repositories</li>
+        <li>Upgraded to Camel 4.1.0</li>
+        <li>Improve the support of third party Maven repositories</li>
         <li>Bug fixes</li>
       </ul>
     ]]>
