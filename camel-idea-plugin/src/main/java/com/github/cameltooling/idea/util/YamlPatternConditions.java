@@ -25,6 +25,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.psi.YAMLKeyValue;
 
 /**
  * A utility call to define special pattern conditions used to build element pattern for Yaml content.
@@ -70,6 +71,15 @@ public final class YamlPatternConditions {
     }
 
     /**
+     * @param key the key to validate the key value pair.
+     * @param value the value to validate the key value pair.
+     * @return a {@code PatternCondition} that accepts {@code YAMLKeyValue}s which match with the given key value pair.
+     */
+    public static <T extends YAMLKeyValue> PatternCondition<T> withPair(@NotNull String key, @NotNull String value) {
+        return new PairPatternCondition<>(key, value);
+    }
+
+    /**
      * @param pattern the pattern to validate against the last child.
      * @return a {@code PatternCondition} that accepts elements whose last child matches with the given pattern.
      */
@@ -109,6 +119,38 @@ public final class YamlPatternConditions {
         public boolean accepts(@NotNull T t, ProcessingContext context) {
             final PsiElement firstChild = t.getFirstChild();
             return firstChild != null && pattern.accepts(firstChild);
+        }
+    }
+
+    /**
+     * {@code PairPatternCondition} is a {@link PatternCondition} allowing to identify {@code YAMLKeyValue}s which
+     * match with the specific key value pair.
+     */
+    private static class PairPatternCondition<T extends YAMLKeyValue> extends PatternCondition<T> {
+
+        /**
+         * The key to validate the key value pair.
+         */
+        private final String key;
+        /**
+         * The value to validate the key value pair.
+         */
+        private final String value;
+
+        /**
+         * Construct a {@code PairPatternCondition} with the given key value pair.
+         * @param key the key to validate the key value pair.
+         * @param value the value to validate the key value pair.
+         */
+        PairPatternCondition(@NotNull String key, @NotNull String value) {
+            super("withPair");
+            this.key = key;
+            this.value = value;
+        }
+
+        @Override
+        public boolean accepts(@NotNull T t, ProcessingContext context) {
+            return key.equals(t.getKeyText()) && value.equals(t.getValueText());
         }
     }
 

@@ -18,6 +18,9 @@ package com.github.cameltooling.idea.completion.contributor;
 
 import com.github.cameltooling.idea.completion.extension.CamelEndpointNameCompletionExtension;
 import com.github.cameltooling.idea.completion.extension.CamelEndpointSmartCompletionExtension;
+import com.github.cameltooling.idea.completion.extension.CamelKameletNameCompletion;
+import com.github.cameltooling.idea.completion.extension.CamelKameletOptionNameCompletion;
+import com.github.cameltooling.idea.completion.extension.CamelKameletOptionValueCompletion;
 import com.github.cameltooling.idea.completion.header.CamelHeaderEndpointSource;
 import com.github.cameltooling.idea.completion.header.CamelYamlHeaderNameCompletion;
 import com.github.cameltooling.idea.completion.header.CamelYamlHeaderValueCompletion;
@@ -26,13 +29,21 @@ import com.github.cameltooling.idea.completion.property.CamelYamlPropertyValueCo
 import com.github.cameltooling.idea.util.YamlPatternConditions;
 import com.intellij.codeInsight.completion.CompletionInitializationContext;
 import com.intellij.codeInsight.completion.CompletionType;
+import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.PsiElementPattern;
 import com.intellij.patterns.StandardPatterns;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.TokenType;
+import com.intellij.util.ProcessingContext;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
+import org.jetbrains.yaml.psi.YAMLMapping;
+import org.jetbrains.yaml.psi.YAMLSequence;
+import org.jetbrains.yaml.psi.YAMLSequenceItem;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
 
@@ -40,6 +51,40 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
  * Plugin to hook into the IDEA completion system, to set up Camel smart completion for yaml files.
  */
 public class CamelYamlFileReferenceContributor extends CamelContributor {
+
+    private static final PatternCondition<PsiElement> WITH_FIRST_CHILD_IS_PROPERTIES = YamlPatternConditions.withFirstChild(
+        psiElement(YAMLTokenTypes.SCALAR_KEY)
+            .withText("properties")
+    );
+    private static final PsiElementPattern.Capture<YAMLMapping> IS_KIND_KAMELET = psiElement(YAMLMapping.class)
+        .withChild(
+            psiElement(YAMLKeyValue.class)
+                .with(
+                    YamlPatternConditions.withFirstChild(
+                        psiElement(YAMLTokenTypes.SCALAR_KEY)
+                            .withText("ref")
+                    )
+                )
+                .withChild(
+                    psiElement(YAMLMapping.class)
+
+                        .withChild(
+                            psiElement(YAMLKeyValue.class)
+                                .with(
+                                    YamlPatternConditions.withPair("kind", "Kamelet")
+                                )
+                        )
+                        .withChild(
+                            psiElement(YAMLKeyValue.class)
+                                .with(
+                                    YamlPatternConditions.withFirstChild(
+                                        PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY)
+                                            .withText("name")
+                                    )
+                                )
+                        )
+                )
+        );
 
     public CamelYamlFileReferenceContributor() {
         addCompletionExtension(new CamelEndpointNameCompletionExtension());
@@ -211,6 +256,178 @@ public class CamelYamlFileReferenceContributor extends CamelContributor {
                         )
                 ),
             new CamelYamlPropertyValueCompletion()
+        );
+        // Detect the name of a Kamelet in a Kamelet binding
+        addCamelKameletNameCompletion("source", true);
+        addCamelKameletNameCompletion("steps", false);
+        addCamelKameletNameCompletion("sink", false);
+        addCamelKameletOptionNameCompletion();
+        addCamelKameletOptionValueCompletion();
+    }
+
+    private void addCamelKameletNameCompletion(String ancestorKeyName, boolean onlyConsumer) {
+        extend(CompletionType.BASIC,
+            psiElement(YAMLTokenTypes.TEXT)
+                .withSuperParent(
+                    2,
+                    psiElement(YAMLKeyValue.class)
+                        .with(
+                            YamlPatternConditions.withFirstChild(
+                                PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY)
+                                    .withText("name")
+                            )
+                        )
+                        .withParent(
+                            psiElement(YAMLMapping.class)
+                                .withChild(
+                                    PlatformPatterns.psiElement(YAMLKeyValue.class)
+                                        .with(
+                                            YamlPatternConditions.withPair("kind", "Kamelet")
+                                        )
+                                )
+                        )
+                )
+                .withSuperParent(
+                    4,
+                    psiElement(YAMLKeyValue.class)
+                        .with(
+                            YamlPatternConditions.withFirstChild(
+                                PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY)
+                                    .withText("ref")
+                            )
+                        )
+                )
+                .withSuperParent(
+                    6,
+                    StandardPatterns.or(
+                        psiElement(YAMLKeyValue.class)
+                            .with(
+                                YamlPatternConditions.withFirstChild(
+                                    PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY)
+                                        .withText(ancestorKeyName)
+                                )
+                            ),
+                        psiElement(YAMLSequenceItem.class)
+                            .withSuperParent(
+                                2,
+                                psiElement(YAMLKeyValue.class)
+                                    .with(
+                                        YamlPatternConditions.withFirstChild(
+                                            PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY)
+                                                .withText(ancestorKeyName)
+                                        )
+                                    )
+                            )
+                    )
+
+                ),
+            new CamelKameletNameCompletion(onlyConsumer)
+        );
+    }
+
+    private void addCamelKameletOptionNameCompletion() {
+        extend(CompletionType.BASIC,
+            psiElement()
+                .with(
+                    YamlPatternConditions.or(
+                        psiElement(YAMLTokenTypes.TEXT)
+                            .withSuperParent(
+                                2,
+                                PlatformPatterns.psiElement(YAMLKeyValue.class)
+                                    .with(
+                                        WITH_FIRST_CHILD_IS_PROPERTIES
+                                    )
+                            ),
+                        psiElement(YAMLTokenTypes.INDENT)
+                            .afterSibling(
+                                PlatformPatterns.psiElement(YAMLKeyValue.class)
+                                    .with(
+                                        WITH_FIRST_CHILD_IS_PROPERTIES
+                                    )
+                            ),
+                        psiElement(YAMLTokenTypes.TEXT)
+                            .withSuperParent(
+                                3,
+                                PlatformPatterns.psiElement(YAMLKeyValue.class)
+                                    .with(
+                                        WITH_FIRST_CHILD_IS_PROPERTIES
+                                    )
+                            )
+                    )
+                )
+                .withAncestor(
+                    5,
+                    StandardPatterns.or(
+                        psiElement(YAMLKeyValue.class)
+                            .with(
+                                YamlPatternConditions.withFirstChild(
+                                    PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY)
+                                        .with(YamlPatternConditions.withText("source", "sink"))
+                                )
+                            )
+                            .withChild(IS_KIND_KAMELET),
+                        psiElement(YAMLSequenceItem.class)
+                            .withSuperParent(
+                                2,
+                                psiElement(YAMLKeyValue.class)
+                                    .with(
+                                        YamlPatternConditions.withFirstChild(
+                                            PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY)
+                                                .withText("steps")
+                                        )
+                                    )
+                            )
+                            .withChild(IS_KIND_KAMELET)
+                    )
+                ),
+            new CamelKameletOptionNameCompletion()
+        );
+    }
+
+
+    private void addCamelKameletOptionValueCompletion() {
+        extend(CompletionType.BASIC,
+            psiElement()
+                .withParent(
+                    psiElement().with(
+                        YamlPatternConditions.withElementType(
+                            YAMLElementTypes.SCALAR_PLAIN_VALUE, YAMLElementTypes.SCALAR_QUOTED_STRING
+                        )
+                    )
+                )
+                .withAncestor(
+                    4,
+                    PlatformPatterns.psiElement(YAMLKeyValue.class)
+                        .with(
+                            WITH_FIRST_CHILD_IS_PROPERTIES
+                        )
+                )
+                .withAncestor(
+                    6,
+                    StandardPatterns.or(
+                        psiElement(YAMLKeyValue.class)
+                            .with(
+                                YamlPatternConditions.withFirstChild(
+                                    PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY)
+                                        .with(YamlPatternConditions.withText("source", "sink"))
+                                )
+                            )
+                            .withChild(IS_KIND_KAMELET),
+                        psiElement(YAMLSequenceItem.class)
+                            .withSuperParent(
+                                2,
+                                psiElement(YAMLKeyValue.class)
+                                    .with(
+                                        YamlPatternConditions.withFirstChild(
+                                            PlatformPatterns.psiElement(YAMLTokenTypes.SCALAR_KEY)
+                                                .withText("steps")
+                                        )
+                                    )
+                            )
+                            .withChild(IS_KIND_KAMELET)
+                    )
+                ),
+            new CamelKameletOptionValueCompletion()
         );
     }
 }
