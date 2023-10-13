@@ -1,0 +1,12 @@
+apiVersion: camel.apache.org/v1
+kind: Pipe
+metadata:
+  name: my-bind
+spec:
+  sink:
+    ref:
+      kind: Foo
+      apiVersion: camel.apache.org/v1
+      name: log-sink
+    properties:
+      level: <caret>

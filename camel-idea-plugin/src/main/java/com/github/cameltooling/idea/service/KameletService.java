@@ -133,6 +133,16 @@ public class KameletService implements Disposable {
     }
 
     /**
+     * Check if the given name corresponds to a Kamelet that can be used in a consumer endpoint.
+     * @param name the name of the Kamelet to check.
+     * @return {@code true} if the Kamelet can be used in a consumer endpoint, {@code false} otherwise.
+     */
+    public boolean isConsumer(@NotNull String name) {
+        Kamelet kamelet = getKamelets().get(name);
+        return kamelet != null && KAMELET_SOURCE_TYPE.equals(kamelet.getType());
+    }
+
+    /**
      * Gives the name of the Kamelets that can be used in a consumer endpoint.
      *
      * @return a list of name of the Kamelets whose type is {@code source}.

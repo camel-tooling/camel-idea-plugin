@@ -60,10 +60,97 @@ public final class CamelSmartCompletionEndpointOptions {
                                                                                    final boolean xmlMode,
                                                                                    final PsiElement element,
                                                                                    final Editor editor) {
+        return addSmartCompletionSuggestionsQueryParameters(
+            new SmartCompletionSuggestionsQueryParametersContext.Default(query, xmlMode, element),
+            component, existing, element, editor
+        );
+    }
+
+    /**
+     * Context for the smart completion suggestions query parameters
+     */
+    public interface SmartCompletionSuggestionsQueryParametersContext {
+        String getQueryAtPosition();
+        String getConcatQuery();
+        String getSuffix();
+        boolean isXmlMode();
+        boolean isLookupAsURI();
+        boolean isConsumerOnly();
+        boolean isProducerOnly();
+        char getLookupSuffixChar();
+        String getLookupSuffix();
+
+        /**
+         * Default implementation of the {@link SmartCompletionSuggestionsQueryParametersContext}
+         */
+        class Default implements SmartCompletionSuggestionsQueryParametersContext {
+            private final String queryAtPosition;
+            private final String concatQuery;
+            private final String suffix;
+            private final boolean xmlMode;
+            private final boolean consumerOnly;
+            private final boolean producerOnly;
+
+            public Default(final String[] query, boolean xmlMode, final PsiElement element) {
+                this.queryAtPosition = query[2];
+                this.concatQuery = query[0];
+                this.suffix = query[1];
+                this.xmlMode = xmlMode;
+                final CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
+                this.consumerOnly = camelIdeaUtils.isConsumerEndpoint(element);
+                this.producerOnly = camelIdeaUtils.isProducerEndpoint(element);
+            }
+
+            public String getQueryAtPosition() {
+                return queryAtPosition;
+            }
+
+            public String getConcatQuery() {
+                return concatQuery;
+            }
+
+            public String getSuffix() {
+                return suffix;
+            }
+
+            public boolean isXmlMode() {
+                return xmlMode;
+            }
+
+            public boolean isLookupAsURI() {
+                return true;
+            }
+
+            @Override
+            public boolean isConsumerOnly() {
+                return consumerOnly;
+            }
+
+            @Override
+            public boolean isProducerOnly() {
+                return producerOnly;
+            }
+
+            public char getLookupSuffixChar() {
+                return '=';
+            }
+
+            public String getLookupSuffix() {
+                return "=";
+            }
+        }
+    }
+
+    @NotNull
+    public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(final SmartCompletionSuggestionsQueryParametersContext context,
+                                                                                   final ComponentModel component,
+                                                                                   final Map<String, String> existing,
+                                                                                   final PsiElement element,
+                                                                                   final Editor editor) {
         final List<LookupElement> answer = new ArrayList<>();
 
-        String queryAtPosition = query[2];
-        if (xmlMode) {
+        String queryAtPosition = context.getQueryAtPosition();
+        if (context.isXmlMode()) {
             queryAtPosition = queryAtPosition.replace("&amp;", "&");
         }
 
@@ -79,16 +166,12 @@ public final class CamelSmartCompletionEndpointOptions {
             if ("parameter".equals(option.getKind())) {
                 final String name = option.getName();
 
-                final CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
-
                 // if we are consumer only, then any option that has producer in the label should be skipped (as its only for producer)
-                final boolean consumerOnly = camelIdeaUtils.isConsumerEndpoint(element);
-                if (consumerOnly && option.getLabel() != null && option.getLabel().contains("producer")) {
+                if (context.isConsumerOnly() && option.getLabel() != null && option.getLabel().contains("producer")) {
                     continue;
                 }
                 // if we are producer only, then any option that has consumer in the label should be skipped (as its only for consumer)
-                final boolean producerOnly = camelIdeaUtils.isProducerEndpoint(element);
-                if (producerOnly && option.getLabel() != null && option.getLabel().contains("consumer")) {
+                if (context.isProducerOnly() && option.getLabel() != null && option.getLabel().contains("consumer")) {
                     continue;
                 }
 
@@ -101,24 +184,27 @@ public final class CamelSmartCompletionEndpointOptions {
 
                     // the lookup should prepare for the new option
                     String lookup;
-                    final String concatQuery = query[0];
-                    if (!concatQuery.contains("?")) {
-                        // none existing options so we need to start with a ? mark
-                        lookup = queryAtPosition + "?" + key;
-                    } else {
-                        if (!queryAtPosition.endsWith("&") && !queryAtPosition.endsWith("?")) {
-                            lookup = queryAtPosition + "&" + key;
+                    if (context.isLookupAsURI()) {
+                        final String concatQuery = context.getConcatQuery();
+                        if (!concatQuery.contains("?")) {
+                            // none existing options so we need to start with a ? mark
+                            lookup = queryAtPosition + "?" + key;
                         } else {
-                            // there is already either an ending ? or &
-                            lookup = queryAtPosition + key;
+                            if (!queryAtPosition.endsWith("&") && !queryAtPosition.endsWith("?")) {
+                                lookup = queryAtPosition + "&" + key;
+                            } else {
+                                // there is already either an ending ? or &
+                                lookup = queryAtPosition + key;
+                            }
                         }
-                    }
-                    if (xmlMode) {
-                        lookup = lookup.replace("&", "&amp;");
+                        if (context.isXmlMode()) {
+                            lookup = lookup.replace("&", "&amp;");
+                        }
+                    } else {
+                        lookup = queryAtPosition + key;
                     }
                     LookupElementBuilder builder = LookupElementBuilder.create(new OptionSuggestion(option, lookup));
-                    final String suffix = query[1];
-                    builder = addInsertHandler(editor, builder, suffix);
+                    builder = addInsertHandler(editor, builder, context.getLookupSuffixChar(), context.getLookupSuffix(), context.getSuffix());
                     // only show the option in the UI
                     builder = builder.withPresentableText(name);
                     // we don't want to highlight the advanced options which should be more seldom in use
@@ -184,7 +270,7 @@ public final class CamelSmartCompletionEndpointOptions {
         return answer;
     }
 
-    private static List<LookupElement> addSmartCompletionContextPathSuggestions(final String val,
+    public static List<LookupElement> addSmartCompletionContextPathSuggestions(final String val,
                                                                                 final ComponentModel component,
                                                                                 final Map<String, String> existing,
                                                                                 final Predicate<ComponentModel> componentPredicate,
@@ -287,10 +373,11 @@ public final class CamelSmartCompletionEndpointOptions {
     }
 
     /**
-     * We need special logic to determine when it should insert "=" at the end of the options
+     * We need special logic to determine when it should insert lookup suffix char at the end of the options
      */
     @NotNull
     private static LookupElementBuilder addInsertHandler(final Editor editor, final LookupElementBuilder builder,
+                                                         final char lookupSuffixChar, final String lookupSuffix,
                                                          final String suffix) {
         return builder.withInsertHandler((context, item) -> {
             // enforce using replace select char as we want to replace any existing option
@@ -300,12 +387,13 @@ public final class CamelSmartCompletionEndpointOptions {
                     //if it's a property file the PsiElement does not start and end with an quot
                     endSelectOffBy = 1;
                 }
-                final char text = context
-                        .getDocument()
-                        .getCharsSequence()
-                        .charAt(context.getSelectionEndOffset() - endSelectOffBy);
-                if (text != '=') {
-                    EditorModificationUtil.insertStringAtCaret(editor, "=");
+                CharSequence content = context
+                    .getDocument()
+                    .getCharsSequence();
+                int index = context.getSelectionEndOffset() - endSelectOffBy;
+                final char text = index < content.length() ? content.charAt(index) : ' ';
+                if (text != lookupSuffixChar) {
+                    EditorModificationUtil.insertStringAtCaret(editor, lookupSuffix);
                 }
             } else if (context.getCompletionChar() == Lookup.REPLACE_SELECT_CHAR) {
                 // we still want to keep the suffix because they are other options
@@ -315,7 +403,7 @@ public final class CamelSmartCompletionEndpointOptions {
                     // strip out first part of suffix until next option
                     value = value.substring(pos);
                 }
-                EditorModificationUtil.insertStringAtCaret(editor, "=" + value);
+                EditorModificationUtil.insertStringAtCaret(editor, lookupSuffix + value);
                 // and move cursor back again
                 final int offset = -1 * value.length();
                 EditorModificationUtil.moveCaretRelatively(editor, offset);
