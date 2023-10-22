@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-tooling/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
-  <version>1.1.4</version>
+  <version>1.1.5</version>
   <vendor email="users@apache.camel.org" url="https://github.com/camel-tooling/camel-idea-plugin">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -9,10 +9,8 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.1.1.4
+      v.1.1.5
       <ul>
-        <li>Camel icon shown in plugin marketplace</li>
-        <li>Add support for Java routes from EndpointRouteBuilder</li>
         <li>Bug fixes</li>
       </ul>
     ]]>
