@@ -74,8 +74,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -83,7 +81,7 @@ import java.util.function.Supplier;
 public class CamelDebuggerEvaluationDialog extends DialogWrapper {
     public static final DataKey<CamelDebuggerEvaluationDialog> KEY = DataKey.create("CAMEL_DEBUGGER_EVALUATION_DIALOG");
 
-    //can not use new SHIFT_DOWN_MASK etc because in this case ActionEvent modifiers do not match
+    //cannot use new SHIFT_DOWN_MASK etc. because in this case ActionEvent modifiers do not match
     private static final int ADD_WATCH_MODIFIERS = (SystemInfo.isMac ? InputEvent.META_MASK : InputEvent.CTRL_MASK) | InputEvent.SHIFT_MASK;
     static KeyStroke addWatchKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, ADD_WATCH_MODIFIERS);
 

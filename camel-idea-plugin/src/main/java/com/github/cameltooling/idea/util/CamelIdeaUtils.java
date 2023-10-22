@@ -20,6 +20,7 @@ import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
 import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.Service;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiClass;
@@ -34,13 +35,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Utility methods to work with Camel related {@link com.intellij.psi.PsiElement} elements.
  * <p/>
  * This class is only for Camel related IDEA APIs. If you need only IDEA APIs then use {@link IdeaUtils} instead.
  */
+@Service
 public final class CamelIdeaUtils implements Disposable {
 
     public static final String[] CAMEL_FILE_EXTENSIONS = {"java", "xml", "yaml", "yml"};
@@ -192,7 +193,7 @@ public final class CamelIdeaUtils implements Disposable {
     }
 
     /**
-     * Certain elements should be skipped for endpoint validation such as ActiveMQ brokerURL property and others.
+     * Certain elements should be skipped for endpoint validation, such as ActiveMQ brokerURL property and others.
      */
     public boolean skipEndpointValidation(PsiElement element) {
         return enabledExtensions.stream()
@@ -264,10 +265,9 @@ public final class CamelIdeaUtils implements Disposable {
             .toList();
     }
 
-
     @Override
     public void dispose() {
-
+        //noop
     }
 
     /**

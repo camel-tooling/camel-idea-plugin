@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
@@ -56,6 +55,13 @@ public class JavaClassUtils implements Disposable {
      * The prefix of all the classes in the java lang package.
      */
     private static final String JAVA_LANG_PACKAGE = "java.lang.";
+    private static final List<String> BEAN_ANNOTATIONS = Arrays.asList(
+        "org.springframework.stereotype.Component",
+        "org.springframework.stereotype.Service",
+        "org.springframework.stereotype.Repository",
+        "javax.inject.Named",
+        "jakarta.inject.Named"
+    );
 
     public static JavaClassUtils getService() {
         return ApplicationManager.getApplication().getService(JavaClassUtils.class);
@@ -66,11 +72,12 @@ public class JavaClassUtils implements Disposable {
      * to class name decapitalized
      */
     public String getBeanName(PsiClass clazz) {
-        final String beanName = getBeanName(clazz, "org.springframework.stereotype.Component")
-            .orElseGet(() -> getBeanName(clazz, "org.springframework.stereotype.Service")
-                .orElseGet(() -> getBeanName(clazz, "org.springframework.stereotype.Repository")
-                    .orElse(Introspector.decapitalize(clazz.getText()))));
-        return beanName;
+        return BEAN_ANNOTATIONS
+                .stream()
+                .map(annotation -> getBeanName(clazz, annotation))
+                .flatMap(Optional::stream)
+                .findFirst()
+                .orElseGet(() -> Introspector.decapitalize(clazz.getText()));
     }
 
     /**
@@ -97,10 +104,9 @@ public class JavaClassUtils implements Disposable {
                     if (beanName.equals(StringUtils.stripDoubleQuotes(value))) {
                         return Optional.of(psiClass);
                     }
-
                 }
             } else {
-                if (Introspector.decapitalize(psiClass.getName()).equalsIgnoreCase(StringUtils.stripDoubleQuotes(beanName))) {
+                if (StringUtils.stripDoubleQuotes(beanName).equalsIgnoreCase(Introspector.decapitalize(psiClass.getName()))) {
                     return Optional.of(psiClass);
                 }
             }
@@ -127,9 +133,9 @@ public class JavaClassUtils implements Disposable {
 
     public JavaClassReference findClassReference(@NotNull PsiElement element) {
         List<JavaClassReference> references = Arrays.stream(element.getReferences())
-                .filter(r -> r instanceof JavaClassReference)
-                .map(r -> (JavaClassReference) r)
-                .collect(Collectors.toList());
+                .filter(JavaClassReference.class::isInstance)
+                .map(JavaClassReference.class::cast)
+                .toList();
         if (!references.isEmpty()) {
             return references.get(references.size() - 1);
         }
@@ -139,8 +145,8 @@ public class JavaClassUtils implements Disposable {
     public PsiClass resolveClassReference(@NotNull PsiReference reference) {
         final PsiElement resolveElement = reference.resolve();
 
-        if (resolveElement instanceof PsiClass) {
-            return (PsiClass) resolveElement;
+        if (resolveElement instanceof PsiClass psiClass) {
+            return psiClass;
         } else if (resolveElement instanceof PsiField) {
             final PsiType psiType = PsiUtil.getTypeByPsiElement(resolveElement);
             if (psiType != null) {
@@ -180,24 +186,12 @@ public class JavaClassUtils implements Disposable {
         if (result.startsWith(JAVA_LANG_PACKAGE)) {
             result = result.substring(JAVA_LANG_PACKAGE.length());
         }
-        switch (result) {
-        case "string":
-        case "long":
-        case "boolean":
-        case "double":
-        case "float":
-        case "short":
-        case "char":
-        case "byte":
-        case "int":
-            return result;
-        case "character":
-            return "char";
-        case "integer":
-            return "int";
-        default:
-            return type;
-        }
+        return switch (result) {
+        case "string", "long", "boolean", "double", "float", "short", "char", "byte", "int" -> result;
+        case "character" -> "char";
+        case "integer" -> "int";
+        default -> type;
+        };
     }
 
     /**
