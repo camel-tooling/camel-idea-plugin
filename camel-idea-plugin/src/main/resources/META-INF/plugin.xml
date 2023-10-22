@@ -5,13 +5,14 @@
   <vendor email="users@apache.camel.org" url="https://github.com/camel-tooling/camel-idea-plugin">Apache Camel</vendor>
 
   <description><![CDATA[
-      Plugin for Intellij IDEA to provide a set of Apache Camel related capabilities to the code editor.
+      Plugin for IntelliJ IDEA to provide a set of Apache Camel related capabilities to the code editor.
     ]]></description>
 
   <change-notes><![CDATA[
       v.1.1.4
       <ul>
         <li>Bug fixes</li>
+        <li>New marketplace icon</li>
       </ul>
     ]]>
   </change-notes>
@@ -36,7 +37,7 @@
 
   <depends optional="true" config-file="org.apache.camel-intelliLang.xml">org.intellij.intelliLang</depends>
 
-  <!-- main listener to trigger Camel IDEA plugin to detect if Camel is present or not in the project -->
+  <!-- main listener to trigger Camel IDEA plugin to detect if Apache Camel is present or not in the project -->
   <applicationListeners>
     <listener class="com.github.cameltooling.idea.CamelPluginStartup" topic="com.intellij.openapi.project.ProjectManagerListener"/>
   </applicationListeners>
