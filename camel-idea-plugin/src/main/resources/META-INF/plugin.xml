@@ -11,8 +11,9 @@
   <change-notes><![CDATA[
       v.1.1.4
       <ul>
+        <li>Camel icon shown in plugin marketplace</li>
+        <li>Add support for Java routes from EndpointRouteBuilder</li>
         <li>Bug fixes</li>
-        <li>New marketplace icon</li>
       </ul>
     ]]>
   </change-notes>
