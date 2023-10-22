@@ -80,8 +80,6 @@
     <projectService serviceImplementation="com.github.cameltooling.idea.service.KameletService"/>
     <projectService serviceImplementation="com.github.cameltooling.idea.service.CamelProjectPreferenceService"/>
     <projectService serviceImplementation="com.github.cameltooling.idea.service.CamelJBangService"/>
-    <applicationService serviceImplementation="com.github.cameltooling.idea.util.IdeaUtils"/>
-    <applicationService serviceImplementation="com.github.cameltooling.idea.util.CamelIdeaUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.service.CamelPreferenceService"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.JavaMethodUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.JavaClassUtils"/>

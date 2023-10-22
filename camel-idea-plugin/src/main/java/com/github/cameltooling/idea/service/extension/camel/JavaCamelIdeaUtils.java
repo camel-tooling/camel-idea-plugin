@@ -55,7 +55,6 @@ import com.intellij.psi.codeStyle.CodeStyleSettings;
 import com.intellij.psi.impl.source.PostprocessReformattingAspect;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
-import com.intellij.psi.util.ClassUtil;
 import com.intellij.psi.util.InheritanceUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.LightVirtualFile;
@@ -94,7 +93,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         "kamelet", "step", "transacted", "saga", "route", "resequence", "policy", "onException", "onCompletion",
         "from", "rest", "restConfiguration");
     /**
-     * Name of the methods corresponding to root element of sub DSL.
+     * Name of the methods corresponding to the root element of sub DSL.
      */
     private static final Set<String> SUB_DSL_ROOTS = Set.of("expression", "dataFormat");
     /**
@@ -121,6 +120,23 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         "org.apache.camel.builder.AdviceWithRouteBuilder",
         "org.apache.camel.spring.SpringRouteBuilder",
         "org.apache.camel.builder.endpoint.EndpointRouteBuilder"
+    );
+    private static final List<String> BEAN_ANNOTATIONS = Arrays.asList(
+        "org.springframework.stereotype.Component",
+        "org.springframework.stereotype.Service",
+        "org.springframework.stereotype.Repository",
+        "javax.inject.Named",
+        "javax.inject.Singleton",
+        "javax.enterprise.context.ApplicationScoped",
+        "javax.enterprise.context.SessionScoped",
+        "javax.enterprise.context.ConversationScoped",
+        "javax.enterprise.context.RequestScoped",
+        "jakarta.inject.Named",
+        "jakarta.inject.Singleton",
+        "jakarta.enterprise.context.ApplicationScoped",
+        "jakarta.enterprise.context.SessionScoped",
+        "jakarta.enterprise.context.ConversationScoped",
+        "jakarta.enterprise.context.RequestScoped"
     );
 
     @Override
@@ -216,10 +232,10 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
             // okay dive into the psi and find out which EIP are using the simple
             PsiElement child = call.getFirstChild();
-            if (child instanceof PsiReferenceExpression) {
+            if (child instanceof PsiReferenceExpression psiReferenceExpression) {
                 // this code is needed as it may be used as a method call as a parameter and this requires
                 // a bit of psi code to unwrap the right elements.
-                PsiExpression exp = ((PsiReferenceExpression) child).getQualifierExpression();
+                PsiExpression exp = psiReferenceExpression.getQualifierExpression();
                 if (exp == null) {
                     // okay it was not a direct method call, so see if it was passed in as a parameter instead (expression list)
                     element = element.getParent();
@@ -230,8 +246,8 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                         exp = PsiTreeUtil.getParentOfType(element.getParent(), PsiMethodCallExpression.class);
                     }
                 }
-                if (exp instanceof PsiMethodCallExpression) {
-                    PsiMethod method = ((PsiMethodCallExpression) exp).resolveMethod();
+                if (exp instanceof PsiMethodCallExpression psiMethodCallExpression) {
+                    PsiMethod method = psiMethodCallExpression.resolveMethod();
                     if (method != null) {
                         String name = method.getName();
                         return Arrays.asList(PREDICATE_EIPS).contains(name);
@@ -299,7 +315,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     public boolean acceptForAnnotatorOrInspection(PsiElement element) {
         // skip XML limit on siblings
         if (!IdeaUtils.getService().isFromFileType(element, "xml")) {
-            // for programming languages you can have complex structures with concat which we don't support yet
+            // for programming languages you can have complex structures with concat which we don't support it yet.
             // we currently only support oneliner, so check how many siblings the element has (it has 1 with ending parenthesis which is okay)
             return countSiblings(element) <= 1;
         }
@@ -310,8 +326,8 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     public PsiClass getBeanClass(PsiElement element) {
         final PsiElement beanPsiElement = getPsiElementForCamelBeanMethod(element);
         if (beanPsiElement != null) {
-            if (beanPsiElement instanceof PsiClass) {
-                return (PsiClass) beanPsiElement;
+            if (beanPsiElement instanceof PsiClass psiClass) {
+                return psiClass;
             }
 
             PsiJavaCodeReferenceElement referenceElement = PsiTreeUtil.findChildOfType(beanPsiElement, PsiJavaCodeReferenceElement.class);
@@ -372,19 +388,22 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     }
 
     /**
-     * @return the {@link PsiClass} for the matching bean name by looking for classes annotated with spring Component, Service or Repository
+     * @return the {@link PsiClass} for the matching bean name by looking for classes annotated with
+     * Spring Component, Service or Repository or Quarkus javax or jakarta annotations.
      */
     private Optional<PsiClass> searchForMatchingBeanClass(String beanName, Project project) {
         final JavaClassUtils javaClassUtils = JavaClassUtils.getService();
-        return javaClassUtils.findBeanClassByName(beanName, "org.springframework.stereotype.Component", project)
-            .or(() -> javaClassUtils.findBeanClassByName(beanName, "org.springframework.stereotype.Service", project))
-            .or(() -> javaClassUtils.findBeanClassByName(beanName, "org.springframework.stereotype.Repository", project));
+
+        return BEAN_ANNOTATIONS
+            .stream()
+            .map(annotation -> javaClassUtils.findBeanClassByName(beanName, annotation, project))
+            .flatMap(Optional::stream)
+            .findFirst();
     }
 
     private List<PsiElement> findEndpoints(Module module, Predicate<String> uriCondition, Predicate<PsiLiteral> elementCondition) {
         PsiManager manager = PsiManager.getInstance(module.getProject());
-        //TODO: use IdeaUtils.ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME somehow
-        PsiClass routeBuilderClass = ClassUtil.findPsiClass(manager, "org.apache.camel.builder.RouteBuilder");
+        PsiClass routeBuilderClass = IdeaUtils.findRouteBuilderClass(manager);
 
         List<PsiElement> results = new ArrayList<>();
         if (routeBuilderClass != null) {
@@ -394,8 +413,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                 Collection<PsiLiteralExpression> literals = PsiTreeUtil.findChildrenOfType(routeBuilder, PsiLiteralExpression.class);
                 for (PsiLiteralExpression literal : literals) {
                     Object val = literal.getValue();
-                    if (val instanceof String) {
-                        String endpointUri = (String) val;
+                    if (val instanceof String endpointUri) {
                         if (uriCondition.test(endpointUri) && elementCondition.test(literal)) {
                             results.add(literal);
                         }
@@ -436,7 +454,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         final VirtualFile vFile = FileDocumentManager.getInstance().getFile(document);
         if ((vFile == null || vFile instanceof LightVirtualFile) && !ApplicationManager.getApplication().isUnitTestMode()) {
             // we assume that control flow reaches this place when the document is backed by a "virtual" file so any changes made by
-            // a formatter affect only PSI and it is out of sync with a document text
+            // a formatter affect only PSI, and it is out of sync with a document text
             return;
         }
 
