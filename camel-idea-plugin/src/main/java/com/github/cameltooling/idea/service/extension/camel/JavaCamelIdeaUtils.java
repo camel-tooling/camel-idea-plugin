@@ -32,6 +32,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.JavaResolveResult;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiCallExpression;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
@@ -656,11 +657,11 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         if (element == null) {
             LOG.debug("No element cannot be found at index %d".formatted(offset));
         } else if (element instanceof PsiIdentifier) {
-            PsiMethodCallExpression parent = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+            PsiCallExpression parent = PsiTreeUtil.getParentOfType(element, PsiCallExpression.class);
             if (parent == null) {
-                LOG.debug("The parent PsiMethodCallExpression of the element at index %d cannot be found".formatted(offset));
-            } else {
-                JavaResolveResult[] results = parent.getMethodExpression().multiResolve(false);
+                LOG.debug("The parent PsiCallExpression of the element at index %d cannot be found".formatted(offset));
+            } else if (parent instanceof PsiMethodCallExpression methodCallExpression) {
+                JavaResolveResult[] results = methodCallExpression.getMethodExpression().multiResolve(false);
                 if (results.length == 0) {
                     LOG.debug("The method corresponding to the element at index %d cannot be resolved".formatted(offset));
                 } else if (Arrays.stream(results).map(JavaResolveResult::getElement)
@@ -671,6 +672,8 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                 } else {
                     LOG.trace("The method doesn't match with the predicate");
                 }
+            } else {
+                LOG.debug("The parent PsiCallExpression of the element at index %d is not a method call".formatted(offset));
             }
         } else {
             LOG.trace("The element at index %d is not a PsiIdentifier".formatted(offset));
