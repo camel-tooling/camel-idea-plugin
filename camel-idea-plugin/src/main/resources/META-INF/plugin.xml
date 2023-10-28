@@ -1,15 +1,15 @@
 <idea-plugin url="https://github.com/camel-tooling/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
-  <version>1.1.1</version>
+  <version>1.1.5</version>
   <vendor email="users@apache.camel.org" url="https://github.com/camel-tooling/camel-idea-plugin">Apache Camel</vendor>
 
   <description><![CDATA[
-      Plugin for Intellij IDEA to provide a set of Apache Camel related capabilities to the code editor.
+      Plugin for IntelliJ IDEA to provide a set of Apache Camel related capabilities to the code editor.
     ]]></description>
 
   <change-notes><![CDATA[
-      v.1.1.1
+      v.1.1.5
       <ul>
         <li>Bug fixes</li>
       </ul>
@@ -36,7 +36,7 @@
 
   <depends optional="true" config-file="org.apache.camel-intelliLang.xml">org.intellij.intelliLang</depends>
 
-  <!-- main listener to trigger Camel IDEA plugin to detect if Camel is present or not in the project -->
+  <!-- main listener to trigger Camel IDEA plugin to detect if Apache Camel is present or not in the project -->
   <applicationListeners>
     <listener class="com.github.cameltooling.idea.CamelPluginStartup" topic="com.intellij.openapi.project.ProjectManagerListener"/>
   </applicationListeners>
@@ -79,8 +79,6 @@
     <projectService serviceImplementation="com.github.cameltooling.idea.service.KameletService"/>
     <projectService serviceImplementation="com.github.cameltooling.idea.service.CamelProjectPreferenceService"/>
     <projectService serviceImplementation="com.github.cameltooling.idea.service.CamelJBangService"/>
-    <applicationService serviceImplementation="com.github.cameltooling.idea.util.IdeaUtils"/>
-    <applicationService serviceImplementation="com.github.cameltooling.idea.util.CamelIdeaUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.service.CamelPreferenceService"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.JavaMethodUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.JavaClassUtils"/>

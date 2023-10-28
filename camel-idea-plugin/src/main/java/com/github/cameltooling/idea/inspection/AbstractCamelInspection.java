@@ -49,10 +49,10 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
 
     private boolean forceEnabled;
 
-    public AbstractCamelInspection() {
+    protected AbstractCamelInspection() {
     }
 
-    public AbstractCamelInspection(boolean forceEnabled) {
+    protected AbstractCamelInspection(boolean forceEnabled) {
         this.forceEnabled = forceEnabled;
     }
 
@@ -119,7 +119,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
         CamelService camelService = element.getProject().getService(CamelService.class);
 
         IElementType type = element.getNode().getElementType();
-        LOG.trace("Element " + element + " of type: " + type + " to inspect simple: " + text);
+        LOG.trace("Element %s of type: %s to inspect simple: %s".formatted(element, type, text));
 
         try {
             // need to use the classloader that can load classes from the camel-core
@@ -146,8 +146,8 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
                     holder.registerProblem(element, msg);
                 }
             }
-        } catch (Throwable e) {
-            LOG.warn("Error inspection Camel simple: " + text, e);
+        } catch (Exception e) {
+            LOG.warn("Error inspection Camel simple: %s".formatted(text), e);
         }
     }
 
@@ -189,8 +189,8 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
                     holder.registerProblem(element, msg);
                 }
             }
-        } catch (Throwable e) {
-            LOG.warn("Error inspection Camel jsonpath: " + text, e);
+        } catch (Exception e) {
+            LOG.warn("Error inspection Camel jsonpath: %s".formatted(text), e);
         }
     }
 
@@ -209,7 +209,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
 
         // camel catalog expects &amp; as & when it parses so replace all &amp; as &
         String camelQuery = text;
-        camelQuery = camelQuery.replaceAll("&amp;", "&");
+        camelQuery = camelQuery.replace("&amp;", "&");
 
         // strip up ending incomplete parameter
         if (camelQuery.endsWith("&") || camelQuery.endsWith("?")) {
@@ -219,9 +219,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
         boolean stringFormat = camelIdeaUtils.isFromStringFormatEndpoint(element);
         if (stringFormat) {
             // if the node is fromF or toF, then replace all %X with {{%X}} as we cannot parse that value
-            camelQuery = camelQuery.replaceAll("%s", "\\{\\{\\%s\\}\\}");
-            camelQuery = camelQuery.replaceAll("%d", "\\{\\{\\%d\\}\\}");
-            camelQuery = camelQuery.replaceAll("%b", "\\{\\{\\%b\\}\\}");
+            camelQuery = camelQuery.replaceAll("(%[bds])", "{{$1}}");
         }
 
         boolean consumerOnly = camelIdeaUtils.isConsumerEndpoint(element);
@@ -238,8 +236,8 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
             extractSetValue(result, result.getUnknown(), text, element, holder, isOnTheFly, new AbstractCamelInspection.UnknownErrorMsg());
             extractSetValue(result, result.getNotConsumerOnly(), text, element, holder, isOnTheFly, new AbstractCamelInspection.NotConsumerOnlyErrorMsg());
             extractSetValue(result, result.getNotProducerOnly(), text, element, holder, isOnTheFly, new AbstractCamelInspection.NotProducerOnlyErrorMsg());
-        } catch (Throwable e) {
-            LOG.warn("Error inspecting Camel endpoint: " + text, e);
+        } catch (Exception e) {
+            LOG.warn("Error inspecting Camel endpoint: %s".formatted(text), e);
         }
     }
 
@@ -271,7 +269,7 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
         @Override
         public String getErrorMessage(EndpointValidationResult result, Map.Entry<String, String> entry) {
             String name = entry.getKey();
-            boolean empty = entry.getValue() == null || entry.getValue().length() == 0;
+            boolean empty = entry.getValue() == null || entry.getValue().isEmpty();
             if (empty) {
                 return name + " has empty boolean value";
             } else {
@@ -381,7 +379,6 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
      *
      * @return the summary, or <tt>empty</tt> if no validation errors
      */
-    @SuppressWarnings("unchecked")
     private <T> String summaryErrorMessage(EndpointValidationResult result, T entry, CamelAnnotatorEndpointMessage<T> msg) {
         if (result.getIncapable() != null) {
             return "Incapable of parsing uri: " + result.getIncapable();

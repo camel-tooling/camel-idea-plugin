@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -36,6 +35,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Function;
 
+import com.github.cameltooling.idea.gradle.GradleFileWriter;
 import com.github.cameltooling.idea.runner.CamelQuarkusRunConfigurationType;
 import com.github.cameltooling.idea.runner.CamelRunConfiguration;
 import com.github.cameltooling.idea.runner.CamelSpringBootRunConfigurationType;
@@ -44,7 +44,7 @@ import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.service.CamelProjectPreferenceService;
 import com.github.cameltooling.idea.service.CamelRuntime;
 import com.github.cameltooling.idea.service.CamelService;
-import com.github.cameltooling.idea.service.MavenArtifactRetrieverContext;
+import com.github.cameltooling.idea.maven.MavenArtifactRetrieverContext;
 import com.github.cameltooling.idea.util.ArtifactCoordinates;
 import com.intellij.execution.Executor;
 import com.intellij.execution.JavaRunConfigurationBase;
@@ -264,7 +264,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
                         notify(project, MessageType.INFO, "Camel Debugger has been added automatically with success.");
                         LOG.debug("The camel-debug has been added with success");
                     } catch (Exception e) {
-                        LOG.error("Could not add the Camel Debugger automatically", e);
+                        LOG.warn("Could not add the Camel Debugger automatically", e);
                         notify(project, MessageType.ERROR, "Camel Debugger could not be added automatically.");
                     }
                 } else {
@@ -407,22 +407,20 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
         final ParametersList parametersList = parameters.getProgramParametersList();
         List<String> listParameters = parametersList.getParameters();
         final int indexBuildFile = Math.max(listParameters.indexOf("-b"), listParameters.indexOf("--build-file"));
-        final GradleBuildWriter writer;
+        final GradleFileWriter writer;
         final String targetBuildFileName;
         if (indexBuildFile == -1) {
-            if (Files.exists(parent.resolve("build.gradle.kts")) || Files.exists(parent.resolve("settings.gradle.kts"))) {
-                targetBuildFileName = "build.gradle.kts";
-                writer = GradleBuildWriter.KOTLIN;
-            } else {
-                targetBuildFileName = "build.gradle";
-                writer = GradleBuildWriter.GROOVY;
+            writer = GradleFileWriter.from(parent);
+            if (writer == null) {
+                return List.of();
             }
+            targetBuildFileName = writer.getBuildScriptFileName();
         } else {
             targetBuildFileName = parametersList.get(indexBuildFile + 1);
             if (targetBuildFileName.endsWith(".kts")) {
-                writer = GradleBuildWriter.KOTLIN;
+                writer = GradleFileWriter.KOTLIN;
             } else {
-                writer = GradleBuildWriter.GROOVY;
+                writer = GradleFileWriter.GROOVY;
             }
         }
 
@@ -445,12 +443,12 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
                 if (parameter.split(":").length >= expectedLength) {
                     added = true;
                     String projectName = parameter.substring(0, parameter.lastIndexOf(':'));
-                    writer.write(fileWriter, dependencies, projectName);
+                    writer.writeDependencies(fileWriter, dependencies, projectName);
                 }
             }
             if (!added) {
                 for (Dependency dependency : dependencies) {
-                    writer.write(fileWriter, dependency);
+                    writer.writeDependency(fileWriter, dependency);
                 }
             }
         }
@@ -464,17 +462,13 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
             final int indexSettingsFile = Math.max(listParameters.indexOf("-c"), listParameters.indexOf("--settings-file"));
             final String targetSettingsFileName;
             if (indexSettingsFile == -1) {
-                if (writer == GradleBuildWriter.KOTLIN) {
-                    targetSettingsFileName = "settings.gradle.kts";
-                } else {
-                    targetSettingsFileName = "settings.gradle";
-                }
+                targetSettingsFileName = writer.getSettingsScriptFileName();
             } else {
                 targetSettingsFileName = parametersList.get(indexSettingsFile + 1);
             }
             Path settingsFile =  createGeneratedFile(parent, targetSettingsFileName);
             try (FileWriter fileWriter = new FileWriter(settingsFile.toFile(), true)) {
-                writer.write(fileWriter, buildFile);
+                writer.writeBuildFileLocation(fileWriter, buildFile);
             }
             if (indexSettingsFile == -1) {
                 parametersList.add("-c");
@@ -587,7 +581,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
                 );
             }
         }
-        for (URL url : downloadCamelDebugger(runtime, versionRuntime)) {
+        for (URL url : downloadCamelDebugger(project, runtime, versionRuntime)) {
             try {
                 parameters.getClassPath().add(new File(url.toURI()));
             } catch (URISyntaxException e) {
@@ -599,6 +593,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
     /**
      * Downloads the Camel Debugger and its dependencies corresponding to the given runtime.
      *
+     * @param project    the project for which the Camel Debugger needs to be downloaded.
      * @param runtime the target runtime for which the Camel Debugger is downloaded.
      * @param version the version of the Camel Debugger to download.
      * @return the list of {@link URL} corresponding to the location of the Camel Debugger and its dependencies that have
@@ -606,8 +601,8 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
      * @throws IOException if an error occurs while downloading the Camel Debugger and its dependencies.
      */
     @NotNull
-    private static List<URL> downloadCamelDebugger(@NotNull CamelRuntime runtime, @NotNull String version) throws IOException {
-        try (MavenArtifactRetrieverContext context = new MavenArtifactRetrieverContext()) {
+    private static List<URL> downloadCamelDebugger(Project project, @NotNull CamelRuntime runtime, @NotNull String version) throws IOException {
+        try (MavenArtifactRetrieverContext context = new MavenArtifactRetrieverContext(project)) {
             ArtifactCoordinates debugArtifact = runtime.getDebugArtifact();
             if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Trying to download %s %s with all its dependencies", debugArtifact, version));
@@ -644,6 +639,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
      */
     private static void addCamelDebuggerEnvironmentVariable(JavaParameters parameters) {
         parameters.getEnv().put("CAMEL_DEBUGGER_SUSPEND", "true");
+        parameters.getEnv().put("CAMEL_MAIN_DEBUGGING", "true");
     }
 
     /**
@@ -711,7 +707,10 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
 
             @Override
             void addRequiredParameters(JavaParameters parameters) {
-                super.addRequiredMavenGoals(parameters);
+                // Avoid to compile as it can prevent the automatic addition of the Camel Debugger from working properly
+                // Indeed otherwise, the addition of the Camel Debugger to a custom pom file is simply ignored
+                parameters.getProgramParametersList().addAt(0, "clean");
+                parameters.getProgramParametersList().addAt(1, runtime.getPluginGoal());
             }
 
             @Override
@@ -845,7 +844,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
         /**
          * The corresponding Camel Runtime.
          */
-        private final CamelRuntime runtime;
+        protected final CamelRuntime runtime;
 
         /**
          * Constructs a {@code ExecutionMode} with the given Camel Runtime.
@@ -998,158 +997,5 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
             parameters.getProgramParametersList().addAt(1, "compile");
             parameters.getProgramParametersList().addAt(2, runtime.getPluginGoal());
         }
-    }
-
-    /**
-     * The supported writer of gradle build file.
-     */
-    private enum GradleBuildWriter {
-
-        /**
-         * The writer dedicated to gradle build file written in Groovy.
-         */
-        GROOVY {
-            @Override
-            void write(Writer writer, Dependency dependency) throws IOException {
-                writer.write(
-                    String.format(
-                        """
-                        project.dependencies.add('runtimeOnly', '%s:%s:%s')
-                        """,
-                        dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion()
-                    )
-                );
-            }
-
-            @Override
-            void write(Writer writer, List<Dependency> dependencies, String projectName) throws IOException {
-                writer.write(
-                    String.format(
-                        """
-                        project('%s') {
-                            plugins.withType(JavaPlugin.class) {
-                                dependencies {
-                        """,
-                        projectName
-                    )
-                );
-                for (Dependency dependency : dependencies) {
-                    writer.write(
-                        String.format(
-                            """
-                                        runtimeOnly '%s:%s:%s'
-                            """,
-                            dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion()
-                        )
-                    );
-                }
-                writer.write(
-                    """
-                            }
-                        }
-                    }
-                    """
-                );
-            }
-
-            @Override
-            void write(Writer writer, Path buildFile) throws IOException {
-                writer.write(
-                    String.format(
-                        """
-                        rootProject.buildFileName = '%s'
-                        """,
-                        buildFile.getFileName()
-                    )
-                );
-            }
-        },
-        /**
-         * The writer dedicated to gradle build file written in Kotlin.
-         */
-        KOTLIN {
-            @Override
-            void write(Writer writer, Dependency dependency) throws IOException {
-                writer.write(
-                    String.format(
-                        """
-                        project.dependencies.add("runtimeOnly", "%s:%s:%s")
-                        """,
-                        dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion()
-                    )
-                );
-            }
-
-            @Override
-            void write(Writer writer, List<Dependency> dependencies, String projectName) throws IOException {
-                writer.write(
-                    String.format(
-                        """
-                        project("%s") {
-                            plugins.withType<JavaPlugin>() {
-                                dependencies {
-                        """,
-                        projectName
-                    )
-                );
-                for (Dependency dependency : dependencies) {
-                    writer.write(
-                        String.format(
-                            """
-                                        add("runtimeOnly", "%s:%s:%s")
-                            """,
-                            dependency.getGroupId(), dependency.getArtifactId(), dependency.getVersion()
-                        )
-                    );
-                }
-                writer.write(
-                    """
-                            }
-                        }
-                    }
-                    """
-                );
-            }
-
-            @Override
-            void write(Writer writer, Path buildFile) throws IOException {
-                writer.write(
-                    String.format(
-                        """
-                        rootProject.buildFileName = "%s"
-                        """,
-                        buildFile.getFileName()
-                    )
-                );
-            }
-        };
-
-        /**
-         * Writes the given dependency to the given writer.
-         *
-         * @param writer the target writer
-         * @param dependency the dependency to write
-         * @throws IOException if the dependency could not be written
-         */
-        abstract void write(Writer writer, Dependency dependency) throws IOException;
-
-        /**
-         * Writes the given dependencies of a specific project to the given writer.
-         *
-         * @param writer the target writer
-         * @param dependencies the dependencies to write
-         * @param projectName the target project name
-         * @throws IOException if the dependencies could not be written
-         */
-        abstract void write(Writer writer, List<Dependency> dependencies, String projectName) throws IOException;
-
-        /**
-         * Writes the location of the new build file.
-         *
-         * @param writer the target writer
-         * @param buildFile the new build file to configure.
-         * @throws IOException if the location of the build file could not be written
-         */
-        abstract void write(Writer writer, Path buildFile) throws IOException;
     }
 }

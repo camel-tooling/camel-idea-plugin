@@ -73,6 +73,14 @@ public class CamelPostFormatProcessorIT extends CamelLightCodeInsightFixtureTest
     }
 
     /**
+     * Ensures that the test case defined in <a href="https://github.com/camel-tooling/camel-idea-plugin/issues/945">#945</a>
+     * is properly fixed.
+     */
+    public void testFormatting945() {
+        doTest("Formatting945", null);
+    }
+
+    /**
      * Ensures that a partial format not including a route has no effect.
      */
     public void testPartialFormat() {

@@ -27,7 +27,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import com.github.cameltooling.idea.extension.IdeaUtilsExtension;
 import com.intellij.codeInsight.completion.CompletionUtil;
@@ -36,6 +35,7 @@ import com.intellij.lang.java.JavaLanguage;
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.Service;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
@@ -65,8 +65,9 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.java.IJavaDocElementType;
+import com.intellij.psi.util.ClassUtil;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.util.PsiUtil;
+import com.intellij.psi.util.PsiUtilCore;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlFile;
@@ -89,20 +90,25 @@ import static com.intellij.xml.CommonXmlStrings.QUOT;
 /**
  * Utility methods to work with IDEA {@link PsiElement}s.
  * <p/>
- * This class is only for IDEA APIs. If you need Camel related APIs as well then use {@link CamelIdeaUtils} instead.
+ * This class is only for IDEA APIs. If you need Camel related APIs as well, use {@link CamelIdeaUtils} instead.
  */
+@Service
 public final class IdeaUtils implements Disposable {
 
-    private static final List<String> ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME = Arrays.asList(
-        "org.apache.camel.builder.RouteBuilder", "org.apache.camel.builder.BuilderSupport",
-        "org.apache.camel.model.ProcessorDefinition", "org.apache.camel.model.language.ExpressionDefinition");
+    private static final List<String> ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME = List.of(
+        "org.apache.camel.builder.endpoint.EndpointRouteBuilder",
+        "org.apache.camel.builder.RouteBuilder",
+        "org.apache.camel.builder.BuilderSupport",
+        "org.apache.camel.model.ProcessorDefinition",
+        "org.apache.camel.model.language.ExpressionDefinition"
+    );
 
     private final List<IdeaUtilsExtension> enabledExtensions;
 
     private IdeaUtils() {
         enabledExtensions = Arrays.stream(IdeaUtilsExtension.EP_NAME.getExtensions())
             .filter(IdeaUtilsExtension::isExtensionEnabled)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     public static IdeaUtils getService() {
@@ -124,9 +130,9 @@ public final class IdeaUtils implements Disposable {
      * Extract the text value from the {@link PsiElement} from any of the support languages this plugin works with.
      *
      * @param element the element
-     * @param fallBackToGeneric if could find any of the supported languages fallback to generic if true
+     * @param fallBackToGeneric if it could find any of the supported language-fallbacks to generic if true
      * @param concatString concatenated the string if it wrapped
-     * @param stripWhitespace
+     * @param stripWhitespace strip whitespaces
      * @return the text or <tt>null</tt> if the element is not a text/literal kind.
      */
     @Nullable
@@ -156,7 +162,7 @@ public final class IdeaUtils implements Disposable {
     }
 
     /**
-     * Is the element from a java setter method (eg setBrokerURL) or from a XML configured <tt>bean</tt> style
+     * Is the element from a java setter method (e.g., setBrokerURL) or from an XML configured <tt>bean</tt> style
      * configuration using <tt>property</tt> element.
      */
     public boolean isElementFromSetterProperty(@NotNull PsiElement element, @NotNull String setter) {
@@ -181,21 +187,21 @@ public final class IdeaUtils implements Disposable {
      * Is the element from Java language
      */
     public boolean isJavaLanguage(PsiElement element) {
-        return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).is(JavaLanguage.INSTANCE);
+        return element != null && PsiUtilCore.getNotAnyLanguage(element.getNode()).is(JavaLanguage.INSTANCE);
     }
 
     /**
      * Is the element from XML language
      */
     public boolean isXmlLanguage(PsiElement element) {
-        return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).is(XMLLanguage.INSTANCE);
+        return element != null && PsiUtilCore.getNotAnyLanguage(element.getNode()).is(XMLLanguage.INSTANCE);
     }
 
     /**
      * Is the element from YAML language
      */
     public boolean isYamlLanguage(PsiElement element) {
-        return element != null && PsiUtil.getNotAnyLanguage(element.getNode()).is(YAMLLanguage.INSTANCE);
+        return element != null && PsiUtilCore.getNotAnyLanguage(element.getNode()).is(YAMLLanguage.INSTANCE);
     }
 
     /**
@@ -207,8 +213,8 @@ public final class IdeaUtils implements Disposable {
         }
 
         PsiFile file;
-        if (element instanceof PsiFile) {
-            file = (PsiFile) element;
+        if (element instanceof PsiFile psiFile) {
+            file = psiFile;
         } else {
             file = PsiTreeUtil.getParentOfType(element, PsiFile.class);
         }
@@ -255,7 +261,7 @@ public final class IdeaUtils implements Disposable {
     }
 
     /**
-     * Is the given class or any of its super classes a class with the qualified name.
+     * Is the given class or any of its superclasses a class with the qualified name.
      *
      * @param target  the class
      * @param fqnClassName the class name to match
@@ -273,11 +279,11 @@ public final class IdeaUtils implements Disposable {
     }
 
     /**
-     * Is the element from a constructor call with the given constructor name (eg class name)
+     * Is the element from a constructor call with the given constructor name (e.g., class name)
      *
      * @param element  the element
-     * @param constructorName the name of the constructor (eg class)
-     * @return <tt>true</tt> if its a constructor call from the given name, <tt>false</tt> otherwise
+     * @param constructorName the name of the constructor (e.g., class)
+     * @return <tt>true</tt> if it is a constructor call from the given name, <tt>false</tt> otherwise
      */
     public boolean isElementFromConstructor(@NotNull PsiElement element, @NotNull String constructorName) {
         // java constructor
@@ -292,7 +298,7 @@ public final class IdeaUtils implements Disposable {
     }
 
     /**
-     * Is the given element from a Java method call with any of the given method names
+     * Is the given element from a Java method call with any of the given method names?
      *
      * @param element  the psi element
      * @param methods  method call names
@@ -311,7 +317,7 @@ public final class IdeaUtils implements Disposable {
      * Returns the first parent of the given element which matches the given condition.
      *
      * @param element element from which the search starts
-     * @param strict if true, element itself cannot be returned if it matches the condition
+     * @param strict if true, the element itself cannot be returned if it matches the condition
      * @param matchCondition condition which the parent must match to be returned
      * @param stopCondition condition which stops the search, causing the method to return null
      */
@@ -358,7 +364,7 @@ public final class IdeaUtils implements Disposable {
     }
 
     /**
-     * Is the given element from a XML tag with any of the given tag names
+     * Is the given element from an XML tag with any of the given tag names?
      *
      * @param xml  the xml tag
      * @param methods  xml tag names
@@ -370,7 +376,7 @@ public final class IdeaUtils implements Disposable {
     }
 
     /**
-     * Is the given element from a XML tag with any of the given tag names
+     * Is the given element from an XML tag with any of the given tag names
      *
      * @param xml  the xml tag
      * @param parentTag a special parent tag name to match first
@@ -416,7 +422,7 @@ public final class IdeaUtils implements Disposable {
     }
 
     /**
-     * Is the given element from a XML tag with the parent and is of any of the given tag names
+     * Is the given element from an XML tag with the parent and is of any given tag names?
      *
      * @param xml  the xml tag
      * @param parentTag a special parent tag name to match first
@@ -440,8 +446,8 @@ public final class IdeaUtils implements Disposable {
         fileIndex.iterateContent(f -> {
             if (yamlFiles.contains(f)) {
                 PsiFile file = PsiManager.getInstance(module.getProject()).findFile(f);
-                if (file instanceof YAMLFile) {
-                    yamlFileConsumer.accept((YAMLFile) file);
+                if (file instanceof YAMLFile yamlFile) {
+                    yamlFileConsumer.accept(yamlFile);
                 }
             }
             return true;
@@ -456,8 +462,7 @@ public final class IdeaUtils implements Disposable {
         fileIndex.iterateContent(f -> {
             if (xmlFiles.contains(f)) {
                 PsiFile file = PsiManager.getInstance(module.getProject()).findFile(f);
-                if (file instanceof XmlFile) {
-                    XmlFile xmlFile = (XmlFile) file;
+                if (file instanceof XmlFile xmlFile) {
                     XmlTag root = xmlFile.getRootTag();
                     if (root != null) {
                         rootTag.accept(xmlFile.getRootTag());
@@ -503,7 +508,6 @@ public final class IdeaUtils implements Disposable {
         return hackIndex;
     }
 
-
     /**
      * Return the Query parameter at the cursor location for the query parameter.
      *  <ul>
@@ -513,7 +517,7 @@ public final class IdeaUtils implements Disposable {
      *    <li>timer:trigger?repeatCount=0&delay=&lt;cursor&gt; will return {"delay",""}</li>
      *    <li>jms:qu&lt;cursor&gt; will return {":qu", ""}</li>
      *  </ul>
-     * @return a list with the query parameter and the value if present. The query parameter is returned with separator char
+     * @return an array with the query parameter and the value if present. The query parameter is returned with separator char
      */
     public String[] getQueryParameterAtCursorPosition(PsiElement element) {
         String positionText = extractTextFromElement(element);
@@ -557,10 +561,7 @@ public final class IdeaUtils implements Disposable {
 
     public boolean isWhiteSpace(PsiElement element) {
         IElementType type = element.getNode().getElementType();
-        if (type == TokenType.WHITE_SPACE) {
-            return true;
-        }
-        return false;
+        return type == TokenType.WHITE_SPACE;
     }
 
     public boolean isJavaDoc(PsiElement element) {
@@ -645,19 +646,20 @@ public final class IdeaUtils implements Disposable {
         YAMLKeyValue keyValue = null;
         PsiElement psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
 
-        //This must be indent element because the position is at the beginning of the line
-        if (psiElement instanceof LeafPsiElement && "indent".equals(((LeafPsiElement) psiElement).getElementType().toString())) {
-            psiElement = psiElement.getNextSibling(); //This must be sequence item
+        // This must be the indent element because the position is at the beginning of the line
+        if (psiElement instanceof LeafPsiElement leafPsiElement && "indent".equals(leafPsiElement.getElementType().toString())) {
+            psiElement = psiElement.getNextSibling(); //This must be the sequence item
             Collection<YAMLKeyValue> keyValues = null;
-            if (psiElement instanceof YAMLSequence) { //This is the beginning of sequence, get first item
-                psiElement = ((YAMLSequence) psiElement).getItems().get(0);
+            if (psiElement instanceof YAMLSequence yamlSequence) {
+                // This is the beginning of the sequence; get the first item
+                psiElement = yamlSequence.getItems().get(0);
                 keyValues = ((YAMLSequenceItem) psiElement).getKeysValues();
-            } else if (psiElement instanceof YAMLSequenceItem) {
-                keyValues = ((YAMLSequenceItem) psiElement).getKeysValues();
-            } else if (psiElement instanceof YAMLKeyValue) {
-                keyValue = (YAMLKeyValue) psiElement;
-            } else if (psiElement instanceof YAMLMapping) {
-                keyValues = ((YAMLMapping) psiElement).getKeyValues();
+            } else if (psiElement instanceof YAMLSequenceItem yamlSequenceItem) {
+                keyValues = yamlSequenceItem.getKeysValues();
+            } else if (psiElement instanceof YAMLKeyValue yamlKeyValue) {
+                keyValue = yamlKeyValue;
+            } else if (psiElement instanceof YAMLMapping yamlMapping) {
+                keyValues = yamlMapping.getKeyValues();
             }
             if (keyValues != null && !keyValues.isEmpty()) {
                 keyValue = keyValues.iterator().next();
@@ -665,5 +667,14 @@ public final class IdeaUtils implements Disposable {
         }
 
         return keyValue;
+    }
+
+    public static PsiClass findRouteBuilderClass(PsiManager manager) {
+        return ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME
+                .stream()
+                .map(fqn -> ClassUtil.findPsiClass(manager, fqn))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 }

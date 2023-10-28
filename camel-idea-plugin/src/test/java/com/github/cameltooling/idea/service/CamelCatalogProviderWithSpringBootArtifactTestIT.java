@@ -18,6 +18,7 @@ package com.github.cameltooling.idea.service;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.github.cameltooling.idea.catalog.CamelCatalogProvider;
+import com.github.cameltooling.idea.maven.CamelMavenVersionManager;
 import org.apache.camel.catalog.CamelCatalog;
 import org.apache.camel.catalog.DefaultCamelCatalog;
 import org.jetbrains.annotations.Nullable;
@@ -52,7 +53,7 @@ public class CamelCatalogProviderWithSpringBootArtifactTestIT extends CamelLight
      * Ensure that the runtime provider can be loaded.
      */
     public void testRuntimeProvider() {
-        getProject().getService(CamelCatalogService.class).get().setVersionManager(new CamelMavenVersionManager());
+        getProject().getService(CamelCatalogService.class).get().setVersionManager(new CamelMavenVersionManager(getProject()));
         assertTrue(provider.loadRuntimeProviderVersion(getProject()));
     }
 }

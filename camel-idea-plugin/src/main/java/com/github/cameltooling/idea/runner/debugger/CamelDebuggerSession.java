@@ -878,6 +878,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 if (basePath != null && url.startsWith(basePath)) {
                     sourceLocations.add(String.format("file:%s", url.substring(basePath.length() + 1))); // file:file.xml
                 }
+                sourceLocations.add(virtualFile.getName()); // file.xml
             } else { //Then it must be a Jar
                 sourceLocations = List.of(String.format("classpath:%s", url.substring(url.lastIndexOf("!") + 2)));
             }
@@ -897,8 +898,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 } else {
                     relativePath = virtualFile.getName();
                 }
-                sourceLocations.add(relativePath); // file.xml
-                sourceLocations.add(String.format("file:%s", relativePath)); // file:file.xml
+                sourceLocations.add(relativePath); // file.java
+                sourceLocations.add(String.format("file:%s", relativePath)); // file:file.java
+                sourceLocations.add(virtualFile.getName()); // file.java
             }
             break;
         default: // noop

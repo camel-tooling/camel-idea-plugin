@@ -12,6 +12,7 @@ The plugin includes:
 - Code completion for Camel message headers (available `setHeader` and `header`) in Java, XML and YAML files (`ctrl + space`) with corresponding Quick documentation (`ctrl + j`)
 - Code completion for Camel property placeholders (cursor after `{{`)
 - Code completion for Camel options' key and value in properties and YAML files (`ctrl + space`) with corresponding Quick documentation (`ctrl + j`)
+- Code completion for Kamelet name and options' key and value in Kamelet binding files (`ctrl + space`) with corresponding Quick documentation (`ctrl + j`)
 - Real time validation for Camel endpoints in Java, XML, YAML (underline errors in red)
 - Real time validation for Camel simple language in Java, XML, YAML (underline errors in red)
 - Endpoint options filtered to only include applicable options when used as consumer vs producer only mode
@@ -98,7 +99,7 @@ Importing the project into IntelliJ as plug-in only require you choose ìmport f
 
 #### <a name="runningwithpreviousversion"></a>Running the plug-in with a previous versions of IDEA
 
-The plugin is tested with `IDEA 2023.2.2` or newer, but if you want to try with an older version you can follow this guide
+The plugin is tested with `IDEA 2023.2.3` or newer, but if you want to try with an older version you can follow this guide
 
 > - Follow the guide [build from source](#buildingfromsource)
 > - Change the attribute `<idea-version since-build="221"/>` in `camel-idea-plugin/src/main/resources/META-INF/plugin.xml` to match the version. please see [document](http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html) for build number description 
