@@ -212,7 +212,7 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "configurations: ", "auto-startup: ");
+        assertContainsElements(strings, "message-history: ", "configurations: ", "auto-startup: ");
     }
 
     /**
