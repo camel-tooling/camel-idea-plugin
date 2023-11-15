@@ -62,7 +62,7 @@ public class PropertiesPropertyKeyCompletionSpringBootTestIT extends CamelLightC
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.springboot.debugging = ", "camel.springboot.duration-max-seconds = ", "camel.springboot.auto-startup = ");
+        assertContainsElements(strings, "camel.springboot.message-history = ", "camel.springboot.duration-max-seconds = ", "camel.springboot.auto-startup = ");
     }
 
     /**

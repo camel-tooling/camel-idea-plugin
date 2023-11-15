@@ -197,7 +197,7 @@ public class PropertiesPropertyKeyCompletionTestIT extends CamelLightCodeInsight
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.main.debugging = ", "camel.main.configurations = ", "camel.main.auto-startup = ");
+        assertContainsElements(strings, "camel.main.message-history = ", "camel.main.configurations = ", "camel.main.auto-startup = ");
     }
 
     /**
@@ -222,7 +222,7 @@ public class PropertiesPropertyKeyCompletionTestIT extends CamelLightCodeInsight
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.main.debugging = ");
+        assertContainsElements(strings, "camel.main.message-history = ");
         assertDoesntContain(strings, "camel.main.configurations = ", "camel.main.auto-startup = ");
     }
 
