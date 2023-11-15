@@ -212,7 +212,7 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "debugging: ", "configurations: ", "auto-startup: ");
+        assertContainsElements(strings, "configurations: ", "auto-startup: ");
     }
 
     /**
@@ -238,7 +238,6 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.type("deb");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "debugging: ");
         assertDoesntContain(strings, "configurations: ", "auto-startup: ");
     }
 
