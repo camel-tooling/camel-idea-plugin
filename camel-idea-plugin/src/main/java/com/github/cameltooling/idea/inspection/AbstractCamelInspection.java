@@ -284,13 +284,13 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
             String name = entry.getKey();
             String[] choices = result.getInvalidEnumChoices().get(name);
             String defaultValue = result.getDefaultValues() != null ? result.getDefaultValues().get(entry.getKey()) : null;
-            String str = Arrays.asList(choices).toString();
-            String msg = name + " has invalid enum value: " + entry.getValue() + ". Possible values: " + str;
+            String choicesString = Arrays.asList(choices).toString();
+            String msg = name + " has invalid enum value: " + entry.getValue() + ". Possible values: " + choicesString;
             if (result.getInvalidEnumChoices() != null) {
                 String[] suggestions = result.getInvalidEnumChoices().get(name);
                 if (suggestions != null && suggestions.length > 0) {
-                    str = Arrays.asList(suggestions).toString();
-                    msg += ". Did you mean: " + str;
+                    choicesString = Arrays.asList(suggestions).toString();
+                    msg += ". Did you mean: " + choicesString;
                 }
             }
             if (defaultValue != null) {
@@ -299,6 +299,21 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
             return msg;
         }
     }
+
+//    private String buildErrorMessage(String name, String entryValue, String choicesString, String defaultValue, EndpointValidationResult result) {
+//        String msg = name + " has invalid enum value: " + entryValue + ". Possible values: " + choicesString;
+//        if (result.getInvalidEnumChoices() != null) {
+//            String[] suggestions = result.getInvalidEnumChoices().get(name);
+//            if (suggestions != null && suggestions.length > 0) {
+//                choicesString = Arrays.asList(suggestions).toString();
+//                msg += ". Did you mean: " + choicesString;
+//            }
+//        }
+//        if (defaultValue != null) {
+//            msg += ". Default value: " + defaultValue;
+//        }
+//        return msg;
+//    }
 
     private static class ReferenceErrorMsg implements CamelAnnotatorEndpointMessage<Map.Entry<String, String>> {
         @Override

@@ -34,19 +34,24 @@ public abstract class BlueprintAttributeValueReferenceProvider extends CamelPsiR
 
     @Override
     protected PsiReference[] getCamelReferencesByElement(PsiElement element, ProcessingContext context) {
-        if (element instanceof XmlAttributeValue) {
-            XmlAttribute attribute = PsiTreeUtil.getParentOfType(element, XmlAttribute.class);
-            if (attribute != null) {
-                XmlTag tag = attribute.getParent();
-                XmlAttributeValue value = attribute.getValueElement();
-                if (tag != null && value != null && BeanUtils.getService().isPartOfBeanContainer(tag)) {
-                    return getAttributeReferences(attribute, value, context);
-                }
-            }
+        if (!(element instanceof XmlAttributeValue)) {
+            return PsiReference.EMPTY_ARRAY;
         }
-        return PsiReference.EMPTY_ARRAY;
-    }
 
+        XmlAttribute attribute = PsiTreeUtil.getParentOfType(element, XmlAttribute.class);
+        if (attribute == null) {
+            return PsiReference.EMPTY_ARRAY;
+        }
+
+        XmlTag tag = attribute.getParent();
+        XmlAttributeValue value = attribute.getValueElement();
+        if (tag == null || value == null || !BeanUtils.getService().isPartOfBeanContainer(tag)) {
+            return PsiReference.EMPTY_ARRAY;
+        }
+
+        return getAttributeReferences(attribute, value, context);
+    }
+    //IMPLEMENTATION SMELL OF IF STATEMENT
     protected abstract PsiReference[] getAttributeReferences(@NotNull XmlAttribute attribute,
                                                              @NotNull XmlAttributeValue value,
                                                              ProcessingContext context);

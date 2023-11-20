@@ -91,7 +91,7 @@ public class CamelEvaluateActionHandler extends XDebuggerActionHandler {
         CamelLanguages.ALL.stream().map(Language::getID);
 
         if (expression == null) {
-            expression = XExpressionImpl.EMPTY_EXPRESSION;
+            expression = XExpressionImpl.EMPTY_EXPRESSION; //NOPMD - suppressed AvoidReassigningParameters - TODO explain reason for suppression
         }
         if (expression.getLanguage() == null) {
             //Assume Camel Simple by default

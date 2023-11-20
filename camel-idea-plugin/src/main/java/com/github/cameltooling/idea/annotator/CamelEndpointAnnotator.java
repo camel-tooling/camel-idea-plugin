@@ -259,13 +259,13 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
             String name = entry.getKey();
             String[] choices = result.getInvalidEnumChoices().get(name);
             String defaultValue = result.getDefaultValues() != null ? result.getDefaultValues().get(entry.getKey()) : null;
-            String str = Arrays.asList(choices).toString();
-            String msg = "Invalid enum value: " + entry.getValue() + ". Possible values: " + str;
+            String choicesString = Arrays.asList(choices).toString();
+            String msg = "Invalid enum value: " + entry.getValue() + ". Possible values: " + choicesString;
             if (result.getInvalidEnumChoices() != null) {
                 String[] suggestions = result.getInvalidEnumChoices().get(name);
                 if (suggestions != null && suggestions.length > 0) {
-                    str = Arrays.asList(suggestions).toString();
-                    msg += ". Did you mean: " + str;
+                    choicesString = Arrays.asList(suggestions).toString();
+                    msg += ". Did you mean: " + choicesString;
                 }
             }
             if (defaultValue != null) {

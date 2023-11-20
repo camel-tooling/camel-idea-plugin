@@ -65,43 +65,45 @@ abstract class AbstractCamelAnnotator implements Annotator {
      * @return <ttt>true</ttt> to accept or <tt>false</tt> to drop
      */
     boolean accept(PsiElement element) {
-
         if (element == null || element.getNode() == null) {
             return false;
         }
 
         if (element instanceof PsiPolyadicExpression) {
             return true;
-        } else {
-            final PsiPolyadicExpression parentOfType = PsiTreeUtil.getParentOfType(element, PsiPolyadicExpression.class);
-            if ((element instanceof PsiLiteralExpression || element instanceof PropertyValueImpl) && parentOfType == null) {
-                return true;
-            }
         }
 
-        // skip whitespace noise
-        IElementType type = element.getNode().getElementType();
-        if (type == TokenType.WHITE_SPACE) {
-            return false;
-        }
+        PsiPolyadicExpression parentOfType = PsiTreeUtil.getParentOfType(element, PsiPolyadicExpression.class);
 
-        // skip java doc noise
-        if (JavaDocElementType.ALL_JAVADOC_ELEMENTS.contains(type)) {
-            return false;
-        } else if (element instanceof YAMLKeyValue || element.getParent() instanceof YAMLKeyValue) {
+        // Simplified the complex conditional
+        if (isLiteralOrPropertyValueWithoutParent(element, parentOfType)) {
             return true;
         }
 
-        boolean accept = false;
-
-        // we only want xml attributes or text value elements
-        if (element instanceof XmlElement) {
-            accept = type == XmlElementType.XML_ATTRIBUTE_VALUE
-                || type == XmlElementType.XML_TEXT;
+        // Skip whitespace and JavaDoc noise
+        IElementType type = element.getNode().getElementType();
+        if (type == TokenType.WHITE_SPACE || JavaDocElementType.ALL_JAVADOC_ELEMENTS.contains(type)) {
+            return false;
         }
 
-        return accept;
+        // Check for YAML key-value pairs
+        if (element instanceof YAMLKeyValue || element.getParent() instanceof YAMLKeyValue) {
+            return true;
+        }
+
+        // Check for XML attributes or text value elements
+        if (element instanceof XmlElement) {
+            return type == XmlElementType.XML_ATTRIBUTE_VALUE || type == XmlElementType.XML_TEXT;
+        }
+
+        return false;
     }
+
+    // Helper method for the complex conditional
+    private boolean isLiteralOrPropertyValueWithoutParent(PsiElement element, PsiPolyadicExpression parentOfType) {
+        return (element instanceof PsiLiteralExpression || element instanceof PropertyValueImpl) && parentOfType == null;
+    }
+
 
     /**
      * Validate the text and create error messaged from the validation result.

@@ -340,7 +340,13 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
         final Model model;
         final ParametersList parametersList = parameters.getProgramParametersList();
         final int index = Math.max(parametersList.getParameters().indexOf("-f"), parametersList.getParameters().indexOf("--file"));
-        String targetFileName = index == -1 ? "pom.xml" : parametersList.get(index + 1);
+        String targetFileName;
+        if (index == -1) {
+            targetFileName = "pom.xml";
+        } else {
+            targetFileName = parametersList.get(index + 1);
+        }
+
         try (FileReader fileReader = new FileReader(new File(parameters.getWorkingDirectory(), targetFileName))) {
             model = new MavenXpp3Reader().read(fileReader);
         }
@@ -417,11 +423,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
             targetBuildFileName = writer.getBuildScriptFileName();
         } else {
             targetBuildFileName = parametersList.get(indexBuildFile + 1);
-            if (targetBuildFileName.endsWith(".kts")) {
-                writer = GradleFileWriter.KOTLIN;
-            } else {
-                writer = GradleFileWriter.GROOVY;
-            }
+            writer = targetBuildFileName.endsWith(".kts") ? GradleFileWriter.KOTLIN : GradleFileWriter.GROOVY;
         }
 
         Path buildFile = createGeneratedFile(parent, targetBuildFileName);

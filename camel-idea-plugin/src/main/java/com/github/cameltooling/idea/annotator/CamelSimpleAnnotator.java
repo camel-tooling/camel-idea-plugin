@@ -97,7 +97,7 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
     private TextRange getAdjustedTextRange(@NotNull PsiElement element, TextRange range, String text, LanguageValidationResult result) {
         if (element instanceof XmlAttributeValue) {
             // we can use the xml range as-is
-            range = ((XmlAttributeValue) element).getValueTextRange();
+            range = ((XmlAttributeValue) element).getValueTextRange(); //NOPMD - suppressed AvoidReassigningParameters - TODO explain reason for suppression
         } else if (IdeaUtils.getService().isJavaLanguage(element)) {
             // all the programming languages need to have the offset adjusted by 1
             range = TextRange.create(range.getStartOffset() + 1, range.getEndOffset());

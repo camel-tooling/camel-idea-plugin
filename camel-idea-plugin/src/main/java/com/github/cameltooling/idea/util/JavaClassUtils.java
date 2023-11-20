@@ -74,7 +74,7 @@ public class JavaClassUtils implements Disposable {
     public String getBeanName(PsiClass clazz) {
         return BEAN_ANNOTATIONS
                 .stream()
-                .map(annotation -> getBeanName(clazz, annotation))
+                .map(annotation -> getBeanNameForAnnotation(clazz, annotation))
                 .flatMap(Optional::stream)
                 .findFirst()
                 .orElseGet(() -> Introspector.decapitalize(clazz.getText()));
@@ -87,31 +87,40 @@ public class JavaClassUtils implements Disposable {
      * @param project - Project reference to narrow the search inside.
      * @return the {@link PsiClass} matching the bean name and annotation.
      */
+//    public Optional<PsiClass> findBeanClassByName(String beanName, String annotation, Project project) {
+//        for (PsiClass psiClass : getClassesAnnotatedWith(project, annotation)) {
+//            final PsiAnnotation classAnnotation = psiClass.getAnnotation(annotation);
+//            PsiAnnotationMemberValue attribute = classAnnotation.findAttributeValue("value");
+//            if (attribute != null) {
+//                if (attribute instanceof PsiReferenceExpressionImpl) {
+//                    //if the attribute value is field reference eg @bean(value = MyClass.BEAN_NAME)
+//                    final PsiField psiField = (PsiField) attribute.getReference().resolve();
+//                    String staticBeanName = StringUtils.stripDoubleQuotes(PsiTreeUtil.getChildOfAnyType(psiField, PsiLiteralExpression.class).getText());
+//                    if (beanName.equals(staticBeanName)) {
+//                        return Optional.of(psiClass);
+//                    }
+//                } else {
+//                    final String value = attribute.getText();
+//                    if (beanName.equals(StringUtils.stripDoubleQuotes(value))) {
+//                        return Optional.of(psiClass);
+//                    }
+//                }
+//            } else {
+//                if (StringUtils.stripDoubleQuotes(beanName).equalsIgnoreCase(Introspector.decapitalize(psiClass.getName()))) {
+//                    return Optional.of(psiClass);
+//                }
+//            }
+//        }
+//
+//        return Optional.empty();
+//    }
+
     public Optional<PsiClass> findBeanClassByName(String beanName, String annotation, Project project) {
         for (PsiClass psiClass : getClassesAnnotatedWith(project, annotation)) {
-            final PsiAnnotation classAnnotation = psiClass.getAnnotation(annotation);
-            PsiAnnotationMemberValue attribute = classAnnotation.findAttributeValue("value");
-            if (attribute != null) {
-                if (attribute instanceof PsiReferenceExpressionImpl) {
-                    //if the attribute value is field reference eg @bean(value = MyClass.BEAN_NAME)
-                    final PsiField psiField = (PsiField) attribute.getReference().resolve();
-                    String staticBeanName = StringUtils.stripDoubleQuotes(PsiTreeUtil.getChildOfAnyType(psiField, PsiLiteralExpression.class).getText());
-                    if (beanName.equals(staticBeanName)) {
-                        return Optional.of(psiClass);
-                    }
-                } else {
-                    final String value = attribute.getText();
-                    if (beanName.equals(StringUtils.stripDoubleQuotes(value))) {
-                        return Optional.of(psiClass);
-                    }
-                }
-            } else {
-                if (StringUtils.stripDoubleQuotes(beanName).equalsIgnoreCase(Introspector.decapitalize(psiClass.getName()))) {
-                    return Optional.of(psiClass);
-                }
+            if (checkBeanNameForAnnotation(beanName, annotation, psiClass)) {
+                return Optional.of(psiClass);
             }
         }
-
         return Optional.empty();
     }
 
@@ -136,25 +145,12 @@ public class JavaClassUtils implements Disposable {
                 .filter(JavaClassReference.class::isInstance)
                 .map(JavaClassReference.class::cast)
                 .toList();
-        if (!references.isEmpty()) {
-            return references.get(references.size() - 1);
-        }
-        return null;
+        return references.isEmpty() ? null : references.get(references.size() - 1);
     }
 
     public PsiClass resolveClassReference(@NotNull PsiReference reference) {
-        final PsiElement resolveElement = reference.resolve();
-
-        if (resolveElement instanceof PsiClass psiClass) {
-            return psiClass;
-        } else if (resolveElement instanceof PsiField) {
-            final PsiType psiType = PsiUtil.getTypeByPsiElement(resolveElement);
-            if (psiType != null) {
-                return ((PsiClassReferenceType) psiType).resolve();
-            }
-        }
-
-        return null;
+        PsiElement resolveElement = reference.resolve();
+        return (resolveElement instanceof PsiClass psiClass) ? psiClass : resolveClassForField(resolveElement);
     }
 
     /**
@@ -162,16 +158,8 @@ public class JavaClassUtils implements Disposable {
      * @return Resolving the Psi reference and return the PsiClass
      */
     public PsiClass resolveClassReference(@Nullable PsiJavaCodeReferenceElement referenceElement) {
-        if (referenceElement != null) {
-            PsiReference reference = referenceElement.getReference();
-
-            if (reference != null) {
-                return resolveClassReference(reference);
-            }
-        }
-        return null;
+        return (referenceElement != null && referenceElement.getReference() != null) ? resolveClassReference(referenceElement.getReference()) : null;
     }
-
     /**
      * @param type the Java type to simplify if needed.
      * @return the primitive type in case of wrapper classes. {@code string} in case of {@link String}. The given type
@@ -205,10 +193,65 @@ public class JavaClassUtils implements Disposable {
         final PsiAnnotation annotation = clazz.getAnnotation(annotationFqn);
         if (annotation != null) {
             final PsiAnnotationMemberValue componentAnnotation = annotation.findAttributeValue("value");
-            returnName = componentAnnotation != null ? StringUtils.stripDoubleQuotes(componentAnnotation.getText()) : Introspector.decapitalize(clazz.getName());
+            if (componentAnnotation != null) {
+                returnName = StringUtils.stripDoubleQuotes(componentAnnotation.getText());
+            } else {
+                returnName = Introspector.decapitalize(clazz.getName());
+            }
         }
         return Optional.ofNullable(returnName);
     }
+
+    private Optional<String> getBeanNameForAnnotation(PsiClass clazz, String annotationFqn) {
+        PsiAnnotation annotation = clazz.getAnnotation(annotationFqn);
+        String returnName = (annotation != null) ? getBeanNameFromAnnotation(annotation) : null;
+        return Optional.ofNullable(returnName);
+    }
+
+    private boolean checkBeanNameForAnnotation(String beanName, String annotation, PsiClass psiClass) {
+        PsiAnnotation classAnnotation = psiClass.getAnnotation(annotation);
+        PsiAnnotationMemberValue attribute = classAnnotation != null ? classAnnotation.findAttributeValue("value") : null;
+
+        if (attribute != null) {
+            return checkAttributeValue(beanName, attribute, psiClass);
+        } else {
+            return checkDefaultBeanName(beanName, psiClass);
+        }
+    }
+
+    private boolean checkAttributeValue(String beanName, PsiAnnotationMemberValue attribute, PsiClass psiClass) {
+        if (attribute instanceof PsiReferenceExpressionImpl) {
+            PsiField psiField = (PsiField) attribute.getReference().resolve();
+            String staticBeanName = getStaticBeanNameFromField(psiField);
+            return beanName.equals(staticBeanName);
+        } else {
+            String value = attribute.getText();
+            return beanName.equals(StringUtils.stripDoubleQuotes(value));
+        }
+    }
+
+    private boolean checkDefaultBeanName(String beanName, PsiClass psiClass) {
+        return StringUtils.stripDoubleQuotes(beanName).equalsIgnoreCase(Introspector.decapitalize(psiClass.getName()));
+    }
+
+    private String getBeanNameFromAnnotation(PsiAnnotation annotation) {
+        PsiAnnotationMemberValue componentAnnotation = annotation.findAttributeValue("value");
+        return (componentAnnotation != null) ? StringUtils.stripDoubleQuotes(componentAnnotation.getText()) : null;
+    }
+
+    private String getStaticBeanNameFromField(PsiField psiField) {
+        PsiLiteralExpression literalExpression = PsiTreeUtil.getChildOfAnyType(psiField, PsiLiteralExpression.class);
+        return StringUtils.stripDoubleQuotes(literalExpression.getText());
+    }
+
+    private PsiClass resolveClassForField(PsiElement resolveElement) {
+        if (resolveElement instanceof PsiField) {
+            PsiType psiType = PsiUtil.getTypeByPsiElement(resolveElement);
+            return (psiType != null) ? ((PsiClassReferenceType) psiType).resolve() : null;
+        }
+        return null;
+    }
+
 
     @Override
     public void dispose() {

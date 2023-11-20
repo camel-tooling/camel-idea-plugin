@@ -27,6 +27,12 @@ class CamelEditDialog extends DialogWrapper {
 
     private JTextField textfield;
 
+    private static final int TEXT_FIELD_WIDTH = 350;
+    private static final int INSET_TOP = 0;
+    private static final int INSET_LEFT = 5;
+    private static final int INSET_BOTTOM = 5;
+    private static final int INSET_RIGHT = 5;
+
     CamelEditDialog(Project project) {
         super(project, true);
         init();
@@ -36,11 +42,11 @@ class CamelEditDialog extends DialogWrapper {
     @Override
     protected JComponent createCenterPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
-        Insets insets = JBUI.insets(0, 5, 5, 5);
+        Insets insets = JBUI.insets(INSET_TOP, INSET_LEFT, INSET_BOTTOM, INSET_RIGHT);
         GridBagConstraints gbc = new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, insets, 0, 0);
         panel.add(textfield, gbc);
 
-        textfield.setPreferredSize(new Dimension(350, textfield.getPreferredSize().height));
+        textfield.setPreferredSize(new Dimension(TEXT_FIELD_WIDTH, textfield.getPreferredSize().height));
 
         return panel;
     }
