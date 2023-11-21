@@ -87,33 +87,6 @@ public class JavaClassUtils implements Disposable {
      * @param project - Project reference to narrow the search inside.
      * @return the {@link PsiClass} matching the bean name and annotation.
      */
-//    public Optional<PsiClass> findBeanClassByName(String beanName, String annotation, Project project) {
-//        for (PsiClass psiClass : getClassesAnnotatedWith(project, annotation)) {
-//            final PsiAnnotation classAnnotation = psiClass.getAnnotation(annotation);
-//            PsiAnnotationMemberValue attribute = classAnnotation.findAttributeValue("value");
-//            if (attribute != null) {
-//                if (attribute instanceof PsiReferenceExpressionImpl) {
-//                    //if the attribute value is field reference eg @bean(value = MyClass.BEAN_NAME)
-//                    final PsiField psiField = (PsiField) attribute.getReference().resolve();
-//                    String staticBeanName = StringUtils.stripDoubleQuotes(PsiTreeUtil.getChildOfAnyType(psiField, PsiLiteralExpression.class).getText());
-//                    if (beanName.equals(staticBeanName)) {
-//                        return Optional.of(psiClass);
-//                    }
-//                } else {
-//                    final String value = attribute.getText();
-//                    if (beanName.equals(StringUtils.stripDoubleQuotes(value))) {
-//                        return Optional.of(psiClass);
-//                    }
-//                }
-//            } else {
-//                if (StringUtils.stripDoubleQuotes(beanName).equalsIgnoreCase(Introspector.decapitalize(psiClass.getName()))) {
-//                    return Optional.of(psiClass);
-//                }
-//            }
-//        }
-//
-//        return Optional.empty();
-//    }
 
     public Optional<PsiClass> findBeanClassByName(String beanName, String annotation, Project project) {
         for (PsiClass psiClass : getClassesAnnotatedWith(project, annotation)) {

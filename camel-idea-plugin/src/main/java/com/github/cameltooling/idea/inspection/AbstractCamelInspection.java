@@ -300,20 +300,6 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
         }
     }
 
-//    private String buildErrorMessage(String name, String entryValue, String choicesString, String defaultValue, EndpointValidationResult result) {
-//        String msg = name + " has invalid enum value: " + entryValue + ". Possible values: " + choicesString;
-//        if (result.getInvalidEnumChoices() != null) {
-//            String[] suggestions = result.getInvalidEnumChoices().get(name);
-//            if (suggestions != null && suggestions.length > 0) {
-//                choicesString = Arrays.asList(suggestions).toString();
-//                msg += ". Did you mean: " + choicesString;
-//            }
-//        }
-//        if (defaultValue != null) {
-//            msg += ". Default value: " + defaultValue;
-//        }
-//        return msg;
-//    }
 
     private static class ReferenceErrorMsg implements CamelAnnotatorEndpointMessage<Map.Entry<String, String>> {
         @Override
