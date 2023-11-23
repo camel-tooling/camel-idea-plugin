@@ -423,7 +423,11 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
             targetBuildFileName = writer.getBuildScriptFileName();
         } else {
             targetBuildFileName = parametersList.get(indexBuildFile + 1);
-            writer = targetBuildFileName.endsWith(".kts") ? GradleFileWriter.KOTLIN : GradleFileWriter.GROOVY;
+            if (targetBuildFileName.endsWith(".kts")) {
+                writer = GradleFileWriter.KOTLIN;
+            } else {
+                writer = GradleFileWriter.GROOVY;
+            }
         }
 
         Path buildFile = createGeneratedFile(parent, targetBuildFileName);

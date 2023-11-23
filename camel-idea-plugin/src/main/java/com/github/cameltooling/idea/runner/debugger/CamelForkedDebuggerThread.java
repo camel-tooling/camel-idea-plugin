@@ -87,7 +87,6 @@ class CamelForkedDebuggerThread extends Thread {
     private final @NotNull RunContentDescriptor myMainRunContentDescriptor;
     private final @NotNull ExecutionEnvironment myMainExecutionEnvironment;
     private final @NotNull ExternalSystemRunnableState myMainRunnableState;
-
     CamelForkedDebuggerThread(@NotNull ProcessHandler mainProcessHandler,
                          @NotNull RunContentDescriptor mainRunContentDescriptor,
                          @NotNull ServerSocket socket,

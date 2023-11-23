@@ -300,7 +300,6 @@ public abstract class AbstractCamelInspection extends LocalInspectionTool {
         }
     }
 
-
     private static class ReferenceErrorMsg implements CamelAnnotatorEndpointMessage<Map.Entry<String, String>> {
         @Override
         public String getErrorMessage(EndpointValidationResult result, Map.Entry<String, String> entry) {

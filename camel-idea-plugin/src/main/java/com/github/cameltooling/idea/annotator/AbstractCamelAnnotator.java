@@ -104,7 +104,6 @@ abstract class AbstractCamelAnnotator implements Annotator {
         return (element instanceof PsiLiteralExpression || element instanceof PropertyValueImpl) && parentOfType == null;
     }
 
-
     /**
      * Validate the text and create error messaged from the validation result.
      *

@@ -51,7 +51,7 @@ public abstract class BlueprintAttributeValueReferenceProvider extends CamelPsiR
 
         return getAttributeReferences(attribute, value, context);
     }
-    //IMPLEMENTATION SMELL OF IF STATEMENT
+
     protected abstract PsiReference[] getAttributeReferences(@NotNull XmlAttribute attribute,
                                                              @NotNull XmlAttributeValue value,
                                                              ProcessingContext context);
