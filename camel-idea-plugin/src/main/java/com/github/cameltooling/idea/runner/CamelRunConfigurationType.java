@@ -19,10 +19,19 @@ package com.github.cameltooling.idea.runner;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.idea.maven.execution.MavenRunConfiguration;
+import org.jetbrains.idea.maven.project.MavenProject;
+import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
 import javax.swing.Icon;
+import java.util.List;
 
 /**
  * The base {@link ConfigurationType} for all kind of Camel applications that are launched thanks to a maven command.
@@ -65,6 +74,29 @@ public abstract class CamelRunConfigurationType implements ConfigurationType {
     @Override
     public String getHelpTopic() {
         return "reference.dialogs.rundebug.MavenRunConfiguration";
+    }
+
+    @NotNull
+    public RunConfiguration createConfiguration(@Nullable String name, @NotNull RunConfiguration template) {
+        MavenRunConfiguration cfg = (MavenRunConfiguration) createConfiguration(name, template);
+
+        if (!StringUtil.isEmptyOrSpaces(cfg.getRunnerParameters().getWorkingDirPath())) {
+            return cfg;
+        }
+
+        Project project = cfg.getProject();
+        MavenProjectsManager projectsManager = MavenProjectsManager.getInstance(project);
+
+        List<MavenProject> projects = projectsManager.getProjects();
+        if (projects.size() != 1) {
+            return cfg;
+        }
+
+        VirtualFile directory = projects.get(0).getDirectoryFile();
+
+        cfg.getRunnerParameters().setWorkingDirPath(directory.getPath());
+
+        return cfg;
     }
 
     @Override

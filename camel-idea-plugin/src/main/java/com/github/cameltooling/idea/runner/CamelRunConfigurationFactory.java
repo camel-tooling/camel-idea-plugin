@@ -61,30 +61,6 @@ final class CamelRunConfigurationFactory extends ConfigurationFactory {
         return getType().getId();
     }
 
-    @NotNull
-    @Override
-    public RunConfiguration createConfiguration(@Nullable String name, @NotNull RunConfiguration template) {
-        MavenRunConfiguration cfg = (MavenRunConfiguration) super.createConfiguration(name, template);
-
-        if (!StringUtil.isEmptyOrSpaces(cfg.getRunnerParameters().getWorkingDirPath())) {
-            return cfg;
-        }
-
-        Project project = cfg.getProject();
-        MavenProjectsManager projectsManager = MavenProjectsManager.getInstance(project);
-
-        List<MavenProject> projects = projectsManager.getProjects();
-        if (projects.size() != 1) {
-            return cfg;
-        }
-
-        VirtualFile directory = projects.get(0).getDirectoryFile();
-
-        cfg.getRunnerParameters().setWorkingDirPath(directory.getPath());
-
-        return cfg;
-    }
-
     @Override
     public void configureBeforeRunTaskDefaults(Key<? extends BeforeRunTask> providerID, BeforeRunTask task) {
         if (Objects.equals(providerID, CompileStepBeforeRun.ID)
