@@ -19,6 +19,8 @@ package com.github.cameltooling.idea.completion.header;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.Icon;
+
 import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.util.JavaClassUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
@@ -39,7 +41,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Base class of all supported {@link CompletionProvider}s that give the name of potential headers that can be proposed
+ * Base class of all supported {@link CompletionProvider}s that give the name of
+ * potential headers that can be proposed
  * according to the provided source of endpoints.
  */
 abstract class CamelHeaderNameCompletion extends CompletionProvider<CompletionParameters> {
@@ -50,8 +53,11 @@ abstract class CamelHeaderNameCompletion extends CompletionProvider<CompletionPa
     private final CamelHeaderEndpointSource source;
 
     /**
-     * Constructs a {@code CamelHeaderEndpointSource} with the given source of endpoints.
-     * @param source the source of endpoints from which we extract the name of headers to propose.
+     * Constructs a {@code CamelHeaderEndpointSource} with the given source of
+     * endpoints.
+     *
+     * @param source the source of endpoints from which we extract the name of
+     *               headers to propose.
      */
     protected CamelHeaderNameCompletion(CamelHeaderEndpointSource source) {
         this.source = source;
@@ -79,9 +85,9 @@ abstract class CamelHeaderNameCompletion extends CompletionProvider<CompletionPa
         if (!answer.isEmpty()) {
             // sort the headers A..Z which is easier to users to understand
             answer.sort((o1, o2) -> o1
-                .getLookupString()
-                .compareToIgnoreCase(o2.getLookupString()));
-            final String prefix =  extractTextFromElement(element);
+                    .getLookupString()
+                    .compareToIgnoreCase(o2.getLookupString()));
+            final String prefix = extractTextFromElement(element);
             if (prefix != null) {
                 resultSet = resultSet.withPrefixMatcher(prefix);
             }
@@ -101,10 +107,14 @@ abstract class CamelHeaderNameCompletion extends CompletionProvider<CompletionPa
 
     /**
      * Gives all the possible suggestions of name of header for the given endpoint.
-     * @param component the metadata of the component from which we extract the supported name of headers
-     * @param element the element into which the name of header should be injected.
-     * @param endpoint the type of endpoint for which we suggest name of headers.
-     * @return a list of {@link PrioritizedLookupElement} corresponding to the possible suggestions.
+     *
+     * @param component the metadata of the component from which we extract the
+     *                  supported name of headers
+     * @param element   the element into which the name of header should be
+     *                  injected.
+     * @param endpoint  the type of endpoint for which we suggest name of headers.
+     * @return a list of {@link PrioritizedLookupElement} corresponding to the
+     *         possible suggestions.
      */
     private List<LookupElement> getSuggestions(final ComponentModel component, final PsiElement element,
                                                final CamelHeaderEndpoint endpoint) {
@@ -119,11 +129,12 @@ abstract class CamelHeaderNameCompletion extends CompletionProvider<CompletionPa
     }
 
     /**
-     * @param element the element into which the name of header should be injected.
+     * @param element  the element into which the name of header should be injected.
      * @param endpoint the type of endpoint for which we suggest name of headers.
-     * @param header the header for which we expect a name suggestion.
-     * @return a {@link LookupElement} representing the suggestion of the name of the given header if it matches with
-     * the context, {@code null} otherwise.
+     * @param header   the header for which we expect a name suggestion.
+     * @return a {@link LookupElement} representing the suggestion of the name of
+     *         the given header if it matches with
+     *         the context, {@code null} otherwise.
      */
     private @Nullable LookupElement getSuggestion(final PsiElement element,
                                                   final CamelHeaderEndpoint endpoint,
@@ -131,19 +142,22 @@ abstract class CamelHeaderNameCompletion extends CompletionProvider<CompletionPa
         if (!"header".equals(header.getKind())) {
             return null;
         }
-        // if we are consumer only, then any header that has producer in the label should be skipped (as it is only for producer)
+        // if we are consumer only, then any header that has producer in the label
+        // should be skipped (as it is only for producer)
         if (endpoint.isConsumerOnly() && header.getLabel() != null && header.getLabel().contains("producer")) {
             return null;
         }
-        // if we are producer only, then any header that has consumer in the label should be skipped (as it is only for consumer)
+        // if we are producer only, then any header that has consumer in the label
+        // should be skipped (as it is only for consumer)
         if (endpoint.isProducerOnly() && header.getLabel() != null && header.getLabel().contains("consumer")) {
             return null;
         }
         LookupElementBuilder builder = createLookupElementBuilder(element, header);
-        // we don't want to highlight the advanced headers which should be more seldom in use
+        // we don't want to highlight the advanced headers which should be more seldom
+        // in use
         final boolean advanced = header
-            .getGroup()
-            .contains("advanced");
+                .getGroup()
+                .contains("advanced");
         builder = builder.withBoldness(!advanced);
         if (!header.getJavaType().isEmpty()) {
             builder = builder.withTypeText(JavaClassUtils.getService().toSimpleType(header.getJavaType()), true);
@@ -158,42 +172,122 @@ abstract class CamelHeaderNameCompletion extends CompletionProvider<CompletionPa
     }
 
     /**
-     * Indicates whether a {@code String} literal is expected as suggestion according to the element in which it should
+     * Indicates whether a {@code String} literal is expected as suggestion
+     * according to the element in which it should
      * be injected.
+     *
      * @param element the element into which the name of header should be injected.
-     * @return {@code true} if a {@code String} literal is expected as suggestion, {@code false} otherwise.
+     * @return {@code true} if a {@code String} literal is expected as suggestion,
+     *         {@code false} otherwise.
      */
     protected abstract boolean isStringLiteralExpected(PsiElement element);
 
     /**
-     * Creates the {@link LookupElementBuilder} for the given header corresponding to the suggestion to inject into
+     * Creates the {@link LookupElementBuilder} for the given header corresponding
+     * to the suggestion to inject into
      * the given element.
+     *
      * @param element the element into which the name of header should be injected.
-     * @param header the header for which we expect a name suggestion.
+     * @param header  the header for which we expect a name suggestion.
      * @return a {@link LookupElementBuilder} matching with the given parameters.
      */
     protected abstract LookupElementBuilder createLookupElementBuilder(PsiElement element,
                                                                        ComponentModel.EndpointHeaderModel header);
 
     /**
-     * Assigns the icon that matches the best with the given header to the given builder.
+     * Assigns the icon that matches the best with the given header to the given
+     * builder.
      */
+    abstract class EndpointHeaderIconBuilder {
+        protected final ComponentModel.EndpointHeaderModel header;
+
+        public EndpointHeaderIconBuilder(ComponentModel.EndpointHeaderModel header) {
+            this.header = header;
+        }
+
+        public abstract @Nullable Icon getIcon();
+    }
+
+    class RequiredEndpointHeaderIconBuilder extends EndpointHeaderIconBuilder {
+        public RequiredEndpointHeaderIconBuilder(ComponentModel.EndpointHeaderModel header) {
+            super(header);
+        }
+
+        public @Nullable Icon getIcon() {
+            return AllIcons.Toolwindows.ToolWindowFavorites;
+        }
+    }
+
+    class SecretEndpointHeaderIconBuilder extends EndpointHeaderIconBuilder {
+        public SecretEndpointHeaderIconBuilder(ComponentModel.EndpointHeaderModel header) {
+            super(header);
+        }
+
+        public @Nullable Icon getIcon() {
+            return AllIcons.Nodes.SecurityRole;
+        }
+    }
+
+    class MultiValueEndpointHeaderIconBuilder extends EndpointHeaderIconBuilder {
+        public MultiValueEndpointHeaderIconBuilder(ComponentModel.EndpointHeaderModel header) {
+            super(header);
+        }
+
+        public @Nullable Icon getIcon() {
+            return AllIcons.General.ArrowRight;
+        }
+    }
+
+    class EnumEndpointHeaderIconBuilder extends EndpointHeaderIconBuilder {
+        public EnumEndpointHeaderIconBuilder(ComponentModel.EndpointHeaderModel header) {
+            super(header);
+        }
+
+        public @Nullable Icon getIcon() {
+            return AllIcons.Nodes.Enum;
+        }
+    }
+
+    class ObjectEndpointHeaderIconBuilder extends EndpointHeaderIconBuilder {
+        public ObjectEndpointHeaderIconBuilder(ComponentModel.EndpointHeaderModel header) {
+            super(header);
+        }
+
+        public @Nullable Icon getIcon() {
+            return AllIcons.Nodes.Class;
+        }
+    }
+
+    class FieldEndpointHeaderIconBuilder extends EndpointHeaderIconBuilder {
+        public FieldEndpointHeaderIconBuilder(ComponentModel.EndpointHeaderModel header) {
+            super(header);
+        }
+
+        public @Nullable Icon getIcon() {
+            return AllIcons.Nodes.Field;
+        }
+    }
+
     private LookupElementBuilder withIcon(final PsiElement element,
                                           final ComponentModel.EndpointHeaderModel header,
                                           final LookupElementBuilder builder) {
+        EndpointHeaderIconBuilder iconBuilder;
         if (header.isRequired()) {
-            return builder.withIcon(AllIcons.Toolwindows.ToolWindowFavorites);
+            iconBuilder = new RequiredEndpointHeaderIconBuilder(header);
         } else if (header.isSecret()) {
-            return builder.withIcon(AllIcons.Nodes.SecurityRole);
+            iconBuilder = new SecretEndpointHeaderIconBuilder(header);
         } else if (header.isMultiValue()) {
-            return builder.withIcon(AllIcons.General.ArrowRight);
+            iconBuilder = new MultiValueEndpointHeaderIconBuilder(header);
         } else if (header.getEnums() != null) {
-            return builder.withIcon(AllIcons.Nodes.Enum);
-        } else if ("object".equalsIgnoreCase(header.getType()) || "java.lang.object".equalsIgnoreCase(header.getType())) {
-            return builder.withIcon(AllIcons.Nodes.Class);
+            iconBuilder = new EnumEndpointHeaderIconBuilder(header);
+        } else if ("object".equalsIgnoreCase(header.getType())
+                || "java.lang.object".equalsIgnoreCase(header.getType())) {
+            iconBuilder = new ObjectEndpointHeaderIconBuilder(header);
         } else if (!isStringLiteralExpected(element)) {
-            return builder.withIcon(AllIcons.Nodes.Field);
+            iconBuilder = new FieldEndpointHeaderIconBuilder(header);
+        } else {
+            return builder;
         }
-        return builder;
+        return builder.withIcon(iconBuilder.getIcon());
     }
 }
