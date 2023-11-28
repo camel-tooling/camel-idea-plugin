@@ -25,13 +25,13 @@ import org.jetbrains.annotations.Nullable;
 
 class CamelEditDialog extends DialogWrapper {
 
-    private JTextField textfield;
-
     private static final int TEXT_FIELD_WIDTH = 350;
     private static final int INSET_TOP = 0;
     private static final int INSET_LEFT = 5;
     private static final int INSET_BOTTOM = 5;
     private static final int INSET_RIGHT = 5;
+
+    private JTextField textfield;
 
     CamelEditDialog(Project project) {
         super(project, true);

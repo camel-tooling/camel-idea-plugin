@@ -19,6 +19,7 @@ package com.github.cameltooling.idea.runner.debugger.breakpoint;
 import com.github.cameltooling.idea.runner.debugger.CamelDebuggerEditorsProvider;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
+import com.github.cameltooling.idea.util.XmlUtils;
 import com.intellij.openapi.application.ApplicationNamesInfo;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -78,7 +79,7 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
 
         switch (file.getFileType().getName()) {
         case "XML":
-            XmlTag tag = IdeaUtils.getXmlTagAt(project, position);
+            XmlTag tag = XmlUtils.getXmlTagAt(project, position);
             if (tag == null) {
                 return false;
             }

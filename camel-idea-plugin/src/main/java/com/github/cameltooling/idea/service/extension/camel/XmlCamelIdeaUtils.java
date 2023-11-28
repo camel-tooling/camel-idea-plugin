@@ -20,6 +20,7 @@ import com.github.cameltooling.idea.Constants;
 import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
+import com.github.cameltooling.idea.util.XmlUtils;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.module.Module;
 import com.intellij.psi.PsiClass;
@@ -121,7 +122,7 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
             .and(e -> uriCondition.test(e.getValue()));
 
         List<PsiElement> endpointDeclarations = new ArrayList<>();
-        final IdeaUtils service = IdeaUtils.getService();
+        final XmlUtils service = XmlUtils.getService();
         service.iterateXmlDocumentRoots(module, root -> {
             if (isAcceptedNamespace(root.getNamespace())) {
                 service.iterateXmlNodes(root, XmlAttributeValue.class, value -> {
@@ -185,14 +186,14 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
             }
 
             // special for loop which can be both expression or predicate
-            if (getIdeaUtils().hasParentXmlTag(xml, "loop")) {
+            if (getXmlUtils().hasParentXmlTag(xml, "loop")) {
                 XmlTag parent = PsiTreeUtil.getParentOfType(xml, XmlTag.class);
                 if (parent != null) {
                     String doWhile = parent.getAttributeValue("doWhile");
                     return "true".equalsIgnoreCase(doWhile);
                 }
             }
-            return Arrays.stream(PREDICATE_EIPS).anyMatch(n -> getIdeaUtils().hasParentXmlTag(xml, n));
+            return Arrays.stream(PREDICATE_EIPS).anyMatch(n -> getXmlUtils().hasParentXmlTag(xml, n));
         }
         return false;
     }
@@ -202,8 +203,8 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
         // xml
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (xml != null) {
-            return getIdeaUtils().hasParentXmlTag(xml, "pollEnrich")
-                || getIdeaUtils().isFromXmlTag(xml, "from", "interceptFrom");
+            return getXmlUtils().hasParentXmlTag(xml, "pollEnrich")
+                || getXmlUtils().isFromXmlTag(xml, "from", "interceptFrom");
         }
 
         return false;
@@ -213,8 +214,8 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
     public boolean isProducerEndpoint(PsiElement element) {
         XmlTag xml = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (xml != null) {
-            return getIdeaUtils().hasParentXmlTag(xml, "enrich")
-                || getIdeaUtils().isFromXmlTag(xml, "to", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
+            return getXmlUtils().hasParentXmlTag(xml, "enrich")
+                || getXmlUtils().isFromXmlTag(xml, "to", "interceptSendToEndpoint", "wireTap", "deadLetterChannel");
         }
 
         return false;
@@ -283,5 +284,9 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
 
     private static IdeaUtils getIdeaUtils() {
         return IdeaUtils.getService();
+    }
+
+    private static XmlUtils getXmlUtils() {
+        return XmlUtils.getService();
     }
 }

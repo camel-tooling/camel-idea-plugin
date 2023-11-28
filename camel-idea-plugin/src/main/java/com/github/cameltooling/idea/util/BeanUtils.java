@@ -93,10 +93,10 @@ public class BeanUtils implements Disposable {
 
     private List<ReferenceableBeanId> findReferenceableIds(@NotNull Module module, Predicate<String> idCondition, boolean stopOnMatch) {
         List<ReferenceableBeanId> results = new ArrayList<>();
-        final IdeaUtils ideaUtils = IdeaUtils.getService();
-        ideaUtils.iterateXmlDocumentRoots(module, root -> {
+        final XmlUtils xmlUtils = XmlUtils.getService();
+        xmlUtils.iterateXmlDocumentRoots(module, root -> {
             if (isPartOfBeanContainer(root)) {
-                ideaUtils.iterateXmlNodes(root, XmlTag.class, tag -> Optional.of(tag)
+                xmlUtils.iterateXmlNodes(root, XmlTag.class, tag -> Optional.of(tag)
                         .filter(this::isPartOfBeanContainer)
                         .map(contextTag -> findAttributeValue(contextTag, "id").orElse(null))
                         .filter(id -> idCondition.test(id.getValue()))

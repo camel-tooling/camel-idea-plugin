@@ -23,6 +23,7 @@ import com.github.cameltooling.idea.runner.debugger.util.ClasspathUtils;
 import com.github.cameltooling.idea.service.CamelRuntime;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
+import com.github.cameltooling.idea.util.XmlUtils;
 import com.intellij.execution.process.OSProcessUtil;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessInfo;
@@ -475,7 +476,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         return debugProcess.getDebugProcess(CAMEL, CamelDebugProcess.class);
     }
 
-    /**
+    /**class
      * Tries to connect to the JMX connector server. In case of failure, it retries every 2 seconds several times, and if
      * after {@link #MAX_RETRIES}, it still cannot connect, it stops trying.
      *
@@ -1035,7 +1036,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         VirtualFile file = position.getFile();
         switch (file.getFileType().getName()) {
         case "XML":
-            psiElement = IdeaUtils.getXmlTagAt(project, position);
+            psiElement = XmlUtils.getXmlTagAt(project, position);
             break;
         case "JAVA":
             psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);

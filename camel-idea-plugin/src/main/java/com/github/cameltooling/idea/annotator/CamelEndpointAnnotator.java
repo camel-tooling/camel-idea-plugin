@@ -27,6 +27,7 @@ import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.QueryUtils;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
+import com.github.cameltooling.idea.util.XmlUtils;
 import com.intellij.lang.annotation.AnnotationBuilder;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.HighlightSeverity;
@@ -239,7 +240,8 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
      */
     private boolean useNormalIndex(@NotNull PsiElement element) {
         IdeaUtils ideaUtils = IdeaUtils.getService();
-        return ideaUtils.isJavaLanguage(element) || ideaUtils.isXmlLanguage(element)
+        XmlUtils xmlUtils = XmlUtils.getService();
+        return ideaUtils.isJavaLanguage(element) || xmlUtils.isXmlLanguage(element)
             || ideaUtils.isYamlLanguage(element) && element instanceof YAMLQuotedText;
     }
 

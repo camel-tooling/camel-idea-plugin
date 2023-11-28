@@ -259,8 +259,8 @@ class CamelForkedDebuggerThread extends Thread {
                     if (window != null) {
                         ContentManager contentManager = window.getContentManager();
                         Content content = descriptor.getAttachedContent();
-                         if (content != null) {
-                            ApplicationManager.getApplication().invokeLater(() -> contentManager.removeContent(content, true));
+                            if (content != null) {
+                                ApplicationManager.getApplication().invokeLater(() -> contentManager.removeContent(content, true));
                         }
                     }
                 }

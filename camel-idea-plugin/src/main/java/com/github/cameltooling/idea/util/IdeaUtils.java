@@ -191,13 +191,6 @@ public final class IdeaUtils implements Disposable {
     }
 
     /**
-     * Is the element from XML language
-     */
-    public boolean isXmlLanguage(PsiElement element) {
-        return element != null && PsiUtilCore.getNotAnyLanguage(element.getNode()).is(XMLLanguage.INSTANCE);
-    }
-
-    /**
      * Is the element from YAML language
      */
     public boolean isYamlLanguage(PsiElement element) {
@@ -364,30 +357,6 @@ public final class IdeaUtils implements Disposable {
     }
 
     /**
-     * Is the given element from an XML tag with any of the given tag names?
-     *
-     * @param xml  the xml tag
-     * @param methods  xml tag names
-     * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
-     */
-    public boolean isFromXmlTag(@NotNull XmlTag xml, @NotNull String... methods) {
-        String name = xml.getLocalName();
-        return Arrays.asList(methods).contains(name);
-    }
-
-    /**
-     * Is the given element from an XML tag with any of the given tag names
-     *
-     * @param xml  the xml tag
-     * @param parentTag a special parent tag name to match first
-     * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
-     */
-    public boolean hasParentXmlTag(@NotNull XmlTag xml, @NotNull String parentTag) {
-        XmlTag parent = xml.getParentTag();
-        return parent != null && parent.getLocalName().equals(parentTag);
-    }
-
-    /**
      * Indicates whether the given YAML key-value pair matches with the uri of one of the given {@code eips}.
      *
      * @param keyValue  the YAML key-value pair to test
@@ -429,9 +398,6 @@ public final class IdeaUtils implements Disposable {
      * @param methods  xml tag names
      * @return <tt>true</tt> if matched, <tt>false</tt> otherwise
      */
-    public boolean hasParentAndFromXmlTag(@NotNull XmlTag xml, @NotNull String parentTag, @NotNull String... methods) {
-        return hasParentXmlTag(xml, parentTag) && isFromFileType(xml, methods);
-    }
 
     /**
      * Calls the given consumer for each Yaml file that could be found in the given module.
@@ -452,35 +418,6 @@ public final class IdeaUtils implements Disposable {
             }
             return true;
         });
-    }
-
-    public void iterateXmlDocumentRoots(Module module, Consumer<XmlTag> rootTag) {
-        final GlobalSearchScope moduleScope = module.getModuleContentScope();
-        final GlobalSearchScope xmlFiles = GlobalSearchScope.getScopeRestrictedByFileTypes(moduleScope, XmlFileType.INSTANCE);
-
-        ModuleFileIndex fileIndex = ModuleRootManager.getInstance(module).getFileIndex();
-        fileIndex.iterateContent(f -> {
-            if (xmlFiles.contains(f)) {
-                PsiFile file = PsiManager.getInstance(module.getProject()).findFile(f);
-                if (file instanceof XmlFile xmlFile) {
-                    XmlTag root = xmlFile.getRootTag();
-                    if (root != null) {
-                        rootTag.accept(xmlFile.getRootTag());
-                    }
-                }
-            }
-            return true;
-        });
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> void iterateXmlNodes(XmlTag root, Class<T> nodeClass, Predicate<T> nodeProcessor) {
-        XmlUtil.processXmlElementChildren(root, element -> {
-            if (nodeClass.isAssignableFrom(element.getClass())) {
-                return nodeProcessor.test((T) element);
-            }
-            return true;
-        }, true);
     }
 
     /**
@@ -606,39 +543,6 @@ public final class IdeaUtils implements Disposable {
     @Override
     public void dispose() {
         //noop
-    }
-
-    @Nullable
-    public static XmlTag getXmlTagAt(Project project, XSourcePosition sourcePosition) {
-        final VirtualFile file = sourcePosition.getFile();
-        final XmlFile xmlFile = (XmlFile) PsiManager.getInstance(project).findFile(file);
-        final XmlTag rootTag = xmlFile.getRootTag();
-        return findXmlTag(sourcePosition, rootTag);
-    }
-
-    private static XmlTag findXmlTag(XSourcePosition sourcePosition, XmlTag rootTag) {
-        final XmlTag[] subTags = rootTag.getSubTags();
-        for (int i = 0; i < subTags.length; i++) {
-            XmlTag subTag = subTags[i];
-            final int subTagLineNumber = getLineNumber(sourcePosition.getFile(), subTag);
-            if (subTagLineNumber == sourcePosition.getLine()) {
-                return subTag;
-            } else if (subTagLineNumber > sourcePosition.getLine() && i > 0 && subTags[i - 1].getSubTags().length > 0) {
-                return findXmlTag(sourcePosition, subTags[i - 1]);
-            }
-        }
-        if (subTags.length > 0) {
-            final XmlTag lastElement = subTags[subTags.length - 1];
-            return findXmlTag(sourcePosition, lastElement);
-        } else {
-            return null;
-        }
-    }
-
-    public static int getLineNumber(VirtualFile file, XmlTag tag) {
-        final int offset = tag.getTextOffset();
-        final Document document = FileDocumentManager.getInstance().getDocument(file);
-        return offset < document.getTextLength() ? document.getLineNumber(offset) : -1;
     }
 
     public static YAMLKeyValue getYamlKeyValueAt(Project project, XSourcePosition position) {
