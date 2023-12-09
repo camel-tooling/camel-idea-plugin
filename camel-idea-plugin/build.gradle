@@ -26,18 +26,18 @@ intellij {
     version = ideaVersion
     downloadSources = true
     type = project.hasProperty('intellij_type') ? project.intellij_type : 'IC'
-    plugins = ['java', 'java-i18n', 'properties', 'yaml', 'maven', 'xpath', 'gradle']
+    plugins = ['java', 'java-i18n', 'properties', 'yaml', 'maven', 'gradle']
 }
 
-// to support IDEA 2022 onwards
+// to support IDEA 2023 onwards
 // http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
 patchPluginXml {
-    sinceBuild = "223"
-    untilBuild = "232.*"
+    sinceBuild = "231"
+    untilBuild = "233.*"
 }
 
 runPluginVerifier {
-    ideVersions = [ "2022.3", "2023.1", "2023.2" ]
+    ideVersions = [ "2023.1", "2023.2", "2023.3" ]
 }
 
 // publishPlugin {
