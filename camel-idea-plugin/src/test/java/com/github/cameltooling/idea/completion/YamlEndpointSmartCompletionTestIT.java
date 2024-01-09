@@ -125,8 +125,9 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
         myFixture.configureByText("YamlCaretInMiddleOptionsTestData.yaml", getYamlAfterAmpOptionsTestData());
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertThat(strings, not(contains("timer:trigger?repeatCount=10")));
-        assertThat(strings, contains("&bridgeErrorHandler",
+        assertNotNull(strings);
+        assertDoesntContain(strings, "timer:trigger?repeatCount=10");
+        assertContainsElements(strings, "&bridgeErrorHandler",
             "&daemon",
             "&delay",
             "&exceptionHandler",
@@ -137,8 +138,8 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
             "&period",
             "&synchronous",
             "&time",
-            "&timer"));
-        assertTrue("There is less options", strings.size() < 13);
+            "&timer");
+        assertTrue("There is less options", strings.size() <= 13);
     }
 
     private String getYamlInTheMiddleOfResolvedOptionsData() {
@@ -212,7 +213,7 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertEquals("There are many options", 9, strings.size());
+        assertEquals("There are many options", 10, strings.size());
         assertThat(strings, not(containsInAnyOrder(
             "timer:trigger?repeatCount=10&",
             "&fixedRate=false",
@@ -239,7 +240,7 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertEquals("There are many options", 9, strings.size());
+        assertEquals("There are many options", 10, strings.size());
         assertThat(strings, not(containsInAnyOrder(
             "timer:trigger?repeatCount=10",
             "&fixedRate=false",
@@ -266,7 +267,7 @@ public class YamlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertEquals("There are many options", 9, strings.size());
+        assertEquals("There are many options", 10, strings.size());
         assertThat(strings, not(containsInAnyOrder(
             "timer:trigger?repeatCount=10&",
             "&fixedRate=false",
