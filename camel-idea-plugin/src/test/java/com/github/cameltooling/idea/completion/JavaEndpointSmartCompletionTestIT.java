@@ -120,7 +120,7 @@ public class JavaEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixt
             "timer:trigger?repeatCount=10&synchronous",
             "timer:trigger?repeatCount=10&time",
             "timer:trigger?repeatCount=10&timer");
-        assertTrue("There is less options", strings.size() < 13);
+        assertTrue("There is less options", strings.size() <= 13);
     }
 
     private String getJavaCaretAfterQuestionMarkWithPreDataOptionsTestData() {

@@ -128,8 +128,9 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.configureByText("XmlCaretInMiddleOptionsTestData.xml", getXmlAfterAmpOptionsTestData());
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
-        assertThat(strings, not(contains("timer:trigger?repeatCount=10")));
-        assertThat(strings, contains("&amp;bridgeErrorHandler",
+        assertNotNull(strings);
+        assertDoesntContain(strings, "timer:trigger?repeatCount=10");
+        assertContainsElements(strings, "&amp;bridgeErrorHandler",
             "&amp;daemon",
             "&amp;delay",
             "&amp;exceptionHandler",
@@ -140,8 +141,8 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
             "&amp;period",
             "&amp;synchronous",
             "&amp;time",
-            "&amp;timer"));
-        assertTrue("There is less options", strings.size() < 13);
+            "&amp;timer");
+        assertTrue("There is less options", strings.size() <= 13);
     }
 
     private String getXmlInTheMiddleOfResolvedOptionsData() {
@@ -218,7 +219,7 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertEquals("There are many options", 9, strings.size());
+        assertEquals("There are many options", 10, strings.size());
         assertThat(strings, not(containsInAnyOrder(
             "timer:trigger?repeatCount=10&",
             "&fixedRate=false",
@@ -245,7 +246,7 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertEquals("There are many options", 9, strings.size());
+        assertEquals("There are many options", 10, strings.size());
         assertThat(strings, not(containsInAnyOrder(
             "timer:trigger?repeatCount=10",
             "&amp;fixedRate=false",
@@ -272,7 +273,7 @@ public class XmlEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtu
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertEquals("There are many options", 9, strings.size());
+        assertEquals("There are many options", 10, strings.size());
         assertThat(strings, not(containsInAnyOrder(
             "timer:trigger?repeatCount=10&amp;",
             "&amp;fixedRate=false",

@@ -12,6 +12,7 @@
       v.1.2.1
       <ul>
         <li>Support for IDEA 2023.3.2</li>
+        <li>Support for Camel 4.3.0, Camel Quarkus 3.6.0, and Camel Karaf 3.22.0</li>
       </ul>
     ]]>
   </change-notes>
