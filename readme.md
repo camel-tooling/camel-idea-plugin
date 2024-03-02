@@ -99,7 +99,7 @@ Importing the project into IntelliJ as plug-in only require you choose ìmport f
 
 #### <a name="runningwithpreviousversion"></a>Running the plug-in with a previous versions of IDEA
 
-The plugin is tested with `IDEA 2023.3.3` or newer, but if you want to try with an older version you can follow this guide
+The plugin is tested with `IDEA 2023.3.4` or newer, but if you want to try with an older version you can follow this guide
 
 > - Follow the guide [build from source](#buildingfromsource)
 > - Change the attribute `<idea-version since-build="231"/>` in `camel-idea-plugin/src/main/resources/META-INF/plugin.xml` to match the version. please see [document](http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html) for build number description 
