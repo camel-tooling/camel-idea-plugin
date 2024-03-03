@@ -93,6 +93,7 @@ import java.util.stream.Collectors;
 import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerContext.CAMEL;
 import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget.BODY;
 import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget.EXCHANGE_PROPERTY;
+import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget.EXCHANGE_VARIABLE;
 import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget.MESSAGE_HEADER;
 
 public class CamelDebuggerSession implements AbstractDebuggerSession {
@@ -287,6 +288,10 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                             new String[]{"java.lang.String", "java.lang.String", "java.lang.Object"});
                 } else if (target == EXCHANGE_PROPERTY) {
                     serverConnection.invoke(this.debuggerMBeanObjectName, "setExchangePropertyOnBreakpoint",
+                            new Object[]{breakpointId, targetName, value},
+                            new String[]{"java.lang.String", "java.lang.String", "java.lang.Object"});
+                } else if (target == EXCHANGE_VARIABLE) {
+                    serverConnection.invoke(this.debuggerMBeanObjectName, "setExchangeVariableOnBreakpoint",
                             new Object[]{breakpointId, targetName, value},
                             new String[]{"java.lang.String", "java.lang.String", "java.lang.Object"});
                 } else if (target == BODY) {
