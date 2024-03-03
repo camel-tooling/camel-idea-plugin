@@ -20,6 +20,7 @@ import com.github.cameltooling.idea.language.CamelLanguages;
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpoint;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.github.cameltooling.idea.runner.debugger.util.ClasspathUtils;
+import com.github.cameltooling.idea.runner.debugger.util.DebuggerUtils;
 import com.github.cameltooling.idea.service.CamelRuntime;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
@@ -543,8 +544,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
                     //Init DOM Documents
                     String routes = camelContext.dumpRoutesAsXml(false);
-                    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                    DocumentBuilder documentBuilder = dbf.newDocumentBuilder();
+                    DocumentBuilder documentBuilder = DebuggerUtils.createDocumentBuilder();;
                     InputStream targetStream = new ByteArrayInputStream(routes.getBytes());
                     this.routesDOMDocument = documentBuilder.parse(targetStream);
 
@@ -796,7 +796,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 xml = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "dumpTracedMessagesAsXml", new Object[]{id},
                     new String[]{"java.lang.String"});
             } catch (Exception ex) {
-                LOG.error("Could not invoke dumpTracedMessagesAsXml(" + id + ")", e);
+                LOG.warn("Could not invoke dumpTracedMessagesAsXml(" + id + ")", e);
                 return "";
             }
         }
@@ -817,7 +817,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 new String[]{"java.lang.String"});
 
         InputStream targetStream = new ByteArrayInputStream(messageHistory.getBytes());
-        Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(targetStream);
+        Document document = DebuggerUtils.createDocumentBuilder().parse(targetStream);
         NodeList historyEntries = document.getElementsByTagName("messageHistoryEntry");
 
         for (int i = 0; i < historyEntries.getLength(); i++) {
