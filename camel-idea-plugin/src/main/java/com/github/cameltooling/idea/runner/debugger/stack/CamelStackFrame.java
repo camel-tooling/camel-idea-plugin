@@ -16,7 +16,6 @@
  */
 package com.github.cameltooling.idea.runner.debugger.stack;
 
-
 import com.github.cameltooling.idea.runner.debugger.CamelDebuggerSession;
 import com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget;
 import com.github.cameltooling.idea.runner.debugger.evaluator.CamelExpressionEvaluator;
@@ -36,7 +35,6 @@ public class CamelStackFrame extends XStackFrame {
 
     private final CamelDebuggerSession session;
     private final CamelMessageInfo camelMessageInfo;
-
 
     public CamelStackFrame(@NotNull CamelDebuggerSession session, CamelMessageInfo camelMessageInfo) {
         this.session = session;
@@ -75,7 +73,6 @@ public class CamelStackFrame extends XStackFrame {
         return CamelStackFrame.class;
     }
 
-
     @Override
     public void computeChildren(@NotNull XCompositeNode node) {
         final XValueChildrenList children = new XValueChildrenList();
@@ -83,10 +80,12 @@ public class CamelStackFrame extends XStackFrame {
         children.add("Body", new ObjectFieldDefinitionValue(CamelDebuggerTarget.BODY, null, this.session, this.camelMessageInfo.getBody(), AllIcons.Debugger.Value));
         children.add("Headers", new MapOfObjectFieldDefinitionValue(CamelDebuggerTarget.MESSAGE_HEADER, this.session, this.camelMessageInfo.getHeaders(), AllIcons.Debugger.Value));
         final var properties = this.camelMessageInfo.getProperties();
-        if (properties == null) {
-            children.add("WARNING: ", JavaStackFrame.createMessageNode("Exchange Properties in Debugger are only available in Camel version 3.15 or later", AllIcons.Nodes.WarningMark));
-        } else {
+        if (properties != null) {
             children.add("Exchange Properties", new MapOfObjectFieldDefinitionValue(CamelDebuggerTarget.EXCHANGE_PROPERTY, this.session, properties, AllIcons.Debugger.Value));
+        }
+        final var variables = this.camelMessageInfo.getVariables();
+        if (variables != null) {
+            children.add("Exchange Variables", new MapOfObjectFieldDefinitionValue(CamelDebuggerTarget.EXCHANGE_VARIABLE, this.session, variables, AllIcons.Debugger.Value));
         }
         node.addChildren(children, true);
     }

@@ -29,6 +29,10 @@ public enum CamelDebuggerTarget {
      */
     EXCHANGE_PROPERTY("Exchange Property"),
     /**
+     * The target used to modify one specific exchange variable.
+     */
+    EXCHANGE_VARIABLE("Exchange Variable"),
+    /**
      * The target used to modify the body.
      */
     BODY("Body");

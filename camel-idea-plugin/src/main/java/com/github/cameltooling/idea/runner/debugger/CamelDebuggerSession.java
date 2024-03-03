@@ -20,6 +20,7 @@ import com.github.cameltooling.idea.language.CamelLanguages;
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpoint;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.github.cameltooling.idea.runner.debugger.util.ClasspathUtils;
+import com.github.cameltooling.idea.runner.debugger.util.DebuggerUtils;
 import com.github.cameltooling.idea.service.CamelRuntime;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
@@ -92,6 +93,7 @@ import java.util.stream.Collectors;
 import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerContext.CAMEL;
 import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget.BODY;
 import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget.EXCHANGE_PROPERTY;
+import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget.EXCHANGE_VARIABLE;
 import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget.MESSAGE_HEADER;
 
 public class CamelDebuggerSession implements AbstractDebuggerSession {
@@ -286,6 +288,10 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                             new String[]{"java.lang.String", "java.lang.String", "java.lang.Object"});
                 } else if (target == EXCHANGE_PROPERTY) {
                     serverConnection.invoke(this.debuggerMBeanObjectName, "setExchangePropertyOnBreakpoint",
+                            new Object[]{breakpointId, targetName, value},
+                            new String[]{"java.lang.String", "java.lang.String", "java.lang.Object"});
+                } else if (target == EXCHANGE_VARIABLE) {
+                    serverConnection.invoke(this.debuggerMBeanObjectName, "setExchangeVariableOnBreakpoint",
                             new Object[]{breakpointId, targetName, value},
                             new String[]{"java.lang.String", "java.lang.String", "java.lang.Object"});
                 } else if (target == BODY) {
@@ -543,8 +549,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
                     //Init DOM Documents
                     String routes = camelContext.dumpRoutesAsXml(false);
-                    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                    DocumentBuilder documentBuilder = dbf.newDocumentBuilder();
+                    DocumentBuilder documentBuilder = DebuggerUtils.createDocumentBuilder();
                     InputStream targetStream = new ByteArrayInputStream(routes.getBytes());
                     this.routesDOMDocument = documentBuilder.parse(targetStream);
 
@@ -796,7 +801,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 xml = (String) serverConnection.invoke(this.debuggerMBeanObjectName, "dumpTracedMessagesAsXml", new Object[]{id},
                     new String[]{"java.lang.String"});
             } catch (Exception ex) {
-                LOG.error("Could not invoke dumpTracedMessagesAsXml(" + id + ")", e);
+                LOG.warn("Could not invoke dumpTracedMessagesAsXml(" + id + ")", e);
                 return "";
             }
         }
@@ -817,7 +822,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 new String[]{"java.lang.String"});
 
         InputStream targetStream = new ByteArrayInputStream(messageHistory.getBytes());
-        Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(targetStream);
+        Document document = DebuggerUtils.createDocumentBuilder().parse(targetStream);
         NodeList historyEntries = document.getElementsByTagName("messageHistoryEntry");
 
         for (int i = 0; i < historyEntries.getLength(); i++) {

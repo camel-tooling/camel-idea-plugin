@@ -16,6 +16,7 @@
  */
 package com.github.cameltooling.idea.runner.debugger.stack;
 
+import com.github.cameltooling.idea.runner.debugger.util.DebuggerUtils;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ArrayUtil;
@@ -26,11 +27,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +42,7 @@ public class CamelMessageInfo {
 
     private Map<String, Value[]> headers;
     private Map<String, Value[]> properties;
+    private Map<String, Value[]> variables;
 
     private Value body;
     private String exchangeId;
@@ -62,7 +67,7 @@ public class CamelMessageInfo {
                             String processor,
                             List<CamelMessageInfo> stack) throws Exception {
         this.messageInfoAsXML = messageInfoAsXML;
-        this.documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        this.documentBuilder = DebuggerUtils.createDocumentBuilder();
         this.position = position;
         this.tag = tag;
         this.routeId = routeId;
@@ -76,7 +81,7 @@ public class CamelMessageInfo {
         InputStream targetStream = new ByteArrayInputStream(messageInfoAsXML.getBytes());
         Document document = documentBuilder.parse(targetStream);
 
-        headers = new HashMap<>();
+        headers = new LinkedHashMap<>();
 
         //parse headers
         NodeList headersNodeList = document.getElementsByTagName("header");
@@ -111,11 +116,11 @@ public class CamelMessageInfo {
 
         NodeList propertiesNodeList = document.getElementsByTagName("exchangeProperty");
         if (propertiesNodeList.getLength() > 0) {
-            properties = new HashMap<>();
+            properties = new LinkedHashMap<>();
         }
         for (int i = 0; i < propertiesNodeList.getLength(); i++) {
             Element nextProp = (Element) propertiesNodeList.item(i);
-            String key = nextProp.getAttribute("name");
+            String key = nextProp.getAttribute("key");
             String type = nextProp.getAttribute("type");
             String value = nextProp.getTextContent();
 
@@ -128,6 +133,25 @@ public class CamelMessageInfo {
             Value newValue = new Value(type, value);
             properties.put(key, new Value[]{newValue});
         }
+        NodeList variablesNodeList = document.getElementsByTagName("exchangeVariable");
+        if (variablesNodeList.getLength() > 0) {
+            variables = new HashMap<>();
+        }
+        for (int i = 0; i < variablesNodeList.getLength(); i++) {
+            Element nextProp = (Element) variablesNodeList.item(i);
+            String key = nextProp.getAttribute("key");
+            String type = nextProp.getAttribute("type");
+            String value = nextProp.getTextContent();
+
+            if (StringUtils.isEmpty(type)) {
+                type = "java.lang.String";
+            }
+            if (StringUtils.isEmpty(value)) {
+                value = "";
+            }
+            Value newValue = new Value(type, value);
+            variables.put(key, new Value[]{newValue});
+        }
     }
 
     public Map<String, Value[]> getHeaders() {
@@ -137,6 +161,11 @@ public class CamelMessageInfo {
     @Nullable
     public Map<String, Value[]> getProperties() {
         return properties;
+    }
+
+    @Nullable
+    public Map<String, Value[]> getVariables() {
+        return variables;
     }
 
     public Value getBody() {
