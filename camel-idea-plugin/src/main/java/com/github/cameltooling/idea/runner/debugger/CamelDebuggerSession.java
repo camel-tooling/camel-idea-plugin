@@ -549,7 +549,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
                     //Init DOM Documents
                     String routes = camelContext.dumpRoutesAsXml(false);
-                    DocumentBuilder documentBuilder = DebuggerUtils.createDocumentBuilder();;
+                    DocumentBuilder documentBuilder = DebuggerUtils.createDocumentBuilder();
                     InputStream targetStream = new ByteArrayInputStream(routes.getBytes());
                     this.routesDOMDocument = documentBuilder.parse(targetStream);
 

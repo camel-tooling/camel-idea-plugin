@@ -23,6 +23,9 @@ import javax.xml.parsers.ParserConfigurationException;
 
 public final class DebuggerUtils {
 
+    private DebuggerUtils() {
+    }
+
     public static DocumentBuilder createDocumentBuilder() throws ParserConfigurationException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
@@ -46,4 +49,5 @@ public final class DebuggerUtils {
         }
         return factory.newDocumentBuilder();
     }
+
 }
