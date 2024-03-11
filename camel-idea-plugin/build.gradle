@@ -67,7 +67,7 @@ dependencies {
     implementation "org.apache.maven.resolver:maven-resolver-api:${mavenResolverVersion}"
     implementation "org.apache.maven.resolver:maven-resolver-impl:${mavenResolverVersion}"
     implementation "io.github.classgraph:classgraph:4.8.168"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.16.1"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.16.2"
     implementation "io.fabric8:kubernetes-model-apiextensions:6.10.0"
 
     testImplementation "org.apache.camel:camel-core:${camelVersion}"
