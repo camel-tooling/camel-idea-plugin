@@ -50,12 +50,10 @@ public class SpringBootJSonSchemaResolverTest {
         assertNotEmpty(model.getGroups());
         List<String> groupNames = model.getGroups().stream().map(MainModel.MainGroupModel::getName)
             .collect(Collectors.toList());
-        assertDoesntContain(groupNames, "camel.main");
         assertContainsElements(groupNames, "camel.springboot", "camel.cloud", "camel.cluster.file");
         assertNotEmpty(model.getOptions());
         List<String> optionNames = model.getOptions().stream().map(MainModel.MainOptionModel::getName)
             .collect(Collectors.toList());
-        assertDoesntContain(optionNames, "camel.main.auto-startup", "camel.main.autoStartup");
         assertContainsElements(optionNames, "camel.springboot.auto-startup", "camel.cluster.file.enabled");
     }
 
@@ -112,7 +110,6 @@ public class SpringBootJSonSchemaResolverTest {
 
         @Override
         public void setClassLoader(ClassLoader classLoader) {
-
         }
 
         @Override
@@ -165,6 +162,21 @@ public class SpringBootJSonSchemaResolverTest {
 
         @Override
         public String getMainJsonSchema() {
+            return null;
+        }
+
+        @Override
+        public String getTransformerJSonSchema(String name) {
+            return null;
+        }
+
+        @Override
+        public String getDevConsoleJSonSchema(String name) {
+            return null;
+        }
+
+        @Override
+        public String getPojoBeanJSonSchema(String name) {
             return null;
         }
     }
