@@ -128,6 +128,21 @@ class SpringBootJSonSchemaResolver implements JSonSchemaResolver {
         return schema == null ? delegate.getMainJsonSchema() : schema;
     }
 
+    @Override
+    public String getTransformerJSonSchema(String name) {
+        return delegate.getTransformerJSonSchema(name);
+    }
+
+    @Override
+    public String getDevConsoleJSonSchema(String name) {
+        return delegate.getDevConsoleJSonSchema(name);
+    }
+
+    @Override
+    public String getPojoBeanJSonSchema(String name) {
+        return delegate.getPojoBeanJSonSchema(name);
+    }
+
     /**
      * Extract the properties found in the Spring configuration metadata, remove the properties whose name doesn't
      * start with {@code camel.component.${component-name}.} or contains {@code customizer} and inject the resulting

@@ -50,8 +50,8 @@ public class PropertiesPropertyKeyCompletionSpringBootTestIT extends CamelLightC
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertDoesntContain(strings, "camel.main.");
-        assertContainsElements(strings, "camel.springboot.", "camel.component.", "camel.language.", "camel.dataformat.");
+        // camel.main is included in camel 4.5 onwards for SB also
+        assertContainsElements(strings, "camel.main.", "camel.springboot.", "camel.component.", "camel.language.", "camel.dataformat.");
     }
 
     /**
