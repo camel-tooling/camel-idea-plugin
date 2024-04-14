@@ -161,7 +161,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
         return new DefaultLightProjectDescriptor() {
             @Override
             public Sdk getSdk() {
-                return IdeaTestUtil.getMockJdk11();
+                return IdeaTestUtil.getMockJdk17();
             }
 
             @Override
