@@ -16,12 +16,11 @@
  */
 package com.github.cameltooling.idea.util;
 
-import com.github.cameltooling.idea.service.CamelService;
+import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
-import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
 
-public class IdeaUtilsIsCamelRouteStartExtendedTestIT extends LightJavaCodeInsightFixtureTestCase {
+public class IdeaUtilsIsCamelRouteStartExtendedTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     private static final String CODE = "import org.apache.camel.builder.RouteBuilder;\n"
         + "\n"
@@ -39,17 +38,6 @@ public class IdeaUtilsIsCamelRouteStartExtendedTestIT extends LightJavaCodeInsig
         + "    }\n"
         + "\n"
         + "}\n";
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        myFixture.getProject().getService(CamelService.class).setCamelPresent(true);
-    }
-
-    @Override
-    protected String getTestDataPath() {
-        return "src/test/resources/testData/";
-    }
 
     public void testStartRoute() {
         // caret is at start of rout in the test java file
