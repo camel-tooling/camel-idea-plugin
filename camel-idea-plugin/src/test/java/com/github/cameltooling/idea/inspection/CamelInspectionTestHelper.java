@@ -35,7 +35,7 @@ public abstract class CamelInspectionTestHelper extends JavaInspectionTestCase {
         return new DefaultLightProjectDescriptor() {
             @Override
             public Sdk getSdk() {
-                return IdeaTestUtil.getMockJdk11();
+                return IdeaTestUtil.getMockJdk17();
             }
 
             @Override
