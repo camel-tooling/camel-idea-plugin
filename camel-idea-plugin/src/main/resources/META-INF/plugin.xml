@@ -12,6 +12,7 @@
       v.1.2.7
       <ul>
         <li>Upgrade to Camel 4.5.0</li>
+        <li>IDEA 2024.1 supported</li>
       </ul>
     ]]>
   </change-notes>
