@@ -12,6 +12,8 @@
       v.1.2.9
       <ul>
         <li>Update to IDEA 2024.1.4</li>
+        <li>Fix WARN logging on IDEA 2024.1.4 Ultimate</li>
+        <li>Attempted fix to work with IDEA 2024.1.4 Ultimate</li>
       </ul>
     ]]>
   </change-notes>
