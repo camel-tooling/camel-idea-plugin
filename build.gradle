@@ -47,6 +47,12 @@ subprojects {
         }
     }
 
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
     sourceCompatibility = '17'
 
     publishing {
