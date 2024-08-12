@@ -69,8 +69,9 @@ public final class ContextAwareDebugProcess extends XDebugProcess {
         this.currentContext = context;
     }
 
+    @NotNull
     @Override
-    public XBreakpointHandler<?>@NotNull[] getBreakpointHandlers() {
+    public XBreakpointHandler<?>[] getBreakpointHandlers() {
         List<XBreakpointHandler<?>> breakpointHandlers = new ArrayList<>();
         final Collection<XDebugProcess> values = debugProcesses.values();
         for (XDebugProcess value : values) {

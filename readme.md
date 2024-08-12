@@ -99,10 +99,10 @@ Importing the project into IntelliJ as plug-in only require you choose ìmport f
 
 #### <a name="runningwithpreviousversion"></a>Running the plug-in with a previous versions of IDEA
 
-The plugin is tested with `IDEA 2024.1.6` or newer, but if you want to try with an older version you can follow this guide
+The plugin is tested with `IDEA 2024.2` or newer, but if you want to try with an older version you can follow this guide
 
 > - Follow the guide [build from source](#buildingfromsource)
-> - Change the attribute `<idea-version since-build="231"/>` in `camel-idea-plugin/src/main/resources/META-INF/plugin.xml` to match the version. please see [document](http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html) for build number description 
+> - Change the attribute `<idea-version since-build="232"/>` in `camel-idea-plugin/src/main/resources/META-INF/plugin.xml` to match the version. please see [document](http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html) for build number description 
 > - Build the source with `./gradlew build` 
 > - The new plugin zip file `camel-idea-plugin-<version>-SNAPSHOT.jar` is located in `camel-idea-plugin/build/libs`
 > - Install the plugin from disk in IDEA preferences
