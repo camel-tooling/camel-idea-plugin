@@ -32,12 +32,12 @@ intellij {
 // to support IDEA 2023 onwards
 // http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
 patchPluginXml {
-    sinceBuild = "231"
+    sinceBuild = "242"
     untilBuild = "242.*"
 }
 
 runPluginVerifier {
-    ideVersions = [ "2023.1", "2023.2", "2023.3", "2024.1.6", "2024.2" ]
+    ideVersions = [ "2024.2" ]
 }
 
 // publishPlugin {
