@@ -58,7 +58,7 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
 
     @NotNull
     @Override
-    public ResolveResult @NotNull [] multiResolve(boolean b) {
+    public ResolveResult[] multiResolve(boolean b) {
         List<ResolveResult> results = new ArrayList<>();
 
         final PsiMethod[] methodsByName = getPsiClass().findMethodsByName(methodNameOnly, true);
@@ -73,7 +73,7 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
 
     @NotNull
     @Override
-    public Object @NotNull [] getVariants() {
+    public Object[] getVariants() {
         return new Object[0];
     }
 

@@ -28,8 +28,9 @@ import org.jetbrains.annotations.NotNull;
  */
 public abstract class CamelPsiReferenceProvider extends PsiReferenceProvider {
 
+    @NotNull
     @Override
-    public PsiReference @NotNull [] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
+    public PsiReference[] getReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
         if (!element.getProject().getService(CamelService.class).isCamelProject()) {
             return PsiReference.EMPTY_ARRAY;
         } else {

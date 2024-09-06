@@ -14,63 +14,140 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
-allprojects {
-    apply plugin: 'checkstyle'
-
-    checkstyle {
-        toolVersion = '10.11.0'
-        configDirectory = file("$rootProject.projectDir/config/checkstyle")
-    }
-
-    group = 'com.github.camel-tooling'
-    version = '1.2.11'
+plugins {
+    id 'org.jetbrains.intellij.platform' version '2.0.1'
 }
 
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven-publish'
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+apply plugin: 'checkstyle'
 
-    repositories {
-        mavenLocal()
-        maven {
-            url = 'https://repo.maven.apache.org/maven2'
-            mavenContent {
-                releasesOnly()
-            }
-        }
-        maven {
-            url "https://repository.apache.org/snapshots/"
-            mavenContent {
-                snapshotsOnly()
-            }
-        }
-    }
+checkstyle {
+    toolVersion = '10.11.0'
+    configDirectory = file("$rootProject.projectDir/config/checkstyle")
+}
 
-    sourceCompatibility = '17'
+group = 'com.github.camel-tooling'
+version = '1.2.11'
 
-    publishing {
-        publications {
-            maven(MavenPublication) {
-                from(components.java)
-            }
+repositories {
+    mavenLocal()
+    maven {
+        url = 'https://repo.maven.apache.org/maven2'
+        mavenContent {
+            releasesOnly()
         }
     }
-
-    test {
-        afterTest { desc, result ->
-            logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+    maven {
+        url "https://repository.apache.org/snapshots/"
+        mavenContent {
+            snapshotsOnly()
         }
     }
-
-    tasks.withType(JavaCompile) {
-        options.encoding = 'UTF-8'
+    intellijPlatform {
+        defaultRepositories()
     }
+}
 
-    tasks.withType(Test).configureEach {
-        jvmArgs = [
-                // avoid JBUIScale "Must be precomputed" error, because IDE is not started (LoadingState.APP_STARTED.isOccurred is false)
-                '-Djava.awt.headless=true'
-        ]
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
     }
+}
+
+sourceCompatibility = '17'
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
+
+test {
+    afterTest { desc, result ->
+        logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Test).configureEach {
+    jvmArgs = [
+            // avoid JBUIScale "Must be precomputed" error, because IDE is not started (LoadingState.APP_STARTED.isOccurred is false)
+            '-Djava.awt.headless=true'
+    ]
+}
+
+intellijPlatform {
+    pluginConfiguration {
+        // to support IDEA 2023.2 onwards
+        // http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
+        ideaVersion {
+            sinceBuild = "232"
+            untilBuild = "242.*"
+        }
+    }
+    pluginVerification {
+        ides {
+            ide "2023.2"
+            ide "2023.3"
+            ide "2024.1"
+            ide "2024.2"
+        }
+    }
+//    publishing {
+//        def authenticationToken = "$System.env.INTELLIJ_TOKEN"
+//        token = authenticationToken
+//    }
+}
+
+dependencies {
+    intellijPlatform {
+        create(project.hasProperty('intellij_type') ? project.intellij_type : 'IC', ideaVersion)
+        pluginVerifier()
+        instrumentationTools()
+        bundledPlugins 'com.intellij.java', 'com.intellij.java-i18n', 'com.intellij.properties', 'org.jetbrains.plugins.yaml', 'org.jetbrains.idea.maven', 'com.intellij.gradle'
+        testFramework TestFrameworkType.Plugin.Java.INSTANCE
+    }
+    implementation "org.apache.camel:camel-catalog:${camelVersion}"
+    implementation "org.apache.camel:camel-tooling-maven:${camelVersion}"
+    implementation "org.apache.camel:camel-util:${camelVersion}"
+    implementation "org.apache.camel:camel-util-json:${camelVersion}"
+    implementation "org.apache.camel:camel-tooling-model:${camelVersion}"
+    implementation "org.apache.camel:camel-management-api:${camelVersion}"
+    implementation "org.apache.camel.springboot:camel-catalog-provider-springboot:${camelVersion}"
+    implementation "org.apache.camel.karaf:camel-catalog-provider-karaf:${camelKarafVersion}"
+    implementation "org.apache.camel.quarkus:camel-quarkus-catalog:${camelQuarkusVersion}"
+    implementation "org.apache.camel.kamelets:camel-kamelets:${camelKameletVersion}"
+    // Needed to avoid conflicts with the version of the maven resolver used by IntelliJ
+    implementation "org.apache.maven.resolver:maven-resolver-api:${mavenResolverVersion}"
+    implementation "org.apache.maven.resolver:maven-resolver-impl:${mavenResolverVersion}"
+    implementation "io.github.classgraph:classgraph:4.8.175"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.2"
+    implementation "io.fabric8:kubernetes-model-apiextensions:6.13.3"
+
+    testImplementation "org.apache.camel:camel-core:${camelVersion}"
+    testImplementation "org.apache.camel.springboot:camel-spring-boot:${camelVersion}"
+    testImplementation "org.apache.camel.springboot:camel-file-starter:${camelVersion}"
+    testImplementation 'org.jboss.shrinkwrap:shrinkwrap-depchain:1.2.6'
+    testImplementation 'org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-depchain:3.3.1'
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
+    testImplementation 'org.opentest4j:opentest4j:1.3.0'
+    testImplementation "org.apache.camel:camel-jsonpath:${camelVersion}"
+    testImplementation 'junit:junit:4.13.2'
+}
+
+description = 'Apache Camel IDE :: IDEA Plugin'
+
+tasks.withType(org.jetbrains.intellij.platform.gradle.tasks.RunIdeTask) {
+    jvmArgs = [
+            // Allow to have access to the PSI Structure...
+            '-Didea.is.internal=true'
+    ]
 }

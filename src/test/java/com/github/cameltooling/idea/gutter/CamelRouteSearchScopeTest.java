@@ -17,9 +17,9 @@
 package com.github.cameltooling.idea.gutter;
 
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.testFramework.PlatformTestCase;
+import com.intellij.testFramework.HeavyPlatformTestCase;
 
-public class CamelRouteSearchScopeTest extends PlatformTestCase {
+public class CamelRouteSearchScopeTest extends HeavyPlatformTestCase {
 
     public void testSearchScope() throws Exception {
         VirtualFile javaFile = getVirtualFile(createTempFile("Test.java", ""));
