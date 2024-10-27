@@ -90,7 +90,6 @@ intellijPlatform {
         // http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
         ideaVersion {
             sinceBuild = "232"
-            untilBuild = "242.*"
         }
     }
     pluginVerification {
