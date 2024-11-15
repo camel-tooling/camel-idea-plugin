@@ -31,15 +31,11 @@ checkstyle {
 
 group = 'com.github.camel-tooling'
 version = '1.3.2'
+description = 'Apache Camel IDE :: IDEA Plugin'
 
 repositories {
     mavenLocal()
-    maven {
-        url = 'https://repo.maven.apache.org/maven2'
-        mavenContent {
-            releasesOnly()
-        }
-    }
+    mavenCentral()
     maven {
         url "https://repository.apache.org/snapshots/"
         mavenContent {
@@ -48,6 +44,7 @@ repositories {
     }
     intellijPlatform {
         defaultRepositories()
+        jetbrainsRuntime()
     }
 }
 
@@ -73,7 +70,7 @@ test {
     }
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
@@ -84,31 +81,9 @@ tasks.withType(Test).configureEach {
     ]
 }
 
-intellijPlatform {
-    pluginConfiguration {
-        // to support IDEA 2023.2 onwards
-        // http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
-        ideaVersion {
-            sinceBuild = "232"
-        }
-    }
-    pluginVerification {
-        ides {
-            ide "2023.2"
-            ide "2023.3"
-            ide "2024.1"
-            ide "2024.2"
-        }
-    }
-//    publishing {
-//        def authenticationToken = "$System.env.INTELLIJ_TOKEN"
-//        token = authenticationToken
-//    }
-}
-
 dependencies {
     intellijPlatform {
-        create(project.hasProperty('intellij_type') ? project.intellij_type : 'IC', ideaVersion)
+        intellijIdeaCommunity ideaVersion
         pluginVerifier()
         instrumentationTools()
         bundledPlugins 'com.intellij.java', 'com.intellij.java-i18n', 'com.intellij.properties', 'org.jetbrains.plugins.yaml', 'org.jetbrains.idea.maven', 'com.intellij.gradle'
@@ -142,11 +117,26 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 }
 
-description = 'Apache Camel IDE :: IDEA Plugin'
+intellijPlatform {
+    pluginVerification {
+        ides {
+            recommended()
+        }
+    }
+    patchPluginXml {
+        untilBuild = provider { (String) null }
+    }
+//    publishing {
+//        def authenticationToken = "$System.env.INTELLIJ_TOKEN"
+//        token = authenticationToken
+//    }
+}
 
-tasks.withType(org.jetbrains.intellij.platform.gradle.tasks.RunIdeTask) {
-    jvmArgs = [
+tasks {
+    runIde {
+        jvmArgumentProviders.add({
             // Allow to have access to the PSI Structure...
             '-Didea.is.internal=true'
-    ]
+        } as CommandLineArgumentProvider)
+    }
 }
