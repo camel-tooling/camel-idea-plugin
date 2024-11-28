@@ -449,32 +449,44 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             }
             return;
         }
+
         String breakpointId = breakpointElement.keySet().iterator().next();
         PsiElement breakpointTag = breakpointElement.get(breakpointId);
         breakpoints.put(breakpointId, new CamelBreakpoint(breakpointId, breakpointTag, position));
 
-        String name = breakpointTag instanceof XmlTag ? ((XmlTag) breakpointTag).getLocalName() : breakpointTag.getText();
+        String name = (breakpointTag instanceof XmlTag)
+                ? ((XmlTag) breakpointTag).getLocalName()
+                : breakpointTag.getText();
 
-        if (isOver && ("to".equals(name) || "toD".equals(name))) {
-            String newTemporaryBreakpointId = getSiblingId(breakpointId);
-            if (newTemporaryBreakpointId != null) {
-                //Add temporary breakpoint
-                backlogDebugger.addBreakpoint(newTemporaryBreakpointId);
-                //Run to that breakpoint
-                backlogDebugger.resumeBreakpoint(breakpointId);
-                if (temporaryBreakpointId != null
-                        && !explicitBreakpointIDs.contains(temporaryBreakpointId)
-                        && !newTemporaryBreakpointId.equals(temporaryBreakpointId)) { //Remove previous temporary breakpoint
-                    backlogDebugger.removeBreakpoint(temporaryBreakpointId);
-                }
-                temporaryBreakpointId = newTemporaryBreakpointId;
-            } else { //This was the last one
-                resume();
-            }
+        if (isOver && isTemporaryBreakpoint(name)) {
+            handleTemporaryBreakpoint(breakpointId);
         } else {
             backlogDebugger.stepBreakpoint(breakpointId);
         }
     }
+
+    private boolean isTemporaryBreakpoint(String name) {
+        return "to".equals(name) || "toD".equals(name);
+    }
+
+    private void handleTemporaryBreakpoint(String breakpointId) {
+        String newTemporaryBreakpointId = getSiblingId(breakpointId);
+
+        if (newTemporaryBreakpointId != null) {
+            backlogDebugger.addBreakpoint(newTemporaryBreakpointId);
+            backlogDebugger.resumeBreakpoint(breakpointId);
+
+            if (temporaryBreakpointId != null
+                    && !explicitBreakpointIDs.contains(temporaryBreakpointId)
+                    && !newTemporaryBreakpointId.equals(temporaryBreakpointId)) {
+                backlogDebugger.removeBreakpoint(temporaryBreakpointId);
+            }
+
+            temporaryBreakpointId = newTemporaryBreakpointId;
+        } else {
+            resume();
+        }
+    }    
 
     public CamelDebugProcess getCamelDebugProcess() {
         ContextAwareDebugProcess debugProcess = (ContextAwareDebugProcess) xDebugSession.getDebugProcess();
