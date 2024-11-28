@@ -16,7 +16,7 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
-import com.github.cameltooling.idea.language.CamelLanguages;
+import com.github.cameltooling.idea.language.DatasonnetLanguage;
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpoint;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.github.cameltooling.idea.runner.debugger.util.ClasspathUtils;
@@ -329,7 +329,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                     String outputMediaType = params != null && params.containsKey("outputMediaType") ? params.get("outputMediaType") : "application/json";
                     String resultType = params != null && params.containsKey("resultType") ? params.get("resultType") : String.class.getName();
 
-                    if (CamelLanguages.DatasonnetLanguage.LANGUAGE_ID.equalsIgnoreCase(language)) {
+                    if (DatasonnetLanguage.LANGUAGE_ID.equalsIgnoreCase(language)) {
                         serverConnection.invoke(this.debuggerMBeanObjectName, "setMessageHeaderOnBreakpoint", new Object[]{breakpointId, "CamelDatasonnetBodyMediaType", bodyMediaType},
                                 new String[]{"java.lang.String", "java.lang.String", "java.lang.Object"});
 
@@ -341,7 +341,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                             new Object[]{breakpointId, language, script, resultType},
                             new String[]{stringClassName, stringClassName, stringClassName, stringClassName});
 
-                    if (CamelLanguages.DatasonnetLanguage.LANGUAGE_ID.equalsIgnoreCase(language)) {
+                    if (DatasonnetLanguage.LANGUAGE_ID.equalsIgnoreCase(language)) {
                         serverConnection.invoke(this.debuggerMBeanObjectName, "removeMessageHeaderOnBreakpoint", new Object[]{breakpointId, "CamelDatasonnetBodyMediaType"},
                                 new String[]{"java.lang.String", "java.lang.String"});
 

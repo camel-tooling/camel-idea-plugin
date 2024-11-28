@@ -17,23 +17,31 @@
 package com.github.cameltooling.idea.language;
 
 import com.intellij.lang.Language;
+import com.intellij.openapi.fileTypes.LanguageFileType;
+import com.intellij.openapi.fileTypes.PlainTextFileType;
+import com.intellij.openapi.util.NlsSafe;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.List;
+public class ConstantLanguage extends Language {
 
-public final class CamelLanguages {
-    public static final DatasonnetLanguage DATASONNET_LANGUAGE = DatasonnetLanguage.getInstance();
-    public static final SimpleLanguage SIMPLE_LANGUAGE = SimpleLanguage.getInstance();
-    public static final ConstantLanguage CONSTANT_LANGUAGE = ConstantLanguage.getInstance();
+    public static final String LANGUAGE_ID = "constant";
+    private static ConstantLanguage instance = new ConstantLanguage();
 
-    public static final List<Language> ALL = Arrays.asList(
-            DATASONNET_LANGUAGE,
-            SIMPLE_LANGUAGE,
-            CONSTANT_LANGUAGE
-    );
-
-    private CamelLanguages() {
-
+    protected ConstantLanguage() {
+        super(LANGUAGE_ID);
     }
 
+    public static ConstantLanguage getInstance() {
+        return instance;
+    }
+
+    @Override
+    public @NotNull @NlsSafe String getDisplayName() {
+        return "Constant";
+    }
+
+    @Override
+    public LanguageFileType getAssociatedFileType() {
+        return PlainTextFileType.INSTANCE;
+    }
 }
