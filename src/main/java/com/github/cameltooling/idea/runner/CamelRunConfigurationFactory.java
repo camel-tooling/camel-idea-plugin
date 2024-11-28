@@ -87,8 +87,11 @@ final class CamelRunConfigurationFactory extends ConfigurationFactory {
 
     @Override
     public void configureBeforeRunTaskDefaults(Key<? extends BeforeRunTask> providerID, BeforeRunTask task) {
-        if (Objects.equals(providerID, CompileStepBeforeRun.ID)
-            || Objects.equals(providerID, CompileStepBeforeRunNoErrorCheck.ID)) {
+        // Decompose Conditional
+        boolean isCompileStep = Objects.equals(providerID, CompileStepBeforeRun.ID);
+        boolean isCompileStepNoErrorCheck = Objects.equals(providerID, CompileStepBeforeRunNoErrorCheck.ID);
+
+        if (isCompileStep || isCompileStepNoErrorCheck) {
             task.setEnabled(false);
         }
     }
