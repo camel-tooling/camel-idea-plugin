@@ -48,7 +48,6 @@ import com.intellij.xdebugger.impl.XDebuggerUtilImpl;
 import com.intellij.xdebugger.impl.actions.XDebuggerActions;
 import com.intellij.xdebugger.impl.breakpoints.XExpressionImpl;
 import com.intellij.xdebugger.impl.evaluate.CodeFragmentInputComponent;
-import com.intellij.xdebugger.impl.evaluate.DebuggerEvaluationStatisticsCollector;
 import com.intellij.xdebugger.impl.evaluate.EvaluationInputComponent;
 import com.intellij.xdebugger.impl.settings.XDebuggerSettingManagerImpl;
 import com.intellij.xdebugger.impl.ui.XDebugSessionTab;
@@ -104,15 +103,6 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
                                          @Nullable XSourcePosition sourcePosition,
                                          boolean isCodeFragmentEvaluationSupported) {
         this(session, null, session.getProject(), editorsProvider, text, sourcePosition, isCodeFragmentEvaluationSupported);
-    }
-
-    public CamelDebuggerEvaluationDialog(@NotNull XDebuggerEvaluator evaluator,
-                                         @NotNull Project project,
-                                         @NotNull XDebuggerEditorsProvider editorsProvider,
-                                         @NotNull XExpression text,
-                                         @Nullable XSourcePosition sourcePosition,
-                                         boolean isCodeFragmentEvaluationSupported) {
-        this(null, () -> evaluator, project, editorsProvider, text, sourcePosition, isCodeFragmentEvaluationSupported);
     }
 
     private CamelDebuggerEvaluationDialog(@Nullable XDebugSession session,
@@ -182,7 +172,8 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
         }
         setTitle(XDebuggerBundle.message("xdebugger.evaluate.dialog.title"));
         switchToMode(mode, text);
-        DebuggerEvaluationStatisticsCollector.DIALOG_OPEN.log(project, mode);
+        // internal feature usage tracker
+        //DebuggerEvaluationStatisticsCollector.DIALOG_OPEN.log(project, mode);
         if (mode == EvaluationMode.EXPRESSION) {
             myInputComponent.getInputEditor().selectAll();
         }
@@ -227,7 +218,8 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
 
     @Override
     protected void doOKAction() {
-        DebuggerEvaluationStatisticsCollector.EVALUATE.log(myProject, myMode);
+        // internal feature usage tracker
+        //DebuggerEvaluationStatisticsCollector.EVALUATE.log(myProject, myMode);
         FeatureUsageTracker.getInstance().triggerFeatureUsed("debugger.evaluate.expression");
         evaluate();
     }
@@ -442,7 +434,8 @@ public class CamelDebuggerEvaluationDialog extends DialogWrapper {
             EvaluationMode newMode = (myMode == EvaluationMode.EXPRESSION) ? EvaluationMode.CODE_FRAGMENT : EvaluationMode.EXPRESSION;
             // remember only on user selection
             XDebuggerSettingManagerImpl.getInstanceImpl().getGeneralSettings().setEvaluationDialogMode(newMode);
-            DebuggerEvaluationStatisticsCollector.MODE_SWITCH.log(myProject, newMode);
+            // internal feature usage tracker
+            //DebuggerEvaluationStatisticsCollector.MODE_SWITCH.log(myProject, newMode);
             switchToMode(newMode, text);
         }
     }
