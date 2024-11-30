@@ -53,18 +53,16 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Validate Gradle wrapper
         uses: gradle/actions/wrapper-validation@v3
-      - name: Clean project
-        run: ./gradlew --no-daemon --no-parallel clean build
       - name: Verify plugin against all supported versions
-        run: ./gradlew --no-daemon verifyPlugin
+        run: ./gradlew --no-daemon --no-parallel clean build verifyPlugin -Dorg.gradle.console=plain
         shell: bash
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: ${{ matrix.os }}-Reports
           path: camel-idea-plugin/build/reports
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: ${{ matrix.os }}-Logs
-          path: camel-idea-plugin/build/idea-sandbox/system-test/testlog/idea.log
+          path: camel-idea-plugin/build/idea-sandbox/IC-2032.2/log-test/idea.log
