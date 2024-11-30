@@ -14,7 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 
 plugins {
     id 'org.jetbrains.intellij.platform' version '2.1.0'
@@ -119,7 +121,12 @@ dependencies {
 intellijPlatform {
     pluginVerification {
         ides {
-            recommended()
+            select {
+                it.types = [IntelliJPlatformType.IntellijIdeaCommunity]
+                it.channels = [ProductRelease.Channel.RELEASE]
+                it.sinceBuild = '232'
+                it.untilBuild = '998.*'
+            }
         }
     }
     patchPluginXml {

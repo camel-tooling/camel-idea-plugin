@@ -40,28 +40,31 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        version: [2023.2.8, 2023.3.8, 2024.1.7, 2024.2.5, 2024.3]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
           cache: 'gradle'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v1.0.5
-      - name: Build against all supported versions
-        run: ./build.sh ${{ matrix.version }}
+        uses: gradle/actions/wrapper-validation@v3
+      - name: Clean project
+        run: ./gradlew --no-daemon --no-parallel clean build
+      - name: Verify plugin against all supported versions
+        run: ./gradlew --no-daemon verifyPlugin
         shell: bash
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: ${{ matrix.os }}-${{ matrix.version }}-Reports
+          name: ${{ matrix.os }}-Reports
           path: camel-idea-plugin/build/reports
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: ${{ matrix.os }}-${{ matrix.version }}-Logs
+          name: ${{ matrix.os }}-Logs
           path: camel-idea-plugin/build/idea-sandbox/system-test/testlog/idea.log

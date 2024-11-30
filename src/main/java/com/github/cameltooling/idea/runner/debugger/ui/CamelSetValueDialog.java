@@ -115,7 +115,8 @@ public class CamelSetValueDialog extends DialogWrapper {
         }
         setTitle("Set Value");
         switchToMode(mode, text);
-        DebuggerEvaluationStatisticsCollector.DIALOG_OPEN.log(project, mode);
+        // internal feature usage tracker
+        //DebuggerEvaluationStatisticsCollector.DIALOG_OPEN.log(project, mode);
         if (mode == EvaluationMode.EXPRESSION) {
             myInputComponent.getInputEditor().selectAll();
         }
@@ -302,7 +303,8 @@ public class CamelSetValueDialog extends DialogWrapper {
             EvaluationMode newMode = (myMode == EvaluationMode.EXPRESSION) ? EvaluationMode.CODE_FRAGMENT : EvaluationMode.EXPRESSION;
             // remember only on user selection
             XDebuggerSettingManagerImpl.getInstanceImpl().getGeneralSettings().setEvaluationDialogMode(newMode);
-            DebuggerEvaluationStatisticsCollector.MODE_SWITCH.log(myProject, newMode);
+            // internal feature usage tracker
+            //DebuggerEvaluationStatisticsCollector.MODE_SWITCH.log(myProject, newMode);
             switchToMode(newMode, text);
         }
     }
