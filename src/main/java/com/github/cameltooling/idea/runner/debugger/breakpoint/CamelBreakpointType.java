@@ -76,28 +76,9 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
         final Document document = FileDocumentManager.getInstance().getDocument(file);
         final PsiFile psiFile = document != null ? PsiDocumentManager.getInstance(project).getPsiFile(document) : null;
 
-        switch (file.getFileType().getName()) {
-        case "XML":
-            XmlTag tag = IdeaUtils.getXmlTagAt(project, position);
-            if (tag == null) {
-                return false;
-            }
-            eipName = tag.getLocalName();
-            break;
-        case "JAVA":
-            PsiElement psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
-            if (psiElement == null) {
-                return false;
-            }
-            eipName = psiElement.getText();
-            break;
-        case "YAML":
-            YAMLKeyValue keyValue = IdeaUtils.getYamlKeyValueAt(project, position);
-            if (keyValue != null) {
-                eipName = keyValue.getKeyText();
-            }
-            break;
-        default: // noop
+        FileTypeHandler handler = FileTypeHandlerRegistry.getHandler(file.getFileType().getName());
+        if (handler != null) {
+            eipName = handler.getEipName(project, position, file);
         }
 
         try {

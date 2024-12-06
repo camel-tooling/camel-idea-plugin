@@ -103,7 +103,8 @@ public class CamelJBangRunnerConfPanel implements PanelWithAnchor {
         StringBuilder contentToAppend = new StringBuilder();
         for (VirtualFile file : files) {
             String path = file.getPath();
-            if (root != null && root.getCanonicalPath() != null && path.startsWith(root.getCanonicalPath())) {
+            boolean shouldModify = shouldModifyPath(root, path); // Explaining variable
+            if (shouldModify) {
                 path = path.substring(root.getCanonicalPath().length() + 1);
             }
             if (!contentToAppend.isEmpty()) {
@@ -112,6 +113,18 @@ public class CamelJBangRunnerConfPanel implements PanelWithAnchor {
             contentToAppend.append(path);
         }
         return contentToAppend.toString();
+    }
+
+    @NotNull
+    private static boolean shouldModifyPath(VirtualFile root, String path) {
+        if (root == null) {
+            return false;
+        }
+        String canonicalPath = root.getCanonicalPath();
+        if (canonicalPath == null) {
+            return false;
+        }
+        return path.startsWith(canonicalPath);
     }
 
     @Override

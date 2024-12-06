@@ -14,26 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.language;
+package com.github.cameltooling.idea.runner.debugger.breakpoint;
 
-import com.intellij.lang.Language;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
+import com.intellij.xdebugger.XDebuggerUtil;
+import com.intellij.xdebugger.XSourcePosition;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.List;
-
-public final class CamelLanguages {
-    public static final DatasonnetLanguage DATASONNET_LANGUAGE = DatasonnetLanguage.getInstance();
-    public static final SimpleLanguage SIMPLE_LANGUAGE = SimpleLanguage.getInstance();
-    public static final ConstantLanguage CONSTANT_LANGUAGE = ConstantLanguage.getInstance();
-
-    public static final List<Language> ALL = Arrays.asList(
-            DATASONNET_LANGUAGE,
-            SIMPLE_LANGUAGE,
-            CONSTANT_LANGUAGE
-    );
-
-    private CamelLanguages() {
-
+public class JavaFileHandler implements FileTypeHandler {
+    @Override
+    public @Nullable String getEipName(Project project, XSourcePosition position, VirtualFile file) {
+        PsiElement psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project,
+                false);
+        return psiElement != null ? psiElement.getText() : null;
     }
-
 }

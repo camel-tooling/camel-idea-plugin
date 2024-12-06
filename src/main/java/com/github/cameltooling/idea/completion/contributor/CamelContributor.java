@@ -45,20 +45,16 @@ public abstract class CamelContributor extends CompletionContributor {
     CamelContributor() {
     }
 
-    /**
-     * Smart completion for Camel endpoints.
-     */
-    protected static class EndpointCompletion extends CompletionProvider<CompletionParameters> {
-
-        private final List<CamelCompletionExtension> camelCompletionExtensions;
-
-        EndpointCompletion(List<CamelCompletionExtension> camelCompletionExtensions) {
+    public abstract class AbstractCompletionProvider extends CompletionProvider<CompletionParameters> {
+        protected final List<CamelCompletionExtension> camelCompletionExtensions;
+    
+        protected AbstractCompletionProvider(List<CamelCompletionExtension> camelCompletionExtensions) {
             this.camelCompletionExtensions = camelCompletionExtensions;
         }
-
-        public void addCompletions(@NotNull CompletionParameters parameters,
-                                   ProcessingContext context,
-                                   @NotNull CompletionResultSet resultSet) {
+    
+        protected void addCompletionsInternal(@NotNull CompletionParameters parameters, 
+                                              @NotNull ProcessingContext context, 
+                                              @NotNull CompletionResultSet resultSet) {
             if (parameters.getOriginalFile().getProject().getService(CamelService.class).isCamelProject()) {
                 String[] tuple = parsePsiElement(parameters);
                 camelCompletionExtensions.stream()
@@ -67,29 +63,33 @@ public abstract class CamelContributor extends CompletionContributor {
             }
         }
     }
-
-    /**
-     * Smart completion for Camel properties.
-     */
-    protected static class PropertiesCompletion extends CompletionProvider<CompletionParameters> {
-
-        private final List<CamelCompletionExtension> camelCompletionExtensions;
-
-        PropertiesCompletion(List<CamelCompletionExtension> camelCompletionExtensions) {
-            this.camelCompletionExtensions = camelCompletionExtensions;
+    
+    protected class EndpointCompletion extends AbstractCompletionProvider {
+        EndpointCompletion(List<CamelCompletionExtension> camelCompletionExtensions) {
+            super(camelCompletionExtensions);
         }
-
+    
+        @Override
         public void addCompletions(@NotNull CompletionParameters parameters,
                                    @NotNull ProcessingContext context,
                                    @NotNull CompletionResultSet resultSet) {
-            if (parameters.getOriginalFile().getProject().getService(CamelService.class).isCamelProject()) {
-                String[] tuple = parsePsiElement(parameters);
-                camelCompletionExtensions.stream()
-                    .filter(p -> p.isValid(parameters, context, tuple))
-                    .forEach(p -> p.addCompletions(parameters, context, resultSet, tuple));
-            }
+            addCompletionsInternal(parameters, context, resultSet);
         }
     }
+    
+    protected class PropertiesCompletion extends AbstractCompletionProvider {
+        PropertiesCompletion(List<CamelCompletionExtension> camelCompletionExtensions) {
+            super(camelCompletionExtensions);
+        }
+    
+        @Override
+        public void addCompletions(@NotNull CompletionParameters parameters,
+                                   @NotNull ProcessingContext context,
+                                   @NotNull CompletionResultSet resultSet) {
+            addCompletionsInternal(parameters, context, resultSet);
+        }
+    }
+    
 
     /**
      * Parse the PSI text {@link CompletionUtil#DUMMY_IDENTIFIER} and " character and remove them.

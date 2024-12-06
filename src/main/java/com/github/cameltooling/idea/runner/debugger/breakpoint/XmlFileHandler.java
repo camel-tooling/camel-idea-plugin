@@ -14,26 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.language;
+package com.github.cameltooling.idea.runner.debugger.breakpoint;
 
-import com.intellij.lang.Language;
+import com.github.cameltooling.idea.util.IdeaUtils;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.xml.XmlTag;
+import com.intellij.xdebugger.XSourcePosition;
 
-import java.util.Arrays;
-import java.util.List;
-
-public final class CamelLanguages {
-    public static final DatasonnetLanguage DATASONNET_LANGUAGE = DatasonnetLanguage.getInstance();
-    public static final SimpleLanguage SIMPLE_LANGUAGE = SimpleLanguage.getInstance();
-    public static final ConstantLanguage CONSTANT_LANGUAGE = ConstantLanguage.getInstance();
-
-    public static final List<Language> ALL = Arrays.asList(
-            DATASONNET_LANGUAGE,
-            SIMPLE_LANGUAGE,
-            CONSTANT_LANGUAGE
-    );
-
-    private CamelLanguages() {
-
+public class XmlFileHandler implements FileTypeHandler {
+    @Override
+    public String getEipName(Project project, XSourcePosition position, VirtualFile file) {
+        XmlTag tag = IdeaUtils.getXmlTagAt(project, position);
+        return tag != null ? tag.getLocalName() : null;
     }
-
 }

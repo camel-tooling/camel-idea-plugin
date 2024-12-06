@@ -16,7 +16,7 @@
  */
 package com.github.cameltooling.idea.runner.debugger;
 
-import com.github.cameltooling.idea.language.CamelLanguages;
+import com.github.cameltooling.idea.language.DatasonnetLanguage;
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpoint;
 import com.github.cameltooling.idea.runner.debugger.stack.CamelMessageInfo;
 import com.github.cameltooling.idea.runner.debugger.util.ClasspathUtils;
@@ -329,7 +329,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                     String outputMediaType = params != null && params.containsKey("outputMediaType") ? params.get("outputMediaType") : "application/json";
                     String resultType = params != null && params.containsKey("resultType") ? params.get("resultType") : String.class.getName();
 
-                    if (CamelLanguages.DatasonnetLanguage.LANGUAGE_ID.equalsIgnoreCase(language)) {
+                    if (DatasonnetLanguage.LANGUAGE_ID.equalsIgnoreCase(language)) {
                         serverConnection.invoke(this.debuggerMBeanObjectName, "setMessageHeaderOnBreakpoint", new Object[]{breakpointId, "CamelDatasonnetBodyMediaType", bodyMediaType},
                                 new String[]{"java.lang.String", "java.lang.String", "java.lang.Object"});
 
@@ -341,7 +341,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                             new Object[]{breakpointId, language, script, resultType},
                             new String[]{stringClassName, stringClassName, stringClassName, stringClassName});
 
-                    if (CamelLanguages.DatasonnetLanguage.LANGUAGE_ID.equalsIgnoreCase(language)) {
+                    if (DatasonnetLanguage.LANGUAGE_ID.equalsIgnoreCase(language)) {
                         serverConnection.invoke(this.debuggerMBeanObjectName, "removeMessageHeaderOnBreakpoint", new Object[]{breakpointId, "CamelDatasonnetBodyMediaType"},
                                 new String[]{"java.lang.String", "java.lang.String"});
 
@@ -449,32 +449,44 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             }
             return;
         }
+
         String breakpointId = breakpointElement.keySet().iterator().next();
         PsiElement breakpointTag = breakpointElement.get(breakpointId);
         breakpoints.put(breakpointId, new CamelBreakpoint(breakpointId, breakpointTag, position));
 
-        String name = breakpointTag instanceof XmlTag ? ((XmlTag) breakpointTag).getLocalName() : breakpointTag.getText();
+        String name = (breakpointTag instanceof XmlTag)
+                ? ((XmlTag) breakpointTag).getLocalName()
+                : breakpointTag.getText();
 
-        if (isOver && ("to".equals(name) || "toD".equals(name))) {
-            String newTemporaryBreakpointId = getSiblingId(breakpointId);
-            if (newTemporaryBreakpointId != null) {
-                //Add temporary breakpoint
-                backlogDebugger.addBreakpoint(newTemporaryBreakpointId);
-                //Run to that breakpoint
-                backlogDebugger.resumeBreakpoint(breakpointId);
-                if (temporaryBreakpointId != null
-                        && !explicitBreakpointIDs.contains(temporaryBreakpointId)
-                        && !newTemporaryBreakpointId.equals(temporaryBreakpointId)) { //Remove previous temporary breakpoint
-                    backlogDebugger.removeBreakpoint(temporaryBreakpointId);
-                }
-                temporaryBreakpointId = newTemporaryBreakpointId;
-            } else { //This was the last one
-                resume();
-            }
+        if (isOver && isTemporaryBreakpoint(name)) {
+            handleTemporaryBreakpoint(breakpointId);
         } else {
             backlogDebugger.stepBreakpoint(breakpointId);
         }
     }
+
+    private boolean isTemporaryBreakpoint(String name) {
+        return "to".equals(name) || "toD".equals(name);
+    }
+
+    private void handleTemporaryBreakpoint(String breakpointId) {
+        String newTemporaryBreakpointId = getSiblingId(breakpointId);
+
+        if (newTemporaryBreakpointId != null) {
+            backlogDebugger.addBreakpoint(newTemporaryBreakpointId);
+            backlogDebugger.resumeBreakpoint(breakpointId);
+
+            if (temporaryBreakpointId != null
+                    && !explicitBreakpointIDs.contains(temporaryBreakpointId)
+                    && !newTemporaryBreakpointId.equals(temporaryBreakpointId)) {
+                backlogDebugger.removeBreakpoint(temporaryBreakpointId);
+            }
+
+            temporaryBreakpointId = newTemporaryBreakpointId;
+        } else {
+            resume();
+        }
+    }    
 
     public CamelDebugProcess getCamelDebugProcess() {
         ContextAwareDebugProcess debugProcess = (ContextAwareDebugProcess) xDebugSession.getDebugProcess();

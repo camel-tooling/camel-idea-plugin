@@ -14,26 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.language;
+package com.github.cameltooling.idea.runner.debugger.breakpoint;
 
-import com.intellij.lang.Language;
+import java.util.HashMap;
+import java.util.Map;
 
-import java.util.Arrays;
-import java.util.List;
+public final class FileTypeHandlerRegistry {
+    private static final Map<String, FileTypeHandler> HANDLERS = new HashMap<>();
 
-public final class CamelLanguages {
-    public static final DatasonnetLanguage DATASONNET_LANGUAGE = DatasonnetLanguage.getInstance();
-    public static final SimpleLanguage SIMPLE_LANGUAGE = SimpleLanguage.getInstance();
-    public static final ConstantLanguage CONSTANT_LANGUAGE = ConstantLanguage.getInstance();
-
-    public static final List<Language> ALL = Arrays.asList(
-            DATASONNET_LANGUAGE,
-            SIMPLE_LANGUAGE,
-            CONSTANT_LANGUAGE
-    );
-
-    private CamelLanguages() {
-
+    private FileTypeHandlerRegistry() {
+        // private constructor to hide the implicit public one
     }
 
+    static {
+        HANDLERS.put("XML", new XmlFileHandler());
+        HANDLERS.put("JAVA", new JavaFileHandler());
+        HANDLERS.put("YAML", new YamlFileHandler());
+    }
+
+    public static FileTypeHandler getHandler(String fileTypeName) {
+        return HANDLERS.get(fileTypeName);
+    }
 }
