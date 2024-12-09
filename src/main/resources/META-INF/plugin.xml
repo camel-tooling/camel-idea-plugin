@@ -17,7 +17,7 @@
   </change-notes>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="231"/>
+  <idea-version since-build="232"/>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
@@ -26,7 +26,7 @@
   <!-- depend on the properties plugin -->
   <depends>com.intellij.properties</depends>
 
-  <!-- depend on the yaml plugin -->
+  <!-- depend on the YAML plugin -->
   <depends>org.jetbrains.plugins.yaml</depends>
 
   <depends>com.intellij.java</depends>
