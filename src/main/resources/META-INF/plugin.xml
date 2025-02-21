@@ -11,7 +11,8 @@
   <change-notes><![CDATA[
       v.1.3.5
       <ul>
-        <li>Bug fixes</li>
+        <li>Upgrade to IDEA 2024.3.3</li>
+        <li>Upgrade to Camel 4.10.0</li>
       </ul>
     ]]>
   </change-notes>
