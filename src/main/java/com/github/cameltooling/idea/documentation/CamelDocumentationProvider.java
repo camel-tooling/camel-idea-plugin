@@ -395,7 +395,7 @@ public class CamelDocumentationProvider extends DocumentationProviderEx implemen
         if (option.getDefaultValue() != null) {
             builder.append("<strong>Default value: </strong>").append(option.getDefaultValue()).append("<br/>");
         }
-        builder.append("<br/><div>").append(option.getDescription()).append("</div>");
+        builder.append("<div>").append(option.getDescription()).append("</div>");
         return builder.toString();
     }
 
