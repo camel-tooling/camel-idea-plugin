@@ -17,7 +17,7 @@
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
-    id 'org.jetbrains.intellij.platform' version '2.1.0'
+    id 'org.jetbrains.intellij.platform' version '2.5.0'
 }
 
 apply plugin: 'java'
@@ -99,6 +99,7 @@ intellijPlatform {
             ide "2024.1"
             ide "2024.2"
             ide "2024.3"
+            ide "2025.1"
         }
     }
 //    publishing {
@@ -114,6 +115,7 @@ dependencies {
         instrumentationTools()
         bundledPlugins 'com.intellij.java', 'com.intellij.java-i18n', 'com.intellij.properties', 'org.jetbrains.plugins.yaml', 'org.jetbrains.idea.maven', 'com.intellij.gradle'
         testFramework TestFrameworkType.Plugin.Java.INSTANCE
+        testFramework TestFrameworkType.Platform.INSTANCE
     }
     implementation "org.apache.camel:camel-catalog:${camelVersion}"
     implementation "org.apache.camel:camel-tooling-maven:${camelVersion}"
