@@ -22,7 +22,7 @@ public final class MultipleEndpointSuggestions extends RouteBuilder {
     @Override
     public void configure() {
         from("jms:queue")
-            .setBody(header(org.apache.camel.component.file.remote.FtpConstants.FILE_HOST))
+            .setBody(header(org.apache.camel.component.file.remote.FtpConstants.FILE_ABSOLUTE))
             .to("ftp:foo")
             .to("file:outbox");
     }
