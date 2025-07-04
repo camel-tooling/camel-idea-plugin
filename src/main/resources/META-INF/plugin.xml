@@ -11,13 +11,14 @@
   <change-notes><![CDATA[
       v.1.4.0
       <ul>
+        <li>Only IDEA 2025 onwards is supported</li>
         <li>Upgraded to IDEA 2025</li>
       </ul>
     ]]>
   </change-notes>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-  <idea-version since-build="231"/>
+  <idea-version since-build="251"/>
 
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
