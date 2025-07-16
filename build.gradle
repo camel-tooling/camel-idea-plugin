@@ -128,7 +128,7 @@ dependencies {
     // Needed to avoid conflicts with the version of the maven resolver used by IntelliJ
     implementation "org.apache.maven.resolver:maven-resolver-api:${mavenResolverVersion}"
     implementation "org.apache.maven.resolver:maven-resolver-impl:${mavenResolverVersion}"
-    implementation "io.github.classgraph:classgraph:4.8.180"
+    implementation "io.github.classgraph:classgraph:4.8.181"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.1"
     implementation "io.fabric8:kubernetes-model-apiextensions:6.13.4"
 
