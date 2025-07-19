@@ -30,6 +30,7 @@ public final class Constants {
      * The main group ID of the Camel artifacts.
      */
     public static final String CAMEL_GROUP_ID = "org.apache.camel";
+    public static final String PLUGIN_ID = CAMEL_GROUP_ID;
 
     private Constants() {
     }
