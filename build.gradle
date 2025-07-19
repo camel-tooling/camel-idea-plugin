@@ -98,7 +98,7 @@ dependencies {
         create(project.hasProperty('intellij_type') ? project.intellij_type : 'IC', ideaVersion)
         pluginVerifier()
         instrumentationTools()
-        bundledPlugins 'com.intellij.java', 'com.intellij.java-i18n', 'com.intellij.properties', 'org.jetbrains.plugins.yaml', 'org.jetbrains.idea.maven', 'com.intellij.gradle'
+        bundledPlugins 'com.intellij.java', 'com.intellij.java-i18n', 'com.intellij.properties', 'com.intellij.modules.json', 'org.jetbrains.plugins.yaml', 'org.jetbrains.idea.maven', 'com.intellij.gradle'
         testFramework TestFrameworkType.Plugin.Java.INSTANCE
         testFramework TestFrameworkType.Platform.INSTANCE
     }

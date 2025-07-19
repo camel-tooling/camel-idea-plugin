@@ -465,7 +465,7 @@ abstract class CamelPropertyKeyCompletion extends CompletionProvider<CompletionP
         final String group = option.getGroup();
         final boolean advanced = group != null && group.contains("advanced");
         builder = builder.withBoldness(!advanced);
-        if (!option.getJavaType().isEmpty()) {
+        if (option.getJavaType() != null && !option.getJavaType().isEmpty()) {
             builder = builder.withTypeText(JavaClassUtils.getService().toSimpleType(option.getJavaType()), true);
         }
         if (option.isDeprecated()) {

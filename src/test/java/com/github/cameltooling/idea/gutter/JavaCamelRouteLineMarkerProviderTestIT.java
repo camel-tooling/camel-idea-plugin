@@ -136,7 +136,7 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
         assertNotNull(gutters);
 
         // remove last element since it is from method returning route uri
-        gutters.remove(gutters.size() - 1);
+        gutters = gutters.subList(0, gutters.size() - 1);
 
         assertEquals("Should contain 1 Camel gutters", 1, gutters.size());
 
