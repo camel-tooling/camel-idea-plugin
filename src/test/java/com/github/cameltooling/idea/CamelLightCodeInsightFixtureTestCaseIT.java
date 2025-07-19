@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -38,6 +40,7 @@ import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.LanguageLevelModuleExtension;
 import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.pom.java.LanguageLevel;
 import com.intellij.psi.PsiElement;
 import com.intellij.testFramework.IdeaTestUtil;
@@ -56,6 +59,7 @@ import org.jetbrains.annotations.Nullable;
 public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCodeInsightFixtureTestCase {
 
     private static final File[] mavenArtifacts;
+    private static final String TEST_DATA_BASE = "src/test/resources/testData/";
     private boolean ignoreCamelCoreLib;
 
     protected static String CAMEL_VERSION;
@@ -96,11 +100,18 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
             }));
 
         project.getService(CamelService.class).setCamelPresent(true);
+
+        allowTestDataAccess();
+    }
+
+    private void allowTestDataAccess() {
+        Path path = Paths.get(TEST_DATA_BASE);
+        VfsRootAccess.allowRootAccess(getTestRootDisposable(), path.toAbsolutePath().toString());
     }
 
     @Override
     protected String getTestDataPath() {
-        return "src/test/resources/testData/";
+        return TEST_DATA_BASE;
     }
 
     /**

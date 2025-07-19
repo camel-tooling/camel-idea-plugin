@@ -39,7 +39,7 @@ public class FullCustomKameletEndpointSmartCompletionTestIT extends CamelLightCo
     @Override
     protected void loadDependencies(@NotNull ModifiableRootModel model) {
         super.loadDependencies(model);
-        File rootFolder = new File("src/test/resources/kamelets-with-jar-catalog-resources/");
+        File rootFolder = new File("src/test/resources/testData/kamelet/kamelets-with-jar-catalog-resources/");
         PsiTestUtil.addLibrary(model, "com.foo:custom-kamelets:1.0", rootFolder.getPath(), "lib/custom-kamelets.jar");
         PsiTestUtil.addLibrary(model, "org.apache.camel.kamelets:camel-kamelets:0-SNAPSHOT", rootFolder.getPath(), "lib/specific-camel-kamelets.jar");
         VirtualFile resourcesDir = VirtualFileManager.getInstance().refreshAndFindFileByUrl(VfsUtil.getUrlForLibraryRoot(new File(rootFolder, "resources/")));
