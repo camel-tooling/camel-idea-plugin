@@ -35,7 +35,7 @@ public class CustomKameletEndpointSmartCompletionTestIT extends CamelLightCodeIn
     @Override
     protected void loadDependencies(@NotNull ModifiableRootModel model) {
         super.loadDependencies(model);
-        File rootFolder = new File("src/test/resources/kamelets-with-jar-catalog/");
+        File rootFolder = new File("src/test/resources/testData/kamelet/kamelets-with-jar-catalog/");
         PsiTestUtil.addLibrary(model, "com.foo:custom-kamelets:1.0", rootFolder.getPath(), "custom-kamelets.jar");
         PsiTestUtil.addLibrary(model, "org.apache.camel.kamelets:camel-kamelets:0-SNAPSHOT", rootFolder.getPath(), "specific-camel-kamelets.jar");
     }

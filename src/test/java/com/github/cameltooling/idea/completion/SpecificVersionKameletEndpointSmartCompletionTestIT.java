@@ -34,7 +34,7 @@ public class SpecificVersionKameletEndpointSmartCompletionTestIT extends CamelLi
     @Override
     protected void loadDependencies(@NotNull ModifiableRootModel model) {
         super.loadDependencies(model);
-        File artifact = new File("src/test/resources/kamelets-with-catalog/specific-camel-kamelets.jar");
+        File artifact = new File("src/test/resources/testData/kamelet/kamelets-with-catalog/specific-camel-kamelets.jar");
         PsiTestUtil.addLibrary(model, "org.apache.camel.kamelets:camel-kamelets:0-SNAPSHOT", artifact.getParent(), artifact.getName());
     }
 
