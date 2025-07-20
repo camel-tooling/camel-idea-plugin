@@ -158,6 +158,12 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
                 INCLUDED_PROPERTIES);
     }
 
+    public void testPropertyInjectCompletion() {
+        myFixture.configureByFiles("PropertyInjectCompletion.java", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("PropertyInjectCompletion_after.java",
+                List.of("ftp.client", "ftp.server"));
+    }
+
     private void runCompletionTest(String expectedFile, List<String> expectedLookupElements) {
         runCompletionTest(expectedFile, expectedLookupElements, Lookup.REPLACE_SELECT_CHAR);
     }

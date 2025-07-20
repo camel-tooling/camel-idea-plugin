@@ -17,6 +17,7 @@
 package com.github.cameltooling.idea.completion.extension;
 
 import com.github.cameltooling.idea.service.CamelPreferenceService;
+import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
@@ -27,7 +28,9 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.PlatformIcons;
 import org.jetbrains.annotations.NotNull;
 
@@ -75,6 +78,11 @@ public interface CamelPropertyCompletion {
     }
 
     default String getPrefix(CompletionQuery query) {
+        PsiAnnotation annotation = PsiTreeUtil.getParentOfType(query.element(), PsiAnnotation.class);
+        if (annotation != null && CamelIdeaUtils.PROPERTY_INJECT_ANNOTATION.equals(annotation.getQualifiedName())) {
+            return query.valueAtPosition();
+        }
+
         String prefix;
         int beginIndex = query.valueAtPosition().indexOf(START_TAG);
         if (beginIndex >= 0) {
@@ -110,6 +118,12 @@ public interface CamelPropertyCompletion {
             Document doc = context.getDocument();
 
             int pos = context.getEditor().getCaretModel().getOffset();
+
+            String prefix = query.valueAtPosition();
+            int startTagPrefixIndex = prefix.lastIndexOf(START_TAG);
+            int endTagPrefixIndex = prefix.lastIndexOf(END_TAG);
+            boolean prefixContainsStartTag = startTagPrefixIndex >= 0 && (endTagPrefixIndex < 0 || startTagPrefixIndex > endTagPrefixIndex);
+
             String suffix = query.suffix();
             int startTagIndex = suffix.indexOf(START_TAG);
             int endTagIndex = suffix.indexOf(END_TAG);
@@ -118,12 +132,12 @@ public interface CamelPropertyCompletion {
                 if (suffixContainsEndTag) {
                     suffix = suffix.substring(endTagIndex);
                 } else {
-                    suffix = END_TAG;
+                    suffix = prefixContainsStartTag ? END_TAG : "";
                 }
                 doc.insertString(pos, suffix);
             } else if (context.getCompletionChar() == Lookup.NORMAL_SELECT_CHAR) {
                 if (!suffixContainsEndTag) {
-                    doc.insertString(pos, END_TAG);
+                    doc.insertString(pos, prefixContainsStartTag ? END_TAG : "");
                 }
             }
         }
