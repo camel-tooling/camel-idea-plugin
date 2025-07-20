@@ -38,7 +38,7 @@ public class CamelPropertiesFileReferenceContributor extends CamelContributor {
         final PsiFilePattern.Capture<PsiFile> filePattern = matchFileType("properties");
         extend(CompletionType.BASIC,
                 psiElement().and(psiElement().inside(PsiFile.class).inFile(filePattern)),
-                new EndpointCompletion(getCamelCompletionExtensions())
+                new CompositeCompletionProvider(getCamelCompletionExtensions())
         );
         // The key of the property corresponding to key characters in a properties file
         extend(CompletionType.BASIC,

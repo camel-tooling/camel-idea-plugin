@@ -36,13 +36,10 @@ import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.TokenType;
-import com.intellij.util.ProcessingContext;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLMapping;
-import org.jetbrains.yaml.psi.YAMLSequence;
 import org.jetbrains.yaml.psi.YAMLSequenceItem;
 
 import static com.intellij.patterns.PlatformPatterns.psiElement;
@@ -91,7 +88,7 @@ public class CamelYamlFileReferenceContributor extends CamelContributor {
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
         extend(CompletionType.BASIC,
             psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("yaml", "yml"))),
-            new EndpointCompletion(getCamelCompletionExtensions())
+            new CompositeCompletionProvider(getCamelCompletionExtensions())
         );
         final String[] setHeaderTagNames = {"set-header", "setHeader"};
         // The name of the header corresponding to the value of the key "name" in the dictionary
