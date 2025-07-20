@@ -19,6 +19,7 @@ package com.github.cameltooling.idea.completion.contributor;
 import java.util.ArrayList;
 import java.util.List;
 import com.github.cameltooling.idea.completion.extension.CamelCompletionExtension;
+import com.github.cameltooling.idea.completion.extension.CompletionQuery;
 import com.github.cameltooling.idea.service.CamelService;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.codeInsight.completion.CompletionContributor;
@@ -60,33 +61,10 @@ public abstract class CamelContributor extends CompletionContributor {
                                    ProcessingContext context,
                                    @NotNull CompletionResultSet resultSet) {
             if (parameters.getOriginalFile().getProject().getService(CamelService.class).isCamelProject()) {
-                String[] tuple = parsePsiElement(parameters);
+                CompletionQuery caretData = parsePsiElement(parameters);
                 camelCompletionExtensions.stream()
-                    .filter(p -> p.isValid(parameters, context, tuple))
-                    .forEach(p -> p.addCompletions(parameters, context, resultSet, tuple));
-            }
-        }
-    }
-
-    /**
-     * Smart completion for Camel properties.
-     */
-    protected static class PropertiesCompletion extends CompletionProvider<CompletionParameters> {
-
-        private final List<CamelCompletionExtension> camelCompletionExtensions;
-
-        PropertiesCompletion(List<CamelCompletionExtension> camelCompletionExtensions) {
-            this.camelCompletionExtensions = camelCompletionExtensions;
-        }
-
-        public void addCompletions(@NotNull CompletionParameters parameters,
-                                   @NotNull ProcessingContext context,
-                                   @NotNull CompletionResultSet resultSet) {
-            if (parameters.getOriginalFile().getProject().getService(CamelService.class).isCamelProject()) {
-                String[] tuple = parsePsiElement(parameters);
-                camelCompletionExtensions.stream()
-                    .filter(p -> p.isValid(parameters, context, tuple))
-                    .forEach(p -> p.addCompletions(parameters, context, resultSet, tuple));
+                    .filter(p -> p.isValid(parameters, context, caretData))
+                    .forEach(p -> p.addCompletions(parameters, context, resultSet, caretData));
             }
         }
     }
@@ -100,13 +78,13 @@ public abstract class CamelContributor extends CompletionContributor {
      * @return new string stripped for any {@link CompletionUtil#DUMMY_IDENTIFIER} and " character
      */
     @NotNull
-    private static String[] parsePsiElement(@NotNull CompletionParameters parameters) {
+    private static CompletionQuery parsePsiElement(@NotNull CompletionParameters parameters) {
         PsiElement element = parameters.getPosition();
 
         final IdeaUtils ideaUtils = IdeaUtils.getService();
         String val = ideaUtils.extractTextFromElement(element, true, true, true);
         if (val == null || val.isEmpty()) {
-            return new String[]{"", ""};
+            return new CompletionQuery("", "", "");
         }
 
         String valueAtPosition = ideaUtils.extractTextFromElement(element, true, false, true);
@@ -131,7 +109,7 @@ public abstract class CamelContributor extends CompletionContributor {
             valueAtPosition = valueAtPosition.substring(0, hackIndex);
         }
 
-        return new String[]{val, suffix, valueAtPosition};
+        return new CompletionQuery(val, suffix, valueAtPosition);
     }
 
     /**
