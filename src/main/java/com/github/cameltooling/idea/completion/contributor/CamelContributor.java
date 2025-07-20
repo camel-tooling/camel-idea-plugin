@@ -61,10 +61,10 @@ public abstract class CamelContributor extends CompletionContributor {
                                    ProcessingContext context,
                                    @NotNull CompletionResultSet resultSet) {
             if (parameters.getOriginalFile().getProject().getService(CamelService.class).isCamelProject()) {
-                CompletionQuery caretData = parsePsiElement(parameters);
+                CompletionQuery query = parsePsiElement(parameters);
                 camelCompletionExtensions.stream()
-                    .filter(p -> p.isValid(parameters, context, caretData))
-                    .forEach(p -> p.addCompletions(parameters, context, resultSet, caretData));
+                    .filter(p -> p.isValid(parameters, context, query))
+                    .forEach(p -> p.addCompletions(parameters, context, resultSet, query));
             }
         }
     }
@@ -84,7 +84,7 @@ public abstract class CamelContributor extends CompletionContributor {
         final IdeaUtils ideaUtils = IdeaUtils.getService();
         String val = ideaUtils.extractTextFromElement(element, true, true, true);
         if (val == null || val.isEmpty()) {
-            return new CompletionQuery("", "", "");
+            return new CompletionQuery(element, "", "", "");
         }
 
         String valueAtPosition = ideaUtils.extractTextFromElement(element, true, false, true);
@@ -109,7 +109,7 @@ public abstract class CamelContributor extends CompletionContributor {
             valueAtPosition = valueAtPosition.substring(0, hackIndex);
         }
 
-        return new CompletionQuery(val, suffix, valueAtPosition);
+        return new CompletionQuery(element, val, suffix, valueAtPosition);
     }
 
     /**

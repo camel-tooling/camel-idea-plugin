@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.openapi.project.Project;
@@ -28,7 +29,10 @@ import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.model.java.JavaResourceRootType;
@@ -105,6 +109,11 @@ public class CamelPropertyPlaceholderSmartCompletionExtension implements CamelCo
 
     @Override
     public boolean isValid(@NotNull CompletionParameters parameters, ProcessingContext context, CompletionQuery query) {
+        PsiAnnotation annotation = PsiTreeUtil.getParentOfType(parameters.getPosition(), PsiAnnotation.class);
+        if (annotation != null && CamelIdeaUtils.PROPERTY_INJECT_ANNOTATION.equals(annotation.getQualifiedName())) {
+            return true;
+        }
+
         String prefix = query.valueAtPosition();
         int startIndex = prefix.indexOf("{{");
         int endIndex = prefix.indexOf("}}");
