@@ -24,10 +24,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.codeInsight.completion.CompletionResultSet;
-import com.intellij.codeInsight.completion.PlainPrefixMatcher;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -68,16 +68,18 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
     }
 
     @Override
-    public void buildResultSet(CompletionResultSet resultSet, VirtualFile virtualFile) {
+    public void buildResultSet(CompletionResultSet resultSet, CompletionQuery query, PsiFile file) {
+        VirtualFile virtualFile = file.getVirtualFile();
+        CompletionContext ctx = new CompletionContext(getPrefix(query), virtualFile, query, resultSet);
         getProperties(virtualFile).forEach((key, value) -> {
             final String keyStr = key;
             if (!isIgnored(key)) {
                 if (value instanceof List) {
-                    buildResultSetForList(resultSet, virtualFile, keyStr, (List<?>) value);
+                    buildResultSetForList(ctx, keyStr, (List<?>) value);
                 } else if (value instanceof LinkedHashMap) {
-                    buildResultSetForLinkedHashMap(resultSet, virtualFile, keyStr, Collections.singletonList(value));
+                    buildResultSetForLinkedHashMap(ctx, keyStr, Collections.singletonList(value));
                 } else {
-                    buildResultSet(resultSet, virtualFile, keyStr, String.valueOf(value));
+                    buildResultSetForElement(ctx, keyStr, String.valueOf(value));
                 }
             }
         });
@@ -87,50 +89,53 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
      * Flat the {@link LinkedHashMap} to string property names and build the {@link CompletionResultSet}
      */
     @SuppressWarnings("unchecked")
-    private void buildResultSetForLinkedHashMap(CompletionResultSet resultSet, VirtualFile virtualFile, String keyStr, List<?> propertyList) {
+    private void buildResultSetForLinkedHashMap(CompletionContext ctx, String keyStr, List<?> propertyList) {
         propertyList.stream()
             .filter(l -> l instanceof LinkedHashMap)
             .map(LinkedHashMap.class::cast)
             .flatMap(lhm -> lhm.entrySet().stream())
             .forEach(e -> {
-                        Map.Entry<String, Object> entry = (Map.Entry<String, Object>) e;
-                        String flatKeyStr = keyStr + "." + entry.getKey();
-                        if (entry.getValue() instanceof List) {
-                            buildResultSetForList(resultSet, virtualFile, flatKeyStr, (List<?>) entry.getValue());
-                        } else if (entry.getValue() instanceof LinkedHashMap) {
-                            buildResultSetForLinkedHashMap(resultSet, virtualFile, flatKeyStr, Collections.singletonList(entry.getValue()));
-                        } else {
-                            buildResultSet(resultSet, virtualFile, flatKeyStr, String.valueOf(entry.getValue()));
-                        }
-                    }
-
-            );
+                Map.Entry<String, Object> entry = (Map.Entry<String, Object>) e;
+                String flatKeyStr = keyStr + "." + entry.getKey();
+                if (entry.getValue() instanceof List) {
+                    buildResultSetForList(ctx, flatKeyStr, (List<?>) entry.getValue());
+                } else if (entry.getValue() instanceof LinkedHashMap) {
+                    buildResultSetForLinkedHashMap(ctx, flatKeyStr, Collections.singletonList(entry.getValue()));
+                } else {
+                    buildResultSetForElement(ctx, flatKeyStr, String.valueOf(entry.getValue()));
+                }
+            });
     }
 
     /**
      * Flat the List to string array and build the {@link CompletionResultSet}
      */
-    private void buildResultSetForList(CompletionResultSet resultSet, VirtualFile virtualFile, String keyStr, List<?> propertyList) {
+    private void buildResultSetForList(CompletionContext ctx, String keyStr, List<?> propertyList) {
         final AtomicInteger count = new AtomicInteger(0);
         propertyList.forEach(e -> {
             if (e instanceof String) {
                 String flatKeyStr = String.format("%s[%s]", keyStr, count.getAndIncrement());
-                buildResultSet(resultSet, virtualFile, flatKeyStr, String.valueOf(e));
+                buildResultSetForElement(ctx, flatKeyStr, String.valueOf(e));
             } else if (e instanceof List) {
-                buildResultSetForList(resultSet, virtualFile, keyStr, (List<?>) e);
+                buildResultSetForList(ctx, keyStr, (List<?>) e);
             } else if (e instanceof LinkedHashMap) {
-                buildResultSetForLinkedHashMap(resultSet, virtualFile, keyStr, propertyList);
+                buildResultSetForLinkedHashMap(ctx, keyStr, propertyList);
             }
         });
     }
 
-    private void buildResultSet(CompletionResultSet resultSet, VirtualFile virtualFile, String keyStr, String value) {
-        if (!isIgnored(keyStr)) {
-            LookupElementBuilder builder = LookupElementBuilder.create(keyStr + "}}")
-                .appendTailText(value, true)
-                .withTypeText("[" + virtualFile.getPresentableName() + "]", true)
-                .withPresentableText(keyStr + " = ");
-            resultSet.withPrefixMatcher(new PlainPrefixMatcher("")).addElement(builder);
+    private void buildResultSetForElement(CompletionContext ctx, String key, String value) {
+        if (!isIgnored(key) && key.startsWith(ctx.prefix())) {
+            LookupElement element = createLookupElement(ctx.query(), key, value, ctx.file());
+            addResult(ctx.resultSet(), ctx.prefix(), element);
         }
     }
+
+    private record CompletionContext(
+        String prefix,
+        VirtualFile file,
+        CompletionQuery query,
+        CompletionResultSet resultSet
+    ) {}
+
 }

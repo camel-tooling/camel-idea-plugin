@@ -16,7 +16,6 @@
  */
 package com.github.cameltooling.idea.completion.extension;
 
-import java.util.Arrays;
 import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
@@ -28,23 +27,29 @@ import com.intellij.codeInsight.completion.CompletionType;
  */
 public class YamlPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
+    @Override
+    protected String getTestDataPath() {
+        return super.getTestDataPath() + "completion/propertyplaceholder";
+    }
+
     public void testCompletion() {
-        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
+        myFixture.configureByFiles("CompletePropertyPlaceholderTestData.java", "CompleteYmlPropertyTestData.yml");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertTrue(strings.containsAll(Arrays.asList("example.generateOrderPeriod}}", "example.processOrderPeriod}}",
-            "mysql.service.database}}", "mysql.service.host}}",
-            "mysql.service.port}}", "spring.datasource.password}}",
-            "spring.datasource.url}}", "spring.datasource.username}}",
-            "spring.jpa.hibernate.ddl-auto}}", "spring.jpa.show-sql}}")));
-        assertEquals(10, strings.size());
+        assertNotNull(strings);
+        assertSameElements(strings, "example.generateOrderPeriod", "example.processOrderPeriod",
+            "mysql.service.database", "mysql.service.host",
+            "mysql.service.port", "spring.datasource.password",
+            "spring.datasource.url", "spring.datasource.username",
+            "spring.jpa.hibernate.ddl-auto", "spring.jpa.show-sql");
     }
 
     public void testCamelIsNotPresent() {
         myFixture.getProject().getService(CamelService.class).setCamelPresent(false);
-        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteYmlPropertyTestData.yml");
+        myFixture.configureByFiles("CompletePropertyPlaceholderTestData.java", "CompleteYmlPropertyTestData.yml");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals(0, strings.size());
+        assertNotNull(strings);
+        assertTrue(strings.isEmpty());
     }
 }

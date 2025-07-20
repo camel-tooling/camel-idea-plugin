@@ -20,6 +20,7 @@ import com.github.cameltooling.idea.completion.extension.BeanReferenceCompletion
 import com.github.cameltooling.idea.completion.extension.CamelEndpointNameCompletionExtension;
 import com.github.cameltooling.idea.completion.extension.CamelEndpointSmartCompletionExtension;
 import com.github.cameltooling.idea.completion.extension.CamelJavaBeanReferenceSmartCompletion;
+import com.github.cameltooling.idea.completion.extension.CamelPropertyPlaceholderSmartCompletionExtension;
 import com.github.cameltooling.idea.completion.header.CamelHeaderEndpointSource;
 import com.github.cameltooling.idea.completion.header.CamelJavaHeaderNameCompletion;
 import com.github.cameltooling.idea.completion.header.CamelJavaHeaderValueCompletion;
@@ -44,6 +45,7 @@ public class CamelJavaReferenceContributor extends CamelContributor {
         addCompletionExtension(new BeanReferenceCompletionExtension());
         addCompletionExtension(new CamelEndpointNameCompletionExtension());
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
+        addCompletionExtension(new CamelPropertyPlaceholderSmartCompletionExtension());
         extend(CompletionType.BASIC, psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("java"))),
             new EndpointCompletion(getCamelCompletionExtensions())
         );
