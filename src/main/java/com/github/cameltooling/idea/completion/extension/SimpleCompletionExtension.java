@@ -41,14 +41,14 @@ public abstract class SimpleCompletionExtension implements CamelCompletionExtens
 
     @Override
     public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context,
-                        @NotNull CompletionResultSet resultSet, @NotNull String[] query) {
+                        @NotNull CompletionResultSet resultSet, @NotNull CompletionQuery query) {
         PsiElement element = parameters.getPosition();
         Module module = ModuleUtilCore.findModuleForPsiElement(element);
         if (module == null) {
             return;
         }
 
-        List<LookupElement> results = findResults(element, getQueryAtPosition(query));
+        List<LookupElement> results = findResults(element, query.valueAtPosition());
         if (!results.isEmpty()) {
             resultSet
                 .withRelevanceSorter(CompletionSorter.emptySorter())
@@ -58,17 +58,8 @@ public abstract class SimpleCompletionExtension implements CamelCompletionExtens
     }
 
     @Override
-    public boolean isValid(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, String[] query) {
-        return isValid(parameters, context, getQueryAtPosition(query));
-    }
-
-    @NotNull
-    private String getQueryAtPosition(String[] query) {
-        String queryAtPosition = "";
-        if (query.length > 2) {
-            queryAtPosition = query[2];
-        }
-        return queryAtPosition;
+    public boolean isValid(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, CompletionQuery query) {
+        return isValid(parameters, context, query.valueAtPosition());
     }
 
     protected abstract List<LookupElement> findResults(@NotNull PsiElement element, @NotNull String query);

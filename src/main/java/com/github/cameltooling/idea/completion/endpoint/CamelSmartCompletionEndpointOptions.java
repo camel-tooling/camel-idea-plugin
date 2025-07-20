@@ -25,6 +25,7 @@ import java.util.function.Predicate;
 import javax.swing.*;
 
 import com.github.cameltooling.idea.completion.OptionSuggestion;
+import com.github.cameltooling.idea.completion.extension.CompletionQuery;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
@@ -54,7 +55,7 @@ public final class CamelSmartCompletionEndpointOptions {
     }
 
     @NotNull
-    public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(final String[] query,
+    public static List<LookupElement> addSmartCompletionSuggestionsQueryParameters(final CompletionQuery query,
                                                                                    final ComponentModel component,
                                                                                    final Map<String, String> existing,
                                                                                    final boolean xmlMode,
@@ -91,10 +92,10 @@ public final class CamelSmartCompletionEndpointOptions {
             private final boolean consumerOnly;
             private final boolean producerOnly;
 
-            public Default(final String[] query, boolean xmlMode, final PsiElement element) {
-                this.queryAtPosition = query[2];
-                this.concatQuery = query[0];
-                this.suffix = query[1];
+            public Default(final CompletionQuery query, boolean xmlMode, final PsiElement element) {
+                this.queryAtPosition = query.valueAtPosition();
+                this.concatQuery = query.value();
+                this.suffix = query.suffix();
                 this.xmlMode = xmlMode;
                 final CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
                 this.consumerOnly = camelIdeaUtils.isConsumerEndpoint(element);

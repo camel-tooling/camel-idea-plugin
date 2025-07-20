@@ -73,16 +73,16 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
 
     @Override
     public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context,
-                               @NotNull CompletionResultSet resultSet, @NotNull String[] query) {
+                               @NotNull CompletionResultSet resultSet, @NotNull CompletionQuery query) {
         boolean endsWithAmpQuestionMark = false;
         // it is a known Camel component
         final PsiElement element = parameters.getPosition();
 
         // grab all existing parameters
-        String concatQuery = query[0];
-        String suffix = query[1];
-        String queryAtPosition = query[2];
-        String prefixValue = query[2];
+        String concatQuery = query.value();
+        String suffix = query.suffix();
+        String queryAtPosition = query.valueAtPosition();
+        String prefixValue = query.valueAtPosition();
         // camel catalog expects &amp; as & when it parses so replace all &amp; as &
         concatQuery = concatQuery.replace("&amp;", "&");
 
@@ -127,7 +127,7 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         LOG.trace("Add new option: " + !editOptionValue);
         LOG.trace("Edit option value: " + editOptionValue);
 
-        final String componentName = StringUtils.asComponentName(query[0]);
+        final String componentName = StringUtils.asComponentName(query.value());
         final Project project = parameters.getOriginalFile().getManager().getProject();
         final CamelCatalog camelCatalog = project.getService(CamelCatalogService.class).get();
         final Mode mode = Mode.getMode(componentName);
@@ -174,11 +174,11 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
 
     @Override
     public boolean isValid(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context,
-                           String[] query) {
+                           CompletionQuery query) {
         // is this a possible Camel endpoint uri which we know
-        String componentName = StringUtils.asComponentName(query[0]);
+        String componentName = StringUtils.asComponentName(query.value());
         Project project = parameters.getOriginalFile().getProject();
-        return !query[0].endsWith("{{") && componentName != null
+        return !query.value().endsWith("{{") && componentName != null
             && project.getService(CamelCatalogService.class).get().findComponentNames().contains(componentName);
     }
 

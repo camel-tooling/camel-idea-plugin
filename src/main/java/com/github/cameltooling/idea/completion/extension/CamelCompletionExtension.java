@@ -35,11 +35,11 @@ public interface CamelCompletionExtension {
     /**
      * Add a completion list to the exiting resultSet. Only called if the isValid return true;
      */
-    void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet, @NotNull String[] query);
+    void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet, @NotNull CompletionQuery query);
 
     /**
      * Validate if the extension should be executed.
      */
-    boolean isValid(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, String[] query);
+    boolean isValid(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, CompletionQuery query);
 
 }
