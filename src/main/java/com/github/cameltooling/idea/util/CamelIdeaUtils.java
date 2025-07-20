@@ -46,6 +46,7 @@ public final class CamelIdeaUtils implements Disposable {
 
     public static final String[] CAMEL_FILE_EXTENSIONS = {"java", "xml", "yaml", "yml"};
     public static final String BEAN_INJECT_ANNOTATION = "org.apache.camel.BeanInject";
+    public static final String PROPERTY_INJECT_ANNOTATION = "org.apache.camel.PropertyInject";
 
     private final List<CamelIdeaUtilsExtension> enabledExtensions;
 

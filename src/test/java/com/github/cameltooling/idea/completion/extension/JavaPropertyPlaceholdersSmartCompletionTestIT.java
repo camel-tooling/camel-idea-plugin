@@ -16,7 +16,6 @@
  */
 package com.github.cameltooling.idea.completion.extension;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -24,11 +23,15 @@ import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
+import com.intellij.codeInsight.lookup.Lookup;
 
 /**
- * Testing smart completion with YML property classes
+ * Testing smart completion of camel property placeholders ({{...}}) inside Java classes
  */
 public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
+
+    private static final List<String> INCLUDED_PROPERTIES = List.of("ftp.client", "ftp.server", "ftx");
+    public static final int PROP_COUNT_WITH_EXCLUDED_PROPS = 10;
 
     @Override
     protected void setUp() throws Exception {
@@ -42,70 +45,130 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
         super.initCamelPreferencesService();
     }
 
+    @Override
+    protected String getTestDataPath() {
+        return super.getTestDataPath() + "completion/propertyplaceholder/";
+    }
+
     public void testCompletion() {
-        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties");
+        myFixture.configureByFiles("CompletePropertyPlaceholderTestData.java", "CompleteJavaPropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertTrue(strings.containsAll(Arrays.asList("ftp.client}}", "ftp.server}}")));
-        assertEquals(2, strings.size());
+        assertNotNull(strings);
+        assertSameElements(strings, INCLUDED_PROPERTIES);
+
+        myFixture.finishLookup(Lookup.REPLACE_SELECT_CHAR);
+        myFixture.checkResultByFile("CompletePropertyPlaceholderTestData_after.java");
     }
 
     public void testCamelIsNotPresent() {
         myFixture.getProject().getService(CamelService.class).setCamelPresent(false);
-        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties");
+        myFixture.configureByFiles("CompletePropertyPlaceholderTestData.java", "CompleteJavaPropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals(0, strings.size());
+        assertNotNull(strings);
+        assertTrue(strings.isEmpty());
     }
 
     public void testWithExcludeFile() {
         CamelPreferenceService.getService().setExcludePropertyFiles(Collections.singletonList("**/CompleteExclude*"));
-        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
+        myFixture.configureByFiles("CompletePropertyPlaceholderTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertTrue(strings.containsAll(Arrays.asList("ftp.client}}", "ftp.server}}")));
-        assertEquals(2, strings.size());
+        assertNotNull(strings);
+        assertSameElements(strings, INCLUDED_PROPERTIES);
     }
 
     public void testWithExcludeFileWithPath() {
         CamelPreferenceService.getService().setExcludePropertyFiles(Collections.singletonList("**/src/CompleteExclude*"));
-        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
+        myFixture.configureByFiles("CompletePropertyPlaceholderTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertTrue(strings.containsAll(Arrays.asList("ftp.client}}", "ftp.server}}")));
-        assertEquals(2, strings.size());
+        assertNotNull(strings);
+        assertSameElements(strings, INCLUDED_PROPERTIES);
     }
 
     public void testWithExcludeNoMatchFileWithPath() {
         CamelPreferenceService.getService().setExcludePropertyFiles(Collections.singletonList("my/test/CompleteExclude"));
-        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
+        myFixture.configureByFiles("CompletePropertyPlaceholderTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertTrue(strings.containsAll(Arrays.asList("ftp.client}}", "ftp.server}}")));
-        assertEquals(9, strings.size());
+        assertNotNull(strings);
+        assertContainsElements(strings, INCLUDED_PROPERTIES);
+        assertEquals(PROP_COUNT_WITH_EXCLUDED_PROPS, strings.size());
     }
 
     public void testWithExcludePath() {
         CamelPreferenceService.getService().setExcludePropertyFiles(Collections.singletonList("**/src/*"));
-        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
+        myFixture.configureByFiles("CompletePropertyPlaceholderTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals(0, strings.size());
+        assertNotNull(strings);
+        assertTrue(strings.isEmpty());
     }
 
     public void testWithExcludeEmptyListFile() {
         CamelPreferenceService.getService().setExcludePropertyFiles(Collections.singletonList(""));
-        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
+        myFixture.configureByFiles("CompletePropertyPlaceholderTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals(9, strings.size());
+        assertNotNull(strings);
+        assertEquals(PROP_COUNT_WITH_EXCLUDED_PROPS, strings.size());
     }
 
     public void testWithExcludeSpaceListFile() {
         CamelPreferenceService.getService().setExcludePropertyFiles(Collections.singletonList(" "));
-        myFixture.configureByFiles("CompleteYmlPropertyTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
+        myFixture.configureByFiles("CompletePropertyPlaceholderTestData.java", "CompleteJavaPropertyTestData.properties", "CompleteExcludePropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
-        assertEquals(9, strings.size());
+        assertNotNull(strings);
+        assertEquals(PROP_COUNT_WITH_EXCLUDED_PROPS, strings.size());
     }
+
+    public void testPrefixAndSuffixAroundCaret() {
+        myFixture.testCompletionTyping("PrefixAndSuffixAroundCaret.java", "ftp\t", "PrefixAndSuffixAroundCaret_after.java", "CompleteJavaPropertyTestData.properties");
+    }
+
+    public void testTextAfterPlaceholderNotDeleted() {
+        myFixture.testCompletionTyping("TextAfterPlaceholderNotDeleted.java", "ftp\t", "TextAfterPlaceholderNotDeleted_after.java", "CompleteJavaPropertyTestData.properties");
+    }
+
+    public void testCompletionWithPropertyPrefixPresent() {
+        myFixture.configureByFiles("CompletionWithPropertyPrefixPresent.java", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("CompletionWithPropertyPrefixPresent_after.java",
+                List.of("ftp.client", "ftp.server"));
+    }
+
+    public void testCompletionWithOpenPropertyPrefixPresent() {
+        myFixture.configureByFiles("CompletionWithOpenPropertyPrefixPresent.java", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("CompletionWithOpenPropertyPrefixPresent_after_replace.java",
+                List.of("ftp.client", "ftp.server"));
+    }
+
+    public void testCompletionWithOpenPropertyPrefixPresentWithoutReplacement() {
+        myFixture.configureByFiles("CompletionWithOpenPropertyPrefixPresent.java", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("CompletionWithOpenPropertyPrefixPresent_after_normal.java",
+                List.of("ftp.client", "ftp.server"),
+                Lookup.NORMAL_SELECT_CHAR);
+    }
+
+    public void testCompletionDoesNotReplaceNextPlaceholder() {
+        myFixture.configureByFiles("CompletionDoesNotReplaceNextPlaceholder.java", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("CompletionDoesNotReplaceNextPlaceholder_after.java",
+                INCLUDED_PROPERTIES);
+    }
+
+    private void runCompletionTest(String expectedFile, List<String> expectedLookupElements) {
+        runCompletionTest(expectedFile, expectedLookupElements, Lookup.REPLACE_SELECT_CHAR);
+    }
+
+    private void runCompletionTest(String expectedFile, List<String> expectedLookupElements, char lookupChar) {
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertSameElements(strings, expectedLookupElements);
+        myFixture.type(lookupChar);
+        myFixture.checkResultByFile(expectedFile);
+    }
+
 }
