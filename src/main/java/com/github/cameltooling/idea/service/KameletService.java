@@ -20,14 +20,18 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.security.MessageDigest;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.swing.*;
 
@@ -35,21 +39,26 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.OrderEnumerator;
+import com.intellij.openapi.vfs.JarFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
 import com.intellij.ui.scale.ScaleContext;
 import com.intellij.util.SVGLoader;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.JSONSchemaProps;
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.Resource;
-import io.github.classgraph.ScanResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import static com.github.cameltooling.idea.Constants.PLUGIN_ID;
 
 /**
  * {@code KameletService} is service responsible for detecting, loading and providing the Kamelets that can be found
@@ -256,94 +265,124 @@ public class KameletService implements Disposable {
      * @return the Kamelets that could be found as {@code Map}.
      */
     private Map<String, Kamelet> loadKamelets() {
-        final ClassGraph classGraph = new ClassGraph()
-            .acceptPaths("/" + KAMELETS_DIR + "/");
+        Map<String, Kamelet> result = new HashMap<>();
+        Map<String, Icon> icons = new HashMap<>();
+
+        // Get all library and dependency files
+        OrderEnumerator orderEnumerator = OrderEnumerator.orderEntries(project);
+        List<VirtualFile> classRoots = Stream.concat(
+                Arrays.stream(orderEnumerator.getSourceRoots()),
+                Arrays.stream(orderEnumerator.getClassesRoots())
+        ).collect(Collectors.toList());
+
         final CamelService service = project.getService(CamelService.class);
-        final ClassLoader projectClassloader = service.getProjectCompleteClassloader();
-        if (projectClassloader != null) {
-            if (service.containsLibrary("camel-kamelets", false)) {
-                // The project has a specific version of the Kamelets catalog, so we use it by default
-                classGraph.overrideClassLoaders(projectClassloader);
-            } else {
-                classGraph.addClassLoader(projectClassloader);
-            }
-        }
-        final Map<String, Kamelet> result = new HashMap<>();
-        final Map<String, Icon> icons = new HashMap<>();
-        try (ScanResult scanResult = classGraph.scan()) {
-            for (Resource resource : scanResult.getAllResources()) {
-                try (InputStream is = resource.open()) {
-                    final String name = sanitizeFileName(resource.getPath());
-                    final JsonNode source = MAPPER.readTree(is);
-                    LOG.debug(String.format("Loading kamelet from: %s, path: %s, name: %s",
-                        resource.getClasspathElementFile(),
-                        resource.getPath(),
-                        name));
-                    final Kamelet kamelet = toKamelet(icons, resource, source);
-                    if (kamelet == null) {
-                        continue;
-                    }
-                    result.put(name, kamelet);
-                } catch (IOException | IllegalArgumentException e) {
-                    LOG.warn("Cannot init Kamelet Catalog with content of " + resource.getPath(), e);
-                }
-            }
+        // The project does not have a specific version of the Kamelets catalog, let's load the one embedded into the plugin
+        if (!service.containsLibrary("camel-kamelets", false)) {
+            findEmbeddedKameletsJar().ifPresent(classRoots::add);
         }
 
+        for (VirtualFile classRoot : classRoots) {
+            VirtualFile kameletsDir = classRoot.findChild(KAMELETS_DIR);
+            if (kameletsDir != null && kameletsDir.isDirectory()) {
+                VfsUtil.visitChildrenRecursively(kameletsDir, new VirtualFileVisitor<>() {
+                    @Override
+                    public boolean visitFile(@NotNull VirtualFile file) {
+                        if (file.getName().endsWith(KAMELETS_FILE_SUFFIX)) {
+                            try {
+                                loadKameletFromVirtualFile(file, result, icons);
+                            } catch (IOException e) {
+                                LOG.warn("Cannot load Kamelet from " + file.getPath(), e);
+                            }
+                        }
+                        return true;
+                    }
+                });
+            }
+        }
         return Collections.unmodifiableMap(result);
+    }
+
+    private Optional<VirtualFile> findEmbeddedKameletsJar() {
+        return Optional.ofNullable(PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID)))
+                .flatMap(pd -> {
+                    try (var stream = Files.list(pd.getPluginPath().resolve("lib"))) {
+                        return stream
+                                .filter(path -> path.getFileName().toString().startsWith("camel-kamelets-") &&
+                                        path.getFileName().toString().endsWith(".jar"))
+                                .findFirst();
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                })
+                .filter(Files::exists)
+                .map(kameletsJar -> VfsUtil.findFile(kameletsJar, true))
+                .map(vf -> JarFileSystem.getInstance().getJarRootForLocalFile(vf));
+    }
+
+    private void loadKameletFromVirtualFile(VirtualFile file, Map<String, Kamelet> result, Map<String, Icon> icons) throws IOException {
+        try (InputStream is = file.getInputStream()) {
+            final String name = sanitizeFileName(file.getName());
+            final JsonNode source = MAPPER.readTree(is);
+            LOG.debug(String.format("Loading kamelet from VirtualFile: %s, name: %s", file.getPath(), name));
+
+            final Kamelet kamelet = toKamelet(icons, file.getPath(), source);
+            if (kamelet != null) {
+                result.put(name, kamelet);
+            }
+        }
     }
 
     /**
      * Convert the given source of Kamelet to an instance of {@link Kamelet}.
      *
      * @param icons The icons that have already been loaded.
-     * @param resource the resource that contains the Kamelet definition
+     * @param resourcePath the path to the resource that contains the Kamelet definition
      * @param source   the Kamelet definition to convert.
      * @return An instance of {@link Kamelet} with the type of Kamelet and its definition.
      * @throws IOException if the definition of the Kamelet could not be deserialized.
      */
-    private static Kamelet toKamelet(Map<String, Icon> icons, Resource resource, JsonNode source) throws IOException {
+    private static Kamelet toKamelet(Map<String, Icon> icons, String resourcePath, JsonNode source) throws IOException {
         final JsonNode spec = source.get("spec");
         if (spec == null) {
-            LOG.debug("No spec defined in " + resource.getPath());
+            LOG.debug("No spec defined in " + resourcePath);
             return null;
         }
         final JsonNode definition = spec.get("definition");
         if (definition == null) {
-            LOG.debug("No definition defined in " + resource.getPath());
+            LOG.debug("No definition defined in " + resourcePath);
             return null;
         }
         final JsonNode metadata = source.get("metadata");
         if (metadata == null) {
-            LOG.debug("No metadata defined in " + resource.getPath());
+            LOG.debug("No metadata defined in " + resourcePath);
             return null;
         }
         final JsonNode labels = metadata.get("labels");
         if (labels == null) {
-            LOG.debug("No labels defined in " + resource.getPath());
+            LOG.debug("No labels defined in " + resourcePath);
             return null;
         }
         final JsonNode type = labels.get(KAMELET_LABEL_TYPE);
         if (type == null) {
-            LOG.debug("No type defined in " + resource.getPath());
+            LOG.debug("No type defined in " + resourcePath);
             return null;
         }
         final JsonNode annotations = metadata.get("annotations");
         if (annotations == null) {
-            LOG.debug("No annotations defined in " + resource.getPath());
+            LOG.debug("No annotations defined in " + resourcePath);
             return null;
         }
         final JsonNode annotationIcon = annotations.get(KAMELET_ANNOTATION_ICON);
         Icon icon = null;
         if (annotationIcon == null) {
-            LOG.debug("No icon defined in " + resource.getPath());
+            LOG.debug("No icon defined in " + resourcePath);
         } else {
             final String iconContent = annotationIcon.asText();
             if (iconContent == null || !iconContent.startsWith(KAMELET_ANNOTATION_ICON_PREFIX)) {
-                LOG.debug("The icon defined in " + resource.getPath() + " is not in the expected format");
+                LOG.debug("The icon defined in " + resourcePath + " is not in the expected format");
             } else {
                 icon = toIcon(
-                    icons, resource, Base64.getDecoder().decode(iconContent.substring(KAMELET_ANNOTATION_ICON_PREFIX.length()))
+                    icons, resourcePath, Base64.getDecoder().decode(iconContent.substring(KAMELET_ANNOTATION_ICON_PREFIX.length()))
                 );
             }
         }
@@ -358,11 +397,11 @@ public class KameletService implements Disposable {
      * @code icons} for the next potential calls.
      *
      * @param icons The icons that have already been loaded.
-     * @param resource the resource that contains the content of the icon
+     * @param resourcePath the path to the resource that contains the content of the icon
      * @param content the content of the icon as bytes.
      * @return the icon in the expected size. {@code null} in case of an error.
      */
-    private static Icon toIcon(Map<String, Icon> icons, Resource resource, byte[] content) {
+    private static Icon toIcon(Map<String, Icon> icons, String resourcePath, byte[] content) {
         try {
             return icons.computeIfAbsent(
                 Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-256").digest(content)),
@@ -377,7 +416,7 @@ public class KameletService implements Disposable {
                 }
             );
         } catch (Exception e) {
-            LOG.warn("The icon embedded into " + resource.getPath() + " could not be loaded", e);
+            LOG.warn("The icon embedded into " + resourcePath + " could not be loaded", e);
         }
         return null;
     }
@@ -391,7 +430,7 @@ public class KameletService implements Disposable {
         if (index > 0) {
             fileName = fileName.substring(0, index);
         }
-        return fileName.substring(9);
+        return fileName;
     }
 
     @Override

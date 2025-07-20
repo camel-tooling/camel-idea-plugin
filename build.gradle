@@ -17,20 +17,14 @@
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
-    id 'org.jetbrains.intellij.platform' version '2.1.0'
+    id 'org.jetbrains.intellij.platform' version '2.6.0'
 }
 
 apply plugin: 'java'
 apply plugin: 'maven-publish'
-apply plugin: 'checkstyle'
-
-checkstyle {
-    toolVersion = '10.11.0'
-    configDirectory = file("$rootProject.projectDir/config/checkstyle")
-}
 
 group = 'com.github.camel-tooling'
-version = '1.3.8'
+version = '1.4.0'
 
 repositories {
     mavenLocal()
@@ -53,11 +47,11 @@ repositories {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
-sourceCompatibility = '17'
+sourceCompatibility = '21'
 
 publishing {
     publications {
@@ -86,25 +80,17 @@ tasks.withType(Test).configureEach {
 
 intellijPlatform {
     pluginConfiguration {
-        // to support IDEA 2023.2 onwards
+        // to support IDEA 2025 onwards
         // http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
         ideaVersion {
-            sinceBuild = "232"
+            sinceBuild = "251"
         }
     }
     pluginVerification {
         ides {
-            ide "2023.2"
-            ide "2023.3"
-            ide "2024.1"
-            ide "2024.2"
-            ide "2024.3"
+            ide "2025.1"
         }
     }
-//    publishing {
-//        def authenticationToken = "$System.env.INTELLIJ_TOKEN"
-//        token = authenticationToken
-//    }
 }
 
 dependencies {
@@ -112,8 +98,9 @@ dependencies {
         create(project.hasProperty('intellij_type') ? project.intellij_type : 'IC', ideaVersion)
         pluginVerifier()
         instrumentationTools()
-        bundledPlugins 'com.intellij.java', 'com.intellij.java-i18n', 'com.intellij.properties', 'org.jetbrains.plugins.yaml', 'org.jetbrains.idea.maven', 'com.intellij.gradle'
+        bundledPlugins 'com.intellij.java', 'com.intellij.java-i18n', 'com.intellij.properties', 'com.intellij.modules.json', 'org.jetbrains.plugins.yaml', 'org.jetbrains.idea.maven', 'com.intellij.gradle'
         testFramework TestFrameworkType.Plugin.Java.INSTANCE
+        testFramework TestFrameworkType.Platform.INSTANCE
     }
     implementation "org.apache.camel:camel-catalog:${camelVersion}"
     implementation "org.apache.camel:camel-tooling-maven:${camelVersion}"
@@ -128,7 +115,6 @@ dependencies {
     // Needed to avoid conflicts with the version of the maven resolver used by IntelliJ
     implementation "org.apache.maven.resolver:maven-resolver-api:${mavenResolverVersion}"
     implementation "org.apache.maven.resolver:maven-resolver-impl:${mavenResolverVersion}"
-    implementation "io.github.classgraph:classgraph:4.8.180"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.1"
     implementation "io.fabric8:kubernetes-model-apiextensions:6.13.4"
 

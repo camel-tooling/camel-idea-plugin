@@ -18,10 +18,12 @@ package com.github.cameltooling.idea.completion;
 
 import java.io.File;
 import java.util.List;
+import java.util.Objects;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.vfs.VfsUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.testFramework.PsiTestUtil;
 import org.jetbrains.annotations.NotNull;
@@ -30,19 +32,21 @@ import static com.github.cameltooling.idea.completion.JavaEndpointSmartCompletio
 
 /**
  * Testing smart completion with Kamelet endpoint in a project with custom Kamelet defined in maven jar, with a
- * specific catalog and with custom Kamelet defined in a classes directory.
+ * specific catalog and with custom Kamelet defined in a resources directory.
  */
 public class FullCustomKameletEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     @Override
     protected void loadDependencies(@NotNull ModifiableRootModel model) {
         super.loadDependencies(model);
-        File rootFolder = new File("src/test/resources/kamelets-with-jar-catalog-classes/");
+        File rootFolder = new File("src/test/resources/testData/kamelet/kamelets-with-jar-catalog-resources/");
         PsiTestUtil.addLibrary(model, "com.foo:custom-kamelets:1.0", rootFolder.getPath(), "lib/custom-kamelets.jar");
         PsiTestUtil.addLibrary(model, "org.apache.camel.kamelets:camel-kamelets:0-SNAPSHOT", rootFolder.getPath(), "lib/specific-camel-kamelets.jar");
-        PsiTestUtil.addSourceContentToRoots(
-            model.getModule(),
-            VirtualFileManager.getInstance().refreshAndFindFileByUrl(VfsUtil.getUrlForLibraryRoot(new File(rootFolder, "classes/")))
+        VirtualFile resourcesDir = VirtualFileManager.getInstance().refreshAndFindFileByUrl(VfsUtil.getUrlForLibraryRoot(new File(rootFolder, "resources/")));
+        PsiTestUtil.addResourceContentToRoots(
+                model.getModule(),
+                Objects.requireNonNull(resourcesDir),
+            false
         );
     }
 
@@ -55,6 +59,6 @@ public class FullCustomKameletEndpointSmartCompletionTestIT extends CamelLightCo
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
         assertDoesntContain(strings, "kamelet:xxx-source");
-        assertContainsElements(strings, "kamelet:chuck-norris-in-jar-source", "kamelet:ftp-source", "kamelet:chuck-norris-in-classes-source");
+        assertContainsElements(strings, "kamelet:chuck-norris-in-jar-source", "kamelet:ftp-source", "kamelet:chuck-norris-in-resources");
     }
 }

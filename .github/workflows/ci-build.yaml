@@ -38,30 +38,31 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        version: [2023.2.8, 2023.3.8, 2024.1.7, 2024.2.5, 2024.3.5]
+        version: [2025.1.3]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
           cache: 'gradle'
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v1.0.5
+        uses: gradle/wrapper-validation-action@v3
       - name: Build against all supported versions
         run: ./build.sh ${{ matrix.version }}
         shell: bash
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: ${{ matrix.os }}-${{ matrix.version }}-Reports
-          path: camel-idea-plugin/build/reports
-      - uses: actions/upload-artifact@v3
+          path: build/reports
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: ${{ matrix.os }}-${{ matrix.version }}-Logs
-          path: camel-idea-plugin/build/idea-sandbox/system-test/testlog/idea.log
+          path: idea-sandbox/system-test/log-test/idea.log

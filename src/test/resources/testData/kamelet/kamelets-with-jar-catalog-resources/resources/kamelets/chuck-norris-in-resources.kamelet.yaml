@@ -1,7 +1,7 @@
 ﻿apiVersion: camel.apache.org/v1alpha1
 kind: Kamelet
 metadata:
-  name: chuck-norris-in-classes-source
+  name: chuck-norris-in-resources
   annotations:
     camel.apache.org/kamelet.support.level: "Preview"
     camel.apache.org/catalog.version: "main-SNAPSHOT"
@@ -12,7 +12,7 @@ metadata:
     camel.apache.org/kamelet.type: "source"
 spec:
   definition:
-    title: "Chuck Norris Source In Classes"
+    title: "Chuck Norris Source In Resources"
     description: |-
       Gets periodically Chuck Norris jokes from http://www.icndb.com/
     type: object
