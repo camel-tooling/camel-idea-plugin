@@ -13,6 +13,7 @@
       <ul>
         <li>Only IDEA 2025 onwards is supported</li>
         <li>Upgraded to IDEA 2025</li>
+        <li>Updated to Camel 4.13.0</li>
       </ul>
     ]]>
   </change-notes>
