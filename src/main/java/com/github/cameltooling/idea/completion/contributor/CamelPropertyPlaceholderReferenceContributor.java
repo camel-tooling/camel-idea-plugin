@@ -30,7 +30,7 @@ public class CamelPropertyPlaceholderReferenceContributor extends CamelContribut
         addCompletionExtension(new CamelPropertyPlaceholderSmartCompletionExtension());
         extend(CompletionType.BASIC,
                 psiElement().notNull(), // this works anywhere
-                new EndpointCompletion(getCamelCompletionExtensions())
+                new CompositeCompletionProvider(getCamelCompletionExtensions())
         );
     }
 

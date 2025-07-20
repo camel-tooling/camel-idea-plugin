@@ -45,7 +45,7 @@ public class CamelXmlReferenceContributor extends CamelContributor {
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(true));
         extend(CompletionType.BASIC,
                 psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("xml"))),
-                new EndpointCompletion(getCamelCompletionExtensions())
+                new CompositeCompletionProvider(getCamelCompletionExtensions())
         );
         final String setHeaderTagName = "setHeader";
         // The name of the header corresponding to the attribute "name" of the tag "setHeader"
