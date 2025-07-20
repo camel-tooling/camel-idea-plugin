@@ -50,11 +50,11 @@ public class SpringBootJSonSchemaResolverTest {
         assertNotEmpty(model.getGroups());
         List<String> groupNames = model.getGroups().stream().map(MainModel.MainGroupModel::getName)
             .collect(Collectors.toList());
-        assertContainsElements(groupNames, "camel.main", "camel.springboot", "camel.cloud");
+        assertContainsElements(groupNames, "camel.main", "camel.cloud");
         assertNotEmpty(model.getOptions());
         List<String> optionNames = model.getOptions().stream().map(MainModel.MainOptionModel::getName)
             .collect(Collectors.toList());
-        assertContainsElements(optionNames, "camel.main.auto-startup", "camel.springboot.auto-startup");
+        assertContainsElements(optionNames, "camel.main.auto-startup");
     }
 
     /**
