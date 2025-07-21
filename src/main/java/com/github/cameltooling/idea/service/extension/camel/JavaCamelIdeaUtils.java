@@ -30,6 +30,8 @@ import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.patterns.ElementPattern;
+import com.intellij.patterns.PsiJavaPatterns;
 import com.intellij.psi.JavaResolveResult;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiCallExpression;
@@ -846,4 +848,12 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         }
         return null;
     }
+
+    @Override
+    public List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderPsiPatterns() {
+        return List.of(
+                PsiJavaPatterns.literalExpression()
+        );
+    }
+
 }

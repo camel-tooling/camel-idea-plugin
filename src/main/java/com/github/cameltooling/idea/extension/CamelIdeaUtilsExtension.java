@@ -19,6 +19,7 @@ package com.github.cameltooling.idea.extension;
 import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -137,4 +138,9 @@ public interface CamelIdeaUtilsExtension {
     default TextRange processText(PsiFile source, TextRange rangeToReformat, CodeStyleSettings settings) {
         return rangeToReformat;
     }
+
+    /**
+     * Get psi patterns at which camel's property placeholders ({{propertyName}}) are allowed.
+     */
+    List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderPsiPatterns();
 }

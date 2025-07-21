@@ -40,7 +40,7 @@ public class DirectEndpointReference extends PsiPolyVariantReferenceBase<PsiElem
     private final CamelEndpoint endpoint;
 
     public DirectEndpointReference(PsiElement element, CamelEndpoint endpoint) {
-        super(element, TextRange.from(1, endpoint.getUri().length()));
+        super(element, TextRange.from(1, endpoint.getBaseUri().length()));
         this.endpoint = endpoint;
     }
 
