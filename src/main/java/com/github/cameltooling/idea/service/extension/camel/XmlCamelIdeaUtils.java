@@ -22,6 +22,10 @@ import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.module.Module;
+import com.intellij.patterns.ElementPattern;
+import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.XmlElementPattern;
+import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -31,6 +35,7 @@ import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlToken;
+import com.intellij.psi.xml.XmlTokenType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -274,6 +279,16 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
             return false;
         }
         return attr.getLocalName().equals("uri") && isInsideCamelRoute(location, false);
+    }
+
+    @Override
+    public List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderPsiPatterns() {
+        return List.of(
+                XmlPatterns.xmlAttributeValue(),
+                PlatformPatterns.psiElement(XmlTokenType.XML_DATA_CHARACTERS).withParent(
+                        XmlPatterns.xmlText().inFile(XmlPatterns.xmlFile())
+                )
+        );
     }
 
     @Override

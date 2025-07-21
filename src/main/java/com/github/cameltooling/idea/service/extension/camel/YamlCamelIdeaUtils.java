@@ -40,6 +40,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.YAMLTokenTypes;
+import org.jetbrains.yaml.context.YamlPatternsKt;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
@@ -392,6 +393,13 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         }
         return Arrays.asList(PLACE_FOR_ENDPOINT_URI).contains(keyValue.getKeyText())
             && isInsideCamelRoute(location, false);
+    }
+
+    @Override
+    public List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderPsiPatterns() {
+        return List.of(
+                //TODO: implement
+        );
     }
 
 }

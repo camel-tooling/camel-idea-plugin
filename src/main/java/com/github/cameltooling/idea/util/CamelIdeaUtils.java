@@ -23,6 +23,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
@@ -35,6 +36,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 /**
  * Utility methods to work with Camel related {@link com.intellij.psi.PsiElement} elements.
@@ -47,6 +49,9 @@ public final class CamelIdeaUtils implements Disposable {
     public static final String[] CAMEL_FILE_EXTENSIONS = {"java", "xml", "yaml", "yml"};
     public static final String BEAN_INJECT_ANNOTATION = "org.apache.camel.BeanInject";
     public static final String PROPERTY_INJECT_ANNOTATION = "org.apache.camel.PropertyInject";
+    public static final String PROPERTY_PLACEHOLDER_START_TAG = "{{";
+    public static final String PROPERTY_PLACEHOLDER_END_TAG = "}}";
+    public static final Pattern PROPERTY_PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{([^}]+)}}");
 
     private final List<CamelIdeaUtilsExtension> enabledExtensions;
 
@@ -288,4 +293,11 @@ public final class CamelIdeaUtils implements Disposable {
         }
         return rangeToReformat;
     }
+
+    public @NotNull List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderPatterns() {
+        return enabledExtensions.stream()
+            .flatMap(e -> e.getAllowedPropertyPlaceholderPsiPatterns().stream())
+            .toList();
+    }
+
 }

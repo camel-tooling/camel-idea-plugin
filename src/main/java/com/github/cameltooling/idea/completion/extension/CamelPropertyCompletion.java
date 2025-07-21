@@ -42,9 +42,6 @@ import javax.swing.Icon;
  */
 public interface CamelPropertyCompletion {
 
-    String START_TAG = "{{";
-    String END_TAG = "}}";
-
     /**
      * @return true if it matches the property file it should process
      */
@@ -84,7 +81,7 @@ public interface CamelPropertyCompletion {
         }
 
         String prefix;
-        int beginIndex = query.valueAtPosition().indexOf(START_TAG);
+        int beginIndex = query.valueAtPosition().indexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TAG);
         if (beginIndex >= 0) {
             prefix = query.valueAtPosition().substring(beginIndex + 2);
         } else {
@@ -120,24 +117,24 @@ public interface CamelPropertyCompletion {
             int pos = context.getEditor().getCaretModel().getOffset();
 
             String prefix = query.valueAtPosition();
-            int startTagPrefixIndex = prefix.lastIndexOf(START_TAG);
-            int endTagPrefixIndex = prefix.lastIndexOf(END_TAG);
+            int startTagPrefixIndex = prefix.lastIndexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TAG);
+            int endTagPrefixIndex = prefix.lastIndexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG);
             boolean prefixContainsStartTag = startTagPrefixIndex >= 0 && (endTagPrefixIndex < 0 || startTagPrefixIndex > endTagPrefixIndex);
 
             String suffix = query.suffix();
-            int startTagIndex = suffix.indexOf(START_TAG);
-            int endTagIndex = suffix.indexOf(END_TAG);
+            int startTagIndex = suffix.indexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TAG);
+            int endTagIndex = suffix.indexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG);
             boolean suffixContainsEndTag = endTagIndex >= 0 && (startTagIndex < 0 || startTagIndex > endTagIndex);
             if (context.getCompletionChar() == Lookup.REPLACE_SELECT_CHAR) {
                 if (suffixContainsEndTag) {
                     suffix = suffix.substring(endTagIndex);
                 } else {
-                    suffix = prefixContainsStartTag ? END_TAG : "";
+                    suffix = prefixContainsStartTag ? CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG : "";
                 }
                 doc.insertString(pos, suffix);
             } else if (context.getCompletionChar() == Lookup.NORMAL_SELECT_CHAR) {
                 if (!suffixContainsEndTag) {
-                    doc.insertString(pos, prefixContainsStartTag ? END_TAG : "");
+                    doc.insertString(pos, prefixContainsStartTag ? CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG : "");
                 }
             }
         }

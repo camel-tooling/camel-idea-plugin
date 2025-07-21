@@ -36,7 +36,7 @@ public class DirectEndpointStartSelfReference extends PsiReferenceBase<PsiElemen
     private final CamelEndpoint endpoint;
 
     public DirectEndpointStartSelfReference(@NotNull PsiElement element, CamelEndpoint endpoint) {
-        super(element, TextRange.from(1, endpoint.getUri().length()));
+        super(element, TextRange.from(1, endpoint.getBaseUri().length()));
         this.endpoint = endpoint;
     }
 
