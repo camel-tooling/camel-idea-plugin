@@ -16,6 +16,7 @@
  */
 package com.github.cameltooling.idea.util;
 
+import com.github.cameltooling.idea.completion.extension.CompletionQuery;
 import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
 import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
 import com.intellij.openapi.Disposable;
@@ -298,6 +299,27 @@ public final class CamelIdeaUtils implements Disposable {
         return enabledExtensions.stream()
             .flatMap(e -> e.getAllowedPropertyPlaceholderPsiPatterns().stream())
             .toList();
+    }
+
+    /**
+     * Checks if the given string contains an unclosed property placeholder. String must contain
+     * the opening tag "{{" not followed by the closing tag "}}".
+     */
+    public boolean hasUnclosedPropertyPlaceholder(String value) {
+        int startIndex = value.lastIndexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TAG);
+        int endIndex = value.lastIndexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG);
+        return startIndex >= 0 && endIndex < startIndex;
+    }
+
+    /**
+     * Checks if the given suffix closes a property placeholder.
+     * A suffix closes a property placeholder if it contains the closing tag "}}"
+     * and does not contain an opening tag "{{" before it.
+     */
+    public boolean closesPropertyPlaceholder(String suffix) {
+        int startTagIndex = suffix.indexOf(PROPERTY_PLACEHOLDER_START_TAG);
+        int endTagIndex = suffix.indexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG);
+        return endTagIndex >= 0 && (startTagIndex < 0 || startTagIndex > endTagIndex);
     }
 
 }

@@ -123,7 +123,7 @@ public class CamelPropertyPlaceholderSmartCompletionExtension implements CamelCo
             return true;
         }
 
-        return query.isInsidePropertyPlaceholder();
+        return CamelIdeaUtils.getService().hasUnclosedPropertyPlaceholder(query.valueAtPosition());
     }
 
 }
