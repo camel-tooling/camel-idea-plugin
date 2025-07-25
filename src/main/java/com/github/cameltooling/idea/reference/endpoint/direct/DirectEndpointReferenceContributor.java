@@ -49,6 +49,9 @@ public class DirectEndpointReferenceContributor extends PsiReferenceContributor 
                 @Override
                 protected PsiReference[] getEndpointReferencesByElement(String endpointUri, PsiElement element, ProcessingContext context) {
                     CamelEndpoint endpoint = new CamelEndpoint(endpointUri);
+                    if (endpoint.getBaseUri().contains(CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TAG)) {
+                        return PsiReference.EMPTY_ARRAY;
+                    }
                     PsiReference reference;
                     if (CamelIdeaUtils.getService().isCamelRouteStart(element)) {
                         reference = new DirectEndpointStartSelfReference(element, endpoint);

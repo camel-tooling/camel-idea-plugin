@@ -51,7 +51,7 @@ public final class CamelIdeaUtils implements Disposable {
     public static final String PROPERTY_INJECT_ANNOTATION = "org.apache.camel.PropertyInject";
     public static final String PROPERTY_PLACEHOLDER_START_TAG = "{{";
     public static final String PROPERTY_PLACEHOLDER_END_TAG = "}}";
-    public static final Pattern PROPERTY_PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{([^}]+)}}");
+    public static final Pattern PROPERTY_PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{([^}]*)}}");
 
     private final List<CamelIdeaUtilsExtension> enabledExtensions;
 

@@ -54,6 +54,9 @@ public class CamelEndpointNameCompletionExtension extends SimpleCompletionExtens
         if (query.contains("?")) {
             //do not add completions when inside endpoint query params
             return false;
+        } else if (query.contains(CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TAG)) {
+            //do not add completions when endpoint contains property placeholders
+            return false;
         }
         PsiElement element = parameters.getPosition();
         CamelIdeaUtils service = CamelIdeaUtils.getService();

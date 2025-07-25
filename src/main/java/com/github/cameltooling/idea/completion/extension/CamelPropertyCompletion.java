@@ -22,7 +22,6 @@ import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.completion.InsertionContext;
 import com.intellij.codeInsight.completion.PlainPrefixMatcher;
-import com.intellij.codeInsight.lookup.Lookup;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
@@ -32,9 +31,12 @@ import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.PlatformIcons;
+import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
+
+import static com.github.cameltooling.idea.util.CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TAG;
 
 /**
  * Completion handler for building property result set. Hook into the process when
@@ -45,7 +47,18 @@ public interface CamelPropertyCompletion {
     /**
      * @return true if it matches the property file it should process
      */
-    boolean isValidExtension(String filename);
+    boolean isValidFile(@NotNull PsiFile file);
+
+    default boolean isExcludedFile(@NotNull PsiFile file) {
+        String path = file.getVirtualFile().getCanonicalPath();
+        if (path == null) {
+            return true;
+        }
+        final CamelPreferenceService preferenceService = CamelPreferenceService.getService();
+        return preferenceService.getExcludePropertyFiles()
+                .stream()
+                .anyMatch(s -> !s.isEmpty() && FilenameUtils.wildcardMatch(path, s));
+    }
 
     /**
      * Build the property completion result set to be shown in the completion dialog
@@ -62,7 +75,7 @@ public interface CamelPropertyCompletion {
                 .withTailText("=" + value, true)
                 .withTypeText(file.getNameWithoutExtension(), getFileIcon(file), true)
                 .withPresentableText(key)
-                .withInsertHandler(new PropertyPlaceholderInsertHandler(query))
+                .withInsertHandler(new PropertyPlaceholderFinishingInsertHandler(query))
                 .withIcon(PlatformIcons.PROPERTY_ICON);
     }
 
@@ -81,7 +94,7 @@ public interface CamelPropertyCompletion {
         }
 
         String prefix;
-        int beginIndex = query.valueAtPosition().indexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TAG);
+        int beginIndex = query.valueAtPosition().lastIndexOf(PROPERTY_PLACEHOLDER_START_TAG);
         if (beginIndex >= 0) {
             prefix = query.valueAtPosition().substring(beginIndex + 2);
         } else {
@@ -102,40 +115,20 @@ public interface CamelPropertyCompletion {
         return false;
     }
 
-    class PropertyPlaceholderInsertHandler implements InsertHandler<LookupElement> {
+    class PropertyPlaceholderFinishingInsertHandler implements InsertHandler<LookupElement> {
 
         private final CompletionQuery query;
 
-        public PropertyPlaceholderInsertHandler(CompletionQuery query) {
+        public PropertyPlaceholderFinishingInsertHandler(CompletionQuery query) {
             this.query = query;
         }
 
         @Override
         public void handleInsert(@NotNull InsertionContext context, @NotNull LookupElement item) {
             Document doc = context.getDocument();
-
             int pos = context.getEditor().getCaretModel().getOffset();
-
-            String prefix = query.valueAtPosition();
-            int startTagPrefixIndex = prefix.lastIndexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TAG);
-            int endTagPrefixIndex = prefix.lastIndexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG);
-            boolean prefixContainsStartTag = startTagPrefixIndex >= 0 && (endTagPrefixIndex < 0 || startTagPrefixIndex > endTagPrefixIndex);
-
-            String suffix = query.suffix();
-            int startTagIndex = suffix.indexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TAG);
-            int endTagIndex = suffix.indexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG);
-            boolean suffixContainsEndTag = endTagIndex >= 0 && (startTagIndex < 0 || startTagIndex > endTagIndex);
-            if (context.getCompletionChar() == Lookup.REPLACE_SELECT_CHAR) {
-                if (suffixContainsEndTag) {
-                    suffix = suffix.substring(endTagIndex);
-                } else {
-                    suffix = prefixContainsStartTag ? CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG : "";
-                }
-                doc.insertString(pos, suffix);
-            } else if (context.getCompletionChar() == Lookup.NORMAL_SELECT_CHAR) {
-                if (!suffixContainsEndTag) {
-                    doc.insertString(pos, prefixContainsStartTag ? CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG : "");
-                }
+            if (query.isInsidePropertyPlaceholder() && !query.isClosingPropertyPlaceholderInSuffix()) {
+                doc.insertString(pos, CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG);
             }
         }
 

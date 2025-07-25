@@ -178,7 +178,7 @@ public class CamelEndpointSmartCompletionExtension implements CamelCompletionExt
         // is this a possible Camel endpoint uri which we know
         String componentName = StringUtils.asComponentName(query.value());
         Project project = parameters.getOriginalFile().getProject();
-        return !query.value().endsWith("{{") && componentName != null
+        return !query.isInsidePropertyPlaceholder() && componentName != null
             && project.getService(CamelCatalogService.class).get().findComponentNames().contains(componentName);
     }
 

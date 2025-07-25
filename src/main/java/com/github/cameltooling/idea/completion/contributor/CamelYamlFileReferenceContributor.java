@@ -21,6 +21,7 @@ import com.github.cameltooling.idea.completion.extension.CamelEndpointSmartCompl
 import com.github.cameltooling.idea.completion.extension.CamelKameletNameCompletion;
 import com.github.cameltooling.idea.completion.extension.CamelKameletOptionNameCompletion;
 import com.github.cameltooling.idea.completion.extension.CamelKameletOptionValueCompletion;
+import com.github.cameltooling.idea.completion.extension.CamelPropertyPlaceholderSmartCompletionExtension;
 import com.github.cameltooling.idea.completion.header.CamelHeaderEndpointSource;
 import com.github.cameltooling.idea.completion.header.CamelYamlHeaderNameCompletion;
 import com.github.cameltooling.idea.completion.header.CamelYamlHeaderValueCompletion;
@@ -86,6 +87,7 @@ public class CamelYamlFileReferenceContributor extends CamelContributor {
     public CamelYamlFileReferenceContributor() {
         addCompletionExtension(new CamelEndpointNameCompletionExtension());
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
+        addCompletionExtension(new CamelPropertyPlaceholderSmartCompletionExtension());
         extend(CompletionType.BASIC,
             psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("yaml", "yml"))),
             new CompositeCompletionProvider(getCamelCompletionExtensions())

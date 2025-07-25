@@ -22,14 +22,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import com.github.cameltooling.idea.service.CamelPreferenceService;
+import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.yaml.psi.YAMLFile;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -59,30 +59,37 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
     }
 
     @Override
-    public boolean isValidExtension(String filename) {
-        final CamelPreferenceService preferenceService = CamelPreferenceService.getService();
-        final boolean present = preferenceService.getExcludePropertyFiles()
-            .stream()
-            .anyMatch(s -> !s.isEmpty() && FilenameUtils.wildcardMatch(filename, s));
-        return !present && (filename.endsWith(".yaml") || filename.endsWith(".yml"));
+    public boolean isValidFile(@NotNull PsiFile file) {
+        return !isExcludedFile(file) && file instanceof YAMLFile;
     }
 
     @Override
     public void buildResultSet(CompletionResultSet resultSet, CompletionQuery query, PsiFile file) {
+        if (CamelIdeaUtils.getService().isCamelFile(file)) { //do not extract properties from camel route files
+            return;
+        }
         VirtualFile virtualFile = file.getVirtualFile();
-        CompletionContext ctx = new CompletionContext(getPrefix(query), virtualFile, query, resultSet);
+        String prefix = getPrefix(query);
+        CompletionContext ctx = new CompletionContext(prefix, virtualFile, query, resultSet);
         getProperties(virtualFile).forEach((key, value) -> {
-            final String keyStr = key;
-            if (!isIgnored(key)) {
+            if (!isIgnored(key) && haveCommonStart(key, prefix)) {
                 if (value instanceof List) {
-                    buildResultSetForList(ctx, keyStr, (List<?>) value);
+                    buildResultSetForList(ctx, key, (List<?>) value);
                 } else if (value instanceof LinkedHashMap) {
-                    buildResultSetForLinkedHashMap(ctx, keyStr, Collections.singletonList(value));
+                    buildResultSetForLinkedHashMap(ctx, key, Collections.singletonList(value));
                 } else {
-                    buildResultSetForElement(ctx, keyStr, String.valueOf(value));
+                    buildResultSetForElement(ctx, key, String.valueOf(value));
                 }
             }
         });
+    }
+
+    private boolean haveCommonStart(String s1, String s2) {
+        if (s1.length() > s2.length()) {
+            return s1.startsWith(s2);
+        } else {
+            return s2.startsWith(s1);
+        }
     }
 
     /**
@@ -97,12 +104,14 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
             .forEach(e -> {
                 Map.Entry<String, Object> entry = (Map.Entry<String, Object>) e;
                 String flatKeyStr = keyStr + "." + entry.getKey();
-                if (entry.getValue() instanceof List) {
-                    buildResultSetForList(ctx, flatKeyStr, (List<?>) entry.getValue());
-                } else if (entry.getValue() instanceof LinkedHashMap) {
-                    buildResultSetForLinkedHashMap(ctx, flatKeyStr, Collections.singletonList(entry.getValue()));
-                } else {
-                    buildResultSetForElement(ctx, flatKeyStr, String.valueOf(entry.getValue()));
+                if (haveCommonStart(flatKeyStr, ctx.prefix())) {
+                    if (entry.getValue() instanceof List) {
+                        buildResultSetForList(ctx, flatKeyStr, (List<?>) entry.getValue());
+                    } else if (entry.getValue() instanceof LinkedHashMap) {
+                        buildResultSetForLinkedHashMap(ctx, flatKeyStr, Collections.singletonList(entry.getValue()));
+                    } else {
+                        buildResultSetForElement(ctx, flatKeyStr, String.valueOf(entry.getValue()));
+                    }
                 }
             });
     }

@@ -19,36 +19,19 @@ package com.github.cameltooling.idea.completion.extension;
 import java.util.Collections;
 import java.util.List;
 
-import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.codeInsight.lookup.Lookup;
+import org.intellij.lang.annotations.MagicConstant;
 
 /**
  * Testing smart completion of camel property placeholders ({{...}}) inside Java classes
  */
-public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
+public class JavaPropertyPlaceholdersSmartCompletionTestIT extends AbstractPropertyPlaceholderIT {
 
     private static final List<String> INCLUDED_PROPERTIES = List.of("ftp.client", "ftp.server", "ftx");
-    public static final int PROP_COUNT_WITH_EXCLUDED_PROPS = 10;
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        super.initCamelPreferencesService();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        super.initCamelPreferencesService();
-    }
-
-    @Override
-    protected String getTestDataPath() {
-        return super.getTestDataPath() + "completion/propertyplaceholder/";
-    }
+    private static final int PROP_COUNT_WITH_EXCLUDED_PROPS = 10;
 
     public void testCompletion() {
         myFixture.configureByFiles("CompletePropertyPlaceholderTestData.java", "CompleteJavaPropertyTestData.properties");
@@ -164,17 +147,26 @@ public class JavaPropertyPlaceholdersSmartCompletionTestIT extends CamelLightCod
                 List.of("ftp.client", "ftp.server"));
     }
 
-    private void runCompletionTest(String expectedFile, List<String> expectedLookupElements) {
-        runCompletionTest(expectedFile, expectedLookupElements, Lookup.REPLACE_SELECT_CHAR);
-    }
-
-    private void runCompletionTest(String expectedFile, List<String> expectedLookupElements, char lookupChar) {
-        myFixture.completeBasic();
+    public void testYamlPropertyCompletion() {
+        myFixture.configureByFiles("CompletePropertyPlaceholderTestData.java", "CompleteYmlPropertyTestData.yml");
+        myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertSameElements(strings, expectedLookupElements);
-        myFixture.type(lookupChar);
-        myFixture.checkResultByFile(expectedFile);
+        assertSameElements(strings, "example.generateOrderPeriod", "example.processOrderPeriod",
+                "mysql.service.database", "mysql.service.host",
+                "mysql.service.port", "spring.datasource.password",
+                "spring.datasource.url", "spring.datasource.username",
+                "spring.jpa.hibernate.ddl-auto", "spring.jpa.show-sql");
     }
+
+    public void testYamlWhenCamelIsNotPresent() {
+        myFixture.getProject().getService(CamelService.class).setCamelPresent(false);
+        myFixture.configureByFiles("CompletePropertyPlaceholderTestData.java", "CompleteYmlPropertyTestData.yml");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertTrue(strings.isEmpty());
+    }
+
 
 }

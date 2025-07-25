@@ -37,6 +37,7 @@ import static com.intellij.patterns.PlatformPatterns.psiElement;
 
 
 /**
+ * TODO: weird naming; this contributes completions, not references. Same for others in this package.
  * Plugin to hook into the IDEA Java language, to set up Camel smart completion for editing Java source code.
  */
 public class CamelJavaReferenceContributor extends CamelContributor {

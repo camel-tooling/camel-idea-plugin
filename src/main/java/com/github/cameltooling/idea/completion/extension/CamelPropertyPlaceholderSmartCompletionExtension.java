@@ -17,20 +17,19 @@
 package com.github.cameltooling.idea.completion.extension;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
@@ -48,6 +47,8 @@ import org.jetbrains.jps.model.java.JavaSourceRootType;
  */
 public class CamelPropertyPlaceholderSmartCompletionExtension implements CamelCompletionExtension {
 
+    private static final Logger LOG = Logger.getInstance(CamelPropertyPlaceholderSmartCompletionExtension.class);
+
     private final List<CamelPropertyCompletion> propertyCompletionProviders = new ArrayList<>();
 
     public CamelPropertyPlaceholderSmartCompletionExtension() {
@@ -56,6 +57,7 @@ public class CamelPropertyPlaceholderSmartCompletionExtension implements CamelCo
     }
 
     @Override
+    //TODO: might be better to reimplement based on IDEA's PropertiesCompletionContributor, via PropertyReferences
     public void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull CompletionResultSet resultSet, @NotNull CompletionQuery query) {
         PsiFile originalFile = parameters.getOriginalFile();
         Project project = originalFile.getManager().getProject();
@@ -75,15 +77,22 @@ public class CamelPropertyPlaceholderSmartCompletionExtension implements CamelCo
                     if (virtualFile.isDirectory()) {
                         return true;
                     }
+                    PsiFile psiFile = originalFile.getManager().findFile(virtualFile);
+                    if (psiFile == null) {
+                        return true;
+                    }
                     propertyCompletionProviders.stream()
-                        .filter(p -> p.isValidExtension(virtualFile.getCanonicalPath()))
+                        .filter(p -> p.isValidFile(psiFile))
                         .forEach(p -> {
-                            p.buildResultSet(resultSet, query, originalFile.getManager().findFile(virtualFile));
+                            p.buildResultSet(resultSet, query, psiFile);
                         });
                     return true;
                 });
             }
         }
+
+        // prevent default property completion from running
+        resultSet.stopHere();
     }
 
     private static @NotNull List<VirtualFile> getResourceRoots(Project project, PsiFile originalFile) {
@@ -114,14 +123,7 @@ public class CamelPropertyPlaceholderSmartCompletionExtension implements CamelCo
             return true;
         }
 
-        String prefix = query.valueAtPosition();
-        int startIndex = prefix.indexOf("{{");
-        int endIndex = prefix.indexOf("}}");
-        if (startIndex >= 0 && (endIndex < 0 || endIndex < startIndex)) {
-            // if we have a {{ in prefix that is not followed by }} then we are in the middle of a property placeholder
-            return true;
-        }
-        return false;
+        return query.isInsidePropertyPlaceholder();
     }
 
 }
