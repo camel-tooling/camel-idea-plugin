@@ -127,7 +127,9 @@ public interface CamelPropertyCompletion {
         public void handleInsert(@NotNull InsertionContext context, @NotNull LookupElement item) {
             Document doc = context.getDocument();
             int pos = context.getEditor().getCaretModel().getOffset();
-            if (query.isInsidePropertyPlaceholder() && !query.isClosingPropertyPlaceholderInSuffix()) {
+            boolean insidePropertyPlaceholder = CamelIdeaUtils.getService().hasUnclosedPropertyPlaceholder(query.valueAtPosition());
+            boolean suffixClosesPlaceholder = CamelIdeaUtils.getService().closesPropertyPlaceholder(query.suffix());
+            if (insidePropertyPlaceholder && !suffixClosesPlaceholder) {
                 doc.insertString(pos, CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG);
             }
         }
