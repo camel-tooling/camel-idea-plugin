@@ -86,18 +86,15 @@
 
     <!-- allow code completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelJavaReferenceContributor" order="first"/>
-    <completion.contributor language="XML" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelXmlReferenceContributor"/>
+    <completion.contributor language="XML" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelXmlReferenceContributor" order="before propertiesCompletion"/>
     <completion.contributor language="Properties" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertiesFileReferenceContributor" order="before javaClassReference"/>
-    <completion.contributor language="yaml" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelYamlFileReferenceContributor" order="before javaClassReference"/>
+    <completion.contributor language="yaml" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelYamlFileReferenceContributor" order="before propertiesCompletion"/>
 
     <!-- puts the Camel icon in the gutter for each line that starts a Camel route -->
     <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.github.cameltooling.idea.gutter.CamelRouteLineMarkerProvider"/>
     <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.github.cameltooling.idea.gutter.BeanInjectLineMarkerProvider"/>
     <codeInsight.lineMarkerProvider language="XML" implementationClass="com.github.cameltooling.idea.gutter.CamelRouteLineMarkerProvider"/>
     <codeInsight.lineMarkerProvider language="yaml" implementationClass="com.github.cameltooling.idea.gutter.CamelRouteLineMarkerProvider"/>
-
-    <!-- code completion of Camel property placeholders, eg {{foo}} style -->
-    <completion.contributor language="any" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelPropertyPlaceholderReferenceContributor"/>
 
     <!-- quick documentation for Camel endpoints -->
     <lang.documentationProvider language="JAVA" implementationClass="com.github.cameltooling.idea.documentation.CamelDocumentationProvider"

@@ -40,7 +40,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.YAMLTokenTypes;
-import org.jetbrains.yaml.context.YamlPatternsKt;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
@@ -187,16 +186,24 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             List<YAMLDocument> yamlDocuments = yamlFile.getDocuments();
             return yamlDocuments.stream().anyMatch(document -> {
                 YAMLValue value = document.getTopLevelValue();
-                if (!(value instanceof YAMLSequence)) {
-                    return false;
+
+                Collection<YAMLKeyValue> keysValues;
+                switch (value) {
+                    case YAMLMapping mapping:
+                        keysValues = mapping.getKeyValues();
+                        break;
+                    case YAMLSequence sequence:
+                        List<YAMLSequenceItem> sequenceItems = sequence.getItems();
+                        if (sequenceItems.isEmpty()) {
+                            return false;
+                        }
+                        YAMLSequenceItem firstItem = sequenceItems.getFirst();
+                        keysValues = firstItem.getKeysValues();
+                        break;
+                    case null, default:
+                        return false;
                 }
-                YAMLSequence sequence = (YAMLSequence) value;
-                List<YAMLSequenceItem> sequenceItems = sequence.getItems();
-                if (sequenceItems.isEmpty()) {
-                    return false;
-                }
-                YAMLSequenceItem firstItem = sequenceItems.get(0);
-                Collection<YAMLKeyValue> keysValues = firstItem.getKeysValues();
+
                 if (keysValues.isEmpty()) {
                     return false;
                 }

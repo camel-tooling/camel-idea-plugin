@@ -25,39 +25,32 @@ import com.intellij.codeInsight.lookup.LookupEx;
 import static com.intellij.codeInsight.lookup.Lookup.REPLACE_SELECT_CHAR;
 
 /**
- * Testing smart completion of camel property placeholders ({{...}}) inside yaml routes
+ * Testing smart completion of camel property placeholders ({{...}}) inside xml routes
  */
-public class YamlPropertyPlaceholdersSmartCompletionTestIT extends AbstractPropertyPlaceholderIT {
+public class XmlPropertyPlaceholdersSmartCompletionTestIT extends AbstractPropertyPlaceholderIT {
 
     public void testCompletion() {
-        myFixture.configureByFiles("yaml/route.yaml", "CompleteJavaPropertyTestData.properties");
-        runCompletionTest("yaml/route_after.yaml",
+        myFixture.configureByFiles("xml/route.xml", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("xml/route_after.xml",
                 List.of("ftp.client", "ftp.server"),
-                REPLACE_SELECT_CHAR);
+                REPLACE_SELECT_CHAR,
+                "ftp.client");
     }
 
-    public void testEmptyPlaceholder() {
-        myFixture.configureByFiles("yaml/empty_placeholder.yaml", "CompleteJavaPropertyTestData.properties");
-        runCompletionTest("yaml/empty_placeholder_after.yaml",
-                List.of("ftp.client", "ftp.server", "ftx"),
-                REPLACE_SELECT_CHAR);
-    }
-
-    public void testYamlRoutesAreNotIncludedInProperties() {
-        myFixture.configureByFiles("yaml/not_offering_yaml_routes_as_properties.yaml", "routes.yaml");
-        myFixture.completeBasic();
-
-        List<String> strings = myFixture.getLookupElementStrings();
-        assertNotNull(strings);
-        assertFalse(strings.contains("routes.route.from.uri"));
+    public void testTwoPlaceholdersInSingleString() {
+        myFixture.configureByFiles("xml/two_placeholders_in_single_string.xml", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("xml/two_placeholders_in_single_string_after.xml",
+                List.of("ftp.client", "ftp.server", "ftx"));
     }
 
     public void testCamelIsNotPresent() {
         myFixture.getProject().getService(CamelService.class).setCamelPresent(false);
-        myFixture.configureByFiles("yaml/route.yaml", "CompleteJavaPropertyTestData.properties");
+        myFixture.configureByFiles("xml/route.xml", "CompleteJavaPropertyTestData.properties");
         myFixture.complete(CompletionType.BASIC, 1);
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
         assertTrue(strings.isEmpty());
     }
+
 }
+

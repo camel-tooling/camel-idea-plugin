@@ -20,6 +20,7 @@ import com.github.cameltooling.idea.completion.extension.BeanReferenceCompletion
 import com.github.cameltooling.idea.completion.extension.BlueprintPropertyNameCompletionExtension;
 import com.github.cameltooling.idea.completion.extension.CamelEndpointNameCompletionExtension;
 import com.github.cameltooling.idea.completion.extension.CamelEndpointSmartCompletionExtension;
+import com.github.cameltooling.idea.completion.extension.CamelPropertyPlaceholderSmartCompletionExtension;
 import com.github.cameltooling.idea.completion.header.CamelHeaderEndpointSource;
 import com.github.cameltooling.idea.completion.header.CamelXmlHeaderNameCompletion;
 import com.github.cameltooling.idea.completion.header.CamelXmlHeaderValueCompletion;
@@ -43,6 +44,7 @@ public class CamelXmlReferenceContributor extends CamelContributor {
         addCompletionExtension(new BlueprintPropertyNameCompletionExtension());
         addCompletionExtension(new CamelEndpointNameCompletionExtension());
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(true));
+        addCompletionExtension(new CamelPropertyPlaceholderSmartCompletionExtension());
         extend(CompletionType.BASIC,
                 psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("xml"))),
                 new CompositeCompletionProvider(getCamelCompletionExtensions())

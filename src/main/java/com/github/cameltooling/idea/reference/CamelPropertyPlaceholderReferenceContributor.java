@@ -47,9 +47,6 @@ public class CamelPropertyPlaceholderReferenceContributor extends PsiReferenceCo
             @Override
             public PsiReference[] getCamelReferencesByElement(@NotNull PsiElement element, @NotNull ProcessingContext context) {
                 String text = element.getText();
-                if (text == null || text.isEmpty()) {
-                    return PsiReference.EMPTY_ARRAY;
-                }
 
                 List<PsiReference> references = new ArrayList<>();
                 Matcher matcher = PROPERTY_PLACEHOLDER_PATTERN.matcher(text);
