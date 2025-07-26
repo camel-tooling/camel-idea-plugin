@@ -20,7 +20,7 @@ import java.util.List;
 
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.codeInsight.lookup.LookupEx;
+import com.intellij.codeInsight.lookup.Lookup;
 
 import static com.intellij.codeInsight.lookup.Lookup.REPLACE_SELECT_CHAR;
 
@@ -41,6 +41,37 @@ public class XmlPropertyPlaceholdersSmartCompletionTestIT extends AbstractProper
         myFixture.configureByFiles("xml/two_placeholders_in_single_string.xml", "CompleteJavaPropertyTestData.properties");
         runCompletionTest("xml/two_placeholders_in_single_string_after.xml",
                 List.of("ftp.client", "ftp.server", "ftx"));
+    }
+
+    public void testCompletionWithPropertyPrefixPresent() {
+        myFixture.configureByFiles("xml/property_prefix_completion.xml", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("xml/property_prefix_completion_after.xml",
+                List.of("ftp.client", "ftp.server"));
+    }
+
+    public void testCompletionWithOpenPropertyPrefixPresent() {
+        myFixture.configureByFiles("xml/open_property_prefix_completion.xml", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("xml/open_property_prefix_completion_after.xml",
+                List.of("ftp.client", "ftp.server"));
+    }
+
+    public void testCompletionWithOpenPropertyPrefixPresentWithoutReplacement() {
+        myFixture.configureByFiles("xml/open_property_prefix_completion.xml", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("xml/open_property_prefix_completion_after.xml",
+                List.of("ftp.client", "ftp.server"),
+                Lookup.NORMAL_SELECT_CHAR);
+    }
+
+    public void testCompletionDoesNotReplaceNextPlaceholder() {
+        myFixture.configureByFiles("xml/completion_does_not_replace_next_placeholder.xml", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("xml/completion_does_not_replace_next_placeholder_after.xml",
+                List.of("ftp.client", "ftp.server", "ftx"));
+    }
+
+    public void testSpringXml() {
+        myFixture.configureByFiles("xml/spring.xml", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("xml/spring_after.xml",
+                List.of("ftp.client", "ftp.server"));
     }
 
     public void testCamelIsNotPresent() {

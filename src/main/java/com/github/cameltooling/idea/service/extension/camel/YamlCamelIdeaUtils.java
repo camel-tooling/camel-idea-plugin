@@ -44,6 +44,7 @@ import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLMapping;
+import org.jetbrains.yaml.psi.YAMLScalar;
 import org.jetbrains.yaml.psi.YAMLSequence;
 import org.jetbrains.yaml.psi.YAMLSequenceItem;
 import org.jetbrains.yaml.psi.YAMLValue;
@@ -405,7 +406,7 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     @Override
     public List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderPsiPatterns() {
         return List.of(
-                //TODO: implement
+                PlatformPatterns.psiElement(YAMLScalar.class)
         );
     }
 
