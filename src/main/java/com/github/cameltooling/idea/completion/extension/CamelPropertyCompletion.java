@@ -26,6 +26,7 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiFile;
@@ -129,7 +130,8 @@ public interface CamelPropertyCompletion {
             int pos = context.getEditor().getCaretModel().getOffset();
             boolean insidePropertyPlaceholder = CamelIdeaUtils.getService().hasUnclosedPropertyPlaceholder(query.valueAtPosition());
             boolean suffixClosesPlaceholder = CamelIdeaUtils.getService().closesPropertyPlaceholder(query.suffix());
-            if (insidePropertyPlaceholder && !suffixClosesPlaceholder) {
+            String docSuffix = doc.getText(new TextRange(pos, doc.getTextLength()));
+            if (insidePropertyPlaceholder && !suffixClosesPlaceholder && !docSuffix.startsWith(CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG)) {
                 doc.insertString(pos, CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG);
             }
         }

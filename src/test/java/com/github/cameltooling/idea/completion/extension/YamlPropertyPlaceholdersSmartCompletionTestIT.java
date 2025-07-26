@@ -20,7 +20,7 @@ import java.util.List;
 
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.codeInsight.completion.CompletionType;
-import com.intellij.codeInsight.lookup.LookupEx;
+import com.intellij.codeInsight.lookup.Lookup;
 
 import static com.intellij.codeInsight.lookup.Lookup.REPLACE_SELECT_CHAR;
 
@@ -50,6 +50,31 @@ public class YamlPropertyPlaceholdersSmartCompletionTestIT extends AbstractPrope
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
         assertFalse(strings.contains("routes.route.from.uri"));
+    }
+
+    public void testOneOpenOneClosed() {
+        myFixture.configureByFiles("yaml/one_open_one_closed.yaml", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("yaml/one_open_one_closed_after.yaml",
+                List.of("ftp.client", "ftp.server"));
+    }
+
+    public void testCompletionWithOpenPropertyPrefixPresent() {
+        myFixture.configureByFiles("yaml/open_property_prefix_completion.yaml", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("yaml/open_property_prefix_completion_after_replace.yaml",
+                List.of("ftp.client", "ftp.server"));
+    }
+
+    public void testCompletionWithOpenPropertyPrefixPresentWithoutReplacement() {
+        myFixture.configureByFiles("yaml/open_property_prefix_completion.yaml", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("yaml/open_property_prefix_completion_after_normal.yaml",
+                List.of("ftp.client", "ftp.server"),
+                Lookup.NORMAL_SELECT_CHAR);
+    }
+
+    public void testCompletionWorksInSecondProperty() {
+        myFixture.configureByFiles("yaml/completion_works_in_second_property.yaml", "CompleteJavaPropertyTestData.properties");
+        runCompletionTest("yaml/completion_works_in_second_property_after.yaml",
+                List.of("ftp.client", "ftp.server"));
     }
 
     public void testCamelIsNotPresent() {
