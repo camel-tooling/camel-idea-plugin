@@ -26,6 +26,9 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiJavaToken;
+import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
@@ -59,9 +62,14 @@ public class CamelEndpointNameCompletionExtension extends SimpleCompletionExtens
             return false;
         }
         PsiElement element = parameters.getPosition();
+        if (element instanceof PsiJavaToken) {
+            element = PsiTreeUtil.getParentOfType(element, PsiLiteralExpression.class);
+            if (element == null) {
+                return false;
+            }
+        }
         CamelIdeaUtils service = CamelIdeaUtils.getService();
-        return service.isPlaceForEndpointUri(element)
-            && service.isProducerEndpoint(element);
+        return service.isPlaceForEndpointUri(element) && service.isProducerEndpoint(element);
     }
 
 }

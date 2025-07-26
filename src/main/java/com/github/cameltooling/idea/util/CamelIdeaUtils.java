@@ -16,7 +16,6 @@
  */
 package com.github.cameltooling.idea.util;
 
-import com.github.cameltooling.idea.completion.extension.CompletionQuery;
 import com.github.cameltooling.idea.extension.CamelIdeaUtilsExtension;
 import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
 import com.intellij.openapi.Disposable;
@@ -25,12 +24,15 @@ import com.intellij.openapi.components.Service;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.patterns.ElementPattern;
+import com.intellij.patterns.PatternCondition;
+import com.intellij.patterns.PsiJavaPatterns;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiClassType;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
+import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -84,6 +86,17 @@ public final class CamelIdeaUtils implements Disposable {
     }
 
     /**
+     * Returns a leaf element to be used as a line marker (according to javadoc of {@link com.intellij.codeInsight.daemon.LineMarkerProvider#getLineMarkerInfo(PsiElement)})
+     */
+    public PsiElement getLeafElementForLineMarker(PsiElement element) {
+        return enabledExtensions.stream()
+                .map(extension -> extension.getLeafElementForLineMarker(element))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(element);
+    }
+
+    /**
      * For java methods tries to find if element is inside a camel route start expression,
      * otherwise delegates to {@link CamelIdeaUtils#isCamelRouteStart(PsiElement)}.
      */
@@ -100,11 +113,6 @@ public final class CamelIdeaUtils implements Disposable {
     public boolean isCamelLineMarker(PsiElement element) {
         return enabledExtensions.stream()
             .anyMatch(extension -> extension.isCamelLineMarker(element));
-    }
-
-    public boolean isInsideCamelRoute(PsiElement element, boolean excludeRouteStart) {
-        return enabledExtensions.stream()
-            .anyMatch(extension -> extension.isInsideCamelRoute(element, excludeRouteStart));
     }
 
     /**
@@ -153,6 +161,25 @@ public final class CamelIdeaUtils implements Disposable {
     public boolean isPlaceForEndpointUri(PsiElement element) {
         return enabledExtensions.stream()
             .anyMatch(extension -> extension.isPlaceForEndpointUri(element));
+    }
+
+    public List<ElementPattern<? extends PsiElement>> getAllowedEndpointUriLocations() {
+        return List.of(
+                PsiJavaPatterns.psiElement()
+                        .with(new PatternCondition<>("isPlaceForEndpointUri") {
+                            @Override
+                            public boolean accepts(@NotNull PsiElement psiElement, ProcessingContext context) {
+                                return isPlaceForEndpointUri(psiElement);
+                            }
+                        })
+        );
+    }
+
+
+    public @NotNull List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderLocations() {
+        return enabledExtensions.stream()
+                .flatMap(e -> e.getAllowedPropertyPlaceholderLocations().stream())
+                .toList();
     }
 
     /**
@@ -293,12 +320,6 @@ public final class CamelIdeaUtils implements Disposable {
             }
         }
         return rangeToReformat;
-    }
-
-    public @NotNull List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderPatterns() {
-        return enabledExtensions.stream()
-            .flatMap(e -> e.getAllowedPropertyPlaceholderPsiPatterns().stream())
-            .toList();
     }
 
     /**

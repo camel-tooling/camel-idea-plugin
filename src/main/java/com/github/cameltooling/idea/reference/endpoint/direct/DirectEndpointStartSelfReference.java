@@ -34,16 +34,18 @@ import org.jetbrains.annotations.Nullable;
 public class DirectEndpointStartSelfReference extends PsiReferenceBase<PsiElement> {
 
     private final CamelEndpoint endpoint;
+    private final DirectEndpointPsiElement resolvedElement;
 
     public DirectEndpointStartSelfReference(@NotNull PsiElement element, CamelEndpoint endpoint) {
         super(element, TextRange.from(1, endpoint.getBaseUri().length()));
         this.endpoint = endpoint;
+        this.resolvedElement = new DirectEndpointPsiElement(element, endpoint);
     }
 
     @Nullable
     @Override
     public PsiElement resolve() {
-        return new DirectEndpointPsiElement(getElement(), endpoint);
+        return resolvedElement;
     }
 
     @Override
@@ -51,4 +53,9 @@ public class DirectEndpointStartSelfReference extends PsiReferenceBase<PsiElemen
         ElementManipulator<PsiElement> manipulator = ElementManipulators.getManipulator(myElement);
         return manipulator.handleContentChange(myElement, endpoint.getNameTextRange().shiftRight(1), newElementName);
     }
+
+    public CamelEndpoint getEndpoint() {
+        return endpoint;
+    }
+
 }

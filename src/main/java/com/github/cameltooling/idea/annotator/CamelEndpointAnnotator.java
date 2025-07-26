@@ -114,7 +114,7 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
             boolean producerOnly = camelIdeaUtils.isProducerEndpoint(element);
 
             if (producerOnly) {
-                validateEndpointReference(element, camelQuery, holder);
+                validateEndpointReference(element, holder);
             }
 
             try {
@@ -138,12 +138,11 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
         }
     }
 
-    private void validateEndpointReference(PsiElement element, String camelQuery, AnnotationHolder holder) {
+    private void validateEndpointReference(PsiElement element, AnnotationHolder holder) {
         if (!IdeaUtils.getService().isJavaLanguage(element)) { //no need, unresolvable references in XML are already highlighted
             return;
         }
-        if (CamelEndpoint.isDirectEndpoint(camelQuery)) { //only direct endpoints have references (for now)
-            Arrays.stream(element.getReferences())
+        Arrays.stream(element.getReferences())
                 .filter(DirectEndpointReference.class::isInstance)
                 .map(DirectEndpointReference.class::cast)
                 .findAny()
@@ -152,10 +151,9 @@ public class CamelEndpointAnnotator extends AbstractCamelAnnotator {
                     if (targets.length == 0) {
                         TextRange range = endpointReference.getRangeInElement().shiftRight(element.getTextRange().getStartOffset());
                         holder.newAnnotation(HighlightSeverity.ERROR, String.format("Cannot find endpoint declaration: %s", endpointReference.getCanonicalText()))
-                            .range(range).create();
+                                .range(range).create();
                     }
                 });
-        }
     }
 
     /**

@@ -27,20 +27,27 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiJavaToken;
+import org.jetbrains.annotations.Nullable;
+
+import static com.github.cameltooling.idea.gutter.GutterTestUtil.getCamelGutters;
 
 /**
  * Testing the Camel icon is shown in the gutter where a Camel route starts in Java DSL and the route navigation
  */
 public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
+    @Nullable
+    @Override
+    protected String[] getMavenDependencies() {
+        return new String[]{CAMEL_CORE_MODEL_MAVEN_ARTIFACT};
+    }
+
     public void testCamelGutter() {
         myFixture.configureByFiles("JavaCamelRouteLineMarkerProviderTestData.java");
-        List<GutterMark> gutters = myFixture.findAllGutters();
+        List<GutterMark> gutters = getCamelGutters(myFixture);
         assertNotNull(gutters);
 
         assertEquals("Should contain 4 Camel gutters", 4, gutters.size());
-
-        assertGuttersHasCamelIcon(gutters);
 
         LineMarkerInfo.LineMarkerGutterIconRenderer<?> firstRestGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(0);
 
@@ -80,12 +87,10 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
 
     public void testCamelGutterForToDAndToF() {
         myFixture.configureByFiles("JavaCamelRouteLineMarkerProviderAlternateToTestData.java");
-        List<GutterMark> gutters = myFixture.findAllGutters();
+        List<GutterMark> gutters = getCamelGutters(myFixture);
         assertNotNull(gutters);
 
         assertEquals("Should contain 2 Camel gutters", 2, gutters.size());
-
-        assertGuttersHasCamelIcon(gutters);
 
         LineMarkerInfo.LineMarkerGutterIconRenderer<?> firstGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(0);
 
@@ -114,12 +119,10 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
 
     public void testCamelGutterForVariableAndConstant() {
         myFixture.configureByFiles("JavaCamelRouteLineMarkerProviderFromVariableTestData.java");
-        List<GutterMark> gutters = myFixture.findAllGutters();
+        List<GutterMark> gutters = getCamelGutters(myFixture);
         assertNotNull(gutters);
 
         assertEquals("Should contain 2 Camel gutters", 2, gutters.size());
-
-        assertGuttersHasCamelIcon(gutters);
 
         LineMarkerInfo.LineMarkerGutterIconRenderer<?> firstGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(0);
         assertTrue(firstGutter.getLineMarkerInfo().getElement() instanceof PsiIdentifier);
@@ -132,15 +135,10 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
 
     public void testCamelGutterForMethodCallFrom() {
         myFixture.configureByFiles("JavaCamelRouteLineMarkerProviderFromMethodCallTestData.java");
-        List<GutterMark> gutters = myFixture.findAllGutters();
+        List<GutterMark> gutters = getCamelGutters(myFixture);
         assertNotNull(gutters);
 
-        // remove last element since it is from method returning route uri
-        gutters = gutters.subList(0, gutters.size() - 1);
-
         assertEquals("Should contain 1 Camel gutters", 1, gutters.size());
-
-        assertGuttersHasCamelIcon(gutters);
 
         LineMarkerInfo.LineMarkerGutterIconRenderer<?> firstGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(0);
         assertTrue(firstGutter.getLineMarkerInfo().getElement() instanceof PsiIdentifier);
@@ -151,14 +149,6 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
         assertEquals("Navigation should have two targets", 2, firstGutterTargets.size());
         assertEquals("The navigation variable target element doesn't match", "calcEndpoint",
             GutterTestUtil.getGuttersWithMethodTarget(firstGutterTargets).get(0).getName());
-    }
-
-    private void assertGuttersHasCamelIcon(List<GutterMark> gutters) {
-        Icon defaultIcon = CamelPreferenceService.getService().getCamelIcon();
-        gutters.forEach(gutterMark -> {
-            assertSame("Gutter should have the Camel icon", defaultIcon, gutterMark.getIcon());
-            assertEquals("Camel route", gutterMark.getTooltipText());
-        });
     }
 
 }

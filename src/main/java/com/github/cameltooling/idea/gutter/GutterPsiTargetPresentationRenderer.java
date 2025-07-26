@@ -1,9 +1,10 @@
 package com.github.cameltooling.idea.gutter;
 
+import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.codeInsight.navigation.impl.PsiTargetPresentationRenderer;
 import com.intellij.openapi.util.Iconable;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiLiteralExpression;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,18 +16,17 @@ public class GutterPsiTargetPresentationRenderer extends PsiTargetPresentationRe
     @Override
     @NotNull
     public String getElementText(@NotNull PsiElement element) {
-        if (element instanceof PsiLiteralExpression ple) {
-            Object value = ple.getValue();
-            if (value != null) {
-                return value.toString();
-            }
+        String text = IdeaUtils.getService().extractTextFromElement(element, true, false, true);
+        if (text == null) {
+            text = element.getText();
         }
-        return element.getText();
+        return StringUtil.unquoteString(text);
     }
 
     @Override
     public @Nls @Nullable String getContainerText(@NotNull PsiElement element) {
-        return element.getContainingFile().getVirtualFile().getName();
+        int lineNumber = IdeaUtils.getLineNumber(element);
+        return element.getContainingFile().getVirtualFile().getName() + ":" + (lineNumber + 1);
     }
 
     @Override

@@ -16,24 +16,25 @@
  */
 package com.github.cameltooling.idea.gutter;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import com.github.cameltooling.idea.service.CamelPreferenceService;
+import com.intellij.codeInsight.daemon.GutterMark;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
-import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
-import com.intellij.codeInsight.daemon.impl.LineMarkersPass;
-import com.intellij.lang.java.JavaLanguage;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
-import com.intellij.psi.PsiVariable;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.testFramework.fixtures.JavaCodeInsightTestFixture;
+
+import javax.swing.*;
 
 
 /**
@@ -46,16 +47,26 @@ final class GutterTestUtil {
         //empty
     }
 
-    static List<GotoRelatedItem> getGutterNavigationDestinationElements(LineMarkerInfo.LineMarkerGutterIconRenderer gutter) {
-        LineMarkerProvider lineMarkerProvider1 = LineMarkersPass.getMarkerProviders(JavaLanguage.INSTANCE, gutter
-            .getLineMarkerInfo()
-            .getElement().getProject())
-            .stream()
-            .filter(lineMarkerProvider -> lineMarkerProvider instanceof CamelRouteLineMarkerProvider).findAny()
-            .get();
-        List<RelatedItemLineMarkerInfo> result = new ArrayList<>();
-        ((CamelRouteLineMarkerProvider) lineMarkerProvider1).collectNavigationMarkers(gutter.getLineMarkerInfo().getElement(), result);
-        return (List<GotoRelatedItem>) result.get(0).createGotoRelatedItems();
+    static List<GutterMark> getCamelGutters(JavaCodeInsightTestFixture fixture) {
+        return filterCamelGutters(fixture.findAllGutters());
+    }
+
+    static List<GutterMark> getCamelGutters(JavaCodeInsightTestFixture fixture, String file) {
+        return filterCamelGutters(fixture.findAllGutters(file));
+    }
+
+    private static List<GutterMark> filterCamelGutters(List<GutterMark> gutters) {
+        Icon icon = CamelPreferenceService.getService().getCamelIcon();
+        return gutters.stream()
+                .filter(g -> g.getIcon().equals(icon)).toList();
+    }
+
+    static List<GotoRelatedItem> getGutterNavigationDestinationElements(LineMarkerInfo.LineMarkerGutterIconRenderer<?> gutter) {
+        RelatedItemLineMarkerInfo<?> info = (RelatedItemLineMarkerInfo<?>) gutter.getLineMarkerInfo();
+        Collection<? extends GotoRelatedItem> items = info.createGotoRelatedItems();
+        return items.stream()
+                .map(i -> (GotoRelatedItem) i)
+                .toList();
     }
 
     /**
@@ -78,13 +89,8 @@ final class GutterTestUtil {
     static List<PsiMethodCallExpression> getGuttersWithJavaTarget(List<GotoRelatedItem> gutterList) {
         return gutterList
             .stream()
-            .filter(gotoRelatedItem -> gotoRelatedItem.getElement() instanceof PsiJavaToken)
             .map(gotoRelatedItem -> PsiTreeUtil.getParentOfType(gotoRelatedItem.getElement(), PsiMethodCallExpression.class))
             .collect(Collectors.toList());
-    }
-
-    static List<PsiVariable> getGuttersWithVariableTarget(List<GotoRelatedItem> gutterList) {
-        return getGuttersWithPsiElementTarget(gutterList, PsiVariable.class);
     }
 
     static List<PsiMethod> getGuttersWithMethodTarget(List<GotoRelatedItem> gutterList) {

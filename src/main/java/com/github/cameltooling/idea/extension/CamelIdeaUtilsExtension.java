@@ -48,6 +48,11 @@ public interface CamelIdeaUtilsExtension {
     boolean isCamelRouteStart(PsiElement element);
     boolean isCamelRouteStartExpression(PsiElement element);
 
+    /**
+     * Returns a leaf element to be used as a line marker (according to javadoc of {@link com.intellij.codeInsight.daemon.LineMarkerProvider#getLineMarkerInfo(PsiElement)})
+     */
+    PsiElement getLeafElementForLineMarker(PsiElement element);
+
     boolean isInsideCamelRoute(PsiElement element, boolean excludeRouteStart);
 
     /**
@@ -127,6 +132,11 @@ public interface CamelIdeaUtilsExtension {
     boolean isPlaceForEndpointUri(PsiElement location);
 
     /**
+     * Get psi patterns at which camel's property placeholders ({{propertyName}}) can be present
+     */
+    List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderLocations();
+
+    /**
      * Process the source PSI file within the given text range.
      *
      * @param source          The source PSI file.
@@ -139,8 +149,4 @@ public interface CamelIdeaUtilsExtension {
         return rangeToReformat;
     }
 
-    /**
-     * Get psi patterns at which camel's property placeholders ({{propertyName}}) are allowed.
-     */
-    List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderPsiPatterns();
 }

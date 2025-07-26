@@ -17,12 +17,14 @@
 package com.github.cameltooling.idea.reference.endpoint;
 
 import com.github.cameltooling.idea.reference.CamelPsiReferenceProvider;
-import com.github.cameltooling.idea.util.CamelIdeaUtils;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralValue;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceProvider;
 import com.intellij.util.ProcessingContext;
+import org.jetbrains.yaml.psi.YAMLQuotedText;
+import org.jetbrains.yaml.psi.YAMLScalar;
 
 /**
  * A parent class for {@link PsiReferenceProvider}s which should provide references from usages of camel endpoints to
@@ -39,9 +41,6 @@ public abstract class CamelEndpointPsiReferenceProvider extends CamelPsiReferenc
         if (!isEndpoint(endpointUri)) {
             return PsiReference.EMPTY_ARRAY;
         }
-        if (!CamelIdeaUtils.getService().isPlaceForEndpointUri(element)) {
-            return PsiReference.EMPTY_ARRAY;
-        }
         return getEndpointReferencesByElement(endpointUri, element, context);
     }
 
@@ -51,11 +50,15 @@ public abstract class CamelEndpointPsiReferenceProvider extends CamelPsiReferenc
     protected abstract boolean isEndpoint(String endpointUri);
 
     private String getEndpointUri(PsiElement element) {
-        if (element instanceof PsiLiteralValue) {
-            PsiLiteralValue valueElement = (PsiLiteralValue) element;
+        if (element instanceof PsiLiteralValue valueElement) {
             Object value = valueElement.getValue();
             if (value instanceof String) {
                 return (String) value;
+            }
+        } else if (element instanceof YAMLScalar scalar) {
+            String text = scalar.getText();
+            if (text != null && !text.isEmpty()) {
+                return StringUtil.unquoteString(text);
             }
         }
         return null;
