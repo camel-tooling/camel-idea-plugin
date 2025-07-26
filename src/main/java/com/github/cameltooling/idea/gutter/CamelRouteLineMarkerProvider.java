@@ -112,7 +112,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                         .setTooltipText("Camel route")
                         .setPopupTitle(String.format("Navigate to %s", findRouteFromElement(element)))
                         .setAlignment(GutterIconRenderer.Alignment.RIGHT)
-                        .setCellRenderer(GutterPsiElementListCellRenderer::new);
+                        .setTargetRenderer(GutterPsiTargetPresentationRenderer::new);
                 result.add(builder.createLineMarkerInfo(element));
             }
         }
