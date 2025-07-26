@@ -15,15 +15,15 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<routes>
+<camelContext xmlns="http://camel.apache.org/schema/spring">
   <rest path="/say">
-    <get uri="/hello">
+    <get path="/hello">
         <to uri="direct:hello"/>
     </get>
-    <get uri="/bye" consumes="application/json">
+    <get path="/bye" consumes="application/json">
         <to uri="direct:bye"/>
     </get>
-    <post uri="/bye">
+    <post path="/bye">
         <to uri="mock:update"/>
     </post>
   </rest>
@@ -34,14 +34,14 @@
     <to uri="file:inbox"/>
   </route>
   <rest>
-    <get uri="/hello">
+    <get path="/hello">
       <to uri="direct:hello"/>
     </get>
-    <get uri="/bye" consumes="application/json">
+    <get path="/bye" consumes="application/json">
       <to uri="direct:bye"/>
     </get>
-    <post uri="/bye">
+    <post path="/bye">
       <to uri="mock:update"/>
     </post>
   </rest>
-</routes>
+</camelContext>

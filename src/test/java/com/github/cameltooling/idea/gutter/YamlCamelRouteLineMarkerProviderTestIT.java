@@ -25,9 +25,9 @@ import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.codeInsight.daemon.GutterMark;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
-import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.yaml.YAMLTokenTypes;
-import org.jetbrains.yaml.psi.YAMLMapping;
+
+import static com.github.cameltooling.idea.gutter.GutterTestUtil.getCamelGutters;
 
 /**
  * Testing the Camel icon is shown in the gutter where a Camel route starts in YAML DSL and the route navigation
@@ -36,7 +36,7 @@ public class YamlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
 
     public void testCamelGutter() {
         myFixture.configureByFiles("YamlCamelRouteLineMarkerProviderTestData.yaml");
-        List<GutterMark> gutters = myFixture.findAllGutters();
+        List<GutterMark> gutters = getCamelGutters(myFixture);
         assertNotNull(gutters);
 
         assertEquals("Does not contain the expected amount of Camel gutters", 4, gutters.size());
@@ -49,31 +49,26 @@ public class YamlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
 
         LineMarkerInfo.LineMarkerGutterIconRenderer<?> firstGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(1);
 
-        assertSame(YAMLTokenTypes.SCALAR_KEY, firstGutter.getLineMarkerInfo().getElement().getNode().getElementType());
-        assertEquals("from", firstGutter.getLineMarkerInfo().getElement().getText());
-        assertEquals("The navigation start element doesn't match", "file:inbox",
-                PsiTreeUtil.getChildOfType(firstGutter.getLineMarkerInfo().getElement().getParent(), YAMLMapping.class).getKeyValueByKey("uri").getValueText());
+        assertSame(YAMLTokenTypes.SCALAR_DSTRING, firstGutter.getLineMarkerInfo().getElement().getNode().getElementType());
+        assertEquals("The navigation start element doesn't match", "\"file:inbox\"", firstGutter.getLineMarkerInfo().getElement().getText());
 
         List<GotoRelatedItem> firstGutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(firstGutter);
         assertEquals("Navigation should have one target", 1, firstGutterTargets.size());
-        assertEquals("The navigation target route doesn't match", "to: file:inbox", firstGutterTargets.get(0).getElement().getText());
+        assertEquals("The navigation target route doesn't match", "file:inbox", firstGutterTargets.get(0).getElement().getText());
 
         LineMarkerInfo.LineMarkerGutterIconRenderer<?> secondGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(2);
 
-        assertSame(YAMLTokenTypes.SCALAR_KEY, secondGutter.getLineMarkerInfo().getElement().getNode().getElementType());
-        assertEquals("from", secondGutter.getLineMarkerInfo().getElement().getText());
-        assertEquals("The navigation start element doesn't match", "file:outbox",
-            PsiTreeUtil.getChildOfType(secondGutter.getLineMarkerInfo().getElement().getParent(), YAMLMapping.class).getKeyValueByKey("uri").getValueText());
+        assertSame(YAMLTokenTypes.SCALAR_DSTRING, secondGutter.getLineMarkerInfo().getElement().getNode().getElementType());
+        assertEquals("\"file:outbox\"", secondGutter.getLineMarkerInfo().getElement().getText());
 
         List<GotoRelatedItem> secondGutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(secondGutter);
         assertEquals("Navigation should have one target", 1, secondGutterTargets.size());
-        assertEquals("The navigation target route doesn't match", "to:\n" +
-            "            uri: \"file:outbox\"", secondGutterTargets.get(0).getElement().getText());
+        assertEquals("The navigation target route doesn't match", "\"file:outbox\"", secondGutterTargets.get(0).getElement().getText());
     }
 
     public void testCamelGutterForToD() {
         myFixture.configureByFiles("YamlCamelRouteLineMarkerProviderToDTestData.yaml");
-        List<GutterMark> gutters = myFixture.findAllGutters();
+        List<GutterMark> gutters = getCamelGutters(myFixture);
         assertNotNull(gutters);
 
         assertEquals("Should contain 1 Camel gutter", 1, gutters.size());
@@ -83,18 +78,12 @@ public class YamlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
 
         LineMarkerInfo.LineMarkerGutterIconRenderer<?> gutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(0);
 
-        assertSame(YAMLTokenTypes.SCALAR_KEY, gutter.getLineMarkerInfo().getElement().getNode().getElementType());
-        assertEquals("from", gutter.getLineMarkerInfo().getElement().getText());
-        assertEquals("The navigation start element doesn't match", "file:inbox",
-            PsiTreeUtil.getChildOfType(gutter.getLineMarkerInfo().getElement().getParent(), YAMLMapping.class)
-                .getKeyValueByKey("uri")
-                .getValueText()
-        );
+        assertSame(YAMLTokenTypes.SCALAR_DSTRING, gutter.getLineMarkerInfo().getElement().getNode().getElementType());
+        assertEquals("\"file:inbox\"", gutter.getLineMarkerInfo().getElement().getText());
 
         List<GotoRelatedItem> gutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(gutter);
         assertEquals("Navigation should have one target", 1, gutterTargets.size());
-        assertEquals("The navigation target route doesn't match",  "tod:\n" +
-            "            uri: \"file:inbox\"", gutterTargets.get(0).getElement().getText());
+        assertEquals("The navigation target route doesn't match",  "\"file:inbox\"", gutterTargets.get(0).getElement().getText());
 
     }
 

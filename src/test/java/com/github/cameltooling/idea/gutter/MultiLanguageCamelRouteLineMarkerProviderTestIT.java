@@ -24,18 +24,24 @@ import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.xml.XmlToken;
+import org.jetbrains.annotations.Nullable;
 
-import static com.github.cameltooling.idea.gutter.GutterTestUtil.getGuttersWithJavaTarget;
-import static com.github.cameltooling.idea.gutter.GutterTestUtil.getGuttersWithXMLTarget;
+import static com.github.cameltooling.idea.gutter.GutterTestUtil.*;
 
 /**
  * Testing the Camel icon is shown in the gutter where a Camel route starts in XML DSL and the route navigation
  */
 public class MultiLanguageCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
+    @Nullable
+    @Override
+    protected String[] getMavenDependencies() {
+        return new String[]{CAMEL_CORE_MODEL_MAVEN_ARTIFACT};
+    }
+
     public void testCamelGutterForJavaAndXMLRoutes() {
         myFixture.configureByFiles("XmlCamelRouteLineMarkerProviderTestData.xml", "JavaCamelRouteLineMarkerProviderTestData.java");
-        List<GutterMark> javaGutters = myFixture.findAllGutters("JavaCamelRouteLineMarkerProviderTestData.java");
+        List<GutterMark> javaGutters = getCamelGutters(myFixture, "JavaCamelRouteLineMarkerProviderTestData.java");
         assertNotNull(javaGutters);
 
         List<GutterMark> xmlGutters = myFixture.findAllGutters("XmlCamelRouteLineMarkerProviderTestData.xml");

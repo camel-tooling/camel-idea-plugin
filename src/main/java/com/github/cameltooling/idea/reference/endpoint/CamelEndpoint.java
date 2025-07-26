@@ -16,7 +16,7 @@
  */
 package com.github.cameltooling.idea.reference.endpoint;
 
-import java.util.Arrays;
+import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.Nullable;
@@ -25,9 +25,6 @@ import org.jetbrains.annotations.Nullable;
  * Represents a camel endpoint and provides support methods for working with the parts of its uri.
  */
 public class CamelEndpoint {
-
-    private static final String DIRECT_ENDPOINT_PREFIX = "direct:";
-    private static final String[] KNOWN_PREFIXES = {DIRECT_ENDPOINT_PREFIX};
 
     private final String uri;
     private String baseUri;
@@ -40,10 +37,6 @@ public class CamelEndpoint {
         processUri();
     }
 
-    public static boolean isDirectEndpoint(String uri) {
-        return uri != null && uri.startsWith(DIRECT_ENDPOINT_PREFIX);
-    }
-
     private void processUri() {
         int questionMarkIndex = uri.indexOf('?');
         if (questionMarkIndex >= 0) {
@@ -54,9 +47,7 @@ public class CamelEndpoint {
             query = null;
         }
 
-        prefix = Arrays.stream(KNOWN_PREFIXES)
-            .filter(p -> baseUri.startsWith(p))
-            .findAny().orElse(null);
+        prefix = StringUtils.asComponentName(baseUri);
 
         name = prefix == null ? baseUri : baseUri.substring(prefix.length());
     }

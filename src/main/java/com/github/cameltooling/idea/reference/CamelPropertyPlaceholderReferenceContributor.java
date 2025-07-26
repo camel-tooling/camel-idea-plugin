@@ -32,7 +32,7 @@ public class CamelPropertyPlaceholderReferenceContributor extends PsiReferenceCo
 
     @Override
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
-        List<ElementPattern<? extends PsiElement>> patterns = CamelIdeaUtils.getService().getAllowedPropertyPlaceholderPatterns();
+        List<ElementPattern<? extends PsiElement>> patterns = CamelIdeaUtils.getService().getAllowedPropertyPlaceholderLocations();
         if (!patterns.isEmpty()) {
             PsiReferenceProvider propertyReferenceProvider = createProvider();
             patterns.forEach(pattern -> {

@@ -221,14 +221,27 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public boolean isCamelRouteStart(PsiElement element) {
-        return CAMEL_ROUTE_START_PATTERN.accepts(element);
+        if (element instanceof YAMLScalar scalar) {
+            YAMLKeyValue fromKv = PsiTreeUtil.getParentOfType(
+                    PsiTreeUtil.getParentOfType(scalar, YAMLKeyValue.class),
+                    YAMLKeyValue.class);
+            return fromKv != null && CAMEL_ROUTE_START_PATTERN.accepts(fromKv);
+        } else {
+            return CAMEL_ROUTE_START_PATTERN.accepts(element);
+        }
+    }
+
+    @Override
+    public PsiElement getLeafElementForLineMarker(PsiElement element) {
+        if (element instanceof YAMLScalar scalar) {
+            return scalar.getFirstChild();
+        }
+        return null;
     }
 
     @Override
     public boolean isCamelRouteStartExpression(PsiElement element) {
-        if (element instanceof YAMLKeyValue) {
-            return isCamelRouteStart(element);
-        } else if (element.getParent() instanceof YAMLKeyValue) {
+        if (element.getParent() instanceof YAMLKeyValue) {
             return isCamelRouteStart(element.getParent());
         }
         return false;
@@ -327,6 +340,11 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
      */
     @Override
     public boolean isCamelLineMarker(PsiElement element) {
+        if (element.getParent() instanceof YAMLKeyValue kv) {
+            if (kv.getKeyText().equals("from")) {
+                return false; // skip line markers for "from" keys, as these are provided by direct endpoint references on the "uri" line
+            }
+        }
         final ASTNode node = element.getNode();
         return node != null && node.getElementType() == YAMLTokenTypes.SCALAR_KEY;
     }
@@ -395,7 +413,7 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         if (file == null) {
             return false;
         }
-        YAMLKeyValue keyValue = PsiTreeUtil.getParentOfType(location, YAMLKeyValue.class);
+        YAMLKeyValue keyValue = PsiTreeUtil.getParentOfType(location, false, YAMLKeyValue.class);
         if (keyValue == null) {
             return false;
         }
@@ -404,7 +422,7 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     }
 
     @Override
-    public List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderPsiPatterns() {
+    public List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderLocations() {
         return List.of(
                 PlatformPatterns.psiElement(YAMLScalar.class)
         );

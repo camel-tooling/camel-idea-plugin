@@ -336,6 +336,9 @@ public final class IdeaUtils implements Disposable {
     public boolean isFromJavaMethod(PsiMethodCallExpression call, boolean fromRouteBuilder, String... methods) {
         PsiMethod method = call.resolveMethod();
         if (method != null) {
+            method = PsiTreeUtil.getTopmostParentOfType(method, PsiMethod.class);
+        }
+        if (method != null) {
             PsiClass containingClass = method.getContainingClass();
             if (containingClass != null) {
                 String name = method.getName();
@@ -620,7 +623,7 @@ public final class IdeaUtils implements Disposable {
         final XmlTag[] subTags = rootTag.getSubTags();
         for (int i = 0; i < subTags.length; i++) {
             XmlTag subTag = subTags[i];
-            final int subTagLineNumber = getLineNumber(sourcePosition.getFile(), subTag);
+            final int subTagLineNumber = getLineNumber(subTag);
             if (subTagLineNumber == sourcePosition.getLine()) {
                 return subTag;
             } else if (subTagLineNumber > sourcePosition.getLine() && i > 0 && subTags[i - 1].getSubTags().length > 0) {
@@ -635,9 +638,12 @@ public final class IdeaUtils implements Disposable {
         }
     }
 
-    public static int getLineNumber(VirtualFile file, XmlTag tag) {
-        final int offset = tag.getTextOffset();
-        final Document document = FileDocumentManager.getInstance().getDocument(file);
+    public static int getLineNumber(PsiElement element) {
+        final int offset = element.getTextOffset();
+        final Document document = FileDocumentManager.getInstance().getDocument(element.getContainingFile().getVirtualFile());
+        if (document == null) {
+            return -1;
+        }
         return offset < document.getTextLength() ? document.getLineNumber(offset) : -1;
     }
 

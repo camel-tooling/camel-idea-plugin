@@ -29,6 +29,8 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlToken;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 
+import static com.github.cameltooling.idea.gutter.GutterTestUtil.getCamelGutters;
+
 /**
  * Testing the Camel icon is shown in the gutter where a Camel route starts in XML DSL and the route navigation
  */
@@ -36,16 +38,10 @@ public class XmlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsight
 
     public void testCamelGutter() {
         myFixture.configureByFiles("XmlCamelRouteLineMarkerProviderTestData.xml");
-        List<GutterMark> gutters = myFixture.findAllGutters();
+        List<GutterMark> gutters = getCamelGutters(myFixture);
         assertNotNull(gutters);
 
         assertEquals("Does not contain the expected amount of Camel gutters", 4, gutters.size());
-
-        Icon defaultIcon = CamelPreferenceService.getService().getCamelIcon();
-        gutters.forEach(gutterMark -> {
-            assertSame("Gutter should have the Camel icon", defaultIcon, gutterMark.getIcon());
-            assertEquals("Camel route", gutterMark.getTooltipText());
-        });
 
         LineMarkerInfo.LineMarkerGutterIconRenderer<?> firstGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(1);
 
@@ -55,7 +51,7 @@ public class XmlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsight
 
         List<GotoRelatedItem> firstGutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(firstGutter);
         assertEquals("Navigation should have one target", 1, firstGutterTargets.size());
-        assertEquals("The navigation target route doesn't match", "file:inbox", firstGutterTargets.get(0).getElement().getText());
+        assertEquals("The navigation target route doesn't match", "\"file:inbox\"", firstGutterTargets.get(0).getElement().getText());
         assertEquals("The navigation target tag name doesn't match", "to",
                 GutterTestUtil.getGuttersWithXMLTarget(firstGutterTargets).get(0).getLocalName());
 
@@ -67,14 +63,14 @@ public class XmlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsight
 
         List<GotoRelatedItem> secondGutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(secondGutter);
         assertEquals("Navigation should have one target", 1, secondGutterTargets.size());
-        assertEquals("The navigation target route doesn't match", "file:outbox", secondGutterTargets.get(0).getElement().getText());
+        assertEquals("The navigation target route doesn't match", "\"file:outbox\"", secondGutterTargets.get(0).getElement().getText());
         assertEquals("The navigation target tag name doesn't match", "to",
                 GutterTestUtil.getGuttersWithXMLTarget(secondGutterTargets).get(0).getLocalName());
     }
 
     public void testCamelGutterForToD() {
         myFixture.configureByFiles("XmlCamelRouteLineMarkerProviderToDTestData.xml");
-        List<GutterMark> gutters = myFixture.findAllGutters();
+        List<GutterMark> gutters = getCamelGutters(myFixture);
         assertNotNull(gutters);
 
         assertEquals("Should contain 1 Camel gutter", 1, gutters.size());
@@ -90,7 +86,7 @@ public class XmlCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsight
 
         List<GotoRelatedItem> gutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(gutter);
         assertEquals("Navigation should have one target", 1, gutterTargets.size());
-        assertEquals("The navigation target route doesn't match", "file:inbox", gutterTargets.get(0).getElement().getText());
+        assertEquals("The navigation target route doesn't match", "\"file:inbox\"", gutterTargets.get(0).getElement().getText());
         assertEquals("The navigation target tag name doesn't match", "toD",
                 GutterTestUtil.getGuttersWithXMLTarget(gutterTargets).get(0).getLocalName());
 

@@ -165,6 +165,14 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     }
 
     @Override
+    public PsiElement getLeafElementForLineMarker(PsiElement element) {
+        if (element instanceof PsiLiteralExpression ple) {
+            return ple.getFirstChild();
+        }
+        return null;
+    }
+
+    @Override
     public boolean isCamelRouteStartExpression(PsiElement element) {
         PsiElement routeStartParent = IdeaUtils.getService().findFirstParent(element, false,
             this::isCamelRouteStart, PsiFile.class::isInstance);
@@ -187,19 +195,20 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public boolean isCamelLineMarker(PsiElement element) {
-        if (element instanceof PsiJavaToken) {
-            if (element.getParent() instanceof PsiLiteralExpression) {
-                return true;
-            }
-            // Check for the pattern "rest()"
-            if (element instanceof PsiIdentifier) {
-                PsiIdentifier identifier = (PsiIdentifier) element;
-                if ("rest".equals(identifier.getText())) {
-                    PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-                    return call != null && call.getArgumentList().isEmpty();
-                }
+        if (isPlaceForEndpointUri(element)) {
+            return true;
+        }
+
+        //TODO: find out why do we want to place line marker on rest DSL, what's the use case?
+
+        // Check for the pattern "rest()"
+        if (element instanceof PsiIdentifier identifier) {
+            if ("rest".equals(identifier.getText())) {
+                PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
+                return call != null && call.getArgumentList().isEmpty();
             }
         }
+
         return false;
     }
 
@@ -385,9 +394,14 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public boolean isPlaceForEndpointUri(PsiElement location) {
-        PsiLiteralExpression expression = PsiTreeUtil.getParentOfType(location, PsiLiteralExpression.class, false);
-        return expression != null
-            && isInsideCamelRoute(expression, false);
+        return location instanceof PsiLiteralExpression && isInsideCamelRoute(location, false);
+    }
+
+    @Override
+    public List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderLocations() {
+        return List.of(
+                PsiJavaPatterns.literalExpression()
+        );
     }
 
     /**
@@ -847,13 +861,6 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             LOG.trace("The return type of the method is not a reference type");
         }
         return null;
-    }
-
-    @Override
-    public List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderPsiPatterns() {
-        return List.of(
-                PsiJavaPatterns.literalExpression()
-        );
     }
 
 }

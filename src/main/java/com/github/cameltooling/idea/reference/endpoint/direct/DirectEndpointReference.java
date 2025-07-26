@@ -40,8 +40,16 @@ public class DirectEndpointReference extends PsiPolyVariantReferenceBase<PsiElem
     private final CamelEndpoint endpoint;
 
     public DirectEndpointReference(PsiElement element, CamelEndpoint endpoint) {
-        super(element, TextRange.from(1, endpoint.getBaseUri().length()));
+        super(element, getTextRange(element, endpoint));
         this.endpoint = endpoint;
+    }
+
+    private static @NotNull TextRange getTextRange(PsiElement element, CamelEndpoint endpoint) {
+        int start = 0;
+        if (element.getText().startsWith("\"")) {
+            start = 1;
+        }
+        return TextRange.from(start, endpoint.getBaseUri().length());
     }
 
     @NotNull

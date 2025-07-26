@@ -19,8 +19,9 @@ package com.github.cameltooling.idea.reference.endpoint.direct;
 import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
 import com.github.cameltooling.idea.reference.endpoint.CamelEndpointPsiReferenceProvider;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
-import com.intellij.patterns.PsiJavaPatterns;
-import com.intellij.patterns.XmlPatterns;
+import com.github.cameltooling.idea.util.StringUtils;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiReferenceContributor;
@@ -28,19 +29,35 @@ import com.intellij.psi.PsiReferenceRegistrar;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+import java.util.Set;
+
 /**
- * Create a reference from the usage of a direct endpoint (e.g. <to uri="direct:abc"/>)
+ * Create a reference from the usage of a 'referencable' endpoint (e.g. <to uri="direct:abc"/>)
  * to its declaration (e.g. <from uri="direct:abc"/>).
+ *
+ * Referencable endpoints are those that behave like 'direct' endpoints, meaning they have a clear
+ * connection between their usage in 'from' and 'to' statements, and we want to connect them via IDEA's reference system.
  */
+//TODO: maybe rename 'Direct...' to 'Referencable...'
+//TODO: for some (like file, or direct-vm) it should not underline and report that the opposing endpoint is not found
 public class DirectEndpointReferenceContributor extends PsiReferenceContributor {
 
-    public static final String DIRECT_ENDPOINT_PREFIX = "direct:";
+    private static final Logger LOG = Logger.getInstance(DirectEndpointReferenceContributor.class);
+
+    private static final Set<String> REFERENCABLE_COMPONENTS = Set.of(
+            "direct", "direct-vm", "seda", "file"
+    );
 
     @Override
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
-        CamelEndpointPsiReferenceProvider provider = createProvider();
-        registrar.registerReferenceProvider(PsiJavaPatterns.literalExpression(), provider);
-        registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue("uri"), provider);
+        List<ElementPattern<? extends PsiElement>> patterns = CamelIdeaUtils.getService().getAllowedEndpointUriLocations();
+        if (!patterns.isEmpty()) {
+            CamelEndpointPsiReferenceProvider provider = createProvider();
+            patterns.forEach(pattern -> {
+                registrar.registerReferenceProvider(pattern, provider);
+            });
+        }
     }
 
     @NotNull
@@ -58,12 +75,16 @@ public class DirectEndpointReferenceContributor extends PsiReferenceContributor 
                     } else {
                         reference = new DirectEndpointReference(element, endpoint);
                     }
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Creating reference " + reference + " for element " + element + " with parent " + element.getParent().getParent().getText());
+                    }
                     return new PsiReference[] {reference};
                 }
 
                 @Override
                 protected boolean isEndpoint(String endpointUri) {
-                    return endpointUri.startsWith(DIRECT_ENDPOINT_PREFIX);
+                    String component = StringUtils.asComponentName(endpointUri);
+                    return component != null && REFERENCABLE_COMPONENTS.contains(component);
                 }
             };
     }
