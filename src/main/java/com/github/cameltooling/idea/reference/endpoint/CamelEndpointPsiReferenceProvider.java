@@ -17,6 +17,7 @@
 package com.github.cameltooling.idea.reference.endpoint;
 
 import com.github.cameltooling.idea.reference.CamelPsiReferenceProvider;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralValue;
@@ -32,8 +33,11 @@ import org.jetbrains.yaml.psi.YAMLScalar;
  */
 public abstract class CamelEndpointPsiReferenceProvider extends CamelPsiReferenceProvider {
 
+    private static final Logger LOG = Logger.getInstance(CamelEndpointPsiReferenceProvider.class);
+
     @Override
     protected PsiReference[] getCamelReferencesByElement(PsiElement element, ProcessingContext context) {
+        LOG.debug("Processing element " + element.getClass().getSimpleName() + " with text " + element.getText());
         String endpointUri = getEndpointUri(element);
         if (endpointUri == null) {
             return PsiReference.EMPTY_ARRAY;

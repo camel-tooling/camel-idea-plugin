@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -65,6 +66,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
     protected static String CAMEL_VERSION;
     protected static String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:%s";
     protected static String CAMEL_CORE_MODEL_MAVEN_ARTIFACT = "org.apache.camel:camel-core-model:%s";
+    protected static String CAMEL_ENDPOINTDSL_MAVEN_ARTIFACT = "org.apache.camel:camel-endpointdsl:%s";
 
 
     static {
@@ -75,8 +77,9 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
             CAMEL_VERSION = gradleProperties.getProperty("camelVersion");
             CAMEL_CORE_MAVEN_ARTIFACT = String.format(CAMEL_CORE_MAVEN_ARTIFACT, CAMEL_VERSION);
             CAMEL_CORE_MODEL_MAVEN_ARTIFACT = String.format(CAMEL_CORE_MODEL_MAVEN_ARTIFACT, CAMEL_VERSION);
+            CAMEL_ENDPOINTDSL_MAVEN_ARTIFACT = String.format(CAMEL_ENDPOINTDSL_MAVEN_ARTIFACT, CAMEL_VERSION);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
         mavenArtifacts = getMavenArtifacts(CAMEL_CORE_MAVEN_ARTIFACT);
     }

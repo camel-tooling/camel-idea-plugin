@@ -1,0 +1,7 @@
+<camelContext xmlns="http://camel.apache.org/schema/blueprint">
+    <route>
+        <from uri="direct:test"/>
+        <to uri="direct:abc"/>
+        <to uri="direct:abc"/>
+    </route>
+</camelContext>

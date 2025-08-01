@@ -226,6 +226,9 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                     PsiTreeUtil.getParentOfType(scalar, YAMLKeyValue.class),
                     YAMLKeyValue.class);
             return fromKv != null && CAMEL_ROUTE_START_PATTERN.accepts(fromKv);
+        } else if (element instanceof YAMLMapping mapping) {
+            PsiElement firstMapping = mapping.getFirstChild();
+            return CAMEL_ROUTE_START_PATTERN.accepts(firstMapping);
         } else {
             return CAMEL_ROUTE_START_PATTERN.accepts(element);
         }
