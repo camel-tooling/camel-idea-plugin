@@ -40,16 +40,12 @@ public class DirectEndpointReference extends PsiPolyVariantReferenceBase<PsiElem
     private final CamelEndpoint endpoint;
 
     public DirectEndpointReference(PsiElement element, CamelEndpoint endpoint) {
-        super(element, getTextRange(element, endpoint));
+        super(element, TextRange.from(getStartOffset(element), endpoint.getBaseUri().length()));
         this.endpoint = endpoint;
     }
 
-    private static @NotNull TextRange getTextRange(PsiElement element, CamelEndpoint endpoint) {
-        int start = 0;
-        if (element.getText().startsWith("\"")) {
-            start = 1;
-        }
-        return TextRange.from(start, endpoint.getBaseUri().length());
+    private static int getStartOffset(PsiElement element) {
+        return element.getText().startsWith("\"") ? 1 : 0;
     }
 
     @NotNull
@@ -72,7 +68,7 @@ public class DirectEndpointReference extends PsiPolyVariantReferenceBase<PsiElem
     @Override
     public PsiElement handleElementRename(@NotNull String newElementName) throws IncorrectOperationException {
         ElementManipulator<PsiElement> manipulator = ElementManipulators.getManipulator(myElement);
-        return manipulator.handleContentChange(myElement, endpoint.getNameTextRange().shiftRight(1), newElementName);
+        return manipulator.handleContentChange(myElement, endpoint.getNameTextRange().shiftRight(getStartOffset(myElement)), newElementName);
     }
 
 }

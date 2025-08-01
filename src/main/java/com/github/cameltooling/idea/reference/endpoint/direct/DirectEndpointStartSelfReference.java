@@ -37,9 +37,13 @@ public class DirectEndpointStartSelfReference extends PsiReferenceBase<PsiElemen
     private final DirectEndpointPsiElement resolvedElement;
 
     public DirectEndpointStartSelfReference(@NotNull PsiElement element, CamelEndpoint endpoint) {
-        super(element, TextRange.from(1, endpoint.getBaseUri().length()));
+        super(element, TextRange.from(getStartOffset(element), endpoint.getBaseUri().length()));
         this.endpoint = endpoint;
         this.resolvedElement = new DirectEndpointPsiElement(element, endpoint);
+    }
+
+    private static int getStartOffset(PsiElement element) {
+        return element.getText().startsWith("\"") ? 1 : 0;
     }
 
     @Nullable
@@ -48,10 +52,9 @@ public class DirectEndpointStartSelfReference extends PsiReferenceBase<PsiElemen
         return resolvedElement;
     }
 
-    @Override
     public PsiElement handleElementRename(@NotNull String newElementName) throws IncorrectOperationException {
         ElementManipulator<PsiElement> manipulator = ElementManipulators.getManipulator(myElement);
-        return manipulator.handleContentChange(myElement, endpoint.getNameTextRange().shiftRight(1), newElementName);
+        return manipulator.handleContentChange(myElement, endpoint.getNameTextRange().shiftRight(getStartOffset(myElement)), newElementName);
     }
 
     public CamelEndpoint getEndpoint() {

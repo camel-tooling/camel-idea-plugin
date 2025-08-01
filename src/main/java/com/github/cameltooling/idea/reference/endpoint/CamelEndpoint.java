@@ -49,7 +49,7 @@ public class CamelEndpoint {
 
         prefix = StringUtils.asComponentName(baseUri);
 
-        name = prefix == null ? baseUri : baseUri.substring(prefix.length());
+        name = prefix == null ? baseUri : baseUri.substring(prefix.length() + 1);
     }
 
     public String getUri() {
@@ -81,7 +81,7 @@ public class CamelEndpoint {
     }
 
     public TextRange getNameTextRange() {
-        return TextRange.from(prefix.length(), name.length());
+        return TextRange.from(prefix.length() + 1, name.length());
     }
 
 }

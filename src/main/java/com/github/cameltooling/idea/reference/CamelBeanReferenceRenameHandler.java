@@ -46,12 +46,14 @@ public class CamelBeanReferenceRenameHandler extends PsiElementRenameHandler {
 
     private static PsiElement findPsiElementAt(DataContext dataContext) {
         final Editor editor = CommonDataKeys.EDITOR.getData(dataContext);
-
         if (editor == null) {
             return null;
         }
 
         final PsiFile file = CommonDataKeys.PSI_FILE.getData(dataContext);
+        if (file == null) {
+            return null;
+        }
         PsiElement elementAt = file.findElementAt(editor.getCaretModel().getOffset());
         if (elementAt == null && editor.getCaretModel().getOffset() > 0) {
             elementAt = file.findElementAt(editor.getCaretModel().getOffset() - 1);

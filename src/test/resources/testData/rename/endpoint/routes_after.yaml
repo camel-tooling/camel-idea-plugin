@@ -1,0 +1,5 @@
+routes:
+  - from:
+      uri: direct:test
+    to:
+      uri: direct:abcNew

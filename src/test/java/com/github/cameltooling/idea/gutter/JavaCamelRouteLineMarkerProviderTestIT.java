@@ -18,10 +18,7 @@ package com.github.cameltooling.idea.gutter;
 
 import java.util.List;
 
-import javax.swing.Icon;
-
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
-import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.intellij.codeInsight.daemon.GutterMark;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
@@ -39,7 +36,7 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
     @Nullable
     @Override
     protected String[] getMavenDependencies() {
-        return new String[]{CAMEL_CORE_MODEL_MAVEN_ARTIFACT};
+        return new String[]{CAMEL_CORE_MODEL_MAVEN_ARTIFACT, CAMEL_ENDPOINTDSL_MAVEN_ARTIFACT};
     }
 
     public void testCamelGutter() {
@@ -137,7 +134,7 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
         myFixture.configureByFiles("JavaCamelRouteLineMarkerProviderFromMethodCallTestData.java");
         List<GutterMark> gutters = getCamelGutters(myFixture);
         assertNotNull(gutters);
-
+        assertTrue(gutters.isEmpty());
         assertEquals("Should contain 1 Camel gutters", 1, gutters.size());
 
         LineMarkerInfo.LineMarkerGutterIconRenderer<?> firstGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(0);
@@ -149,6 +146,11 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
         assertEquals("Navigation should have two targets", 2, firstGutterTargets.size());
         assertEquals("The navigation variable target element doesn't match", "calcEndpoint",
             GutterTestUtil.getGuttersWithMethodTarget(firstGutterTargets).get(0).getName());
+    }
+
+    public void testMultilineFromDeclaration() {
+        myFixture.configureByFiles("gutter/MultiLineFromDeclaration.java");
+        assertTrue(getCamelGutters(myFixture).isEmpty());
     }
 
 }
