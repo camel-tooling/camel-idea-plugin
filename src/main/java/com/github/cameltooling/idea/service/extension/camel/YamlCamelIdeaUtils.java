@@ -182,8 +182,7 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public boolean isCamelFile(PsiFile file) {
-        if (file != null && YAMLFileType.YML.equals(file.getFileType())) {
-            YAMLFile yamlFile = (YAMLFile) file;
+        if (file instanceof YAMLFile yamlFile) {
             List<YAMLDocument> yamlDocuments = yamlFile.getDocuments();
             return yamlDocuments.stream().anyMatch(document -> {
                 YAMLValue value = document.getTopLevelValue();
