@@ -18,7 +18,7 @@
 public class RenameCompleteJavaBeanTestData {
 
     public void letsDoThis() {}
-    public void another<caret>BeanMethod() {}
+    public void anotherBeanMethod() {}
     public void mySuperAbstractMethod() {}
     public void myOverLoadedBean() {}
     public void myOverLoadedBean(String name) {}
