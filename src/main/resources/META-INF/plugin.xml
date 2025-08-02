@@ -12,6 +12,9 @@
       v.1.4.1
       <ul>
         <li>Only IDEA 2025 onwards is supported</li>
+        <li>Support references from Camel property placeholders to properties</li>
+        <li>Fix multiple problems with Camel gutter icons</li>
+        <li>Fix multiple problems with Camel endpoint references in routes</li>
       </ul>
     ]]>
   </change-notes>
