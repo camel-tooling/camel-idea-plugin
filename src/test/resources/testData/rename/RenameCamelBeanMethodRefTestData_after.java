@@ -22,7 +22,7 @@ public final class RenameCamelBeanMethodRefTestData extends RouteBuilder {
     @Override
     public void configure() {
         from("file:inbox")
-            .bean(RenameCompleteJavaBeanTestData.class, "letsDoThis<caret>")
+            .bean(RenameCompleteJavaBeanTestData.class, "letNotDoThis")
             .to("log:out");
     }
 }

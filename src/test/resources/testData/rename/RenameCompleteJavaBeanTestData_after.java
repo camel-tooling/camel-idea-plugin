@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.apache.camel.builder.RouteBuilder;
-import testData.rename.RenameCompleteJavaBeanTestData;
 
-public final class RenameCamelBeanMethodRefTestData extends RouteBuilder {
+public class RenameCompleteJavaBeanTestData {
 
-    @Override
-    public void configure() {
-        from("file:inbox")
-            .bean(RenameCompleteJavaBeanTestData.class, "letNotDoThis")
-            .to("log:out");
-    }
+    public void letNotDoThis() {}
+    public void anotherBeanMethod() {}
+    public void mySuperAbstractMethod() {}
+    public void myOverLoadedBean() {}
+    public void myOverLoadedBean(String name) {}
+
+    private void thisIsVeryPrivate() {}
+
 }
