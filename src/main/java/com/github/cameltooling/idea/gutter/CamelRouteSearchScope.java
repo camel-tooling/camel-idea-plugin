@@ -18,6 +18,7 @@ package com.github.cameltooling.idea.gutter;
 
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import org.jetbrains.annotations.NotNull;
@@ -26,6 +27,10 @@ import org.jetbrains.annotations.NotNull;
  * Search scope for Camel routes.
  */
 class CamelRouteSearchScope extends GlobalSearchScope {
+
+    public CamelRouteSearchScope(@NotNull Project project) {
+        super(project);
+    }
 
     @Override
     public boolean contains(@NotNull VirtualFile virtualFile) {

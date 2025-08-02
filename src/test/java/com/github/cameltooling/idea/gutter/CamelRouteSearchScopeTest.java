@@ -29,7 +29,7 @@ public class CamelRouteSearchScopeTest extends HeavyPlatformTestCase {
         VirtualFile mavenPomFile = getVirtualFile(createTempFile("pom.xml", ""));
         VirtualFile xsdFile = getVirtualFile(createTempFile("test.xsd", ""));
 
-        CamelRouteSearchScope camelRouteSearchScope = new CamelRouteSearchScope();
+        CamelRouteSearchScope camelRouteSearchScope = new CamelRouteSearchScope(myProject);
 
         assertTrue(camelRouteSearchScope.contains(javaFile));
         assertTrue(camelRouteSearchScope.contains(xmlFile));

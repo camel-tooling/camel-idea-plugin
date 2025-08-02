@@ -22,6 +22,7 @@ import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.daemon.GutterMark;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.navigation.GotoRelatedItem;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiJavaToken;
 import org.jetbrains.annotations.Nullable;
@@ -127,14 +128,14 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
             firstGutter.getLineMarkerInfo().getElement().getText());
 
         List<GotoRelatedItem> firstGutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(firstGutter);
-        assertEquals("Navigation should have two targets", 2, firstGutterTargets.size());
+        assertEquals("Navigation should have one target", 1, firstGutterTargets.size());
     }
 
     public void testCamelGutterForMethodCallFrom() {
         myFixture.configureByFiles("JavaCamelRouteLineMarkerProviderFromMethodCallTestData.java");
         List<GutterMark> gutters = getCamelGutters(myFixture);
         assertNotNull(gutters);
-        assertTrue(gutters.isEmpty());
+
         assertEquals("Should contain 1 Camel gutters", 1, gutters.size());
 
         LineMarkerInfo.LineMarkerGutterIconRenderer<?> firstGutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.get(0);
@@ -143,14 +144,22 @@ public class JavaCamelRouteLineMarkerProviderTestIT extends CamelLightCodeInsigh
             firstGutter.getLineMarkerInfo().getElement().getText());
 
         List<GotoRelatedItem> firstGutterTargets = GutterTestUtil.getGutterNavigationDestinationElements(firstGutter);
-        assertEquals("Navigation should have two targets", 2, firstGutterTargets.size());
+        assertEquals("Navigation should have one target", 1, firstGutterTargets.size());
         assertEquals("The navigation variable target element doesn't match", "calcEndpoint",
             GutterTestUtil.getGuttersWithMethodTarget(firstGutterTargets).get(0).getName());
     }
 
     public void testMultilineFromDeclaration() {
         myFixture.configureByFiles("gutter/MultiLineFromDeclaration.java");
-        assertTrue(getCamelGutters(myFixture).isEmpty());
+        List<GutterMark> gutters = getCamelGutters(myFixture);
+        assertEquals(1, gutters.size());
+
+        var gutter = (LineMarkerInfo.LineMarkerGutterIconRenderer<?>) gutters.getFirst();
+        PsiElement navigationElement = gutter.getLineMarkerInfo().getElement();
+        assertTrue(navigationElement instanceof PsiIdentifier);
+
+        List<GotoRelatedItem> targets = GutterTestUtil.getGutterNavigationDestinationElements(gutter);
+        assertEquals(1, targets.size());
     }
 
 }
