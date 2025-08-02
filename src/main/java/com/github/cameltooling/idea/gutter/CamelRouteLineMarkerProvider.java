@@ -34,6 +34,7 @@ import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NotNullLazyValue;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiExpression;
@@ -127,8 +128,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
 
     private NotNullLazyValue<Collection<PsiElement>> findManualReferences(@NotNull PsiElement element) {
         CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
-        //TODO: remove this when IdeaUtils.isFromJavaMethodCall will be fixed
-        if (camelIdeaUtils.isCamelLineMarker(element) || isCamelRouteStartIdentifierExpression(element)) {
+        if (camelIdeaUtils.isCamelLineMarker(element)) {
 
             // let's not duplicate items found via #findEndpointReferences
             if (Arrays.stream(element.getReferences()).anyMatch(ref -> ref instanceof DirectEndpointStartSelfReference)) {
@@ -157,6 +157,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                     List<PsiElement> routeDestinationForPsiElement = findRouteDestinationForPsiElement(element);
                     // Add identifier references as navigation target
                     resolvedIdentifier(element)
+                            .filter(el -> !routeDestinationForPsiElement.contains(el))
                             .map(PsiElement::getNavigationElement)
                             .ifPresent(routeDestinationForPsiElement::add);
                     return routeDestinationForPsiElement;
@@ -181,20 +182,6 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
         return IdeaUtils.getService().isFromFileType(element, CamelIdeaUtils.CAMEL_FILE_EXTENSIONS);
     }
 
-
-    /**
-     * Returns true it the give element is an identifier inside a route start expression.
-     *
-     * @param element the element to evaluate
-     * @return true it the give element is an identifier inside a route start expression
-     */
-    private boolean isCamelRouteStartIdentifierExpression(@NotNull PsiElement element) {
-        return resolvedIdentifier(element)
-                .filter(resolved -> isRouteStartIdentifier((PsiIdentifier) element, resolved))
-                .isPresent();
-    }
-
-
     /**
      * Return the resolved reference to a {@link PsiVariable} or {@link PsiMethod}
      * for the given element if it is a {@link PsiIdentifier}.
@@ -211,18 +198,6 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                     .filter(resolved -> resolved instanceof PsiVariable || resolved instanceof PsiMethod);
         }
         return Optional.empty();
-    }
-
-    private boolean isRouteStartIdentifier(PsiIdentifier identifier, PsiElement resolvedIdentifier) {
-        // Eval methods from parent PsiMethodCallExpression to exclude start route method (from)
-        PsiElement element = identifier;
-        if (resolvedIdentifier instanceof PsiMethod) {
-            element = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
-        }
-        if (element == null) {
-            return false;
-        }
-        return CamelIdeaUtils.getService().isCamelRouteStartExpression(element);
     }
 
     /**
@@ -288,7 +263,8 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
 
         if (rawRoute != null && !rawRoute.isEmpty()) {
             final String route = rawRoute.replace("\"", "");
-            PsiSearchHelper helper = PsiSearchHelper.getInstance(startElement.getProject());
+            Project project = startElement.getProject();
+            PsiSearchHelper helper = PsiSearchHelper.getInstance(project);
             //get the component name and search only using that
             String componentName = route.split(":")[0];
 
@@ -319,7 +295,7 @@ public class CamelRouteLineMarkerProvider extends RelatedItemLineMarkerProvider 
                     }
                 }
                 return true;
-            }, new CamelRouteSearchScope(), componentName, UsageSearchContext.ANY, false);
+            }, new CamelRouteSearchScope(project), componentName, UsageSearchContext.ANY, false);
         }
         return psiElements;
     }

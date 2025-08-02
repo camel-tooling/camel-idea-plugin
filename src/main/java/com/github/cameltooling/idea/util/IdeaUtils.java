@@ -65,7 +65,6 @@ import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.java.IJavaDocElementType;
-import com.intellij.psi.util.ClassUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtilCore;
 import com.intellij.psi.xml.XmlAttribute;
@@ -675,12 +674,4 @@ public final class IdeaUtils implements Disposable {
         return keyValue;
     }
 
-    public static PsiClass findRouteBuilderClass(PsiManager manager) {
-        return ROUTE_BUILDER_OR_EXPRESSION_CLASS_QUALIFIED_NAME
-                .stream()
-                .map(fqn -> ClassUtil.findPsiClass(manager, fqn))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
-    }
 }

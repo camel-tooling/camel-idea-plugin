@@ -45,7 +45,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiIdentifier;
 import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiJavaToken;
 import com.intellij.psi.PsiLiteral;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiManager;
@@ -58,6 +57,7 @@ import com.intellij.psi.codeStyle.CodeStyleSettings;
 import com.intellij.psi.impl.source.PostprocessReformattingAspect;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
+import com.intellij.psi.util.ClassUtil;
 import com.intellij.psi.util.InheritanceUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.LightVirtualFile;
@@ -199,17 +199,39 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             return true;
         }
 
-        //TODO: find out why do we want to place line marker on rest DSL, what's the use case?
-
-        // Check for the pattern "rest()"
         if (element instanceof PsiIdentifier identifier) {
+            // check for the pattern "rest()"
+            //TODO: find out why do we want to place line marker on rest DSL, what's the use case?
             if ("rest".equals(identifier.getText())) {
                 PsiMethodCallExpression call = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
                 return call != null && call.getArgumentList().isEmpty();
             }
+
+            // check for a method call inside a start of a camel route (e.g. inside of a from(...))
+            PsiMethodCallExpression methodCall = PsiTreeUtil.getParentOfType(element, true, PsiMethodCallExpression.class);
+            if (methodCall != null) {
+                 boolean deepest = isDeepestMethodCall(methodCall); // choose only deepest method call of a call chain
+                 if (deepest && isCamelRouteStartExpression(methodCall)) {
+                     return true;
+                 }
+            }
+
+            // check for a PsiReferenceExpression (e.g. a variable, constant, ...) inside a method call, that's a start of a camel route
+            PsiReferenceExpression reference = PsiTreeUtil.getParentOfType(element, true, PsiReferenceExpression.class);
+            if (reference != null) {
+                boolean methodName = reference.getParent() instanceof PsiMethodCallExpression; //let's exclude the method name itself
+                if (!methodName && isCamelRouteStartExpression(reference)) {
+                    return true;
+                }
+            }
+
         }
 
         return false;
+    }
+
+    private boolean isDeepestMethodCall(PsiMethodCallExpression methodCall) {
+        return PsiTreeUtil.findChildrenOfType(methodCall, PsiMethodCallExpression.class).isEmpty();
     }
 
     @Override
@@ -420,7 +442,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     private List<PsiElement> findEndpoints(Module module, Predicate<String> uriCondition, Predicate<PsiLiteral> elementCondition) {
         PsiManager manager = PsiManager.getInstance(module.getProject());
-        PsiClass routeBuilderClass = IdeaUtils.findRouteBuilderClass(manager);
+        PsiClass routeBuilderClass = findRouteBuilderClass(manager);
 
         List<PsiElement> results = new ArrayList<>();
         if (routeBuilderClass != null) {
@@ -439,6 +461,15 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             }
         }
         return results;
+    }
+
+    private PsiClass findRouteBuilderClass(PsiManager manager) {
+        return JAVA_ROUTE_BUILDERS
+                .stream()
+                .map(fqn -> ClassUtil.findPsiClass(manager, fqn))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     private String getStaticBeanName(PsiJavaCodeReferenceElement referenceElement, String beanName) {
