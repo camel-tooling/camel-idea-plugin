@@ -145,7 +145,7 @@
 
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.CamelBeanReferenceContributor"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.endpoint.direct.DirectEndpointReferenceContributor"/>
-    <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.blueprint.BlueprintReferenceContributor"/>
+    <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.blueprint.BlueprintReferenceContributor" language="XML"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.CamelBeanInjectReferenceContributor"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.CamelPropertyPlaceholderReferenceContributor"/>
     <renameHandler implementation="com.github.cameltooling.idea.reference.CamelBeanReferenceRenameHandler"/>
