@@ -65,6 +65,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
     protected static String CAMEL_VERSION;
     protected static String CAMEL_CORE_MAVEN_ARTIFACT = "org.apache.camel:camel-core:%s";
     protected static String CAMEL_CORE_MODEL_MAVEN_ARTIFACT = "org.apache.camel:camel-core-model:%s";
+    protected static String CAMEL_API_MAVEN_ARTIFACT = "org.apache.camel:camel-api:%s";
     protected static String CAMEL_ENDPOINTDSL_MAVEN_ARTIFACT = "org.apache.camel:camel-endpointdsl:%s";
 
 
@@ -75,6 +76,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
             gradleProperties.load(is);
             CAMEL_VERSION = gradleProperties.getProperty("camelVersion");
             CAMEL_CORE_MAVEN_ARTIFACT = String.format(CAMEL_CORE_MAVEN_ARTIFACT, CAMEL_VERSION);
+            CAMEL_API_MAVEN_ARTIFACT = String.format(CAMEL_API_MAVEN_ARTIFACT, CAMEL_VERSION);
             CAMEL_CORE_MODEL_MAVEN_ARTIFACT = String.format(CAMEL_CORE_MODEL_MAVEN_ARTIFACT, CAMEL_VERSION);
             CAMEL_ENDPOINTDSL_MAVEN_ARTIFACT = String.format(CAMEL_ENDPOINTDSL_MAVEN_ARTIFACT, CAMEL_VERSION);
         } catch (IOException e) {
