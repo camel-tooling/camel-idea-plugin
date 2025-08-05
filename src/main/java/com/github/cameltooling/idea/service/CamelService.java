@@ -664,8 +664,12 @@ public class CamelService implements Disposable {
         // split into major, minor and patch
         String[] parts = version.split("\\.");
         if (parts.length >= 2) {
-            major = Integer.parseInt(parts[0]);
-            minor = Integer.parseInt(parts[1]);
+            try {
+                major = Integer.parseInt(parts[0]);
+                minor = Integer.parseInt(parts[1]);
+            } catch (NumberFormatException e) {
+                return false;
+            }
         }
 
         if (major > MIN_MAJOR_VERSION) {
