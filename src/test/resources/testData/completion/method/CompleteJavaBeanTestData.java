@@ -14,8 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import testData.CompleteJavaBeanSuperClassTestData;
-
 
 public class CompleteJavaBeanTestData extends CompleteJavaBeanSuperClassTestData {
 

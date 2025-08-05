@@ -18,7 +18,11 @@ package com.github.cameltooling.idea.reference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.JavaMethodUtils;
 import com.intellij.openapi.util.TextRange;
@@ -27,6 +31,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.intellij.util.IncorrectOperationException;
@@ -61,8 +66,17 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
     public ResolveResult[] multiResolve(boolean b) {
         List<ResolveResult> results = new ArrayList<>();
 
-        final PsiMethod[] methodsByName = getPsiClass().findMethodsByName(methodNameOnly, true);
-        for (PsiMethod psiMethod : JavaMethodUtils.getService().getBeanMethods(Arrays.asList(methodsByName))) {
+        PsiMethod[] methodsByName = getPsiClass().findMethodsByName(methodNameOnly, true);
+        Collection<PsiMethod> beanMethods = JavaMethodUtils.getService().getBeanMethods(Arrays.asList(methodsByName));
+        Map<Boolean, List<PsiMethod>> methodsByPrivateness = beanMethods.stream().collect(Collectors.groupingBy(m -> m.getModifierList().hasModifierProperty(PsiModifier.PRIVATE)));
+        List<PsiMethod> nonPrivateMethods = methodsByPrivateness.getOrDefault(false, List.of());
+        List<PsiMethod> privateMethods = methodsByPrivateness.getOrDefault(true, List.of());
+
+        if (nonPrivateMethods.isEmpty() && !privateMethods.isEmpty()) {
+            return new ResolveResult[] { new PsiElementResolveResult(privateMethods.getFirst()) };
+        }
+
+        for (PsiMethod psiMethod: nonPrivateMethods) {
             if (CamelIdeaUtils.getService().isAnnotatedWithHandler(psiMethod)) {
                 return new ResolveResult[] {new PsiElementResolveResult(psiMethod)};
             }

@@ -14,10 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package testData.annotator.method;
-
 import org.apache.camel.Handler;
-import testData.annotator.method.AnnotatorJavaBeanSuperClassTestData;
 
 public class AnnotatorJavaBeanTestData extends AnnotatorJavaBeanSuperClassTestData {
 

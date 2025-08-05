@@ -29,9 +29,16 @@ import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 
 public class BeanInjectLineMarkerProviderTest extends CamelLightCodeInsightFixtureTestCaseIT {
+
+    @Nullable
+    @Override
+    protected String[] getMavenDependencies() {
+        return new String[]{CAMEL_CORE_MODEL_MAVEN_ARTIFACT, CAMEL_API_MAVEN_ARTIFACT};
+    }
 
     @Override
     protected String getTestDataPath() {
@@ -44,18 +51,17 @@ public class BeanInjectLineMarkerProviderTest extends CamelLightCodeInsightFixtu
         assertEmpty(beanInjectMarkers);
     }
 
-//    @Ignore TODO:!
-//    public void testBeanInjectGutter() {
-//        myFixture.configureByFiles("TestClass1.java", "TestClass2.java", "TestClass3.java", "beans.xml");
-//
-//        List<RelatedItemLineMarkerInfo<? extends PsiElement>> beanInjectMarkers = findBeanInjectMarkers();
-//        assertEquals(4, beanInjectMarkers.size());
-//
-//        validateBeanInjectWithValue(beanInjectMarkers.get(0));
-//        validateBeanInjectWithMultipleTargets(beanInjectMarkers.get(1));
-//        validateBeanInjectWithMultipleTargets(beanInjectMarkers.get(2));
-//        assertEquals(0, beanInjectMarkers.get(3).createGotoRelatedItems().size());
-//    }
+    public void testBeanInjectGutter() {
+        myFixture.configureByFiles("TestClass1.java", "TestClass2.java", "TestClass3.java", "beans.xml");
+
+        List<RelatedItemLineMarkerInfo<? extends PsiElement>> beanInjectMarkers = findBeanInjectMarkers();
+        assertEquals(4, beanInjectMarkers.size());
+
+        validateBeanInjectWithValue(beanInjectMarkers.get(0));
+        validateBeanInjectWithMultipleTargets(beanInjectMarkers.get(1));
+        validateBeanInjectWithMultipleTargets(beanInjectMarkers.get(2));
+        assertEquals(0, beanInjectMarkers.get(3).createGotoRelatedItems().size());
+    }
 
     @NotNull
     private List<RelatedItemLineMarkerInfo<? extends PsiElement>> findBeanInjectMarkers() {

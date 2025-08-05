@@ -105,13 +105,15 @@ public class JavaMethodUtils implements Disposable {
     }
 
     /**
-     * Return all methods expect the constructor
+     * Filter methods suitable for being a bean method invoked from a route.
+     * Private methods are not suitable, but are returned anyway - so that we can show an explicit error message on them
+     *
      * @param methods - List of methods to filter
      * @return - List of filtered methods
      */
     public Collection<PsiMethod> getBeanMethods(Collection<PsiMethod> methods) {
         return methods.stream()
-            .filter(method -> !method.isConstructor())
+            .filter(method -> !method.isConstructor() && !method.getModifierList().hasModifierProperty(PsiModifier.ABSTRACT))
             .collect(Collectors.toList());
     }
 

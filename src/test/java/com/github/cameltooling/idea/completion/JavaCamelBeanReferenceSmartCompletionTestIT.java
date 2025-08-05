@@ -120,7 +120,7 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
     @Nullable
     @Override
     protected String[] getMavenDependencies() {
-        return new String[]{SPRING_CONTEXT_MAVEN_ARTIFACT};
+        return new String[]{SPRING_CONTEXT_MAVEN_ARTIFACT, CAMEL_CORE_MODEL_MAVEN_ARTIFACT};
     }
 
     public void testJavaBeanTestDataCompletionWithIncorrectBeanRef() {
@@ -160,39 +160,38 @@ public class JavaCamelBeanReferenceSmartCompletionTestIT extends CamelLightCodeI
         assertThat(strings, Matchers.not(Matchers.contains("thisIsVeryPrivate")));
     }
 
-// Should be fixed by https://github.com/camel-tooling/camel-idea-plugin/issues/1047
-//    public void testJavaBeanTestDataCompletionWithCaretInsideMultipleMethodRef() {
-//        myFixture.configureByFiles("CompleteJavaBeanRoute5TestData.java", "CompleteJavaBeanMultipleMethodTestData.java",
-//            "CompleteJavaBeanSuperClassTestData.java", "CompleteJavaBeanMethodPropertyTestData.properties");
-//        myFixture.complete(CompletionType.BASIC, 1);
-//        List<String> strings = myFixture.getLookupElementStrings();
-//        assertEquals(3, strings.size());
-//        assertThat(strings, Matchers.hasItems("multipleMethodsWithAnotherName", "multipleMethodsWithSameName", "multipleMethodsWithSameName"));
-//    }
-//
-//    public void testJavaBeanWithClassHierarchy() {
-//        myFixture.configureByFiles("CompleteJavaBeanRouteTestData.java", "CompleteJavaBeanTestData.java", "CompleteJavaBeanSuperClassTestData.java");
-//        myFixture.complete(CompletionType.BASIC, 1);
-//        List<String> strings = myFixture.getLookupElementStrings();
-//        assertThat(strings, Matchers.not(Matchers.contains("thisIsVeryPrivate")));
-//        assertThat(strings, Matchers.hasItems("letsDoThis", "anotherBeanMethod", "mySuperAbstractMethod", "mySuperMethod", "myOverLoadedBean", "myOverLoadedBean"));
-//        assertEquals("There is many options", 6, strings.size());
-//    }
-//
-//    public void testJavaBeanTestDataCompletion2File() {
-//        myFixture.configureByFiles("CompleteJavaBeanRoute2TestData.java", "CompleteJavaBeanTestData.java", "CompleteJavaBeanSuperClassTestData.java");
-//        myFixture.complete(CompletionType.BASIC, 1);
-//        myFixture.checkResultByFile("CompleteJavaBeanRoute2ResultData.java", true);
-//    }
-//
-//    public void testJavaFieldBeanReference() {
-//        myFixture.configureByFiles("CompleteJavaBeanRoute1TestData.java", "CompleteJavaBeanTestData.java");
-//        myFixture.complete(CompletionType.BASIC, 1);
-//        List<String> strings = myFixture.getLookupElementStrings();
-//        assertThat(strings, Matchers.not(Matchers.contains("thisIsVeryPrivate")));
-//        assertThat(strings, Matchers.hasItems("letsDoThis", "anotherBeanMethod", "mySuperAbstractMethod", "myOverLoadedBean", "myOverLoadedBean"));
-//        assertEquals("There is many options", 5, strings.size());
-//    }
+    public void testJavaBeanTestDataCompletionWithCaretInsideMultipleMethodRef() {
+        myFixture.configureByFiles("CompleteJavaBeanRoute5TestData.java", "CompleteJavaBeanMultipleMethodTestData.java",
+            "CompleteJavaBeanSuperClassTestData.java", "CompleteJavaBeanMethodPropertyTestData.properties");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertEquals(3, strings.size());
+        assertThat(strings, Matchers.hasItems("multipleMethodsWithAnotherName", "multipleMethodsWithSameName", "multipleMethodsWithSameName"));
+    }
+
+    public void testJavaBeanWithClassHierarchy() {
+        myFixture.configureByFiles("CompleteJavaBeanRouteTestData.java", "CompleteJavaBeanTestData.java", "CompleteJavaBeanSuperClassTestData.java");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertThat(strings, Matchers.not(Matchers.contains("thisIsVeryPrivate")));
+        assertThat(strings, Matchers.hasItems("letsDoThis", "anotherBeanMethod", "mySuperAbstractMethod", "mySuperMethod", "myOverLoadedBean", "myOverLoadedBean"));
+        assertEquals("There is many options", 6, strings.size());
+    }
+
+    public void testJavaBeanTestDataCompletion2File() {
+        myFixture.configureByFiles("CompleteJavaBeanRoute2TestData.java", "CompleteJavaBeanTestData.java", "CompleteJavaBeanSuperClassTestData.java");
+        myFixture.complete(CompletionType.BASIC, 1);
+        myFixture.checkResultByFile("CompleteJavaBeanRoute2ResultData.java", true);
+    }
+
+    public void testJavaFieldBeanReference() {
+        myFixture.configureByFiles("CompleteJavaBeanRoute1TestData.java", "CompleteJavaBeanTestData.java");
+        myFixture.complete(CompletionType.BASIC, 1);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertThat(strings, Matchers.not(Matchers.contains("thisIsVeryPrivate")));
+        assertThat(strings, Matchers.hasItems("letsDoThis", "anotherBeanMethod", "mySuperAbstractMethod", "myOverLoadedBean", "myOverLoadedBean"));
+        assertEquals("There is many options", 5, strings.size());
+    }
 
     public void testJavaFieldBeanWithNoReference() {
         myFixture.configureByFiles("CompleteJavaBeanRoute5TestData.java", "CompleteJavaBeanTestData.java");

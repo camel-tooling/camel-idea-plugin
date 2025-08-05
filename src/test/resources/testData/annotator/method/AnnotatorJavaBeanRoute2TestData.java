@@ -14,12 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package testData.annotator.method;
-
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.main.Main;
-import testData.annotator.method.AnnotatorJavaBeanTestData;
-import testData.annotator.method.AnnotatorJavaBeanSuperClassTestData;
 
 public final class AnnotatorJavaBeanRoute2TestData extends RouteBuilder {
 
@@ -28,8 +23,8 @@ public final class AnnotatorJavaBeanRoute2TestData extends RouteBuilder {
     public void configure() {
         from("file:inbox")
             .bean(beanTestData, "mySuperAbstractMethod")
-            .bean(beanTestData, <error descr="Can not resolve method 'letsDoThis' in bean 'testData.annotator.method.AnnotatorJavaBeanSuperClassTestData'">"letsDoThis"</error>)
-            .bean(beanTestData, <error descr="Can not resolve method 'thisIsVeryPrivate' in bean 'testData.annotator.method.AnnotatorJavaBeanSuperClassTestData'">"thisIsVeryPrivate"</error>)
+            .bean(beanTestData, <error descr="Can not resolve method 'letsDoThis' in bean 'AnnotatorJavaBeanSuperClassTestData'">"letsDoThis"</error>)
+            .bean(beanTestData, <error descr="Can not resolve method 'thisIsVeryPrivate' in bean 'AnnotatorJavaBeanSuperClassTestData'">"thisIsVeryPrivate"</error>)
             .to("log:out");
     }
 }

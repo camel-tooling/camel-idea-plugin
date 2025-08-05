@@ -14,18 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package testData.annotator.method;
-
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.main.Main;
-import testData.annotator.method.AnnotatorJavaBeanTestData;
 
 public final class AnnotatorJavaBeanRoute1TestData extends RouteBuilder {
 
     public void configure() {
         from("file:inbox")
-            .bean(AnnotatorJavaBeanTestData.class, <error descr="'thisIsVeryPrivate' has private access in bean 'testData.annotator.method.AnnotatorJavaBeanTestData'">"thisIsVeryPrivate"</error>)
-            .bean(AnnotatorJavaBeanTestData.class, <error descr="Can not resolve method 'methodDoesNotExist' in bean 'testData.annotator.method.AnnotatorJavaBeanTestData'">"methodDoesNotExist"</error>)
+            .bean(AnnotatorJavaBeanTestData.class, <error descr="'thisIsVeryPrivate' has private access in bean 'AnnotatorJavaBeanTestData'">"thisIsVeryPrivate"</error>)
+            .bean(AnnotatorJavaBeanTestData.class, <error descr="Can not resolve method 'methodDoesNotExist' in bean 'AnnotatorJavaBeanTestData'">"methodDoesNotExist"</error>)
             .bean(AnnotatorJavaBeanTestData.class, "letsDoThis")
             .to("log:out");
     }

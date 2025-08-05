@@ -18,7 +18,6 @@ package com.github.cameltooling.idea.rename;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import org.jetbrains.annotations.Nullable;
-import org.junit.Ignore;
 
 public class RenameCamelBeanMethodRefTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
@@ -32,7 +31,6 @@ public class RenameCamelBeanMethodRefTestIT extends CamelLightCodeInsightFixture
         return "src/test/resources/testData/rename";
     }
 
-    @Ignore
     public void testCamelBeanMethodRefRename() {
         myFixture.configureByFiles("RenameCamelBeanMethodRefTestData.java", "RenameCompleteJavaBeanTestData.java");
         myFixture.renameElementAtCaretUsingHandler("letNotDoThis");

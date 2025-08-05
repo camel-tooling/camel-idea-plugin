@@ -62,6 +62,7 @@ import com.intellij.psi.util.ClassUtil;
 import com.intellij.psi.util.InheritanceUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.LightVirtualFile;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -357,9 +358,10 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         return true;
     }
 
+
     @Override
     public PsiClass getBeanClass(PsiElement element) {
-        final PsiElement beanPsiElement = getPsiElementForCamelBeanMethod(element);
+        PsiElement beanPsiElement = getPsiElementForCamelBeanMethod(PsiTreeUtil.getParentOfType(element, PsiLiteralExpression.class, false));
         if (beanPsiElement != null) {
             if (beanPsiElement instanceof PsiClass psiClass) {
                 return psiClass;
@@ -388,7 +390,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public PsiElement getPsiElementForCamelBeanMethod(PsiElement element) {
-        if (element instanceof PsiLiteral || element.getParent() instanceof PsiLiteralExpression) {
+        if (element instanceof PsiLiteralExpression) {
             final PsiExpressionList expressionList = PsiTreeUtil.getParentOfType(element, PsiExpressionList.class);
             if (expressionList != null) {
                 final PsiIdentifier identifier = PsiTreeUtil.getChildOfType(expressionList.getPrevSibling(), PsiIdentifier.class);
@@ -396,6 +398,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                     return expressionList;
                 }
             }
+            return null;
         }
         return null;
     }

@@ -30,6 +30,8 @@ import com.intellij.patterns.PatternCondition;
 import com.intellij.patterns.PsiJavaPatterns;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaToken;
+import com.intellij.psi.PsiLiteralExpression;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
@@ -53,7 +55,8 @@ public class CamelJavaReferenceContributor extends CamelContributor {
         extend(CompletionType.BASIC, psiElement(PsiJavaToken.class).with(new PatternCondition<>("CamelJavaBeanReferenceSmartCompletion") {
             @Override
             public boolean accepts(@NotNull PsiJavaToken psiJavaToken, ProcessingContext processingContext) {
-                return getCamelIdeaUtils().getBeanPsiElement(psiJavaToken) != null;
+                PsiLiteralExpression expression = PsiTreeUtil.getParentOfType(psiJavaToken, PsiLiteralExpression.class, false);
+                return expression != null && getCamelIdeaUtils().getBeanPsiElement(expression) != null;
             }
         }), new CamelJavaBeanReferenceSmartCompletion());
         // The name of the header corresponding to the first parameter of the method setHeader in the class
