@@ -42,11 +42,10 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
         return "src/test/resources/testData/annotator";
     }
 
-//    @Ignore
-//    public void testAnnotatorSimpleValidation() {
-//        myFixture.configureByText("AnnotatorTestData.java", getJavaWithSimple());
-//        myFixture.checkHighlighting(false, false, true, true);
-//    }
+    public void testAnnotatorSimpleValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaWithSimple());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
 
     public void testAnnotatorLogValidation() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaWithLog());
@@ -58,17 +57,15 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
         myFixture.checkHighlighting(false, false, true, true);
     }
 
-//    @Ignore
-//    public void testAnnotatorOpenBracketSimpleValidation() {
-//        myFixture.configureByText("AnnotatorTestData.java", getJavaOpenBracketWithSimple());
-//        myFixture.checkHighlighting(false, false, true, true);
-//    }
+    public void testAnnotatorOpenBracketSimpleValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaOpenBracketWithSimple());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
 
-//    @Ignore
-//    public void testAnnotatorMultipleOpenBracketSimpleValidation() {
-//        myFixture.configureByText("AnnotatorTestData.java", getJavaMutlipleOpenBracketWithSimple());
-//        myFixture.checkHighlighting(false, false, true, true);
-//    }
+    public void testAnnotatorMultipleOpenBracketSimpleValidation() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaMutlipleOpenBracketWithSimple());
+        myFixture.checkHighlighting(false, false, true, true);
+    }
 
     public void testAnnotatorCamelPredicateValidation() {
         myFixture.configureByText("AnnotatorTestData.java", getJavaWithCamelPredicate());
@@ -80,11 +77,10 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
         myFixture.checkHighlighting(false, false, false, true);
     }
 
-//    @Ignore
-//    public void testAnnotatorCamelPredicateValidation2() {
-//        myFixture.configureByText("AnnotatorTestData.java", getJavaWithCamelPredicate2());
-//        myFixture.checkHighlighting(false, false, false, true);
-//    }
+    public void testAnnotatorCamelPredicateValidation2() {
+        myFixture.configureByText("AnnotatorTestData.java", getJavaWithCamelPredicate2());
+        myFixture.checkHighlighting(false, false, false, true);
+    }
 
     public void testXmlAnnotatorSimpleValidation2() {
         myFixture.configureByText("AnnotatorTestData.xml", getXmlWithSimple());
@@ -98,7 +94,6 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
 //         myFixture.checkHighlighting(false, false, false, true);
 //    }
 
-//    @Ignore
     public void testXmlAnnotatorWithLogValidation() {
         myFixture.configureByText("AnnotatorTestData.xml", getXmlWithLog());
         myFixture.checkHighlighting(false, false, false, true);
