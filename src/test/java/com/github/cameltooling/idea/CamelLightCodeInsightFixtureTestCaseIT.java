@@ -49,7 +49,6 @@ import com.intellij.testFramework.LightProjectDescriptor;
 import com.intellij.testFramework.PsiTestUtil;
 import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -81,7 +80,7 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        mavenArtifacts = getMavenArtifacts(CAMEL_CORE_MAVEN_ARTIFACT);
+        mavenArtifacts = CamelTestDependencyUtil.getMavenArtifacts(CAMEL_CORE_MAVEN_ARTIFACT);
     }
 
     @Override
@@ -115,21 +114,6 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
     @Override
     protected String getTestDataPath() {
         return TEST_DATA_BASE;
-    }
-
-    /**
-     * Get a list of artifact declared as dependencies in the pom.xml file.
-     * <p>
-     *   The method take a String arrays off "G:A:P:C:?" "org.apache.camel:camel-core:2.22.0"
-     * </p>
-     * @param mavenArtifact - Array of maven artifact to resolve
-     * @return Array of artifact files
-     */
-    protected static File[] getMavenArtifacts(String... mavenArtifact) {
-        return Maven.configureResolver()
-            .withRemoteRepo("snapshot", "https://repository.apache.org/snapshots/", "default")
-            .resolve(mavenArtifact)
-            .withoutTransitivity().asFile();
     }
 
     protected PsiElement getElementAtCaret() {
@@ -180,24 +164,14 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
 
             @Override
             public void configureModule(@NotNull Module module, @NotNull ModifiableRootModel model, @NotNull ContentEntry contentEntry) {
-                loadDependencies(model);
+                CamelTestDependencyUtil.loadDependencies(model, getMavenDependencies());
+                loadCustomDependencies(model);
                 model.getModuleExtension( LanguageLevelModuleExtension.class ).setLanguageLevel( LanguageLevel.JDK_11 );
             }
         };
     }
 
-    /**
-     * Loads the maven dependencies into the given model.
-     * @param model the model into which the dependencies are added.
-     */
-    protected void loadDependencies(@NotNull ModifiableRootModel model) {
-        String[] dependencies = getMavenDependencies();
-        if (dependencies != null && dependencies.length > 0) {
-            File[] artifacts = getMavenArtifacts(dependencies);
-            for (int i = 0; i < artifacts.length; i++) {
-                File artifact = artifacts[i];
-                PsiTestUtil.addLibrary(model, dependencies[i], artifact.getParent(), artifact.getName());
-            }
-        }
+    protected void loadCustomDependencies(@NotNull ModifiableRootModel model) {
     }
+
 }

@@ -56,6 +56,7 @@ import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
 import com.intellij.psi.impl.source.PostprocessReformattingAspect;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
+import com.intellij.psi.search.SearchScope;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.util.ClassUtil;
 import com.intellij.psi.util.InheritanceUtil;
@@ -406,12 +407,14 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public List<PsiElement> findEndpointUsages(Module module, Predicate<String> uriCondition) {
-        return findEndpoints(module, uriCondition, e -> !isCamelRouteStart(e));
+        var scope = module.getModuleWithDependentsScope();
+        return findEndpoints(module.getProject(), scope, uriCondition, e -> !isCamelRouteStart(e));
     }
 
     @Override
     public List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition) {
-        return findEndpoints(module, uriCondition, this::isCamelRouteStart);
+        var scope = module.getModuleWithDependenciesScope();
+        return findEndpoints(module.getProject(), scope, uriCondition, this::isCamelRouteStart);
     }
 
     @Override
@@ -440,13 +443,13 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             .findFirst();
     }
 
-    private List<PsiElement> findEndpoints(Module module, Predicate<String> uriCondition, Predicate<PsiLiteral> elementCondition) {
-        PsiManager manager = PsiManager.getInstance(module.getProject());
+    private List<PsiElement> findEndpoints(Project project, SearchScope scope, Predicate<String> uriCondition, Predicate<PsiLiteral> elementCondition) {
+        PsiManager manager = PsiManager.getInstance(project);
         PsiClass routeBuilderClass = findRouteBuilderClass(manager);
 
         List<PsiElement> results = new ArrayList<>();
         if (routeBuilderClass != null) {
-            Collection<PsiClass> routeBuilders = ClassInheritorsSearch.search(routeBuilderClass, module.getModuleScope(), true)
+            Collection<PsiClass> routeBuilders = ClassInheritorsSearch.search(routeBuilderClass, scope, true)
                 .findAll();
             for (PsiClass routeBuilder : routeBuilders) {
                 Collection<PsiLiteralExpression> literals = PsiTreeUtil.findChildrenOfType(routeBuilder, PsiLiteralExpression.class);

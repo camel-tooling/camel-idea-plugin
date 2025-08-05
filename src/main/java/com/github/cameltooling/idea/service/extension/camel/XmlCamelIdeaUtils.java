@@ -22,12 +22,14 @@ import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
@@ -133,15 +135,15 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
 
     @Override
     public List<PsiElement> findEndpointUsages(Module module, Predicate<String> uriCondition) {
-        return findEndpoints(module, uriCondition, e -> !isCamelRouteStart(e));
+        return findEndpoints(module.getProject(), module.getModuleWithDependentsScope(), uriCondition, e -> !isCamelRouteStart(e));
     }
 
     @Override
     public List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition) {
-        return findEndpoints(module, uriCondition, this::isCamelRouteStart);
+        return findEndpoints(module.getProject(), module.getModuleWithDependenciesScope(), uriCondition, this::isCamelRouteStart);
     }
 
-    private List<PsiElement> findEndpoints(Module module, Predicate<String> uriCondition, Predicate<XmlTag> tagCondition) {
+    private List<PsiElement> findEndpoints(Project project, GlobalSearchScope scope, Predicate<String> uriCondition, Predicate<XmlTag> tagCondition) {
         Predicate<XmlAttributeValue> endpointMatcher =
             ((Predicate<XmlAttributeValue>)this::isEndpointUriValue)
             .and(e -> parentTagMatches(e, tagCondition))
@@ -149,7 +151,7 @@ public class XmlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsE
 
         List<PsiElement> endpointDeclarations = new ArrayList<>();
         final IdeaUtils service = IdeaUtils.getService();
-        service.iterateXmlDocumentRoots(module, root -> {
+        service.iterateXmlDocumentRoots(project, scope, root -> {
             if (isAcceptedNamespace(root.getNamespace())) {
                 service.iterateXmlNodes(root, XmlAttributeValue.class, value -> {
                     if (endpointMatcher.test(value)) {

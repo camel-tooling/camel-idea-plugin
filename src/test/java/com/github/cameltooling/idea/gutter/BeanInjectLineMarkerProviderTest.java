@@ -44,7 +44,7 @@ public class BeanInjectLineMarkerProviderTest extends CamelLightCodeInsightFixtu
         assertEmpty(beanInjectMarkers);
     }
 
-//    @Ignore
+//    @Ignore TODO:!
 //    public void testBeanInjectGutter() {
 //        myFixture.configureByFiles("TestClass1.java", "TestClass2.java", "TestClass3.java", "beans.xml");
 //
