@@ -65,21 +65,19 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
         verifyHighlight(list, "\"mySuperAbstractMethod\"", "Can not resolve method 'mySuperAbstractMethod' in bean 'AnnotatorJavaBeanSuperClassTestData'", HighlightSeverity.ERROR);
         verifyHighlight(list, "\"thisIsVeryPrivate\"", "Can not resolve method 'thisIsVeryPrivate' in bean 'AnnotatorJavaBeanSuperClassTestData'", HighlightSeverity.ERROR);
     }
-//  TODO: matching by parameter count / types needs to be implemented for this to work
-//
-//    /**
-//     * Test if the annotator mark the bean call "myOverLoadedBean" as errors because it's Ambiguous. This test also test if the scenario where one of the
-//     * overloaded methods is private and the other is public
-//     */
-//    public void testAnnotatorJavaBeanAmbiguousMatch() {
-//        myFixture.configureByFiles("AnnotatorJavaBeanRoute3TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
-//        myFixture.checkHighlighting(false, false, false, true);
-//
-//        List<HighlightInfo> list = myFixture.doHighlighting();
-//        verifyHighlight(list, "\"myOverLoadedBean2\"", "Cannot resolve method 'bean(AnnotatorJavaBeanTestData, java.lang.String)'", HighlightSeverity.ERROR);
-//        verifyHighlight(list, "\"myOverLoadedBean(${body})\"", "Cannot resolve method 'bean(AnnotatorJavaBeanTestData, java.lang.String)'", HighlightSeverity.ERROR);
-//        verifyHighlight(list, "\"myOverLoadedBean\"", "Ambiguous matches 'myOverLoadedBean' in bean 'AnnotatorJavaBeanTestData'", HighlightSeverity.ERROR);
-//    }
+
+    /**
+     * Test if the annotator mark the bean call "myOverLoadedBean" as errors because it's Ambiguous.
+     * This test also test if the scenario where one of the overloaded methods is private and the other is public - the public
+     * method should be chosen and there should be no ambiguity.
+     */
+    public void testAnnotatorJavaBeanAmbiguousMatch() {
+        myFixture.configureByFiles("AnnotatorJavaBeanRoute3TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
+        myFixture.checkHighlighting(false, false, false, true);
+
+        List<HighlightInfo> list = myFixture.doHighlighting();
+        verifyHighlight(list, "\"myOverLoadedBean\"", "Ambiguous matches 'myOverLoadedBean' in bean 'AnnotatorJavaBeanTestData'", HighlightSeverity.ERROR);
+    }
 
     /**
      * Test if the annotator is false and don't mark any methods even it's ambiguous, but one of the methods are marked as @Handle
@@ -92,23 +90,23 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
         list.stream().noneMatch(info -> info.getText().contains("myOverLoadedBean3"));
     }
 
-//  TODO: matching by parameter count / types needs to be implemented for this to work
-//
-//    /**
-//     * Test if the calling methods is ambiguous and the Camel DSL bean calling method is with parameters
-//     */
-//    public void testAnnotatorJavaBeanAmbiguousMatchWithParameter() {
-//        myFixture.configureByFiles("AnnotatorJavaBeanRoute5TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
-//        myFixture.checkHighlighting(false, false, false, true);
-//
-//        List<HighlightInfo> list = myFixture.doHighlighting();
-//        verifyHighlight(list, "\"myOverLoadedBean(${body})\"", "Cannot resolve method 'bean(AnnotatorJavaBeanTestData, java.lang.String)'", HighlightSeverity.ERROR);
-//    }
+    /**
+     * Test if the calling methods is ambiguous and the Camel DSL bean calling method is with parameters
+     */
+    public void testAnnotatorJavaBeanAmbiguousMatchWithParameter() {
+        myFixture.configureByFiles("AnnotatorJavaBeanRoute5TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
+        myFixture.checkHighlighting(false, false, false, true);
+    }
 
-    private void verifyHighlight(List<HighlightInfo> list, String actualText, String actualErrorDescription, HighlightSeverity actualServerity) {
-        final Optional<HighlightInfo> error1 = list.stream().filter(highlightInfo -> highlightInfo.getText().equals(actualText)).findFirst();
-        assertTrue(String.format("Expect to find the %s in the list of highlight", actualText), error1.isPresent());
-        assertEquals(error1.get().getDescription(), actualErrorDescription);
+    public void testAnnotatorJavaBeanWithTypeParameters() {
+        myFixture.configureByFiles("AnnotatorJavaBeanRoute6TestData.java", "AnnotatorJavaBeanTestData.java", "AnnotatorJavaBeanSuperClassTestData.java");
+        myFixture.checkHighlighting(false, false, false, true);
+    }
+
+    private void verifyHighlight(List<HighlightInfo> list, String expectedText, String expectedDescription, HighlightSeverity actualServerity) {
+        final Optional<HighlightInfo> error1 = list.stream().filter(highlightInfo -> highlightInfo.getText().equals(expectedText)).findFirst();
+        assertTrue(String.format("Expect to find the %s in the list of highlight", expectedText), error1.isPresent());
+        assertEquals(expectedDescription, error1.get().getDescription());
         assertEquals(error1.get().getSeverity(), actualServerity);
     }
 

@@ -103,6 +103,7 @@ dependencies {
         testFramework TestFrameworkType.Platform.INSTANCE
     }
     implementation "org.apache.camel:camel-catalog:${camelVersion}"
+    implementation "org.apache.camel:camel-bean:${camelVersion}"
     implementation "org.apache.camel:camel-tooling-maven:${camelVersion}"
     implementation "org.apache.camel:camel-util:${camelVersion}"
     implementation "org.apache.camel:camel-util-json:${camelVersion}"
