@@ -1,4 +1,3 @@
-package testData;
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -17,7 +16,6 @@ package testData;
  */
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.main.Main;
-import testData.CompleteJavaSpringBeanTestData;
 
 public final class CompleteJavaBeanRoute9TestData extends RouteBuilder {
 

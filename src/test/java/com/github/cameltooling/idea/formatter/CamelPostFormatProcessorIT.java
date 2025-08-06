@@ -24,6 +24,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleManager;
+import com.intellij.testFramework.DumbModeTestUtils;
 import com.intellij.testFramework.PlatformTestUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -92,6 +93,15 @@ public class CamelPostFormatProcessorIT extends CamelLightCodeInsightFixtureTest
      */
     public void testPartialFormatWithRoute() {
         doTest("PartialFormatWithRoute", new TextRange(1400, 1757));
+    }
+
+    public void testRunningInDumbMode() {
+        myFixture.configureByFile("before/RouteWithDataFormatDSL.java");
+        DumbModeTestUtils.computeInDumbModeSynchronously(getProject(), () -> {
+            performReformatting(null);
+            return null;
+        });
+        myFixture.checkResultByFile("before/RouteWithDataFormatDSL.java");
     }
 
     @Nullable

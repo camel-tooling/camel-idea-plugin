@@ -19,16 +19,24 @@ package com.github.cameltooling.idea.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiParameter;
+import com.intellij.psi.PsiParameterList;
+import com.intellij.psi.PsiType;
+import com.intellij.util.IncorrectOperationException;
+import org.apache.camel.component.bean.BeanHelper;
+import org.jetbrains.annotations.NotNull;
 
 public class JavaMethodUtils implements Disposable {
 
@@ -105,15 +113,85 @@ public class JavaMethodUtils implements Disposable {
     }
 
     /**
-     * Return all methods expect the constructor
+     * Filter methods suitable for being a bean method invoked from a route.
+     * Private methods are not suitable, but are returned anyway - so that we can show an explicit error message on them
+     *
      * @param methods - List of methods to filter
      * @return - List of filtered methods
      */
-    public Collection<PsiMethod> getBeanMethods(Collection<PsiMethod> methods) {
+    public List<PsiMethod> getMatchingBeanMethods(List<PsiMethod> methods, String methodSpec) {
+        int paraStart = methodSpec.indexOf('(');
+        List<String> paramSpecs;
+        if (paraStart >= 0) {
+            if (!methodSpec.endsWith(")")) {
+                return List.of();
+            }
+            methodSpec = methodSpec.substring(paraStart + 1, methodSpec.length() - 1);
+            paramSpecs = Arrays.stream(methodSpec.split(",")).map(String::trim).toList();
+        } else {
+            paramSpecs = null;
+        }
         return methods.stream()
-            .filter(method -> !method.isConstructor())
-            .collect(Collectors.toList());
+                .filter(method -> !method.isConstructor() && !method.getModifierList().hasModifierProperty(PsiModifier.ABSTRACT))
+                .filter(method -> paramSpecs == null || beanMethodMatches(method, paramSpecs))
+                .toList();
     }
+
+    /**
+     * Basically a simplified re-implementation of {@link org.apache.camel.component.bean.BeanInfo#matchMethod}
+     */
+    private boolean beanMethodMatches(PsiMethod method, List<String> paramSpecs) {
+        PsiParameterList methodParams = method.getParameterList();
+        int paramCount = methodParams.getParametersCount();
+        if (paramCount != paramSpecs.size()) {
+            return false;
+        }
+        for (int i = 0; i < paramSpecs.size(); i++) {
+            PsiParameter methodParam = methodParams.getParameter(i);
+            if (!parameterMatchesSpec(methodParam, paramSpecs.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean parameterMatchesSpec(PsiParameter param, @NotNull String spec) {
+        if (spec.startsWith("${") || spec.equals("*")) {
+            return true;
+        }
+        int typeSeparatorPos = spec.indexOf(' ');
+        String typeSpec = spec;
+        if (typeSeparatorPos > -1) {
+            typeSpec = removeClassSuffix(spec.substring(0, typeSeparatorPos));
+        } else {
+            if (!typeSpec.endsWith(".class")) {
+                typeSpec = determineValueType(spec);
+                if (typeSpec == null) {
+                    return false;
+                }
+            } else {
+                typeSpec = removeClassSuffix(spec);
+            }
+        }
+
+        Project project = param.getProject();
+        try {
+            PsiType type = PsiElementFactory.getInstance(project).createTypeFromText(typeSpec, param);
+            return param.getType().isAssignableFrom(type);
+        } catch (IncorrectOperationException e) {
+            return false;
+        }
+    }
+
+    private String removeClassSuffix(String value) {
+        return value.endsWith(".class") ? value.substring(0, value.length() - ".class".length()) : value;
+    }
+
+    private String determineValueType(String value) {
+        Class<?> type = BeanHelper.getValidParameterType(value);
+        return type == null ? null : type.getName();
+    }
+
 
     /**
      * Return only the method name in free text from an {@link PsiElement}

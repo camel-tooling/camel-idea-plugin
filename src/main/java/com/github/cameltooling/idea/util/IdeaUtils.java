@@ -43,6 +43,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleFileIndex;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.ProjectFileIndex;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
@@ -437,17 +439,17 @@ public final class IdeaUtils implements Disposable {
 
     /**
      * Calls the given consumer for each Yaml file that could be found in the given module.
-     * @param module the module in which Yaml files should be found.
+     * @param project the project in which Yaml files should be found.
+     * @param scope the scope in which Yaml files should be found.
      * @param yamlFileConsumer the consumer to call anytime a Yaml has been found.
      */
-    public void iterateYamlFiles(Module module, Consumer<YAMLFile> yamlFileConsumer) {
-        final GlobalSearchScope moduleScope = module.getModuleContentScope();
-        final GlobalSearchScope yamlFiles = GlobalSearchScope.getScopeRestrictedByFileTypes(moduleScope, YAMLFileType.YML);
+    public void iterateYamlFiles(Project project, GlobalSearchScope scope, Consumer<YAMLFile> yamlFileConsumer) {
+        final GlobalSearchScope yamlFiles = GlobalSearchScope.getScopeRestrictedByFileTypes(scope, YAMLFileType.YML);
 
-        ModuleFileIndex fileIndex = ModuleRootManager.getInstance(module).getFileIndex();
+        ProjectFileIndex fileIndex = ProjectRootManager.getInstance(project).getFileIndex();
         fileIndex.iterateContent(f -> {
             if (yamlFiles.contains(f)) {
-                PsiFile file = PsiManager.getInstance(module.getProject()).findFile(f);
+                PsiFile file = PsiManager.getInstance(project).findFile(f);
                 if (file instanceof YAMLFile yamlFile) {
                     yamlFileConsumer.accept(yamlFile);
                 }
@@ -456,14 +458,13 @@ public final class IdeaUtils implements Disposable {
         });
     }
 
-    public void iterateXmlDocumentRoots(Module module, Consumer<XmlTag> rootTag) {
-        final GlobalSearchScope moduleScope = module.getModuleContentScope();
-        final GlobalSearchScope xmlFiles = GlobalSearchScope.getScopeRestrictedByFileTypes(moduleScope, XmlFileType.INSTANCE);
+    public void iterateXmlDocumentRoots(Project project, GlobalSearchScope scope, Consumer<XmlTag> rootTag) {
+        final GlobalSearchScope xmlFiles = GlobalSearchScope.getScopeRestrictedByFileTypes(scope, XmlFileType.INSTANCE);
 
-        ModuleFileIndex fileIndex = ModuleRootManager.getInstance(module).getFileIndex();
+        ProjectFileIndex fileIndex = ProjectRootManager.getInstance(project).getFileIndex();
         fileIndex.iterateContent(f -> {
             if (xmlFiles.contains(f)) {
-                PsiFile file = PsiManager.getInstance(module.getProject()).findFile(f);
+                PsiFile file = PsiManager.getInstance(project).findFile(f);
                 if (file instanceof XmlFile xmlFile) {
                     XmlTag root = xmlFile.getRootTag();
                     if (root != null) {

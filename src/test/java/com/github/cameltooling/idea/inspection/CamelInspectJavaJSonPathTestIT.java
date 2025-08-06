@@ -16,7 +16,6 @@
  */
 package com.github.cameltooling.idea.inspection;
 
-/*
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
 import com.intellij.testFramework.PsiTestUtil;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
@@ -42,4 +41,3 @@ public class CamelInspectJavaJSonPathTestIT extends CamelInspectionTestHelper {
         doTest("testData/barroute/", new LocalInspectionToolWrapper(inspection));
     }
 }
-*/

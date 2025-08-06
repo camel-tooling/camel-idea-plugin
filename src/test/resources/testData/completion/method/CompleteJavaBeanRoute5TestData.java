@@ -16,7 +16,6 @@
  */
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.main.Main;
-import testData.CompleteJavaBeanMultipleMethodTestData;
 
 public final class CompleteJavaBeanRoute5TestData extends RouteBuilder {
 

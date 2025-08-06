@@ -14,12 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package testData.annotator.method;
-
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.main.Main;
-import testData.annotator.method.AnnotatorJavaBeanTestData;
-import testData.annotator.method.AnnotatorJavaBeanSuperClassTestData;
 
 public final class AnnotatorJavaBeanRoute3TestData extends RouteBuilder {
 
@@ -29,7 +24,7 @@ public final class AnnotatorJavaBeanRoute3TestData extends RouteBuilder {
         from("file:inbox")
             .bean(beanTestData, "myOverLoadedBean2")
             .bean(beanTestData, "myOverLoadedBean(${body})")
-            .bean(beanTestData, <error descr="Ambiguous matches 'myOverLoadedBean' in bean 'testData.annotator.method.AnnotatorJavaBeanTestData'">"myOverLoadedBean"</error>)
+            .bean(beanTestData, <error descr="Ambiguous matches 'myOverLoadedBean' in bean 'AnnotatorJavaBeanTestData'">"myOverLoadedBean"</error>)
             .to("log:out");
     }
 }

@@ -16,7 +16,6 @@
  */
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.main.Main;
-import testData.CompleteJavaBeanTest2Data;
 
 /**
  * Test route for testing find usage from bean method "myOverLoadedBean" to the route Camel bean DSL.

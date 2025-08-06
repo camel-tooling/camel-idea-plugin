@@ -32,8 +32,7 @@ import static com.github.cameltooling.idea.completion.JavaEndpointSmartCompletio
 public class SimpleProjectKameletEndpointSmartCompletionTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
     @Override
-    protected void loadDependencies(@NotNull ModifiableRootModel model) {
-        super.loadDependencies(model);
+    protected void loadCustomDependencies(@NotNull ModifiableRootModel model) {
         File artifact = new File("src/test/resources/testData/kamelet/kamelets-with-custom-jar/custom-kamelets.jar");
         PsiTestUtil.addLibrary(model, "foo/custom-kamelets.jar", artifact.getParent(), artifact.getName());
     }

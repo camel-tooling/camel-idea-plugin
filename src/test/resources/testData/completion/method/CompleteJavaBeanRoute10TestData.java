@@ -16,7 +16,6 @@
  */
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.main.Main;
-import testData.CompleteJavaSpringServiceBeanTestData;
 
 /**
  * Test route for testing code completion with empty bean name as reference

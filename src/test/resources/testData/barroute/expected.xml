@@ -3,6 +3,6 @@
   <problem>
     <file>BarRoute.java</file>
     <line>34</line>
-    <description>Illegal syntax: $.store.book[* xxxxxxx]</description>
+    <description>Expected wildcard token to end with ']' on position 14</description>
   </problem>
 </problems>

@@ -16,7 +16,6 @@
  */
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.main.Main;
-import testData.CompleteJavaSpringServiceBeanTestData;
 
 public final class CompleteJavaSpringServiceBeanRouteTestData extends RouteBuilder {
 

@@ -21,11 +21,17 @@ import java.util.List;
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.codeInsight.completion.CompletionType;
 import org.intellij.lang.annotations.Language;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Testing bean reference completion in blueprint files
  */
 public class BeanReferenceCompletionExtensionIT extends CamelLightCodeInsightFixtureTestCaseIT {
+
+    @Override
+    protected @Nullable String[] getMavenDependencies() {
+        return new String[] {CAMEL_CORE_MODEL_MAVEN_ARTIFACT, CAMEL_API_MAVEN_ARTIFACT};
+    }
 
     @Override
     protected String getTestDataPath() {
@@ -86,15 +92,14 @@ public class BeanReferenceCompletionExtensionIT extends CamelLightCodeInsightFix
         "  </camelContext>" +
         "</blueprint>";
 
-//    @Ignore
-//    public void testBeanInjectValue() {
-//        myFixture.configureByFiles("TestClass1.java", "TestClass2.java", "TestClass3.java", "beans.xml");
-//        myFixture.complete(CompletionType.BASIC);
-//        List<String> strings = myFixture.getLookupElementStrings();
-//        assertNotNull(strings);
-//        assertEquals(2, strings.size());
-//        assertContainsElements(strings, "testClass2Bean", "testClass2Bean2");
-//    }
+    public void testBeanInjectValue() {
+        myFixture.configureByFiles("TestClass1.java", "TestClass2.java", "TestClass3.java", "beans.xml");
+        myFixture.complete(CompletionType.BASIC);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertEquals(2, strings.size());
+        assertContainsElements(strings, "testClass2Bean", "testClass2Bean2");
+    }
 
     public void testPropertyReference() {
         List<String> strings = doTestCompletionAtCaret(PROPERTY_REFERENCE);

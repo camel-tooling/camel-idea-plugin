@@ -30,12 +30,14 @@ import com.intellij.ide.plugins.PluginManagerCore;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PlatformPatterns;
 import com.intellij.patterns.StandardPatterns;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.yaml.YAMLElementTypes;
 import org.jetbrains.yaml.YAMLFileType;
@@ -182,8 +184,7 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public boolean isCamelFile(PsiFile file) {
-        if (file != null && YAMLFileType.YML.equals(file.getFileType())) {
-            YAMLFile yamlFile = (YAMLFile) file;
+        if (file instanceof YAMLFile yamlFile) {
             List<YAMLDocument> yamlDocuments = yamlFile.getDocuments();
             return yamlDocuments.stream().anyMatch(document -> {
                 YAMLValue value = document.getTopLevelValue();
@@ -385,18 +386,18 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public List<PsiElement> findEndpointUsages(Module module, Predicate<String> uriCondition) {
-        return findEndpoints(module, PRODUCER_ENDPOINT, uriCondition);
+        return findEndpoints(module.getProject(), module.getModuleWithDependentsScope(), PRODUCER_ENDPOINT, uriCondition);
     }
 
     @Override
     public List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition) {
-        return findEndpoints(module, CONSUMER_ENDPOINT, uriCondition);
+        return findEndpoints(module.getProject(), module.getModuleWithDependenciesScope(), CONSUMER_ENDPOINT, uriCondition);
     }
 
-    private List<PsiElement> findEndpoints(Module module, ElementPattern<YAMLKeyValue> pattern, Predicate<String> uriCondition) {
+    private List<PsiElement> findEndpoints(Project project, GlobalSearchScope scope, ElementPattern<YAMLKeyValue> pattern, Predicate<String> uriCondition) {
         final List<PsiElement> result = new ArrayList<>();
         IdeaUtils.getService().iterateYamlFiles(
-            module,
+                project, scope,
             file -> PsiTreeUtil.processElements(
                 file,
                 element -> {
