@@ -18,8 +18,6 @@ package com.github.cameltooling.idea.runner;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -177,7 +175,7 @@ public class CamelJBangRunProfileState extends CommandLineState implements Targe
         if (debug) {
             CamelProjectPreferenceService preferenceService = CamelProjectPreferenceService.getService(project);
             CamelRuntime runtime = preferenceService.getCamelCatalogProvider().getRuntime();
-            dependencies.add(runtime.getDebugArtifact().getArtifactId());
+            dependencies.add(runtime.getDebugArtifact(version).getArtifactId());
             dependencies.add(runtime.getManagementArtifact().getArtifactId());
             ArtifactCoordinates additionalArtifact = runtime.getAdditionalArtifact();
             if (additionalArtifact != null) {
