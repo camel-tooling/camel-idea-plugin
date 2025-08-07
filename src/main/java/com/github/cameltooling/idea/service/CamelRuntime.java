@@ -17,6 +17,8 @@
 package com.github.cameltooling.idea.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import com.github.cameltooling.idea.util.ArtifactCoordinates;
 import com.intellij.openapi.diagnostic.Logger;
@@ -25,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static com.github.cameltooling.idea.Constants.CAMEL_GROUP_ID;
+import static java.util.stream.Collectors.toUnmodifiableMap;
 
 /**
  * {@code CamelRuntime} defines all the Camel runtimes supported by the plugin.
@@ -52,7 +55,7 @@ public enum CamelRuntime {
      */
     KARAF(
         List.of(CAMEL_GROUP_ID, "org.apache.camel.karaf"), "camel-core-osgi", "camel-catalog-provider-karaf",
-        "camel-debug", "camel-management", null, null
+        "camel-debug", Map.of(VersionRange.of("3.15.0", "4.7.0"), CAMEL_GROUP_ID), "camel-management", null, null
     ),
     /**
      * The SpringBoot Runtime
@@ -86,6 +89,8 @@ public enum CamelRuntime {
      */
     @NotNull
     private final ArtifactCoordinates debugArtifact;
+    @NotNull
+    private final Map<VersionRange, ArtifactCoordinates> debugArtifactOverrides;
     /**
      * The artifact containing Camel Management.
      */
@@ -103,6 +108,12 @@ public enum CamelRuntime {
     @Nullable
     private final String pluginGoal;
 
+    CamelRuntime(@NotNull List<String> groupIds, @Nullable String coreArtifactId, @Nullable String catalogArtifactId,
+                 @NotNull String debugArtifactId, @NotNull String managementArtifactId, @Nullable String pluginGoal,
+                 @Nullable ArtifactCoordinates additionalArtifact) {
+        this(groupIds, coreArtifactId, catalogArtifactId, debugArtifactId, Map.of(), managementArtifactId, pluginGoal, additionalArtifact);
+    }
+
     /**
      * Constructs a {@code CamelRuntime} with the given parameters.
      *
@@ -116,14 +127,17 @@ public enum CamelRuntime {
      * @param additionalArtifact the artifact of the additional debug dependency.
      */
     CamelRuntime(@NotNull List<String> groupIds, @Nullable String coreArtifactId, @Nullable String catalogArtifactId,
-                 @NotNull String debugArtifactId, @NotNull String managementArtifactId, @Nullable String pluginGoal,
+                 @NotNull String debugArtifactId, Map<VersionRange, String> debugGroupIdOverrides, @NotNull String managementArtifactId, @Nullable String pluginGoal,
                  @Nullable ArtifactCoordinates additionalArtifact) {
         this.groupIds = groupIds;
         this.coreArtifactId = coreArtifactId;
         this.catalogArtifactId = catalogArtifactId;
         // Use the last group id as it is only supported in recent versions
-        String groupId = groupIds.get(groupIds.size() - 1);
+        String groupId = groupIds.getLast();
         this.debugArtifact = ArtifactCoordinates.of(groupId, debugArtifactId, null);
+        this.debugArtifactOverrides = debugGroupIdOverrides.entrySet().stream()
+                .collect(toUnmodifiableMap(Map.Entry::getKey,
+                        e -> ArtifactCoordinates.of(e.getValue(), debugArtifactId, null)));
         this.managementArtifact = ArtifactCoordinates.of(groupId, managementArtifactId, null);
         this.pluginGoal = pluginGoal;
         this.additionalArtifact = additionalArtifact;
@@ -145,8 +159,17 @@ public enum CamelRuntime {
     }
 
     @NotNull
-    public ArtifactCoordinates getDebugArtifact() {
-        return debugArtifact;
+    public ArtifactCoordinates getDebugArtifact(String version) {
+        Version parsedVersion = Version.parse(version);
+        if (parsedVersion != null) {
+            return debugArtifactOverrides.entrySet().stream()
+                    .filter(e -> e.getKey().contains(parsedVersion))
+                    .map(Map.Entry::getValue)
+                    .findFirst()
+                    .orElse(debugArtifact);
+        } else {
+            return debugArtifact;
+        }
     }
 
     @NotNull
@@ -225,4 +248,46 @@ public enum CamelRuntime {
         }
         return version;
     }
+
+    private record Version(int major, int minor) implements Comparable<Version> {
+
+        public static Version parse(@NotNull String version) {
+            String[] parts = version.split("\\.");
+            if (parts.length < 2) {
+                return null;
+            } else {
+                try {
+                    return new Version(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+        }
+
+        @Override
+        public int compareTo(@NotNull CamelRuntime.Version o) {
+            int majorComparison = Integer.compare(this.major, o.major);
+            if (majorComparison != 0) {
+                return majorComparison;
+            }
+            return Integer.compare(this.minor, o.minor);
+        }
+
+    }
+
+    private record VersionRange(@NotNull Version from, @NotNull Version to) {
+
+        public static VersionRange of(String from, String to) {
+            return new VersionRange(
+                    Objects.requireNonNull(Version.parse(from)),
+                    Objects.requireNonNull(Version.parse(to))
+            );
+        }
+
+        public boolean contains(Version version) {
+            return version.compareTo(from) >= 0 && version.compareTo(to) < 0;
+        }
+
+    }
+
 }
