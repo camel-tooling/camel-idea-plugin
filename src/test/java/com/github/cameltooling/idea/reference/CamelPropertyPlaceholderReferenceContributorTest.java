@@ -22,8 +22,9 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 
-import java.util.Arrays;
 import java.util.List;
+
+import static com.github.cameltooling.idea.reference.TestReferenceUtil.getPropertyReferences;
 
 public class CamelPropertyPlaceholderReferenceContributorTest extends CamelLightCodeInsightFixtureTestCaseIT {
 
@@ -132,14 +133,5 @@ public class CamelPropertyPlaceholderReferenceContributorTest extends CamelLight
         assertNotNull("PropertyReference to " + propertyName + " not found in " + caretElement, myPropRef);
         assertEquals(new TextRange(refStartOffset, refStartOffset + propertyName.length()), myPropRef.getRangeInElement());
     }
-
-    private static List<PropertyReference> getPropertyReferences(PsiElement caretElement) {
-        PsiReference[] refs = caretElement.getReferences();
-        return Arrays.stream(refs)
-                .filter(ref -> ref instanceof PropertyReference)
-                .map(ref -> (PropertyReference) ref)
-                .toList();
-    }
-
 
 }
