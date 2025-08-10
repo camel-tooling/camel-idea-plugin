@@ -49,7 +49,7 @@ public class CamelBeanMethodAnnotator implements Annotator {
 
     boolean isEnabled(@NotNull PsiElement element) {
         return element.getProject().getService(CamelService.class).isCamelProject()
-            && CamelPreferenceService.getService().isRealTimeSimpleValidation()
+            && CamelPreferenceService.getService().isRealTimeBeanMethodValidationCheckBox()
             && CamelIdeaUtils.getService().getBeanPsiElement(element) != null;
     }
 
