@@ -149,6 +149,7 @@
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.blueprint.BlueprintReferenceContributor" language="XML"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.CamelBeanInjectReferenceContributor"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.CamelPropertyPlaceholderReferenceContributor"/>
+    <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.blueprint.ConfigPropertyPlaceholderReferenceContributor" language="JAVA"/>
     <renameHandler implementation="com.github.cameltooling.idea.reference.CamelBeanReferenceRenameHandler"/>
     <postFormatProcessor implementation="com.github.cameltooling.idea.formatter.CamelPostFormatProcessor"/>
 

@@ -1,16 +1,15 @@
 package com.github.cameltooling.idea.reference;
 
+import com.intellij.lang.properties.references.PropertyReference;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiPolyVariantReference;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.ResolveResult;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.fixtures.JavaCodeInsightTestFixture;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -62,6 +61,18 @@ public final class TestReferenceUtil {
         } else {
             return element;
         }
+    }
+
+    public static List<PropertyReference> getPropertyReferences(PsiElement caretElement) {
+        return getReferencesOfType(caretElement, PropertyReference.class);
+    }
+
+    public static <T extends PsiReference>  List<T> getReferencesOfType(PsiElement caretElement, Class<T> refType) {
+        PsiReference[] refs = caretElement.getReferences();
+        return Arrays.stream(refs)
+                .filter(refType::isInstance)
+                .map(refType::cast)
+                .toList();
     }
 
 }
