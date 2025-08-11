@@ -577,7 +577,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
             runtime = CamelRuntime.DEFAULT;
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    String.format("Using the default %s component as dependency", runtime.getDebugArtifact())
+                    String.format("Using the default %s component as dependency", runtime.getDebugArtifact(version))
                 );
             }
         }
@@ -603,7 +603,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
     @NotNull
     private static List<URL> downloadCamelDebugger(Project project, @NotNull CamelRuntime runtime, @NotNull String version) throws IOException {
         try (MavenArtifactRetrieverContext context = new MavenArtifactRetrieverContext(project)) {
-            ArtifactCoordinates debugArtifact = runtime.getDebugArtifact();
+            ArtifactCoordinates debugArtifact = runtime.getDebugArtifact(version);
             if (LOG.isDebugEnabled()) {
                 LOG.debug(String.format("Trying to download %s %s with all its dependencies", debugArtifact, version));
             }
@@ -903,7 +903,7 @@ public class CamelDebuggerPatcher extends JavaProgramPatcher {
          * {@code camel-debug}.
          */
         Dependency createCamelDebugDependency(Project project, String version) {
-            return createDependency(project, version, CamelRuntime::getDebugArtifact);
+            return createDependency(project, version, runtime -> runtime.getDebugArtifact(version));
         }
 
         /**
