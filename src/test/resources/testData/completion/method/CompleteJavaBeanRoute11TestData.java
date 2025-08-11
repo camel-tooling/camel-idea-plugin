@@ -16,7 +16,7 @@
  */
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.main.Main;
-import testData.CompleteJavaSpringRepositoryBeanTestData.*;
+import CompleteJavaSpringRepositoryBeanTestData.*;
 
 /**
  * Test route for testing find usage from Route bean DSL to the bean method where the

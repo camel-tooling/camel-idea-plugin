@@ -44,6 +44,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.LibraryOrderEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -161,6 +162,9 @@ public class CamelService implements Disposable {
      * @return true if the current project is a Camel project, {@code false} otherwise.
      */
     public boolean isCamelProject() {
+        if (DumbService.isDumb(project)) { //let's not do anything in dumb mode
+            return false;
+        }
         final Boolean isCamelProject = CamelProjectPreferenceService.getService(project).isCamelProject();
         return isCamelProject == null ? isCamelPresent() : isCamelProject;
     }
@@ -660,8 +664,12 @@ public class CamelService implements Disposable {
         // split into major, minor and patch
         String[] parts = version.split("\\.");
         if (parts.length >= 2) {
-            major = Integer.parseInt(parts[0]);
-            minor = Integer.parseInt(parts[1]);
+            try {
+                major = Integer.parseInt(parts[0]);
+                minor = Integer.parseInt(parts[1]);
+            } catch (NumberFormatException e) {
+                return false;
+            }
         }
 
         if (major > MIN_MAJOR_VERSION) {

@@ -16,10 +16,9 @@
  */
 package com.github.cameltooling.idea.reference.blueprint;
 
-import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.XmlPatterns;
 import com.intellij.psi.PsiReferenceContributor;
 import com.intellij.psi.PsiReferenceRegistrar;
-import com.intellij.psi.xml.XmlAttributeValue;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -29,9 +28,9 @@ public class BlueprintReferenceContributor extends PsiReferenceContributor {
 
     @Override
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
-        registrar.registerReferenceProvider(PlatformPatterns.psiElement(XmlAttributeValue.class), new BlueprintJavaClassReferenceProvider());
-        registrar.registerReferenceProvider(PlatformPatterns.psiElement(XmlAttributeValue.class), new BeanReferenceProvider());
-        registrar.registerReferenceProvider(PlatformPatterns.psiElement(XmlAttributeValue.class), new BlueprintPropertyNameReferenceProvider());
+        registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue(), new BlueprintJavaClassReferenceProvider());
+        registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue(), new BeanReferenceProvider());
+        registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue(), new BlueprintPropertyNameReferenceProvider());
     }
 
 }

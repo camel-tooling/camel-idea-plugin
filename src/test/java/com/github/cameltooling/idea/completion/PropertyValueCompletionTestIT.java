@@ -315,47 +315,47 @@ public class PropertyValueCompletionTestIT extends CamelLightCodeInsightFixtureT
         assertContainsElements(strings, "false");
         assertDoesntContain(strings,  "true");
     }
-// Should be fixed by https://github.com/camel-tooling/camel-idea-plugin/issues/975
-//    /**
-//     * Ensures that no suggestions are provided when the first key is unknown.
-//     */
-//    public void testNoSuggestionOnUnknownFirstKey() {
-//        for (FileType type : FileType.values()) {
-//            testNoSuggestionOnUnknownFirstKey(type);
-//        }
-//    }
-//
-//    private void testNoSuggestionOnUnknownFirstKey(FileType type) {
-//        myFixture.configureByFiles(getFileName(type, "value-unknown-first-key"));
-//        myFixture.completeBasic();
-//        List<String> strings = myFixture.getLookupElementStrings();
-//        assertNullOrEmpty(strings);
-//    }
-//
-//    /**
-//     * Ensures that no suggestions are provided when the second key is unknown.
-//     */
-//    public void testNoSuggestionOnUnknownSecondKey() {
-//        for (FileType type : FileType.values()) {
-//            testNoSuggestionOnUnknownSecondKey(type);
-//        }
-//    }
-//
-//    private void testNoSuggestionOnUnknownSecondKey(FileType type) {
-//        myFixture.configureByFiles(getFileName(type, "value-unknown-second-key"));
-//        myFixture.completeBasic();
-//        List<String> strings = myFixture.getLookupElementStrings();
-//        assertNullOrEmpty(strings);
-//    }
-//
-//    /**
-//     * Ensures that no suggestions are provided when the component is unknown.
-//     */
-//    public void testNoSuggestionOnUnknownComponent() {
-//        for (FileType type : FileType.values()) {
-//            testNoSuggestionOnUnknownComponent(type);
-//        }
-//    }
+
+    /**
+     * Ensures that no suggestions are provided when the first key is unknown.
+     */
+    public void testNoSuggestionOnUnknownFirstKey() {
+        for (FileType type : FileType.values()) {
+            testNoSuggestionOnUnknownFirstKey(type);
+        }
+    }
+
+    private void testNoSuggestionOnUnknownFirstKey(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "value-unknown-first-key"));
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNullOrEmpty(strings);
+    }
+
+    /**
+     * Ensures that no suggestions are provided when the second key is unknown.
+     */
+    public void testNoSuggestionOnUnknownSecondKey() {
+        for (FileType type : FileType.values()) {
+            testNoSuggestionOnUnknownSecondKey(type);
+        }
+    }
+
+    private void testNoSuggestionOnUnknownSecondKey(FileType type) {
+        myFixture.configureByFiles(getFileName(type, "value-unknown-second-key"));
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNullOrEmpty(strings);
+    }
+
+    /**
+     * Ensures that no suggestions are provided when the component is unknown.
+     */
+    public void testNoSuggestionOnUnknownComponent() {
+        for (FileType type : FileType.values()) {
+            testNoSuggestionOnUnknownComponent(type);
+        }
+    }
 
     private void testNoSuggestionOnUnknownComponent(FileType type) {
         myFixture.configureByFiles(getFileName(type, "value-unknown-component"));
