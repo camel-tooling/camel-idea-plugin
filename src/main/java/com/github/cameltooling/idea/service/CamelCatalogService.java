@@ -44,10 +44,10 @@ public class CamelCatalogService implements Disposable {
         this.project = project;
         project.getMessageBus()
             .connect(this)
-            .subscribe(CamelProjectPreferenceService.CamelCatalogProviderChangeListener.TOPIC, this::onCamelCatalogProviderChanged);
+            .subscribe(CamelProjectPreferenceService.CamelCatalogProviderChangeListener.TOPIC, new CatalogProviderChangeListener());
         project.getMessageBus()
             .connect(this)
-            .subscribe(CamelService.CamelCatalogListener.TOPIC, this::onCamelCatalogReady);
+            .subscribe(CamelService.CamelCatalogListener.TOPIC, new CatalogReadyListener());
     }
 
     /**
@@ -67,19 +67,6 @@ public class CamelCatalogService implements Disposable {
 
     boolean isInstantiated() {
         return instance != null;
-    }
-
-    /**
-     * Called once the catalog is ready to use.
-     */
-    private void onCamelCatalogReady() {
-        CamelCatalog catalog = instance;
-        if (catalog != null) {
-            // Update the runtime provider is needed
-            updateRuntimeProvider(catalog);
-            // As the catalog is ready to use, the cache can be enabled
-            catalog.enableCache();
-        }
     }
 
     /**
@@ -142,13 +129,36 @@ public class CamelCatalogService implements Disposable {
         instance = null;
     }
 
-    /**
-     * Force the catalog to be reloaded when the {@link CamelCatalogProvider} defined in the preferences has changed.
-     */
-    private void onCamelCatalogProviderChanged() {
-        // Clear the old catalog
-        clearLoadedVersion();
-        // Load the new catalog
-        project.getService(CamelService.class).loadCamelCatalog();
+    private class CatalogReadyListener implements CamelService.CamelCatalogListener {
+
+        /**
+         * Called once the catalog is ready to use.
+         */
+        @Override
+        public void onCamelCatalogReady() {
+            CamelCatalog catalog = instance;
+            if (catalog != null) {
+                // Update the runtime provider is needed
+                updateRuntimeProvider(catalog);
+                // As the catalog is ready to use, the cache can be enabled
+                catalog.enableCache();
+            }
+        }
     }
+
+    private class CatalogProviderChangeListener implements CamelProjectPreferenceService.CamelCatalogProviderChangeListener {
+
+        /**
+         * Force the catalog to be reloaded when the {@link CamelCatalogProvider} defined in the preferences has changed.
+         */
+        @Override
+        public void onCamelCatalogProviderChange() {
+            // Clear the old catalog
+            clearLoadedVersion();
+            // Load the new catalog
+            project.getService(CamelService.class).loadCamelCatalog();
+        }
+
+    }
+
 }

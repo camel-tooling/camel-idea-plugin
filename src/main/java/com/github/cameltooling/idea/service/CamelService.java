@@ -102,7 +102,7 @@ public class CamelService implements Disposable {
         this.project = project;
         project.getMessageBus()
             .connect(this)
-            .subscribe(CamelProjectPreferenceService.CamelVersionChangeListener.TOPIC, this::loadCamelCatalog);
+            .subscribe(CamelProjectPreferenceService.CamelVersionChangeListener.TOPIC, new VersionChangeListener());
     }
 
     @Override
@@ -774,4 +774,14 @@ public class CamelService implements Disposable {
          */
         void onCamelCatalogReady();
     }
+
+    private class VersionChangeListener implements CamelProjectPreferenceService.CamelVersionChangeListener {
+
+        @Override
+        public void onCamelVersionChange(String version) {
+            loadCamelCatalog(version);
+        }
+
+    }
+
 }
