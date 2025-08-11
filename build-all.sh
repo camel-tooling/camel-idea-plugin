@@ -1,5 +1,5 @@
 #!/bin/bash
 
-for v in "2025.1.4"; do
+for v in "2025.2"; do
   ./build.sh $v
 done
