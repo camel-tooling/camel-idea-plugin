@@ -19,11 +19,17 @@ package com.github.cameltooling.idea.service.extension.camel;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiElement;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 abstract class CamelIdeaUtils {
 
     protected static final Logger LOG = Logger.getInstance(CamelIdeaUtils.class);
 
     protected static final String[] ROUTE_START = new String[]{"from", "fromF", "rest"};
+    protected static final String[] GLOBAL_CLAUSE = new String[]{"onCompletion", "onException"};
+    protected static final String[] ROUTE_START_OR_GLOBAL_CLAUSE = Stream.concat(Arrays.stream(ROUTE_START), Arrays.stream(GLOBAL_CLAUSE)).toArray(String[]::new);
+
     protected static final String[] PREDICATE_EIPS = new String[]{"completion", "completionPredicate", "when", "onWhen", "handled", "continued", "retryWhile", "filter", "validate", "loopDoWhile"};
     protected static final String[] CONSUMER_ENDPOINT = new String[]{"from", "fromF", "interceptFrom", "pollEnrich"};
     protected static final String[] PRODUCER_ENDPOINT = new String[]{"to", "toF", "toD", "enrich", "interceptSendToEndpoint", "wireTap", "deadLetterChannel"};

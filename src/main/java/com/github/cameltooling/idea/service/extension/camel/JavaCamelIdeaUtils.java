@@ -188,11 +188,12 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             return false;
         }
         final IdeaUtils ideaUtils = IdeaUtils.getService();
-        if (!excludeRouteStart && ideaUtils.isFromJavaMethod(call, true, ROUTE_START)) {
+        if ((!excludeRouteStart && ideaUtils.isFromJavaMethod(call, true, ROUTE_START))
+                || ideaUtils.isFromJavaMethod(call, true, GLOBAL_CLAUSE)) {
             return true;
         }
         Collection<PsiMethodCallExpression> chainedCalls = PsiTreeUtil.findChildrenOfType(call, PsiMethodCallExpression.class);
-        return chainedCalls.stream().anyMatch(c -> ideaUtils.isFromJavaMethod(c, true, ROUTE_START));
+        return chainedCalls.stream().anyMatch(c -> ideaUtils.isFromJavaMethod(c, true, ROUTE_START_OR_GLOBAL_CLAUSE));
     }
 
     @Override

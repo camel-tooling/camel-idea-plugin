@@ -149,5 +149,51 @@ public class CamelDirectEndpointReferenceTest extends CamelLightCodeInsightFixtu
         assertEquals("direct:hello", values.getFirst().getValue());
     }
 
+    public void testOnExceptionClause() {
+        myFixture.configureByText("RouteWithOnException.java",  """
+            import org.apache.camel.builder.RouteBuilder;
+            public final class RouteWithOnException extends RouteBuilder {
+                @Override
+                public void configure() {
+                    onException(Exception.class)
+                        .to("direct:d<caret>ef");
+                    from("direct:abc?param1=xxx")
+                        .to("direct:test");
+                    from("direct:def")
+                        .to("direct:xxx");
+                    from("direct:test")
+                        .to("direct:def");
+                }
+            }""");
+
+        PsiElement element = TestReferenceUtil.getParentElementAtCaret(myFixture);
+        List<PsiMethodCallExpression> results = TestReferenceUtil.resolveReference(element, PsiMethodCallExpression.class);
+        assertEquals(1, results.size());
+        assertEquals("from(\"direct:def\")", results.getFirst().getText());
+    }
+
+    public void testOnCompletionClause() {
+        myFixture.configureByText("RouteWithOnException.java",  """
+            import org.apache.camel.builder.RouteBuilder;
+            public final class RouteWithOnException extends RouteBuilder {
+                @Override
+                public void configure() {
+                    onCompletion(Exception.class)
+                        .to("direct:d<caret>ef");
+                    from("direct:abc?param1=xxx")
+                        .to("direct:test");
+                    from("direct:def")
+                        .to("direct:xxx");
+                    from("direct:test")
+                        .to("direct:def");
+                }
+            }""");
+
+        PsiElement element = TestReferenceUtil.getParentElementAtCaret(myFixture);
+        List<PsiMethodCallExpression> results = TestReferenceUtil.resolveReference(element, PsiMethodCallExpression.class);
+        assertEquals(1, results.size());
+        assertEquals("from(\"direct:def\")", results.getFirst().getText());
+    }
+
 
 }
