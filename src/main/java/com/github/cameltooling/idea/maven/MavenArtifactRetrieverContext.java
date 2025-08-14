@@ -49,10 +49,8 @@ public class MavenArtifactRetrieverContext implements Closeable {
     private final Map<ArtifactCoordinates, URL> allArtifacts = new HashMap<>();
 
     public MavenArtifactRetrieverContext() {
-        MavenDownloaderImpl downloader = new MavenDownloaderImpl();
-        downloader.setOffline(true);
-        downloader.build();
-        this.downloader = downloader;
+        this.downloader = new MavenDownloaderImpl();
+        ((MavenDownloaderImpl) downloader).build();
     }
 
     public MavenArtifactRetrieverContext(Project project) {
