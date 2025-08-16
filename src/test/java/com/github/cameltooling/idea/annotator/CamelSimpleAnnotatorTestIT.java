@@ -99,6 +99,40 @@ public class CamelSimpleAnnotatorTestIT extends CamelLightCodeInsightFixtureTest
         myFixture.checkHighlighting(false, false, false, true);
     }
 
+    public void testMissingBeanErrorFromCatalogValidatorSupressed() {
+        myFixture.configureByText("test.xml", """
+        <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
+            <bean id="testBean" class="java.lang.String"/>
+            <camelContext xmlns="http://camel.apache.org/schema/blueprint">
+                <route id="testRoute">
+                    <from uri="timer:foo?period=1s"/>
+                    <when>
+                        <simple>${bean:testBean?method=printThread}</simple>
+                    </when>
+                </route>
+            </camelContext>
+        </blueprint>
+        """);
+        myFixture.checkHighlighting(false, false, false, true);
+    }
+
+    public void testMissingBeanErrorFromCatalogValidatorNotSupressed() {
+        myFixture.configureByText("test.xml", """
+        <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
+            <bean id="testBean2" class="java.lang.String"/>
+            <camelContext xmlns="http://camel.apache.org/schema/blueprint">
+                <route id="testRoute">
+                    <from uri="timer:foo?period=1s"/>
+                    <when>
+                        <simple><error descr="No bean could be found in the registry for: testBean">${bean:testBean?method=printThread}</error></simple>
+                    </when>
+                </route>
+            </camelContext>
+        </blueprint>
+        """);
+        myFixture.checkHighlighting(false, false, false, true);
+    }
+
     private String getJavaWithSimple() {
         return "import org.apache.camel.builder.RouteBuilder;\n"
             + "public class MyRouteBuilder extends RouteBuilder {\n"
