@@ -19,11 +19,14 @@ package com.github.cameltooling.idea.annotator;
 import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.service.CamelService;
+import com.github.cameltooling.idea.util.BeanUtils;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.xml.XmlAttributeValue;
@@ -76,6 +79,14 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
                         if ("[null]".equals(error)) {
                             return;
                         }
+                        String missingBeanName = extractMissingBeanName(result);
+                        if (missingBeanName != null) {
+                            Module module = ModuleUtilCore.findModuleForPsiElement(element);
+                            boolean beanExists = module != null && BeanUtils.getService().findReferenceableBeanId(module, missingBeanName).isPresent();
+                            if (beanExists) {
+                                return; // camel catalog's validator can't see the beans we can see, let's ignore the error if we known the bean exists
+                            }
+                        }
                         TextRange range = element.getTextRange();
                         if (result.getIndex() > 0) {
                             range = getAdjustedTextRange(element, range, text, result);
@@ -87,6 +98,23 @@ public class CamelSimpleAnnotator extends AbstractCamelAnnotator {
             } catch (Throwable e) {
                 LOG.warn("Error validating Camel simple " + (predicate ? "predicate" : "expression") + ": " + text, e);
             }
+        }
+    }
+
+    /**
+     * This is hoping that the error message will stay the same forever.
+     * Could be implemented in a different way, see GH issue #1115 - supply list of beans we know to Camel catalog's validator.
+     */
+    private String extractMissingBeanName(LanguageValidationResult result) {
+        String missingBeanErrorPrefix = "No bean could be found in the registry for: ";
+        String error = result.getError();
+        if (error.startsWith(missingBeanErrorPrefix)) {
+            return error.substring(missingBeanErrorPrefix.length())
+                    .trim()
+                    .split(" ")[0]
+                    .trim();
+        } else {
+            return null;
         }
     }
 
