@@ -46,12 +46,11 @@ repositories {
 }
 
 java {
+    sourceCompatibility = '21'
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
 }
-
-sourceCompatibility = '21'
 
 publishing {
     publications {
@@ -67,7 +66,7 @@ test {
     }
 }
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
