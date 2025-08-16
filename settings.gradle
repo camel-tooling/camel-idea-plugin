@@ -3,4 +3,3 @@
  */
 
 rootProject.name = 'camel-idea-plugin'
-include(':camel-idea-plugin')
