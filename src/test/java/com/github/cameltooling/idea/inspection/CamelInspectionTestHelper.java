@@ -14,9 +14,8 @@ import com.intellij.pom.java.LanguageLevel;
 import com.intellij.testFramework.IdeaTestUtil;
 import com.intellij.testFramework.JavaInspectionTestCase;
 import com.intellij.testFramework.LightProjectDescriptor;
-import com.intellij.testFramework.PsiTestUtil;
 import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import com.intellij.util.lang.JavaVersion;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,7 +35,7 @@ public abstract class CamelInspectionTestHelper extends JavaInspectionTestCase {
         return new DefaultLightProjectDescriptor() {
             @Override
             public Sdk getSdk() {
-                return IdeaTestUtil.getMockJdk17();
+                return IdeaTestUtil.getMockJdk(JavaVersion.compose(17));
             }
 
             @Override

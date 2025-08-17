@@ -96,6 +96,13 @@ public class BlueprintBeanReferenceTest extends CamelLightCodeInsightFixtureTest
         "  </bean>" +
         "</blueprint>";
 
+    @Language("XML")
+    private static final String FACTORY_REF_REFERENCE =
+        "<blueprint xmlns='" + BLUEPRINT_NS + "'>" +
+        "  <bean id='factory' class='SomeClass'/>" +
+        "  <bean id='product' class='SomeOtherClass' factory-ref='fac<caret>tory'/>" +
+        "</blueprint>";
+
     public void testPropertyReference() {
         doTestReferenceAtCaret(PROPERTY_REFERENCE);
         expectResolvedBeanIdReferences(PROPERTY_REFERENCE, 1);
@@ -138,6 +145,11 @@ public class BlueprintBeanReferenceTest extends CamelLightCodeInsightFixtureTest
         expectResolvedBeanIdReferences(ENDPOINT_REFERENCE, 1);
     }
 
+    public void testFactoryRefReference() {
+        doTestReferenceAtCaret(FACTORY_REF_REFERENCE, "factory");
+        expectResolvedBeanIdReferences(FACTORY_REF_REFERENCE, 1);
+    }
+
     private void expectResolvedBeanIdReferences(String xml, int referenceCount) {
         configureFile(xml);
         PsiElement element = TestReferenceUtil.getParentElementAtCaret(myFixture);
@@ -150,13 +162,17 @@ public class BlueprintBeanReferenceTest extends CamelLightCodeInsightFixtureTest
     }
 
     private void doTestReferenceAtCaret(String xml) {
+        doTestReferenceAtCaret(xml, "myBean");
+    }
+
+    private void doTestReferenceAtCaret(String xml, String expectedId) {
         configureFile(xml);
         PsiElement element = TestReferenceUtil.getParentElementAtCaret(myFixture);
         List<XmlTag> results = TestReferenceUtil.resolveReference(element, XmlTag.class);
         assertEquals(1, results.size());
         XmlTag tag = results.get(0);
         assertEquals("bean", tag.getLocalName());
-        assertEquals("myBean", tag.getAttributeValue("id", BLUEPRINT_NS));
+        assertEquals(expectedId, tag.getAttributeValue("id", BLUEPRINT_NS));
     }
 
     private void configureFile(String multipleReferences) {

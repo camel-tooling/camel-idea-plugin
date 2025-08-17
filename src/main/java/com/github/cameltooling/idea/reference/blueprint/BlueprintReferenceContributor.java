@@ -31,6 +31,7 @@ public class BlueprintReferenceContributor extends PsiReferenceContributor {
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue(), new BlueprintJavaClassReferenceProvider());
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue(), new BeanReferenceProvider());
         registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue(), new BlueprintPropertyNameReferenceProvider());
+        registrar.registerReferenceProvider(XmlPatterns.xmlAttributeValue(), new BlueprintFactoryMethodReferenceProvider());
     }
 
 }

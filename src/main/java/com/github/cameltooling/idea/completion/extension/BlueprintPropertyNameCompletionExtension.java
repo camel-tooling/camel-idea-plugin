@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import com.github.cameltooling.idea.reference.blueprint.PropertyNameReference;
 import com.github.cameltooling.idea.util.BeanUtils;
+import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.psi.PsiClass;
@@ -42,7 +43,8 @@ public class BlueprintPropertyNameCompletionExtension extends ReferenceBasedComp
     }
 
     @Override
-    protected List<LookupElement> findResults(@NotNull PsiElement element,
+    protected List<LookupElement> findResults(@NotNull CompletionParameters parameters,
+                                              @NotNull PsiElement element,
                                               @NotNull String query) {
         XmlTag tag = PsiTreeUtil.getParentOfType(element, XmlTag.class);
         if (tag != null) {

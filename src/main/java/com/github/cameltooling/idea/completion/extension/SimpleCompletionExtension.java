@@ -48,7 +48,7 @@ public abstract class SimpleCompletionExtension implements CamelCompletionExtens
             return;
         }
 
-        List<LookupElement> results = findResults(element, query.valueAtPosition());
+        List<LookupElement> results = findResults(parameters, element, query.valueAtPosition());
         if (!results.isEmpty()) {
             resultSet
                 .withRelevanceSorter(CompletionSorter.emptySorter())
@@ -62,7 +62,8 @@ public abstract class SimpleCompletionExtension implements CamelCompletionExtens
         return isValid(parameters, context, query.valueAtPosition());
     }
 
-    protected abstract List<LookupElement> findResults(@NotNull PsiElement element, @NotNull String query);
+    protected abstract List<LookupElement> findResults(@NotNull CompletionParameters parameters, @NotNull PsiElement element, @NotNull String query);
+
     protected abstract boolean isValid(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, @NotNull String query);
 
 

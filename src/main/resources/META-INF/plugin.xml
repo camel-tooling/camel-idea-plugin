@@ -12,6 +12,7 @@
       v.1.4.2
       <ul>
         <li>Only IDEA 2025 onwards is supported</li>
+        <li>Support for blueprint's factory-method and factory-ref attributes (references, code completion)</li>
       </ul>
     ]]>
   </change-notes>

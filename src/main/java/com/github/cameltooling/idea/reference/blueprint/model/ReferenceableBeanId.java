@@ -17,37 +17,39 @@
 package com.github.cameltooling.idea.reference.blueprint.model;
 
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.xml.XmlAttributeValue;
+import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Represents an id of a bean, which can be referenced from other places. Mainly <bean id="[THIS]">
+ *
+ *     TODO: rename to something more suitable, like BeanDefinition
  */
 public class ReferenceableBeanId {
 
-    private final PsiElement element;
+    private final XmlTag beanTag;
+    private final XmlAttributeValue beanIdAttribute;
     private final String id;
-    private final ReferencedClass referencedClass;
 
-    public ReferenceableBeanId(@NotNull PsiElement element, @NotNull String id, @Nullable ReferencedClass referencedClass) {
-        this.element = element;
-        this.id = id;
-        this.referencedClass = referencedClass;
+    public ReferenceableBeanId(@NotNull XmlTag beanTag, @NotNull XmlAttributeValue beanIdAttribute) {
+        this.beanTag = beanTag;
+        this.beanIdAttribute = beanIdAttribute;
+        this.id = beanIdAttribute.getValue();
+    }
+
+    public XmlTag getBeanTag() {
+        return beanTag;
     }
 
     @NotNull
     public PsiElement getElement() {
-        return element;
+        return beanIdAttribute;
     }
 
     @NotNull
     public String getId() {
         return id;
-    }
-
-    @Nullable
-    public ReferencedClass getReferencedClass() {
-        return referencedClass;
     }
 
 }
