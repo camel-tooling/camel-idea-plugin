@@ -35,7 +35,7 @@ repositories {
         }
     }
     maven {
-        url "https://repository.apache.org/snapshots/"
+        url = "https://repository.apache.org/snapshots/"
         mavenContent {
             snapshotsOnly()
         }
