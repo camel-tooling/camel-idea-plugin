@@ -52,7 +52,7 @@ jobs:
           java-version: '21'
           cache: 'gradle'
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v3
+        uses: gradle/actions/wrapper-validation@v4.2.2
       - name: Build against all supported versions
         run: ./build.sh ${{ matrix.version }}
         shell: bash
