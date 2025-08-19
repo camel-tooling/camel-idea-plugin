@@ -155,6 +155,32 @@ public class CamelBeanMethodReferenceTest extends CamelLightCodeInsightFixtureTe
         assertEquals("\"myRepositorySpringBeanMethod\"",  element.getText());
     }
 
+    public void testOverriddenAbstractCamelMethodReference() {
+        singleResultMethodReferenceTest("public void mySuperAbstractMethod() {}",
+                "CompleteJavaBeanRoute12TestData.java", "CompleteJavaBeanTestData.java",
+                "CompleteJavaBeanSuperClassTestData.java", "CompleteJavaBeanMethodPropertyTestData.properties");
+    }
+
+    public void testAbstractCamelMethodReference() {
+        singleResultMethodReferenceTest("public abstract void mySuperAbstractMethod();",
+                "CompleteJavaBeanRoute13TestData.java", "CompleteJavaBeanTestData.java",
+                "CompleteJavaBeanSuperClassTestData.java", "CompleteJavaBeanMethodPropertyTestData.properties");
+    }
+
+    public void testInterfaceMethod() {
+        singleResultMethodReferenceTest("String myInterfaceMethod();",
+                "CompleteJavaBeanRoute14TestData.java", "CompleteJavaBeanInterface.java");
+    }
+
+    private void singleResultMethodReferenceTest(String resolvedMethodText, String ... testFiles) {
+        myFixture.configureByFiles(testFiles);
+        PsiElement element = myFixture.getFile().findElementAt(myFixture.getCaretOffset()).getParent();
+        final ResolveResult[] resolveResults = ((CamelBeanMethodReference) element.getReferences()[0]).multiResolve(false);
+        assertEquals(1, resolveResults.length);
+        assertEquals(resolvedMethodText,  resolveResults[0].getElement().getText());
+    }
+
+
     /**
      * Test if the find usage is working with camel DSL bean method call with parameters
      */

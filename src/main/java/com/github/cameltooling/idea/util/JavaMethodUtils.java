@@ -116,10 +116,13 @@ public class JavaMethodUtils implements Disposable {
      * Filter methods suitable for being a bean method invoked from a route.
      * Private methods are not suitable, but are returned anyway - so that we can show an explicit error message on them
      *
-     * @param methods - List of methods to filter
-     * @return - List of filtered methods
+     * @param beanClass - PsiClass representing a bean
+     * @param methodSpec - Camel Bean Method specification string, e.g. "myMethod", "myMethod(*, *), "myMethod(java.lang.String, java.lang.Integer)", ...
+     * @return - List of methods matching the specification
      */
-    public List<PsiMethod> getMatchingBeanMethods(List<PsiMethod> methods, String methodSpec) {
+    public List<PsiMethod> findMatchingBeanMethods(PsiClass beanClass, String methodSpec) {
+        String methodName = getMethodNameWithOutParameters(methodSpec);
+        PsiMethod[] methods = beanClass.findMethodsByName(methodName, true);
         int paraStart = methodSpec.indexOf('(');
         List<String> paramSpecs;
         if (paraStart >= 0) {
@@ -131,10 +134,22 @@ public class JavaMethodUtils implements Disposable {
         } else {
             paramSpecs = null;
         }
-        return methods.stream()
-                .filter(method -> !method.isConstructor() && !method.getModifierList().hasModifierProperty(PsiModifier.ABSTRACT))
+        return Arrays.stream(methods)
+                .filter(method -> !method.isConstructor())
+                .filter(method -> !isMethodOverriddenInClass(method, beanClass))
                 .filter(method -> paramSpecs == null || beanMethodMatches(method, paramSpecs))
                 .toList();
+    }
+
+    /**
+     * Returns true if the given method is from a super class of the beanClass, and is overridden there.
+     * For example, if we've got class A and a class B that extends A, this will return true for methods from A that are overridden in B.
+     */
+    private boolean isMethodOverriddenInClass(PsiMethod method, PsiClass beanClass) {
+        if (beanClass.equals(method.getContainingClass())) {
+            return false;
+        }
+        return beanClass.findMethodBySignature(method, false) != null;
     }
 
     /**
