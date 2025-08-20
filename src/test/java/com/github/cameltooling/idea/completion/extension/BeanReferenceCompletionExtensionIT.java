@@ -92,34 +92,38 @@ public class BeanReferenceCompletionExtensionIT extends CamelLightCodeInsightFix
         "  </camelContext>" +
         "</blueprint>";
 
-    public void testBeanInjectValue() {
+    public void testBeanInjectValueBasic() {
         myFixture.configureByFiles("TestClass1.java", "TestClass2.java", "TestClass3.java", "beans.xml");
         myFixture.complete(CompletionType.BASIC);
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertEquals(2, strings.size());
-        assertContainsElements(strings, "testClass2Bean", "testClass2Bean2");
+        assertSameElements(strings, "testClass1Bean", "testClass2Bean", "testClass2Bean2");
+    }
+
+    public void testBeanInjectValueSmart() {
+        myFixture.configureByFiles("TestClass1.java", "TestClass2.java", "TestClass3.java", "beans.xml");
+        myFixture.complete(CompletionType.SMART);
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertSameElements(strings, "testClass2Bean", "testClass2Bean2");
     }
 
     public void testPropertyReference() {
         List<String> strings = doTestCompletionAtCaret(PROPERTY_REFERENCE);
         assertNotNull(strings);
-        assertEquals(3, strings.size());
-        assertContainsElements(strings, "bean1", "bean2", "boo");
+        assertSameElements(strings, "bean1", "bean2", "boo");
     }
 
     public void testRouteReference() {
         List<String> strings = doTestCompletionAtCaret(ROUTE_REFERENCE);
         assertNotNull(strings);
-        assertEquals(2, strings.size());
-        assertContainsElements(strings, "myBean", "myBean2");
+        assertSameElements(strings, "myBean", "myBean2");
     }
 
     public void testEndpointReference() {
         List<String> strings = doTestCompletionAtCaret(ENDPOINT_REFERENCE);
         assertNotNull(strings);
-        assertEquals(2, strings.size());
-        assertContainsElements(strings, "myBean", "myEndpoint");
+        assertSameElements(strings, "myBean", "myEndpoint");
     }
 
     public void testNoResultsWhenUsedAsEndpoint() {

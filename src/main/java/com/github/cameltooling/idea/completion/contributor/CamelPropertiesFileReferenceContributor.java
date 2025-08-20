@@ -36,7 +36,7 @@ public class CamelPropertiesFileReferenceContributor extends CamelContributor {
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
         // To match with file with "properties" as extension
         final PsiFilePattern.Capture<PsiFile> filePattern = matchFileType("properties");
-        extend(CompletionType.BASIC,
+        extend(null,
                 psiElement().and(psiElement().inside(PsiFile.class).inFile(filePattern)),
                 new CompositeCompletionProvider(getCamelCompletionExtensions())
         );

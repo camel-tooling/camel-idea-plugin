@@ -49,7 +49,7 @@ public class CamelJavaReferenceContributor extends CamelContributor {
         addCompletionExtension(new CamelEndpointNameCompletionExtension());
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
         addCompletionExtension(new CamelPropertyPlaceholderSmartCompletionExtension());
-        extend(CompletionType.BASIC, psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("java"))),
+        extend(null, psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("java"))),
             new CompositeCompletionProvider(getCamelCompletionExtensions())
         );
         extend(CompletionType.BASIC, psiElement(PsiJavaToken.class).with(new PatternCondition<>("CamelJavaBeanReferenceSmartCompletion") {
