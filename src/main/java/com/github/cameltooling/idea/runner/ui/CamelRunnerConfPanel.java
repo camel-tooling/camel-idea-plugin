@@ -33,10 +33,8 @@ import com.intellij.util.TextFieldCompletionProvider;
 import com.intellij.util.execution.ParametersListUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.execution.MavenPomFileChooserDescriptor;
-import org.jetbrains.idea.maven.execution.MavenRCSettingsWatcher;
 import org.jetbrains.idea.maven.execution.MavenRunnerParameters;
 import org.jetbrains.idea.maven.execution.MavenSelectProjectPopup;
-import org.jetbrains.idea.maven.execution.MavenSettingsObservable;
 import org.jetbrains.idea.maven.execution.RunnerBundle;
 import org.jetbrains.idea.maven.project.MavenProjectsManager;
 
@@ -46,7 +44,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CamelRunnerConfPanel implements PanelWithAnchor, MavenSettingsObservable {
+public class CamelRunnerConfPanel implements PanelWithAnchor {
 
     protected LabeledComponent<TextFieldWithBrowseButton> workingDirComponent;
 
@@ -168,10 +166,4 @@ public class CamelRunnerConfPanel implements PanelWithAnchor, MavenSettingsObser
         additionalPluginParamsComponent.setAnchor(anchor);
     }
 
-    @Override
-    public void registerSettingsWatcher(@NotNull MavenRCSettingsWatcher watcher) {
-        watcher.registerComponent("workingDir", workingDirComponent);
-        watcher.registerComponent("profiles", profilesComponent);
-        watcher.registerComponent("additionalPluginParams", additionalPluginParamsComponent);
-    }
 }
