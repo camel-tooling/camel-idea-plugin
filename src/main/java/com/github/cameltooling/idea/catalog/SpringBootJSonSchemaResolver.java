@@ -129,6 +129,12 @@ class SpringBootJSonSchemaResolver implements JSonSchemaResolver {
     }
 
     @Override
+    public String getJBangJsonSchema() {
+        final String schema = toMainJsonSchema(getSpringConfigurationMetadata("camel-spring-boot", true));
+        return schema == null ? delegate.getJBangJsonSchema() : schema;
+    }
+
+    @Override
     public String getTransformerJSonSchema(String name) {
         return delegate.getTransformerJSonSchema(name);
     }

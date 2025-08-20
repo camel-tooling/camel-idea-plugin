@@ -227,6 +227,18 @@ public class PropertiesPropertyKeyCompletionTestIT extends CamelLightCodeInsight
     }
 
     /**
+     * Ensures that jbang option suggestions can properly be proposed filtered.
+     */
+    public void testJBangOptionSuggestionFiltered() {
+        myFixture.configureByFiles(getFileName("jbang-options-filtered"));
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertContainsElements(strings, "camel.jbang.maven-central-enabled = ");
+        assertDoesntContain(strings, "camel.jbang.console", "camel.jbang.repos");
+    }
+
+    /**
      * Ensures that component name suggestions can properly be proposed non filtered.
      */
     public void testComponentNameSuggestionNonFiltered() {
@@ -490,7 +502,7 @@ public class PropertiesPropertyKeyCompletionTestIT extends CamelLightCodeInsight
         myFixture.completeBasic();
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertContainsElements(strings, "camel.main.", "camel.component.", "camel.language.", "camel.dataformat.");
+        assertContainsElements(strings, "camel.main.", "camel.component.", "camel.language.", "camel.dataformat.", "camel.jbang.");
     }
 
     private String getFileName(String fileNamePrefix) {

@@ -53,7 +53,7 @@ public class CamelDirectEndpointReferencesBetweenModulesIT extends JavaCodeInsig
                 modifiableRootModel.setSdk(IdeaTestUtil.getMockJdk21());
                 modifiableRootModel.getModuleExtension(LanguageLevelModuleExtension.class).setLanguageLevel(LanguageLevel.JDK_17);
 
-                CamelTestDependencyUtil.loadDependencies(modifiableRootModel, "org.apache.camel:camel-core-model:4.13.0");
+                CamelTestDependencyUtil.loadDependencies(modifiableRootModel, "org.apache.camel:camel-core-model:4.14.0");
             });
             IndexingTestUtil.waitUntilIndexesAreReady(module.getProject());
 
