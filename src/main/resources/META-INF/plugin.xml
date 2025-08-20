@@ -12,6 +12,7 @@
       v.1.4.3
       <ul>
         <li>Only IDEA 2025 onwards is supported</li>
+        <li>Support endpoint references for bean methods annotated with @Consume</li>
       </ul>
     ]]>
   </change-notes>
