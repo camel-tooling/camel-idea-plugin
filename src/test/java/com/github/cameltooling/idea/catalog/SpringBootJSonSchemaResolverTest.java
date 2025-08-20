@@ -166,6 +166,11 @@ public class SpringBootJSonSchemaResolverTest {
         }
 
         @Override
+        public String getJBangJsonSchema() {
+            return null;
+        }
+
+        @Override
         public String getTransformerJSonSchema(String name) {
             return null;
         }
