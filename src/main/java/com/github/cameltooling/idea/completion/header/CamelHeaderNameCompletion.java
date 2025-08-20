@@ -182,7 +182,7 @@ abstract class CamelHeaderNameCompletion extends CompletionProvider<CompletionPa
                                           final ComponentModel.EndpointHeaderModel header,
                                           final LookupElementBuilder builder) {
         if (header.isRequired()) {
-            return builder.withIcon(AllIcons.Toolwindows.ToolWindowFavorites);
+            return builder.withIcon(AllIcons.Nodes.Favorite);
         } else if (header.isSecret()) {
             return builder.withIcon(AllIcons.Nodes.SecurityRole);
         } else if (header.isMultiValue()) {

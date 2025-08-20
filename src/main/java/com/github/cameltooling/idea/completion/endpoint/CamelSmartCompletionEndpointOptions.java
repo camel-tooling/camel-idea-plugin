@@ -222,7 +222,7 @@ public final class CamelSmartCompletionEndpointOptions {
                     }
                     // add icons for various options
                     if (option.isRequired()) {
-                        builder = builder.withIcon(AllIcons.Toolwindows.ToolWindowFavorites);
+                        builder = builder.withIcon(AllIcons.Nodes.Favorite);
                     } else if (option.isSecret()) {
                         builder = builder.withIcon(AllIcons.Nodes.SecurityRole);
                     } else if (option.isMultiValue()) {
