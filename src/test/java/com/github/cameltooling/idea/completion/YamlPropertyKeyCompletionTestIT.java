@@ -205,6 +205,21 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
     }
 
     /**
+     * Ensures that group name suggestions are only instances of {@link SimpleSuggestion}.
+     */
+    public void testGroupNameSuggestionInstancesOfSimpleSuggestionJBang() {
+        myFixture.configureByFiles(getFileName("full-first-key-with-separator"));
+        myFixture.completeBasic();
+        myFixture.type("jbang");
+        LookupElement[] suggestions = myFixture.getLookupElements();
+        assertNotNull(suggestions);
+        assertTrue(
+                "Only instances of SimpleSuggestion are expected",
+                Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof SimpleSuggestion)
+        );
+    }
+
+    /**
      * Ensures that main option suggestions can properly be proposed non filtered.
      */
     public void testMainOptionSuggestionNonFiltered() {
@@ -224,8 +239,8 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         LookupElement[] suggestions = myFixture.getLookupElements();
         assertNotNull(suggestions);
         assertTrue(
-            "Only instances of OptionSuggestion are expected",
-            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
+                "Only instances of OptionSuggestion are expected",
+                Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
         );
     }
 
@@ -261,8 +276,8 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         LookupElement[] suggestions = myFixture.getLookupElements();
         assertNotNull(suggestions);
         assertTrue(
-            "Only instances of SimpleSuggestion are expected",
-            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof SimpleSuggestion)
+                "Only instances of SimpleSuggestion are expected",
+                Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof SimpleSuggestion)
         );
     }
 
@@ -298,8 +313,8 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         LookupElement[] suggestions = myFixture.getLookupElements();
         assertNotNull(suggestions);
         assertTrue(
-            "Only instances of OptionSuggestion are expected",
-            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
+                "Only instances of OptionSuggestion are expected",
+                Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
         );
     }
 
@@ -335,8 +350,8 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         LookupElement[] suggestions = myFixture.getLookupElements();
         assertNotNull(suggestions);
         assertTrue(
-            "Only instances of SimpleSuggestion are expected",
-            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof SimpleSuggestion)
+                "Only instances of SimpleSuggestion are expected",
+                Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof SimpleSuggestion)
         );
     }
 
@@ -374,8 +389,8 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         LookupElement[] suggestions = myFixture.getLookupElements();
         assertNotNull(suggestions);
         assertTrue(
-            "Only instances of OptionSuggestion are expected",
-            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
+                "Only instances of OptionSuggestion are expected",
+                Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
         );
     }
 
@@ -412,8 +427,8 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         LookupElement[] suggestions = myFixture.getLookupElements();
         assertNotNull(suggestions);
         assertTrue(
-            "Only instances of SimpleSuggestion are expected",
-            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof SimpleSuggestion)
+                "Only instances of SimpleSuggestion are expected",
+                Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof SimpleSuggestion)
         );
     }
 
@@ -451,8 +466,8 @@ public class YamlPropertyKeyCompletionTestIT extends CamelLightCodeInsightFixtur
         LookupElement[] suggestions = myFixture.getLookupElements();
         assertNotNull(suggestions);
         assertTrue(
-            "Only instances of OptionSuggestion are expected",
-            Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
+                "Only instances of OptionSuggestion are expected",
+                Arrays.stream(suggestions).map(LookupElement::getObject).anyMatch(o -> o instanceof OptionSuggestion)
         );
     }
 

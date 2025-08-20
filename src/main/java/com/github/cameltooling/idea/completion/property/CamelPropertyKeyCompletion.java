@@ -46,6 +46,7 @@ import org.apache.camel.tooling.model.ArtifactModel;
 import org.apache.camel.tooling.model.BaseOptionModel;
 import org.apache.camel.tooling.model.ComponentModel;
 import org.apache.camel.tooling.model.DataFormatModel;
+import org.apache.camel.tooling.model.JBangModel;
 import org.apache.camel.tooling.model.JsonMapper;
 import org.apache.camel.tooling.model.LanguageModel;
 import org.apache.camel.tooling.model.MainModel;
@@ -69,6 +70,14 @@ abstract class CamelPropertyKeyCompletion extends CompletionProvider<CompletionP
      */
     static final String LANGUAGE_KEY_PREFIX = "camel.language";
     /**
+     * The prefix of all camel keys corresponding to the configuration of a main.
+     */
+    static final String MAIN_KEY_PREFIX = "camel.main";
+    /**
+     * The prefix of all camel keys corresponding to the configuration of a jbang.
+     */
+    static final String JBANG_KEY_PREFIX = "camel.jbang";
+    /**
      * The second part of the prefix of all camel keys corresponding to the configuration of a given component.
      */
     private static final String COMPONENT_KEY_NAME = "component";
@@ -80,6 +89,14 @@ abstract class CamelPropertyKeyCompletion extends CompletionProvider<CompletionP
      * The second part of the prefix of all camel keys corresponding to the configuration of a given language.
      */
     private static final String LANGUAGE_KEY_NAME = "language";
+    /**
+     * The second part of the prefix of all camel keys corresponding to the configuration of main options.
+     */
+    private static final String MAIN_KEY_NAME = "main";
+    /**
+     * The second part of the prefix of all camel keys corresponding to the configuration of jbang options.
+     */
+    private static final String JBANG_KEY_NAME = "jbang";
 
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context,
@@ -184,6 +201,8 @@ abstract class CamelPropertyKeyCompletion extends CompletionProvider<CompletionP
             return suggest(context, this::suggestDataFormats, this::suggestDataFormatOptions);
         case LANGUAGE_KEY_NAME:
             return suggest(context, this::suggestLanguages, this::suggestLanguageOptions);
+        case JBANG_KEY_NAME:
+            return suggestJBangOptions(context);
         default:
             return suggestMainOptions(context);
         }
@@ -219,6 +238,21 @@ abstract class CamelPropertyKeyCompletion extends CompletionProvider<CompletionP
             .stream()
             .map(option -> asOptionNameSuggestion(context, option))
             .collect(Collectors.toList());
+    }
+
+    /**
+     * @param context the context of the suggestion.
+     * @return the suggestion of possible jbang options that could be extracted from the metadata.
+     */
+    private @NotNull List<LookupElement> suggestJBangOptions(final SuggestionContext context) {
+        final JBangModel jbangModel = context.getCamelCatalog().jbangModel();
+        if (jbangModel == null) {
+            return List.of();
+        }
+        return jbangModel.getOptions()
+                .stream()
+                .map(option -> asOptionNameSuggestion(context, option))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -398,6 +432,7 @@ abstract class CamelPropertyKeyCompletion extends CompletionProvider<CompletionP
             .stream()
             .map(option -> asPrefixSuggestion(context, option))
             .forEach(result::add);
+        result.add(asPrefixSuggestion(context, JBANG_KEY_PREFIX, () -> "Camel JBang"));
         return result;
     }
 
