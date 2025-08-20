@@ -57,8 +57,10 @@ public class CamelRunnerConfPanel implements PanelWithAnchor {
 
     public CamelRunnerConfPanel(@NotNull Project project) {
         workingDirComponent.getComponent().addBrowseFolderListener(
-                RunnerBundle.message("maven.select.working.directory"), "", project,
-                new MavenPomFileChooserDescriptor(project));
+                project,
+                new MavenPomFileChooserDescriptor(project)
+                        .withTitle(RunnerBundle.message("maven.select.working.directory"))
+        );
 
         if (!project.isDefault()) {
             TextFieldCompletionProvider profilesCompletionProvider = new TextFieldCompletionProvider(true) {
