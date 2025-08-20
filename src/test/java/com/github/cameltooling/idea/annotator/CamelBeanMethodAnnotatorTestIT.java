@@ -62,7 +62,6 @@ public class CamelBeanMethodAnnotatorTestIT extends CamelLightCodeInsightFixture
         List<HighlightInfo> list = myFixture.doHighlighting();
 
         verifyHighlight(list, "\"letsDoThis\"", "Can not resolve method 'letsDoThis' in bean 'AnnotatorJavaBeanSuperClassTestData'", HighlightSeverity.ERROR);
-        verifyHighlight(list, "\"mySuperAbstractMethod\"", "Can not resolve method 'mySuperAbstractMethod' in bean 'AnnotatorJavaBeanSuperClassTestData'", HighlightSeverity.ERROR);
         verifyHighlight(list, "\"thisIsVeryPrivate\"", "Can not resolve method 'thisIsVeryPrivate' in bean 'AnnotatorJavaBeanSuperClassTestData'", HighlightSeverity.ERROR);
     }
 

@@ -24,10 +24,12 @@ import com.github.cameltooling.idea.reference.blueprint.BeanReference;
 import com.github.cameltooling.idea.reference.blueprint.model.ReferenceableBeanId;
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.util.BeanUtils;
+import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiType;
 import org.jetbrains.annotations.NotNull;
@@ -42,13 +44,18 @@ public class BeanReferenceCompletionExtension extends ReferenceBasedCompletionEx
     }
 
     @Override
-    protected List<LookupElement> findResults(@NotNull PsiElement element, @NotNull String query) {
+    protected List<LookupElement> findResults(@NotNull CompletionParameters parameters, @NotNull PsiElement element, @NotNull String query) {
         List<ReferenceableBeanId> targets = findTargets(element, query);
         return targets.stream()
                 .map(bean -> createLookupElementBuilder(bean.getId(), bean.getElement())
-                .withTypeText(bean.getReferencedClass() == null ? null : bean.getReferencedClass().getClassSimpleName())
+                .withTypeText(getReferencedClassName(bean))
                 .withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE))
                 .collect(Collectors.toList());
+    }
+
+    private String getReferencedClassName(ReferenceableBeanId bean) {
+        PsiClass psiClass = BeanUtils.getService().getReferencedClass(bean);
+        return psiClass != null ? psiClass.getName() : null;
     }
 
     private List<ReferenceableBeanId> findTargets(PsiElement element, String query) {

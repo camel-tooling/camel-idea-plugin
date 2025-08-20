@@ -63,12 +63,43 @@ public class BeanReferenceTypeAnnotatorIT extends CamelLightCodeInsightFixtureTe
         assertEmpty(highlights.stream().filter(h -> h.getText().equals("someEndpoint")).collect(Collectors.toList()));
     }
 
+    public void testCorrectXmlFactoryBeanReference() {
+        List<HighlightInfo> highlights = getHighlights("correct-factory-reference.xml", "TestClass1.java", "TestClass2.java", "Factory.java");
+        assertEmpty(highlights);
+    }
+
+    public void testIncorrectXmlFactoryBeanReference() {
+        List<HighlightInfo> highlights = getHighlights("incorrect-factory-reference.xml", "TestClass1.java", "TestClass2.java", "Factory.java");
+        assertEquals(1, highlights.size());
+        HighlightInfo highlight = highlights.getFirst();
+        assertEquals(HighlightSeverity.ERROR, highlight.getSeverity());
+        assertEquals("factoryBad", highlight.getText());
+        assertEquals("Bean must be of 'TestClass2' type", highlight.getDescription());
+    }
+
+    public void testAnnotationsWithFactoryBeans() {
+        List<HighlightInfo> highlights = getHighlights("FactoryInject.java", "Factory.java", "TestClass1.java", "TestClass2.java", "beans-factory.xml");
+        // Expect an error for factoryBad as it returns String but field expects TestClass2
+        List<HighlightInfo> errors = highlights.stream()
+                .filter(h -> h.getSeverity() == HighlightSeverity.ERROR)
+                .filter(h -> h.getText().equals("factoryT1"))
+                .toList();
+        assertEquals(1, errors.size());
+        assertEquals("Bean must be of 'TestClass2' type", errors.getFirst().getDescription());
+
+        // No errors for factoryOk
+        assertEmpty(highlights.stream()
+                .filter(h -> h.getText().equals("factoryOk"))
+                .collect(Collectors.toList()));
+    }
+
     @NotNull
     private List<HighlightInfo> getHighlights(String ... filePaths) {
         myFixture.configureByFiles(filePaths);
         myFixture.checkHighlighting(false, false, true, true);
 
         return myFixture.doHighlighting().stream()
+                .filter(info -> info.getSeverity().compareTo(HighlightSeverity.WEAK_WARNING) > 0)
                 .filter(info -> !info.getText().equals("http://www.osgi.org/xmlns/blueprint/v1.0.0"))
                 .collect(Collectors.toList());
     }

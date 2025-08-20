@@ -19,6 +19,7 @@ package com.github.cameltooling.idea.util;
 import com.github.cameltooling.idea.Constants;
 import com.github.cameltooling.idea.reference.blueprint.BeanReference;
 import com.github.cameltooling.idea.reference.blueprint.PropertyNameReference;
+import com.github.cameltooling.idea.reference.blueprint.model.FactoryBeanMethodReference;
 import com.github.cameltooling.idea.reference.blueprint.model.ReferenceableBeanId;
 import com.github.cameltooling.idea.reference.blueprint.model.ReferencedClass;
 import com.intellij.openapi.Disposable;
@@ -32,19 +33,23 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifier;
+import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiType;
+import com.intellij.psi.PsiTypes;
+import com.intellij.psi.ResolveResult;
 import com.intellij.psi.impl.source.resolve.reference.impl.providers.JavaClassReference;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiUtil;
+import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -61,8 +66,7 @@ public class BeanUtils implements Disposable {
      * Checks whether this element represents a declaration of a bean, e.g. a <bean> xml tag
      */
     public boolean isBeanDeclaration(PsiElement element) {
-        if (element instanceof XmlTag) {
-            XmlTag tag = (XmlTag) element;
+        if (element instanceof XmlTag tag) {
             return isBlueprintNamespace(tag.getNamespace()) && tag.getLocalName().equals("bean");
         }
         return false;
@@ -126,7 +130,7 @@ public class BeanUtils implements Disposable {
         PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(module.getProject());
         return findReferenceableBeanIds(module, idCondition).stream()
                 .filter(ref -> {
-                    PsiClass psiClass = resolveToPsiClass(ref);
+                    PsiClass psiClass = getReferencedClass(ref);
                     if (psiClass != null) {
                         PsiClassType beanType = elementFactory.createType(psiClass);
                         return expectedBeanType.isAssignableFrom(beanType);
@@ -137,17 +141,54 @@ public class BeanUtils implements Disposable {
     }
 
     public Optional<PsiClass> findReferencedBeanClass(PsiElement element) {
-        return findBeanReference(element)
-                .map(this::resolveToPsiClass);
+        return findReferencedBeanClass(element, new HashSet<>());
     }
 
-    private PsiClass resolveToPsiClass(ReferenceableBeanId ref) {
-        return (PsiClass) Optional.of(ref)
-                .map(ReferenceableBeanId::getReferencedClass)
-                .map(ReferencedClass::getReference)
-                .map(PsiReference::resolve)
-                .filter(e -> e instanceof PsiClass)
-                .orElse(null);
+    public Optional<PsiClass> findReferencedBeanClass(PsiElement element, Set<String> usedFactoryBeans) {
+        return findBeanReference(element)
+                .map(ref -> getReferencedClass(ref, usedFactoryBeans));
+    }
+
+    public @Nullable PsiClass getReferencedClass(@NotNull ReferenceableBeanId bean) {
+        return getReferencedClass(bean, new HashSet<>());
+    }
+
+    public @Nullable PsiClass getReferencedClass(@NotNull ReferenceableBeanId bean, Set<String> usedFactoryBeans) {
+        XmlTag beanTag = bean.getBeanTag();
+        Optional<XmlAttributeValue> factoryMethod = findAttributeValue(beanTag, "factory-method");
+        if (factoryMethod.isPresent()) {
+            XmlAttributeValue methodValue = factoryMethod.get();
+            FactoryBeanMethodReference methodRef = Arrays.stream(methodValue.getReferences())
+                    .filter(ref -> ref instanceof FactoryBeanMethodReference)
+                    .map(ref -> (FactoryBeanMethodReference) ref)
+                    .findFirst()
+                    .orElse(null);
+            if (methodRef == null) {
+                return null;
+            }
+
+            return Arrays.stream(methodRef.multiResolve(false, usedFactoryBeans))
+                    .map(ResolveResult::getElement)
+                    .filter(r -> r instanceof PsiMethod)
+                    .map(m -> (PsiMethod) m)
+                    .map(PsiMethod::getReturnType)
+                    .distinct()
+                    .map(PsiUtil::resolveClassInClassTypeOnly)
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElse(null);
+        } else {
+            ReferencedClass referencedClass = findAttributeValue(beanTag, "class")
+                    .map(this::findReferencedClass)
+                    .orElse(null);
+            if (referencedClass != null) {
+                PsiElement resolvedClass = referencedClass.getReference().resolve();
+                if (resolvedClass instanceof PsiClass psiClass) {
+                    return psiClass;
+                }
+            }
+            return null;
+        }
     }
 
     private Optional<ReferenceableBeanId> findBeanReference(PsiElement element) {
@@ -164,10 +205,7 @@ public class BeanUtils implements Disposable {
     }
 
     private ReferenceableBeanId createReferenceableId(@NotNull XmlTag tag, @NotNull XmlAttributeValue idValue) {
-        ReferencedClass referencedClass = findAttributeValue(tag, "class")
-                .map(this::findReferencedClass)
-                .orElse(null);
-        return new ReferenceableBeanId(idValue, idValue.getValue(), referencedClass);
+        return new ReferenceableBeanId(tag, idValue);
     }
 
     private ReferencedClass findReferencedClass(XmlAttributeValue element) {
@@ -214,6 +252,10 @@ public class BeanUtils implements Disposable {
 
     public PsiClass getPropertyBeanClass(XmlTag propertyTag) {
         XmlTag beanTag = propertyTag.getParentTag();
+        return getBeanClass(beanTag);
+    }
+
+    public PsiClass getBeanClass(XmlTag beanTag) {
         if (beanTag != null && isBeanDeclaration(beanTag)) {
             IdeaUtils ideaUtils = IdeaUtils.getService();
             JavaClassUtils javaClassUtils = JavaClassUtils.getService();
@@ -221,12 +263,152 @@ public class BeanUtils implements Disposable {
                     .map(javaClassUtils::findClassReference)
                     .map(javaClassUtils::resolveClassReference)
                     .orElse(null);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Filters a list of methods, returning only those that can be used as factory methods to create
+     * the specified bean, according to its argument types.
+     *
+     * @param beanTag the XML tag representing the bean whose argument types are to be matched
+     * @param methods the list of possible factory methods to check
+     */
+    public List<PsiMethod> filterPossibleBeanFactoryMethods(XmlTag beanTag, List<PsiMethod> methods) {
+        PsiType[] beanArguments = getBeanArguments(beanTag);
+        return methods.stream()
+                .filter(m -> areArgumentsAssignable(m, beanArguments))
+                .toList();
+    }
+
+    /**
+     * Finds types of arguments for a bean declaration.
+     * If the type can't be determined, null is returned.
+     */
+    private PsiType[] getBeanArguments(XmlTag beanTag) {
+        if (beanTag != null && isBeanDeclaration(beanTag)) {
+            return Arrays.stream(beanTag.getChildren())
+                    .filter(child -> child instanceof XmlTag t && t.getLocalName().equals("argument"))
+                    .map(t -> getArgumentType((XmlTag) t))
+                    .toArray(PsiType[]::new);
+        } else {
+            return PsiType.EMPTY_ARRAY;
+        }
+    }
+
+    private PsiType getArgumentType(@NotNull XmlTag argument) {
+        XmlAttribute typeAttr = argument.getAttribute("type");
+        if (typeAttr != null && typeAttr.getValue() != null) {
+            try {
+                return JavaPsiFacade.getElementFactory(argument.getProject()).createTypeFromText(typeAttr.getValue(), argument);
+            } catch (IncorrectOperationException e) {
+                return null;
+            }
+        } else if (argument.getAttribute("value") != null) {
+            return null; // can't determine exact type, let's be lenient
+        } else {
+            XmlAttribute refAttr = argument.getAttribute("ref");
+            if (refAttr != null && refAttr.getValueElement() != null) {
+                return findBeanReference(refAttr.getValueElement())
+                        .map(this::getReferencedClass)
+                        .map(cls -> PsiElementFactory.getInstance(cls.getProject()).createType(cls))
+                        .orElse(null);
+            } else {
+                XmlTag argBean = Arrays.stream(argument.getSubTags())
+                        .filter(subTag -> subTag.getLocalName().equals("bean"))
+                        .findFirst()
+                        .orElse(null);
+                if (argBean != null) {
+                    PsiClass beanClass = getBeanClass(argBean);
+                    if (beanClass != null) {
+                        PsiElementFactory instance = PsiElementFactory.getInstance(argBean.getProject());
+                        return instance.createType(beanClass);
+                    }
+                }
+            }
         }
         return null;
     }
 
+    public List<PsiMethod> findFactoryMethods(@NotNull XmlTag beanTag, @Nullable String methodName) throws FactoryBeanMethodCycleException {
+        return findFactoryMethods(beanTag, methodName, new HashSet<>());
+    }
+
+    public List<PsiMethod> findFactoryMethods(@NotNull XmlTag beanTag, @Nullable String methodName, Set<String> usedFactoryBeans) throws FactoryBeanMethodCycleException {
+        XmlAttribute factoryRefAttr = Arrays.stream(beanTag.getAttributes()).filter(a -> a.getLocalName().equals("factory-ref")).findFirst().orElse(null);
+
+        if (factoryRefAttr == null) {
+            PsiClass beanClass = getBeanClass(beanTag);
+            if (beanClass == null) {
+                return List.of();
+            }
+            PsiMethod[] methods = findMethodsByName(beanClass, methodName);
+            return filterMatchingMethods(methods, true);
+        } else {
+            XmlAttributeValue factoryRefVal = factoryRefAttr.getValueElement();
+            if (factoryRefVal == null) {
+                return List.of();
+            }
+            String factoryRef = factoryRefVal.getValue();
+            if (usedFactoryBeans.contains(factoryRef)) {
+                throw new FactoryBeanMethodCycleException();
+            }
+            usedFactoryBeans.add(factoryRef);
+            Optional<PsiClass> factoryClass = findReferencedBeanClass(factoryRefVal, usedFactoryBeans);
+            if (factoryClass.isPresent()) {
+                PsiMethod[] methods = findMethodsByName(factoryClass.get(), methodName);
+                return filterMatchingMethods(methods, false);
+            } else {
+                return List.of();
+            }
+        }
+    }
+
+    private static PsiMethod[] findMethodsByName(PsiClass beanClass, @Nullable String methodName) {
+        return methodName == null ? beanClass.getAllMethods() : beanClass.findMethodsByName(methodName, true);
+    }
+
+    private List<PsiMethod> filterMatchingMethods(PsiMethod[] methods, boolean staticMethods) {
+        return Arrays.stream(methods)
+                .filter(m -> {
+                    PsiClass cc = m.getContainingClass();
+                    return cc == null || !Object.class.getName().equals(cc.getQualifiedName());
+                })
+                .filter(m -> {
+                    boolean isStatic = m.getModifierList().hasModifierProperty(PsiModifier.STATIC);
+                    return staticMethods == isStatic;
+                })
+                .filter(m -> !m.getModifierList().hasModifierProperty(PsiModifier.PRIVATE))
+                .filter(m -> !PsiTypes.voidType().equals(m.getReturnType()))
+                .toList();
+    }
+
+
+    private boolean areArgumentsAssignable(PsiMethod method, PsiType[] argTypes) {
+        PsiParameter[] params = method.getParameterList().getParameters();
+        if (params.length != argTypes.length) {
+            return false;
+        }
+        for (int i = 0; i < params.length; i++) {
+            PsiType argType = argTypes[i];
+            if (argType == null) {
+                continue; //our marker for unknown type
+            }
+            if (!params[i].getType().isAssignableFrom(argType)) {
+                return false;
+            }
+        }
+        return true;
+
+    }
+
     @Override
     public void dispose() {
+
+    }
+
+    public static class FactoryBeanMethodCycleException extends Exception {
 
     }
 

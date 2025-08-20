@@ -16,6 +16,7 @@
  */
 package com.github.cameltooling.idea.reference.blueprint;
 
+import com.github.cameltooling.idea.reference.blueprint.model.FactoryBeanMethodReference;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlAttributeValue;
@@ -23,25 +24,17 @@ import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Provides references from usages of beans to their declarations.
- *
- * For example - when using bean id in a 'ref' attribute - <property name='xxx' ref='myBean'/>, the myBean is a reference
- * to its declaration - <bean id='myBean' .../>
+ * Provide references from the value of blueprint's factory-method attribute, to the factory method in the bean class.
  */
-public class BeanReferenceProvider extends BlueprintAttributeValueReferenceProvider {
+public class BlueprintFactoryMethodReferenceProvider extends BlueprintAttributeValueReferenceProvider {
 
     @Override
-    protected PsiReference[] getAttributeReferences(@NotNull XmlAttribute attribute, @NotNull XmlAttributeValue value,
-                                                    ProcessingContext context) {
-        String beanId = attribute.getValue();
-        if (beanId != null && !beanId.isEmpty()) {
-            return switch (attribute.getLocalName()) {
-                case "ref", "factory-ref" -> new PsiReference[] { new BeanReference(value, beanId) };
-                case "id" -> new PsiReference[] { new BeanSelfReference(value, beanId) };
-                default -> PsiReference.EMPTY_ARRAY;
-            };
+    protected PsiReference[] getAttributeReferences(@NotNull XmlAttribute attribute, @NotNull XmlAttributeValue value, ProcessingContext context) {
+        if (!attribute.getLocalName().equals("factory-method")) {
+            return PsiReference.EMPTY_ARRAY;
         }
-        return PsiReference.EMPTY_ARRAY;
+
+        return new PsiReference[] { new FactoryBeanMethodReference(value, attribute.getParent()) };
     }
 
 }

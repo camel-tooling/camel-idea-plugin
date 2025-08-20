@@ -16,16 +16,14 @@
  */
 package com.github.cameltooling.idea.completion.extension;
 
+import com.github.cameltooling.idea.completion.lookup.MethoLookupElementFactory;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.JavaMethodUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.completion.CompletionUtil;
-import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
-import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.icons.AllIcons;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
@@ -58,7 +56,7 @@ public class CamelJavaBeanReferenceSmartCompletion extends CompletionProvider<Co
 
             List<LookupElement> answer = javaMethodUtils.getBeanAccessibleMethods(methods)
                 .stream()
-                .map(method -> buildLookupElement(method, javaMethodUtils.getPresentableMethodWithParameters(method)))
+                .map(method -> MethoLookupElementFactory.create(method, javaMethodUtils.getPresentableMethodWithParameters(method)))
                 .collect(toList());
 
             // are there any results then add them
@@ -69,23 +67,6 @@ public class CamelJavaBeanReferenceSmartCompletion extends CompletionProvider<Co
                 completionResultSet.stopHere();
             }
         }
-    }
-
-    @NotNull
-    private LookupElement buildLookupElement(PsiMethod method, String presentableMethod) {
-        LookupElementBuilder builder = LookupElementBuilder.create(method);
-        builder = builder.withPresentableText(presentableMethod);
-        builder = builder.withTypeText(method.getContainingClass().getName(), true);
-        builder = builder.withIcon(AllIcons.Nodes.Method);
-        if (CamelIdeaUtils.getService().isAnnotatedWithHandler(method)) {
-            //@Handle methods are marked with
-            builder = builder.withBoldness(true);
-        }
-        if (method.isDeprecated()) {
-            // mark as deprecated
-            builder = builder.withStrikeoutness(true);
-        }
-        return builder.withAutoCompletionPolicy(AutoCompletionPolicy.GIVE_CHANCE_TO_OVERWRITE);
     }
 
 }

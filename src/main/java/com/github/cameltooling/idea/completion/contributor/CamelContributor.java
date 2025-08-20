@@ -26,6 +26,7 @@ import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;
+import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.codeInsight.completion.CompletionUtil;
 import com.intellij.patterns.InitialPatternCondition;
 import com.intellij.patterns.PsiFilePattern;
@@ -63,9 +64,18 @@ public abstract class CamelContributor extends CompletionContributor {
             if (parameters.getOriginalFile().getProject().getService(CamelService.class).isCamelProject()) {
                 CompletionQuery query = parsePsiElement(parameters);
                 camelCompletionExtensions.stream()
+                    .filter(p -> isSupportedCompletionType(p, parameters.getCompletionType()))
                     .filter(p -> p.isValid(parameters, context, query))
                     .forEach(p -> p.addCompletions(parameters, context, resultSet, query));
             }
+        }
+
+        private boolean isSupportedCompletionType(CamelCompletionExtension p, CompletionType completionType) {
+            return switch (completionType) {
+                case BASIC -> true;
+                case SMART -> p.supportsSmartCompletion();
+                default -> false;
+            };
         }
     }
 

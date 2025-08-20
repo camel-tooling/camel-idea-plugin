@@ -38,7 +38,7 @@ import org.jetbrains.annotations.NotNull;
 public class CamelEndpointNameCompletionExtension extends SimpleCompletionExtension {
 
     @Override
-    protected List<LookupElement> findResults(@NotNull PsiElement element, @NotNull String query) {
+    protected List<LookupElement> findResults(@NotNull CompletionParameters parameters, @NotNull PsiElement element, @NotNull String query) {
         Module module = ModuleUtilCore.findModuleForPsiElement(element);
         List<PsiElement> endpointDeclarations = CamelIdeaUtils.getService().findEndpointDeclarations(module, e -> true);
         return endpointDeclarations.stream()

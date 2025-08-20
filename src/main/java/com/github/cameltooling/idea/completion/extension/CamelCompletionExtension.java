@@ -42,4 +42,8 @@ public interface CamelCompletionExtension {
      */
     boolean isValid(@NotNull CompletionParameters parameters, @NotNull ProcessingContext context, CompletionQuery query);
 
+    default boolean supportsSmartCompletion() {
+        return false;
+    }
+
 }

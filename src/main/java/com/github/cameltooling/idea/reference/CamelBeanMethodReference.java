@@ -65,8 +65,7 @@ public class CamelBeanMethodReference extends PsiPolyVariantReferenceBase<PsiEle
     public ResolveResult[] multiResolve(boolean b) {
         List<ResolveResult> results = new ArrayList<>();
 
-        PsiMethod[] methods = getPsiClass().findMethodsByName(methodNameOnly, true);
-        List<PsiMethod> beanMethods = JavaMethodUtils.getService().getMatchingBeanMethods(Arrays.asList(methods), methodName);
+        List<PsiMethod> beanMethods = JavaMethodUtils.getService().findMatchingBeanMethods(getPsiClass(), methodName);
 
         Map<Boolean, List<PsiMethod>> methodsByPrivateness = beanMethods.stream().collect(Collectors.groupingBy(m -> m.getModifierList().hasModifierProperty(PsiModifier.PRIVATE)));
         List<PsiMethod> nonPrivateMethods = methodsByPrivateness.getOrDefault(false, List.of());
