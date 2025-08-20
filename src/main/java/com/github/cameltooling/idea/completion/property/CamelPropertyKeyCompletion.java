@@ -523,7 +523,7 @@ abstract class CamelPropertyKeyCompletion extends CompletionProvider<CompletionP
      */
     private static LookupElementBuilder withIcon(final BaseOptionModel option, final LookupElementBuilder builder) {
         if (option.isRequired()) {
-            return builder.withIcon(AllIcons.Toolwindows.ToolWindowFavorites);
+            return builder.withIcon(AllIcons.Nodes.Favorite);
         } else if (option.isSecret()) {
             return builder.withIcon(AllIcons.Nodes.SecurityRole);
         } else if (option.isMultiValue()) {
