@@ -13,6 +13,7 @@
       <ul>
         <li>Only IDEA 2025 onwards is supported</li>
         <li>Upgraded to Camel 4.14.0</li>
+        <li>Completion suggestion now supports camel.jbang properties</li>
       </ul>
     ]]>
   </change-notes>
