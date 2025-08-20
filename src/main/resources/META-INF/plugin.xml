@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-tooling/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
-  <version>1.4.2</version>
+  <version>1.4.3</version>
   <vendor email="users@apache.camel.org" url="https://github.com/camel-tooling/camel-idea-plugin">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -9,12 +9,9 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.1.4.2
+      v.1.4.3
       <ul>
         <li>Only IDEA 2025 onwards is supported</li>
-        <li>Upgraded to Camel 4.14.0</li>
-        <li>Completion suggestion now supports camel.jbang properties</li>
-        <li>Support for blueprint's factory-method and factory-ref attributes (references, code completion)</li>
       </ul>
     ]]>
   </change-notes>
