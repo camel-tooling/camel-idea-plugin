@@ -25,6 +25,7 @@ import com.github.cameltooling.idea.reference.blueprint.model.ReferenceableBeanI
 import com.github.cameltooling.idea.service.CamelPreferenceService;
 import com.github.cameltooling.idea.util.BeanUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
+import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.module.Module;
@@ -44,8 +45,13 @@ public class BeanReferenceCompletionExtension extends ReferenceBasedCompletionEx
     }
 
     @Override
+    public boolean supportsSmartCompletion() {
+        return true;
+    }
+
+    @Override
     protected List<LookupElement> findResults(@NotNull CompletionParameters parameters, @NotNull PsiElement element, @NotNull String query) {
-        List<ReferenceableBeanId> targets = findTargets(element, query);
+        List<ReferenceableBeanId> targets = findTargets(parameters, element, query);
         return targets.stream()
                 .map(bean -> createLookupElementBuilder(bean.getId(), bean.getElement())
                 .withTypeText(getReferencedClassName(bean))
@@ -58,20 +64,20 @@ public class BeanReferenceCompletionExtension extends ReferenceBasedCompletionEx
         return psiClass != null ? psiClass.getName() : null;
     }
 
-    private List<ReferenceableBeanId> findTargets(PsiElement element, String query) {
+    private List<ReferenceableBeanId> findTargets(@NotNull CompletionParameters parameters, PsiElement element, String query) {
         Module module = ModuleUtilCore.findModuleForPsiElement(element);
         if (module == null) {
             return Collections.emptyList();
         }
 
-        PsiType expectedType = getExpectedType(element);
-
         Predicate<String> beanIdPredicate = b -> b.startsWith(query);
-        if (expectedType != null) {
-            return BeanUtils.getService().findReferenceableBeanIdsByType(module, beanIdPredicate, expectedType);
-        } else {
-            return BeanUtils.getService().findReferenceableBeanIds(module, beanIdPredicate);
+        if (CompletionType.SMART.equals(parameters.getCompletionType())) {
+            PsiType expectedType = getExpectedType(element);
+            if (expectedType != null) {
+                return BeanUtils.getService().findReferenceableBeanIdsByType(module, beanIdPredicate, expectedType);
+            }
         }
+        return BeanUtils.getService().findReferenceableBeanIds(module, beanIdPredicate);
     }
 
     private PsiType getExpectedType(PsiElement element) {

@@ -88,7 +88,7 @@ public class CamelYamlFileReferenceContributor extends CamelContributor {
         addCompletionExtension(new CamelEndpointNameCompletionExtension());
         addCompletionExtension(new CamelEndpointSmartCompletionExtension(false));
         addCompletionExtension(new CamelPropertyPlaceholderSmartCompletionExtension());
-        extend(CompletionType.BASIC,
+        extend(null,
             psiElement().and(psiElement().inside(PsiFile.class).inFile(matchFileType("yaml", "yml"))),
             new CompositeCompletionProvider(getCamelCompletionExtensions())
         );
