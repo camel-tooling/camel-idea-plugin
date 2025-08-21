@@ -57,12 +57,11 @@ import com.intellij.psi.codeStyle.CodeStyleSettings;
 import com.intellij.psi.impl.source.PostprocessReformattingAspect;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.search.SearchScope;
-import com.intellij.psi.search.searches.ClassInheritorsSearch;
+import com.intellij.psi.search.searches.AllClassesSearch;
 import com.intellij.psi.util.ClassUtil;
 import com.intellij.psi.util.InheritanceUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.LightVirtualFile;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -163,7 +162,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public boolean isCamelRouteStart(PsiElement element) {
-        return IdeaUtils.getService().isFromJavaMethodCall(element, true, ROUTE_START);
+        return isConsumerEndpoint(element);
     }
 
     @Override
@@ -188,12 +187,12 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             return false;
         }
         final IdeaUtils ideaUtils = IdeaUtils.getService();
-        if ((!excludeRouteStart && ideaUtils.isFromJavaMethod(call, true, ROUTE_START))
+        if ((!excludeRouteStart && ideaUtils.isFromJavaMethod(call, true, CONSUMER_ENDPOINT))
                 || ideaUtils.isFromJavaMethod(call, true, GLOBAL_CLAUSE)) {
             return true;
         }
         Collection<PsiMethodCallExpression> chainedCalls = PsiTreeUtil.findChildrenOfType(call, PsiMethodCallExpression.class);
-        return chainedCalls.stream().anyMatch(c -> ideaUtils.isFromJavaMethod(c, true, ROUTE_START_OR_GLOBAL_CLAUSE));
+        return chainedCalls.stream().anyMatch(c -> ideaUtils.isFromJavaMethod(c, true, CONSUMER_OR_GLOBAL_CLAUSE));
     }
 
     @Override
@@ -302,6 +301,10 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             return true;
         }
         // annotation
+        return isInsideConsumeAnnotation(element);
+    }
+
+    private boolean isInsideConsumeAnnotation(PsiElement element) {
         PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
         if (annotation != null && annotation.getQualifiedName() != null) {
             return annotation.getQualifiedName().equals("org.apache.camel.Consume");
@@ -423,7 +426,8 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
     @Override
     public boolean isPlaceForEndpointUri(PsiElement location) {
-        return location instanceof PsiLiteralExpression && isInsideCamelRoute(location, false);
+        return location instanceof PsiLiteralExpression &&
+                (isInsideCamelRoute(location, false) || isInsideConsumeAnnotation(location));
     }
 
     @Override
@@ -453,15 +457,17 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
 
         List<PsiElement> results = new ArrayList<>();
         if (routeBuilderClass != null) {
-            Collection<PsiClass> routeBuilders = ClassInheritorsSearch.search(routeBuilderClass, scope, true)
-                .findAll();
-            for (PsiClass routeBuilder : routeBuilders) {
-                Collection<PsiLiteralExpression> literals = PsiTreeUtil.findChildrenOfType(routeBuilder, PsiLiteralExpression.class);
+            Collection<PsiClass> allClasses = AllClassesSearch.search(scope, project).findAll();
+            for (PsiClass aClass : allClasses) {
+                boolean insideRouteBuilder = aClass.isInheritorDeep(routeBuilderClass, null);
+                Collection<PsiLiteralExpression> literals = PsiTreeUtil.findChildrenOfType(aClass, PsiLiteralExpression.class);
                 for (PsiLiteralExpression literal : literals) {
-                    Object val = literal.getValue();
-                    if (val instanceof String endpointUri) {
-                        if (uriCondition.test(endpointUri) && elementCondition.test(literal)) {
-                            results.add(literal);
+                    if (insideRouteBuilder || isConsumerEndpoint(literal) || isProducerEndpoint(literal)) {
+                        Object val = literal.getValue();
+                        if (val instanceof String endpointUri) {
+                            if (uriCondition.test(endpointUri) && elementCondition.test(literal)) {
+                                results.add(literal);
+                            }
                         }
                     }
                 }
