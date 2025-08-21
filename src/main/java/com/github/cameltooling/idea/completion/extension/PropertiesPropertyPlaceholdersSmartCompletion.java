@@ -28,8 +28,10 @@ import com.intellij.lang.properties.IProperty;
 import com.intellij.lang.properties.psi.PropertiesFile;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiFile;
+import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
+import static com.github.cameltooling.idea.completion.extension.CamelPropertyPlaceholderSmartCompletionExtension.PROP_PLACEHOLDER_START_TAG;
 import static com.intellij.lang.properties.references.PropertiesCompletionContributor.LOOKUP_ELEMENT_RENDERER;
 
 /**
@@ -50,8 +52,9 @@ public class PropertiesPropertyPlaceholdersSmartCompletion implements CamelPrope
     }
 
     @Override
-    public void buildResultSet(CompletionResultSet resultSet, CompletionQuery query, PsiFile file) {
-        String prefix = getPrefix(query);
+    public void buildResultSet(@NotNull ProcessingContext context, CompletionResultSet resultSet, CompletionQuery query, PsiFile file) {
+        String startTag = context.get(PROP_PLACEHOLDER_START_TAG);
+        String prefix = getPrefix(query, startTag == null ? "" : startTag);
         if (file instanceof PropertiesFile pf) {
             addPropertyResults(pf.getProperties(),
                     IProperty::getKey,

@@ -32,12 +32,11 @@ import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.PlatformIcons;
+import com.intellij.util.ProcessingContext;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.Icon;
-
-import static com.github.cameltooling.idea.util.CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TAG;
 
 /**
  * Completion handler for building property result set. Hook into the process when
@@ -64,7 +63,7 @@ public interface CamelPropertyCompletion {
     /**
      * Build the property completion result set to be shown in the completion dialog
      */
-    void buildResultSet(CompletionResultSet resultSet, CompletionQuery query, PsiFile file);
+    void buildResultSet(@NotNull ProcessingContext context, CompletionResultSet resultSet, CompletionQuery query, PsiFile file);
 
     default void addResult(CompletionResultSet resultSet, String prefix, LookupElement element) {
         resultSet.withPrefixMatcher(new PlainPrefixMatcher(prefix))
@@ -88,16 +87,16 @@ public interface CamelPropertyCompletion {
         };
     }
 
-    default String getPrefix(CompletionQuery query) {
+    default String getPrefix(CompletionQuery query, @NotNull String placeholderStartTag) {
         PsiAnnotation annotation = PsiTreeUtil.getParentOfType(query.element(), PsiAnnotation.class);
         if (annotation != null && CamelIdeaUtils.PROPERTY_INJECT_ANNOTATION.equals(annotation.getQualifiedName())) {
             return query.valueAtPosition();
         }
 
         String prefix;
-        int beginIndex = query.valueAtPosition().lastIndexOf(PROPERTY_PLACEHOLDER_START_TAG);
+        int beginIndex = query.valueAtPosition().lastIndexOf(placeholderStartTag);
         if (beginIndex >= 0) {
-            prefix = query.valueAtPosition().substring(beginIndex + 2);
+            prefix = query.valueAtPosition().substring(beginIndex + placeholderStartTag.length());
         } else {
             prefix = "";
         }

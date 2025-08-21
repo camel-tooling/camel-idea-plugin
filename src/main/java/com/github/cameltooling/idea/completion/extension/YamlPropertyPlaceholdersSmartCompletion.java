@@ -16,6 +16,7 @@
  */
 package com.github.cameltooling.idea.completion.extension;
 
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -28,11 +29,14 @@ import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.yaml.psi.YAMLFile;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
+
+import static com.github.cameltooling.idea.completion.extension.CamelPropertyPlaceholderSmartCompletionExtension.PROP_PLACEHOLDER_START_TAG;
 
 /**
  * To support smart completion where properties are loaded from <tt>.yaml</tt> files.
@@ -47,11 +51,11 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
 
     @NotNull
     private Map<String, Object> getProperties(VirtualFile virtualFile) {
-        Map<String, Object> result = new HashMap<>();
         Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
-        try {
+        Map<String, Object> result = new HashMap<>();
+        try (InputStream is = virtualFile.getInputStream()){
             // Parse the YAML file and return the output as a series of Maps and Lists
-            result = yaml.load(virtualFile.getInputStream());
+            result = yaml.load(is); //TODO: this is a class cast exception when the yaml contains a list at root level, or a scalar
         } catch (Exception e) {
             LOG.warn("Error loading yaml file: " + virtualFile, e);
         }
@@ -64,12 +68,13 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
     }
 
     @Override
-    public void buildResultSet(CompletionResultSet resultSet, CompletionQuery query, PsiFile file) {
+    public void buildResultSet(@NotNull ProcessingContext context, CompletionResultSet resultSet, CompletionQuery query, PsiFile file) {
         if (CamelIdeaUtils.getService().isCamelFile(file)) { //do not extract properties from camel route files
             return;
         }
         VirtualFile virtualFile = file.getVirtualFile();
-        String prefix = getPrefix(query);
+        String startTag = context.get(PROP_PLACEHOLDER_START_TAG);
+        String prefix = getPrefix(query, startTag == null ? "" : startTag);
         CompletionContext ctx = new CompletionContext(prefix, virtualFile, query, resultSet);
         getProperties(virtualFile).forEach((key, value) -> {
             if (!isIgnored(key) && haveCommonStart(key, prefix)) {
