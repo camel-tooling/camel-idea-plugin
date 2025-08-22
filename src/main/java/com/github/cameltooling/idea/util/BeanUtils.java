@@ -67,13 +67,9 @@ public class BeanUtils implements Disposable {
      */
     public boolean isBeanDeclaration(PsiElement element) {
         if (element instanceof XmlTag tag) {
-            return isBlueprintNamespace(tag.getNamespace()) && tag.getLocalName().equals("bean");
+            return BlueprintUtils.getService().isBlueprintNamespace(tag.getNamespace()) && tag.getLocalName().equals("bean");
         }
         return false;
-    }
-
-    private boolean isBlueprintNamespace(String namespace) {
-        return namespace.contains(Constants.OSGI_BLUEPRINT_NAMESPACE);
     }
 
     /**

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.github.cameltooling.idea.util.BlueprintUtils;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -27,6 +28,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiAnnotation;
@@ -48,6 +50,7 @@ import org.jetbrains.jps.model.java.JavaSourceRootType;
 public class CamelPropertyPlaceholderSmartCompletionExtension implements CamelCompletionExtension {
 
     private static final Logger LOG = Logger.getInstance(CamelPropertyPlaceholderSmartCompletionExtension.class);
+    static final Key<String> PROP_PLACEHOLDER_START_TAG = new Key<>("placeholderStartTag");
 
     private final List<CamelPropertyCompletion> propertyCompletionProviders = new ArrayList<>();
 
@@ -84,7 +87,7 @@ public class CamelPropertyPlaceholderSmartCompletionExtension implements CamelCo
                     propertyCompletionProviders.stream()
                         .filter(p -> p.isValidFile(psiFile))
                         .forEach(p -> {
-                            p.buildResultSet(resultSet, query, psiFile);
+                            p.buildResultSet(context, resultSet, query, psiFile);
                         });
                     return true;
                 });
@@ -123,7 +126,20 @@ public class CamelPropertyPlaceholderSmartCompletionExtension implements CamelCo
             return true;
         }
 
-        return CamelIdeaUtils.getService().hasUnclosedPropertyPlaceholder(query.valueAtPosition());
+        if (CamelIdeaUtils.getService().hasUnclosedPropertyPlaceholder(query.valueAtPosition())) {
+            context.put(PROP_PLACEHOLDER_START_TAG, CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TAG);
+            return true;
+        } else if (isAllowedBlueprintPlaceholderAt(query)) {
+            context.put(PROP_PLACEHOLDER_START_TAG, BlueprintUtils.PROPERTY_PLACEHOLDER_START_TAG);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private static boolean isAllowedBlueprintPlaceholderAt(CompletionQuery query) {
+        return BlueprintUtils.getService().hasUnclosedPropertyPlaceholder(query.valueAtPosition())
+                && BlueprintUtils.getService().isAllowedPropertyPlaceholderLocation(query.element());
     }
 
 }

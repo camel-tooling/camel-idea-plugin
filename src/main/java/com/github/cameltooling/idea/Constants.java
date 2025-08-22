@@ -20,9 +20,10 @@ public final class Constants {
 
     public static final String OSGI_BLUEPRINT_NAMESPACE = "http://www.osgi.org/xmlns/blueprint/v1.0.0";
     public static final String CAMEL_NAMESPACE = "http://camel.apache.org/schema/spring";
+    public static final String CAMEL_BLUEPRINT_NAMESPACE = "http://camel.apache.org/schema/blueprint";
     public static final String[] ACCEPTED_NAMESPACES = new String[]{
         CAMEL_NAMESPACE,
-        "http://camel.apache.org/schema/blueprint",
+        CAMEL_BLUEPRINT_NAMESPACE,
         "http://www.springframework.org/schema/beans",
         OSGI_BLUEPRINT_NAMESPACE
     };

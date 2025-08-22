@@ -13,6 +13,7 @@
       <ul>
         <li>Only IDEA 2025 onwards is supported</li>
         <li>Support endpoint references for bean methods annotated with @Consume</li>
+        <li>Support blueprint style property placeholders in blueprint XMLs, e.g. ${my.property}</li>
       </ul>
     ]]>
   </change-notes>
@@ -84,6 +85,7 @@
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.JavaMethodUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.JavaClassUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.BeanUtils"/>
+    <applicationService serviceImplementation="com.github.cameltooling.idea.util.BlueprintUtils"/>
 
     <!-- allow code completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelJavaReferenceContributor" order="first"/>
@@ -146,6 +148,7 @@
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.blueprint.BlueprintReferenceContributor" language="XML"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.CamelBeanInjectReferenceContributor"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.CamelPropertyPlaceholderReferenceContributor"/>
+    <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.blueprint.BlueprintPropertyPlaceholderReferenceContributor" language="XML"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.blueprint.ConfigPropertyPlaceholderReferenceContributor" language="JAVA"/>
     <renameHandler implementation="com.github.cameltooling.idea.reference.CamelBeanReferenceRenameHandler"/>
     <postFormatProcessor implementation="com.github.cameltooling.idea.formatter.CamelPostFormatProcessor"/>
