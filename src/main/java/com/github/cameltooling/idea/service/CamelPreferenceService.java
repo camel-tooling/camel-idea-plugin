@@ -23,6 +23,8 @@ import java.util.Objects;
 
 import javax.swing.*;
 
+import com.github.cameltooling.idea.preference.propertyplaceholder.PropertyPlaceholderSettingsEntry;
+import com.github.cameltooling.idea.reference.propertyplaceholder.XmlPropertyPlaceholderDefinition;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
@@ -32,6 +34,8 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import com.intellij.util.xmlb.annotations.Transient;
 import org.jetbrains.annotations.NotNull;
+
+import static com.github.cameltooling.idea.Constants.OSGI_BLUEPRINT_NAMESPACE;
 
 /**
  * Service for holding preference for this plugin.
@@ -71,7 +75,26 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     private List<String> ignorePropertyList = new ArrayList<>();
     private List<String> excludePropertyFiles = new ArrayList<>();
 
+    private static final List<PropertyPlaceholderSettingsEntry> DEFAULT_PROPERTY_PLACEHOLDERS = List.of(
+            new PropertyPlaceholderSettingsEntry("${", "}", List.of(OSGI_BLUEPRINT_NAMESPACE), true)
+    );
+
+    // Settings for XML property placeholders persisted in plugin state
+    private List<PropertyPlaceholderSettingsEntry> xmlPropertyPlaceholders = DEFAULT_PROPERTY_PLACEHOLDERS;
+
     protected CamelPreferenceService() { }
+
+    public List<PropertyPlaceholderSettingsEntry> getXmlPropertyPlaceholders() {
+        return xmlPropertyPlaceholders;
+    }
+
+    public void setXmlPropertyPlaceholders(List<PropertyPlaceholderSettingsEntry> xmlPropertyPlaceholders) {
+        this.xmlPropertyPlaceholders = xmlPropertyPlaceholders;
+    }
+
+    public void setDefaultXmlPropertyPlaceholders() {
+        this.xmlPropertyPlaceholders = DEFAULT_PROPERTY_PLACEHOLDERS;
+    }
 
     public static CamelPreferenceService getService() {
         return ApplicationManager.getApplication().getService(CamelPreferenceService.class);
@@ -204,14 +227,15 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
             && scanThirdPartyComponents == that.scanThirdPartyComponents
             && showCamelIconInGutter == that.showCamelIconInGutter
             && Objects.equals(ignorePropertyList, that.ignorePropertyList)
-            && Objects.equals(excludePropertyFiles, that.excludePropertyFiles);
+            && Objects.equals(excludePropertyFiles, that.excludePropertyFiles)
+            && Objects.equals(xmlPropertyPlaceholders, that.xmlPropertyPlaceholders);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(realTimeEndpointValidation, realTimeSimpleValidation, realTimeJSonPathValidation,
             realTimeIdReferenceTypeValidation, downloadCatalog, scanThirdPartyComponents,
-            ignorePropertyList, excludePropertyFiles);
+            ignorePropertyList, excludePropertyFiles, xmlPropertyPlaceholders);
     }
 
     public boolean isRealTimeBeanMethodValidationCheckBox() {
@@ -221,4 +245,12 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     public void setRealTimeBeanMethodValidationCheckBox(boolean realTimeBeanMethodValidationCheckBox) {
         this.realTimeBeanMethodValidationCheckBox = realTimeBeanMethodValidationCheckBox;
     }
+
+    public List<XmlPropertyPlaceholderDefinition> getEnabledXmlPropertyPlaceholders() {
+        return xmlPropertyPlaceholders.stream()
+                .filter(PropertyPlaceholderSettingsEntry::isEnabled)
+                .map(def -> new XmlPropertyPlaceholderDefinition(def.getStartToken(), def.getEndToken(), def.getNamespaces()))
+                .toList();
+    }
+
 }

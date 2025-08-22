@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.reference;
+package com.github.cameltooling.idea.reference.propertyplaceholder;
 
+import com.github.cameltooling.idea.reference.CamelPsiReferenceProvider;
 import com.intellij.lang.properties.references.PropertyReference;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.patterns.ElementPattern;
@@ -26,23 +27,19 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Provides references for property placeholders
  * Using native IDEA {@link PropertyReference} references automatically enables renaming functionality.
  */
-public abstract class AbstractPropertyPlaceholderReferenceContributor extends PsiReferenceContributor {
-
-    private final Pattern placeholderPattern;
-    private final String placeholderStartTag;
-
-    protected AbstractPropertyPlaceholderReferenceContributor(Pattern placeholderPattern, String placeholderStartTag) {
-        this.placeholderPattern = placeholderPattern;
-        this.placeholderStartTag = placeholderStartTag;
-    }
+public abstract class AbstractPropertyPlaceholderReferenceContributor<T extends PropertyPlaceholderDefinition> extends PsiReferenceContributor {
 
     protected abstract List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderLocations();
+    protected abstract List<T> getPlaceholderDefinitions();
+
+    protected boolean isPlaceholderEnabledAt(T def, PsiElement location) {
+        return true;
+    }
 
     @Override
     public void registerReferenceProviders(@NotNull PsiReferenceRegistrar registrar) {
@@ -63,23 +60,31 @@ public abstract class AbstractPropertyPlaceholderReferenceContributor extends Ps
                 String text = element.getText();
 
                 List<PsiReference> references = new ArrayList<>();
-                Matcher matcher = placeholderPattern.matcher(text);
 
-                while (matcher.find()) {
-                    PropertyReference propertyReference = getPropertyReference(element, matcher);
-                    references.add(propertyReference);
+                for (T def : getPlaceholderDefinitions()) {
+                    if (!isPlaceholderEnabledAt(def, element)) {
+                        continue;
+                    }
+
+                    Matcher matcher = def.getPattern().matcher(text);
+
+                    while (matcher.find()) {
+                        PropertyReference propertyReference = getPropertyReference(def, element, matcher);
+                        references.add(propertyReference);
+                    }
                 }
 
                 return references.toArray(new PsiReference[0]);
             }
 
-            private @NotNull PropertyReference getPropertyReference(@NotNull PsiElement element, Matcher matcher) {
+            private @NotNull PropertyReference getPropertyReference(T def, @NotNull PsiElement element, Matcher matcher) {
                 String propertyName = matcher.group(1);
-                int startOffset = matcher.start() + placeholderStartTag.length();
+                int startOffset = matcher.start() + def.getStartToken().length();
                 int endOffset = startOffset + propertyName.length();
 
                 TextRange textRange = new TextRange(startOffset, endOffset);
-                return new PropertyReference(
+                return new PropertyPlaceholderBasedPropertyReference(
+                        def,
                         propertyName,
                         element,
                         null,

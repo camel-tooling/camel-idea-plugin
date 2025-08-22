@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.reference.blueprint;
+package com.github.cameltooling.idea.reference.propertyplaceholder;
 
 import com.github.cameltooling.idea.reference.CamelPsiReferenceProvider;
 import com.intellij.lang.properties.references.PropertyReference;

@@ -52,9 +52,8 @@ public final class CamelIdeaUtils implements Disposable {
     public static final String[] CAMEL_FILE_EXTENSIONS = {"java", "xml", "yaml", "yml"};
     public static final String BEAN_INJECT_ANNOTATION = "org.apache.camel.BeanInject";
     public static final String PROPERTY_INJECT_ANNOTATION = "org.apache.camel.PropertyInject";
-    public static final String PROPERTY_PLACEHOLDER_START_TAG = "{{";
-    public static final String PROPERTY_PLACEHOLDER_END_TAG = "}}";
-    public static final Pattern PROPERTY_PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{([^}]*)}}");
+    public static final String PROPERTY_PLACEHOLDER_START_TOKEN = "{{";
+    public static final String PROPERTY_PLACEHOLDER_END_TOKEN = "}}";
 
     private final List<CamelIdeaUtilsExtension> enabledExtensions;
 
@@ -327,8 +326,8 @@ public final class CamelIdeaUtils implements Disposable {
      * the opening tag "{{" not followed by the closing tag "}}".
      */
     public boolean hasUnclosedPropertyPlaceholder(String value) {
-        int startIndex = value.lastIndexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TAG);
-        int endIndex = value.lastIndexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG);
+        int startIndex = value.lastIndexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TOKEN);
+        int endIndex = value.lastIndexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TOKEN);
         return startIndex >= 0 && endIndex < startIndex;
     }
 
@@ -338,9 +337,9 @@ public final class CamelIdeaUtils implements Disposable {
      * and does not contain an opening tag "{{" before it.
      */
     public boolean closesPropertyPlaceholder(String suffix) {
-        int startTagIndex = suffix.indexOf(PROPERTY_PLACEHOLDER_START_TAG);
-        int endTagIndex = suffix.indexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG);
-        return endTagIndex >= 0 && (startTagIndex < 0 || startTagIndex > endTagIndex);
+        int startTokenIndex = suffix.indexOf(PROPERTY_PLACEHOLDER_START_TOKEN);
+        int endTokenIndex = suffix.indexOf(CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TOKEN);
+        return endTokenIndex >= 0 && (startTokenIndex < 0 || startTokenIndex > endTokenIndex);
     }
 
 }

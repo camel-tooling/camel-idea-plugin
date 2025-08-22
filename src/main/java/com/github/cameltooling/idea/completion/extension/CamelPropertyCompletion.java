@@ -87,16 +87,16 @@ public interface CamelPropertyCompletion {
         };
     }
 
-    default String getPrefix(CompletionQuery query, @NotNull String placeholderStartTag) {
+    default String getPrefix(CompletionQuery query, @NotNull String placeholderStartToken) {
         PsiAnnotation annotation = PsiTreeUtil.getParentOfType(query.element(), PsiAnnotation.class);
         if (annotation != null && CamelIdeaUtils.PROPERTY_INJECT_ANNOTATION.equals(annotation.getQualifiedName())) {
             return query.valueAtPosition();
         }
 
         String prefix;
-        int beginIndex = query.valueAtPosition().lastIndexOf(placeholderStartTag);
+        int beginIndex = query.valueAtPosition().lastIndexOf(placeholderStartToken);
         if (beginIndex >= 0) {
-            prefix = query.valueAtPosition().substring(beginIndex + placeholderStartTag.length());
+            prefix = query.valueAtPosition().substring(beginIndex + placeholderStartToken.length());
         } else {
             prefix = "";
         }
@@ -130,8 +130,8 @@ public interface CamelPropertyCompletion {
             boolean insidePropertyPlaceholder = CamelIdeaUtils.getService().hasUnclosedPropertyPlaceholder(query.valueAtPosition());
             boolean suffixClosesPlaceholder = CamelIdeaUtils.getService().closesPropertyPlaceholder(query.suffix());
             String docSuffix = doc.getText(new TextRange(pos, doc.getTextLength()));
-            if (insidePropertyPlaceholder && !suffixClosesPlaceholder && !docSuffix.startsWith(CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG)) {
-                doc.insertString(pos, CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TAG);
+            if (insidePropertyPlaceholder && !suffixClosesPlaceholder && !docSuffix.startsWith(CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TOKEN)) {
+                doc.insertString(pos, CamelIdeaUtils.PROPERTY_PLACEHOLDER_END_TOKEN);
             }
         }
 
