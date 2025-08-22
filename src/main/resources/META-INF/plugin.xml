@@ -14,6 +14,7 @@
         <li>Only IDEA 2025 onwards is supported</li>
         <li>Support endpoint references for bean methods annotated with @Consume</li>
         <li>Support blueprint style property placeholders in blueprint XMLs, e.g. ${my.property}</li>
+        <li>Allow configuring custom property placeholder types for XML files in plugin properties</li>
       </ul>
     ]]>
   </change-notes>
@@ -85,7 +86,6 @@
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.JavaMethodUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.JavaClassUtils"/>
     <applicationService serviceImplementation="com.github.cameltooling.idea.util.BeanUtils"/>
-    <applicationService serviceImplementation="com.github.cameltooling.idea.util.BlueprintUtils"/>
 
     <!-- allow code completion of Camel endpoints-->
     <completion.contributor language="JAVA" implementationClass="com.github.cameltooling.idea.completion.contributor.CamelJavaReferenceContributor" order="first"/>
@@ -141,15 +141,16 @@
     <applicationConfigurable id="camel" groupId="language" displayName="Apache Camel" instance="com.github.cameltooling.idea.preference.CamelPreferenceEntryPage"/>
     <applicationConfigurable parentId="camel" id="camel.annotator" groupId="language" displayName="Validation" instance="com.github.cameltooling.idea.preference.annotator.CamelAnnotatorPage"/>
     <projectConfigurable parentId="camel" id="camel.misc" groupId="language" displayName="Miscellaneous" instance="com.github.cameltooling.idea.preference.editorsettings.CamelEditorSettingsPage"/>
+    <projectConfigurable parentId="camel" id="camel.property-placeholders" groupId="language" displayName="Property Placeholders" instance="com.github.cameltooling.idea.preference.propertyplaceholder.PropertyPlaceholdersSettingsPage"/>
     <applicationConfigurable parentId="camel" id="camel.properties" groupId="language" displayName="Ignore &amp; Exclude Properties" instance="com.github.cameltooling.idea.preference.properties.CamelIgnoreAndExcludePage"/>
 
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.CamelBeanReferenceContributor"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.endpoint.direct.DirectEndpointReferenceContributor"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.blueprint.BlueprintReferenceContributor" language="XML"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.CamelBeanInjectReferenceContributor"/>
-    <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.CamelPropertyPlaceholderReferenceContributor"/>
-    <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.blueprint.BlueprintPropertyPlaceholderReferenceContributor" language="XML"/>
-    <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.blueprint.ConfigPropertyPlaceholderReferenceContributor" language="JAVA"/>
+    <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.propertyplaceholder.CamelPropertyPlaceholderReferenceContributor"/>
+    <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.propertyplaceholder.GenericXmlPropertyPlaceholderReferenceContributor" language="XML"/>
+    <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.propertyplaceholder.ConfigPropertyPlaceholderReferenceContributor" language="JAVA"/>
     <renameHandler implementation="com.github.cameltooling.idea.reference.CamelBeanReferenceRenameHandler"/>
     <postFormatProcessor implementation="com.github.cameltooling.idea.formatter.CamelPostFormatProcessor"/>
 

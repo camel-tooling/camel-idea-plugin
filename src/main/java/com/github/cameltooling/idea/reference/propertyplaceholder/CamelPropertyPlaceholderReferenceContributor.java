@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.reference;
+package com.github.cameltooling.idea.reference.propertyplaceholder;
 
-import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.intellij.lang.properties.references.PropertyReference;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.psi.PsiElement;
 
 import java.util.List;
 
-import static com.github.cameltooling.idea.util.CamelIdeaUtils.PROPERTY_PLACEHOLDER_PATTERN;
-import static com.github.cameltooling.idea.util.CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TAG;
+import static com.github.cameltooling.idea.util.CamelIdeaUtils.*;
 
 /**
  * Provides references for Camel property placeholders in the format {{propertyName}}, inside strings in:
@@ -35,15 +33,18 @@ import static com.github.cameltooling.idea.util.CamelIdeaUtils.PROPERTY_PLACEHOL
  *
  * Using native IDEA {@link PropertyReference} references automatically enables renaming functionality.
  */
-public class CamelPropertyPlaceholderReferenceContributor extends AbstractPropertyPlaceholderReferenceContributor {
+public class CamelPropertyPlaceholderReferenceContributor extends AbstractPropertyPlaceholderReferenceContributor<PropertyPlaceholderDefinition> {
+
+    private static final PropertyPlaceholderDefinition DEF = new PropertyPlaceholderDefinition(PROPERTY_PLACEHOLDER_START_TOKEN, PROPERTY_PLACEHOLDER_END_TOKEN);
 
     @Override
     protected List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderLocations() {
-        return CamelIdeaUtils.getService().getAllowedPropertyPlaceholderLocations();
+        return getService().getAllowedPropertyPlaceholderLocations();
     }
 
-    public CamelPropertyPlaceholderReferenceContributor() {
-        super(PROPERTY_PLACEHOLDER_PATTERN, PROPERTY_PLACEHOLDER_START_TAG);
+    @Override
+    protected List<PropertyPlaceholderDefinition> getPlaceholderDefinitions() {
+        return List.of(DEF);
     }
 
 }

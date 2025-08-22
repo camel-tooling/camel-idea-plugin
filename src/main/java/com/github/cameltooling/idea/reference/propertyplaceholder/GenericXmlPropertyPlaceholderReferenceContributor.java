@@ -14,13 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cameltooling.idea.util;
+package com.github.cameltooling.idea.reference.propertyplaceholder;
 
 import com.github.cameltooling.idea.Constants;
-import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.patterns.*;
-import com.intellij.psi.PsiElement;
+import com.github.cameltooling.idea.service.CamelPreferenceService;
+import com.intellij.patterns.ElementPattern;
+import com.intellij.patterns.PatternCondition;
+import com.intellij.patterns.PlatformPatterns;
+import com.intellij.patterns.XmlPatterns;
+import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlTokenType;
@@ -28,27 +30,25 @@ import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
-public class BlueprintUtils implements Disposable {
+/**
+ * Provides references for property placeholders in XML files
+ */
+public class GenericXmlPropertyPlaceholderReferenceContributor extends AbstractPropertyPlaceholderReferenceContributor<XmlPropertyPlaceholderDefinition> {
 
-    public static final Pattern PROPERTY_PLACEHOLDER_PATTERN = Pattern.compile("\\$\\{([^}]*)}");
-    public static final String PROPERTY_PLACEHOLDER_START_TAG = "${";
-    public static final String PROPERTY_PLACEHOLDER_END_TAG = "}";
-
-    public static BlueprintUtils getService() {
-        return ApplicationManager.getApplication().getService(BlueprintUtils.class);
-    }
-
-    public @NotNull List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderLocations() {
+    @Override
+    protected List<ElementPattern<? extends PsiElement>> getAllowedPropertyPlaceholderLocations() {
         return List.of(
                 XmlPatterns.xmlAttributeValue()
-                        .inside(XmlPatterns.xmlTag().withNamespace(Constants.OSGI_BLUEPRINT_NAMESPACE))
                         .with(notCamelNamespace()),
                 PlatformPatterns.psiElement(XmlTokenType.XML_ATTRIBUTE_VALUE_TOKEN)
-                        .inside(XmlPatterns.xmlTag().withNamespace(Constants.OSGI_BLUEPRINT_NAMESPACE))
                         .with(notCamelNamespace())
         );
+    }
+
+    @Override
+    protected List<XmlPropertyPlaceholderDefinition> getPlaceholderDefinitions() {
+        return CamelPreferenceService.getService().getEnabledXmlPropertyPlaceholders();
     }
 
     private @NotNull PatternCondition<PsiElement> notCamelNamespace() {
@@ -61,26 +61,11 @@ public class BlueprintUtils implements Disposable {
         };
     }
 
-    public boolean isAllowedPropertyPlaceholderLocation(PsiElement element) {
-        return getAllowedPropertyPlaceholderLocations().stream().anyMatch(pattern -> pattern.accepts(element));
-    }
-
-    public boolean isBlueprintNamespace(String namespace) {
-        return namespace.contains(Constants.OSGI_BLUEPRINT_NAMESPACE);
-    }
-
-    /**
-     * Checks if the given string contains an unclosed property placeholder. String must contain
-     * the opening tag "${" not followed by the closing tag "}".
-     */
-    public boolean hasUnclosedPropertyPlaceholder(String value) {
-        int startIndex = value.lastIndexOf(PROPERTY_PLACEHOLDER_START_TAG);
-        int endIndex = value.lastIndexOf(PROPERTY_PLACEHOLDER_END_TAG);
-        return startIndex >= 0 && endIndex < startIndex;
-    }
-
     @Override
-    public void dispose() {
-
+    protected boolean isPlaceholderEnabledAt(XmlPropertyPlaceholderDefinition def, PsiElement location) {
+        return XmlPatterns.xmlAttributeValue()
+                .inside(XmlPatterns.xmlTag().withNamespace(def.getNamespaces().toArray(String[]::new)))
+                .accepts(location);
     }
+
 }

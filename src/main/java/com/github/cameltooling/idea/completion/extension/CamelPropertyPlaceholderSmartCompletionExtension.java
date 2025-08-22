@@ -17,10 +17,11 @@
 package com.github.cameltooling.idea.completion.extension;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import com.github.cameltooling.idea.util.BlueprintUtils;
+import com.github.cameltooling.idea.reference.propertyplaceholder.PropertyPlaceholderBasedPropertyReference;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
@@ -32,6 +33,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ProcessingContext;
@@ -50,7 +52,7 @@ import org.jetbrains.jps.model.java.JavaSourceRootType;
 public class CamelPropertyPlaceholderSmartCompletionExtension implements CamelCompletionExtension {
 
     private static final Logger LOG = Logger.getInstance(CamelPropertyPlaceholderSmartCompletionExtension.class);
-    static final Key<String> PROP_PLACEHOLDER_START_TAG = new Key<>("placeholderStartTag");
+    static final Key<String> PROP_PLACEHOLDER_START_TOKEN = new Key<>("placeholderStartToken");
 
     private final List<CamelPropertyCompletion> propertyCompletionProviders = new ArrayList<>();
 
@@ -121,25 +123,27 @@ public class CamelPropertyPlaceholderSmartCompletionExtension implements CamelCo
 
     @Override
     public boolean isValid(@NotNull CompletionParameters parameters, ProcessingContext context, CompletionQuery query) {
-        PsiAnnotation annotation = PsiTreeUtil.getParentOfType(parameters.getPosition(), PsiAnnotation.class);
+        PsiElement position = parameters.getPosition();
+        PsiAnnotation annotation = PsiTreeUtil.getParentOfType(position, PsiAnnotation.class);
         if (annotation != null && CamelIdeaUtils.PROPERTY_INJECT_ANNOTATION.equals(annotation.getQualifiedName())) {
             return true;
         }
 
         if (CamelIdeaUtils.getService().hasUnclosedPropertyPlaceholder(query.valueAtPosition())) {
-            context.put(PROP_PLACEHOLDER_START_TAG, CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TAG);
-            return true;
-        } else if (isAllowedBlueprintPlaceholderAt(query)) {
-            context.put(PROP_PLACEHOLDER_START_TAG, BlueprintUtils.PROPERTY_PLACEHOLDER_START_TAG);
+            context.put(PROP_PLACEHOLDER_START_TOKEN, CamelIdeaUtils.PROPERTY_PLACEHOLDER_START_TOKEN);
             return true;
         } else {
+            PropertyPlaceholderBasedPropertyReference ref = Arrays.stream(position.getReferences())
+                    .filter(PropertyPlaceholderBasedPropertyReference.class::isInstance)
+                    .map(PropertyPlaceholderBasedPropertyReference.class::cast)
+                    .findFirst()
+                    .orElse(null);
+            if (ref != null) {
+                context.put(PROP_PLACEHOLDER_START_TOKEN, ref.getPlaceholderDefinition().getStartToken());
+                return true;
+            }
             return false;
         }
-    }
-
-    private static boolean isAllowedBlueprintPlaceholderAt(CompletionQuery query) {
-        return BlueprintUtils.getService().hasUnclosedPropertyPlaceholder(query.valueAtPosition())
-                && BlueprintUtils.getService().isAllowedPropertyPlaceholderLocation(query.element());
     }
 
 }

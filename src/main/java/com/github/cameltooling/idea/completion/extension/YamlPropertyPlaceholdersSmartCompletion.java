@@ -36,7 +36,7 @@ import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
-import static com.github.cameltooling.idea.completion.extension.CamelPropertyPlaceholderSmartCompletionExtension.PROP_PLACEHOLDER_START_TAG;
+import static com.github.cameltooling.idea.completion.extension.CamelPropertyPlaceholderSmartCompletionExtension.PROP_PLACEHOLDER_START_TOKEN;
 
 /**
  * To support smart completion where properties are loaded from <tt>.yaml</tt> files.
@@ -73,8 +73,8 @@ public class YamlPropertyPlaceholdersSmartCompletion implements CamelPropertyCom
             return;
         }
         VirtualFile virtualFile = file.getVirtualFile();
-        String startTag = context.get(PROP_PLACEHOLDER_START_TAG);
-        String prefix = getPrefix(query, startTag == null ? "" : startTag);
+        String startToken = context.get(PROP_PLACEHOLDER_START_TOKEN);
+        String prefix = getPrefix(query, startToken == null ? "" : startToken);
         CompletionContext ctx = new CompletionContext(prefix, virtualFile, query, resultSet);
         getProperties(virtualFile).forEach((key, value) -> {
             if (!isIgnored(key) && haveCommonStart(key, prefix)) {
