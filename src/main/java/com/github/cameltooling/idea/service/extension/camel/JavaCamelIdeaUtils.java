@@ -51,6 +51,7 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
+import com.intellij.psi.PsiThisExpression;
 import com.intellij.psi.PsiType;
 import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
@@ -61,6 +62,7 @@ import com.intellij.psi.search.searches.AllClassesSearch;
 import com.intellij.psi.util.ClassUtil;
 import com.intellij.psi.util.InheritanceUtil;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiUtil;
 import com.intellij.testFramework.LightVirtualFile;
 
 import java.util.ArrayDeque;
@@ -372,6 +374,13 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             }
 
             PsiJavaCodeReferenceElement referenceElement = PsiTreeUtil.findChildOfType(beanPsiElement, PsiJavaCodeReferenceElement.class);
+            if (referenceElement == null) {
+                PsiThisExpression thisExpression = PsiTreeUtil.findChildOfType(beanPsiElement, PsiThisExpression.class);
+                if (thisExpression != null) {
+                    return PsiUtil.resolveClassInClassTypeOnly(thisExpression.getType());
+                }
+            }
+
             final PsiClass psiClass = JavaClassUtils.getService().resolveClassReference(referenceElement);
 
             if (psiClass != null && !JAVA_LANG_STRING.equals(psiClass.getQualifiedName())) {
@@ -379,7 +388,12 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             }
 
             String beanName = "";
-            if (referenceElement instanceof PsiReferenceExpression) {
+            if (referenceElement instanceof PsiReferenceExpression refExpression) {
+                PsiType beanType = refExpression.getType();
+                PsiClass beanClass = PsiUtil.resolveClassInClassTypeOnly(beanType);
+                if (beanClass != null && !String.class.getName().equals(beanClass.getQualifiedName())) {
+                    return beanClass;
+                }
                 beanName = getStaticBeanName(referenceElement, beanName);
             } else {
                 final String[] beanParameters = beanPsiElement.getText().replace("(", "").replace(")", "").split(",");

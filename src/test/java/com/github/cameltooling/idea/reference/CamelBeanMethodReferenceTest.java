@@ -193,4 +193,27 @@ public class CamelBeanMethodReferenceTest extends CamelLightCodeInsightFixtureTe
         assertThat(referenceElement, instanceOf(PsiLiteralExpression.class));
         assertEquals("(beanTestData, \"myAmbiguousMethod(${body})\")", referenceElement.getParent().getText());
     }
+
+    public void testThisKeywordUsedAsBean() {
+        myFixture.configureByText("MyRoute.java",
+                // language=JAVA
+                """
+                import org.apache.camel.builder.RouteBuilder;
+                public class MyRoute extends RouteBuilder {
+                    @Override
+                    public void configure() {
+                        from("direct:test")
+                            .bean(this, "myMet<caret>hod");
+                    }
+                
+                    public String myMethod() { return "Hello World"; }
+                
+                }
+                """);
+        PsiElement element = myFixture.getFile().findElementAt(myFixture.getCaretOffset()).getParent();
+        final ResolveResult[] resolveResults = ((CamelBeanMethodReference) element.getReferences()[0]).multiResolve(false);
+        assertEquals(1, resolveResults.length);
+        assertEquals("public String myMethod() { return \"Hello World\"; }",  resolveResults[0].getElement().getText());
+    }
+
 }
