@@ -87,7 +87,7 @@ public class CamelService implements Disposable {
     private volatile boolean camelPresent;
     private volatile Notification camelVersionNotification;
     private volatile Notification camelMissingJSonSchemaNotification;
-    private volatile Notification camelMissingJSonPathJarNotification;
+    private volatile Notification camelMissingLanguageJarNotification;
 
     /**
      * The project in which the service is registered.
@@ -118,9 +118,9 @@ public class CamelService implements Disposable {
             camelMissingJSonSchemaNotification.expire();
             camelMissingJSonSchemaNotification = null;
         }
-        if (camelMissingJSonPathJarNotification != null) {
-            camelMissingJSonPathJarNotification.expire();
-            camelMissingJSonPathJarNotification = null;
+        if (camelMissingLanguageJarNotification != null) {
+            camelMissingLanguageJarNotification.expire();
+            camelMissingLanguageJarNotification = null;
         }
         if (camelCoreClassloader != null) {
             try {
@@ -345,12 +345,12 @@ public class CamelService implements Disposable {
         return projectCompleteClassloader;
     }
 
-    public void showMissingJSonPathJarNotification(String lib) {
-        if (camelMissingJSonPathJarNotification == null) {
+    public void showMissingLanguageJarNotification(String lib) {
+        if (camelMissingLanguageJarNotification == null) {
             Icon icon = CamelPreferenceService.getService().getCamelIcon();
-            camelMissingJSonPathJarNotification = CAMEL_NOTIFICATION_GROUP.createNotification(lib + " is not on classpath. Cannot perform real time validation.",
+            camelMissingLanguageJarNotification = CAMEL_NOTIFICATION_GROUP.createNotification(lib + " is not on classpath. Cannot perform real time validation.",
                     NotificationType.WARNING).setImportant(true).setIcon(icon);
-            camelMissingJSonPathJarNotification.notify(project);
+            camelMissingLanguageJarNotification.notify(project);
         }
     }
 
