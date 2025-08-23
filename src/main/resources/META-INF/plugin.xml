@@ -137,7 +137,7 @@
     <annotator language="JAVA" implementationClass="com.github.cameltooling.idea.annotator.CamelBeanMethodAnnotator"/>
 
     <!-- inspection to validate endpoints -->
-    <localInspection displayName="Camel inspection" groupName="Camel" implementationClass="com.github.cameltooling.idea.inspection.CamelInspection"/>
+    <localInspection language="" displayName="Camel Inspection" groupName="Camel" implementationClass="com.github.cameltooling.idea.inspection.CamelInspection"/>
 
     <!-- preference -->
     <applicationConfigurable id="camel" groupId="language" displayName="Apache Camel" instance="com.github.cameltooling.idea.preference.CamelPreferenceEntryPage"/>
