@@ -345,10 +345,10 @@ public class CamelService implements Disposable {
         return projectCompleteClassloader;
     }
 
-    public void showMissingJSonPathJarNotification() {
+    public void showMissingJSonPathJarNotification(String lib) {
         if (camelMissingJSonPathJarNotification == null) {
             Icon icon = CamelPreferenceService.getService().getCamelIcon();
-            camelMissingJSonPathJarNotification = CAMEL_NOTIFICATION_GROUP.createNotification("camel-jsonpath is not on classpath. Cannot perform real time JSonPath validation.",
+            camelMissingJSonPathJarNotification = CAMEL_NOTIFICATION_GROUP.createNotification(lib + " is not on classpath. Cannot perform real time validation.",
                     NotificationType.WARNING).setImportant(true).setIcon(icon);
             camelMissingJSonPathJarNotification.notify(project);
         }

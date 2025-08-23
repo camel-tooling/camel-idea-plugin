@@ -62,6 +62,7 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     private boolean realTimeEndpointValidation = true;
     private boolean realTimeSimpleValidation = true;
     private boolean realTimeJSonPathValidation = true;
+    private boolean realTimeJQValidation = true;
     private boolean realTimeIdReferenceTypeValidation = true;
     private boolean realTimeBeanMethodValidationCheckBox = true;
     private boolean highlightCustomOptions = true;
@@ -99,6 +100,14 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
 
     public void setRealTimeJSonPathValidation(boolean realTimeJSonPathValidation) {
         this.realTimeJSonPathValidation = realTimeJSonPathValidation;
+    }
+
+    public boolean isRealTimeJQValidation() {
+        return realTimeJQValidation;
+    }
+
+    public void setRealTimeJQValidation(boolean realTimeJQValidation) {
+        this.realTimeJQValidation = realTimeJQValidation;
     }
 
     public boolean isRealTimeIdReferenceTypeValidation() {
@@ -199,6 +208,7 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
         return realTimeEndpointValidation == that.realTimeEndpointValidation
             && realTimeSimpleValidation == that.realTimeSimpleValidation
             && realTimeJSonPathValidation == that.realTimeJSonPathValidation
+            && realTimeJQValidation == that.realTimeJQValidation
             && realTimeIdReferenceTypeValidation == that.realTimeIdReferenceTypeValidation
             && downloadCatalog == that.downloadCatalog
             && scanThirdPartyComponents == that.scanThirdPartyComponents
@@ -209,7 +219,7 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
 
     @Override
     public int hashCode() {
-        return Objects.hash(realTimeEndpointValidation, realTimeSimpleValidation, realTimeJSonPathValidation,
+        return Objects.hash(realTimeEndpointValidation, realTimeSimpleValidation, realTimeJSonPathValidation, realTimeJQValidation,
             realTimeIdReferenceTypeValidation, downloadCatalog, scanThirdPartyComponents,
             ignorePropertyList, excludePropertyFiles);
     }
