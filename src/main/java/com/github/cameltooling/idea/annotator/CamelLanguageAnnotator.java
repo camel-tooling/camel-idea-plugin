@@ -33,9 +33,9 @@ import org.apache.camel.catalog.LanguageValidationResult;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Validate JSonPath expression and annotated the specific jsonpath expression to highlight the error in the editor
+ * Validate language expression such as JSonPath/JQ to highlight the error in the editor
  */
-public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
+public class CamelLanguageAnnotator extends AbstractCamelAnnotator {
 
     private static final Logger LOG = Logger.getInstance(CamelEndpointAnnotator.class);
 
@@ -45,13 +45,12 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
     }
 
     /**
-     * Validate jsonpath expression. eg jsonpath("$.store.book[?(@.price < 10)]")
+     * Validate language expression, such as jsonpath("$.store.book[?(@.price < 10)]")
      * if the expression is not valid an error annotation is created and highlight the invalid value.
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
-
         final CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
-        // only validate if the element is jsonpath element
+
         boolean json = CamelPreferenceService.getService().isRealTimeJSonPathValidation() && camelIdeaUtils.isCamelExpression(element, "jsonpath");
         boolean jq = CamelPreferenceService.getService().isRealTimeJQValidation() && camelIdeaUtils.isCamelExpression(element, "jq");
         if (json || jq) {
@@ -59,15 +58,14 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
             CamelCatalog catalogService = project.getService(CamelCatalogService.class).get();
             CamelService camelService = project.getService(CamelService.class);
 
-            // must have camel-json library
+            // must have the supporting library
             String lib = json ? "camel-jsonpath" : "camel-jq";
-            String lan = json ? "jsonpath" : "jq";
-            boolean jsonLib = camelService.containsLibrary(lib, false);
-            if (!jsonLib) {
-                camelService.showMissingJSonPathJarNotification(lib);
+            if (!camelService.containsLibrary(lib, false)) {
+                camelService.showMissingLanguageJarNotification(lib);
                 return;
             }
 
+            String lan = json ? "jsonpath" : "jq";
             try {
                 // need to use the classloader that can load classes from the project
                 ClassLoader loader = camelService.getProjectClassloader();

@@ -126,10 +126,10 @@
     <annotator language="JAVA" implementationClass="com.github.cameltooling.idea.annotator.CamelSimpleAnnotator"/>
     <annotator language="XML" implementationClass="com.github.cameltooling.idea.annotator.CamelSimpleAnnotator"/>
     <annotator language="yaml" implementationClass="com.github.cameltooling.idea.annotator.CamelSimpleAnnotator"/>
-    <!-- annotator to validate jsonpath language -->
-    <annotator language="JAVA" implementationClass="com.github.cameltooling.idea.annotator.CamelJSonPathAnnotator"/>
-    <annotator language="XML" implementationClass="com.github.cameltooling.idea.annotator.CamelJSonPathAnnotator"/>
-    <annotator language="yaml" implementationClass="com.github.cameltooling.idea.annotator.CamelJSonPathAnnotator"/>
+    <!-- annotator to validate json/jq language(s) -->
+    <annotator language="JAVA" implementationClass="com.github.cameltooling.idea.annotator.CamelLanguageAnnotator"/>
+    <annotator language="XML" implementationClass="com.github.cameltooling.idea.annotator.CamelLanguageAnnotator"/>
+    <annotator language="yaml" implementationClass="com.github.cameltooling.idea.annotator.CamelLanguageAnnotator"/>
     <!-- annotator to validate bean references by type -->
     <annotator language="JAVA" implementationClass="com.github.cameltooling.idea.annotator.BeanReferenceTypeAnnotator"/>
     <annotator language="XML" implementationClass="com.github.cameltooling.idea.annotator.BeanReferenceTypeAnnotator"/>
