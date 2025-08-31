@@ -87,7 +87,7 @@ intellijPlatform {
     }
     pluginVerification {
         ides {
-            ide "2025.2"
+            ide "2025.2.1"
         }
     }
 }
