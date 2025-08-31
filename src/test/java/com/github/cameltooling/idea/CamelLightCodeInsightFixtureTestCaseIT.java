@@ -67,6 +67,8 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
     protected static String CAMEL_CORE_MODEL_MAVEN_ARTIFACT = "org.apache.camel:camel-core-model:%s";
     protected static String CAMEL_API_MAVEN_ARTIFACT = "org.apache.camel:camel-api:%s";
     protected static String CAMEL_ENDPOINTDSL_MAVEN_ARTIFACT = "org.apache.camel:camel-endpointdsl:%s";
+    protected static String CAMEL_TIMER_MAVEN_ARTIFACT = "org.apache.camel:camel-timer:%s";
+    protected static String CAMEL_FTP_MAVEN_ARTIFACT = "org.apache.camel:camel-ftp:%s";
 
 
     static {
@@ -79,6 +81,8 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
             CAMEL_API_MAVEN_ARTIFACT = String.format(CAMEL_API_MAVEN_ARTIFACT, CAMEL_VERSION);
             CAMEL_CORE_MODEL_MAVEN_ARTIFACT = String.format(CAMEL_CORE_MODEL_MAVEN_ARTIFACT, CAMEL_VERSION);
             CAMEL_ENDPOINTDSL_MAVEN_ARTIFACT = String.format(CAMEL_ENDPOINTDSL_MAVEN_ARTIFACT, CAMEL_VERSION);
+            CAMEL_TIMER_MAVEN_ARTIFACT = String.format(CAMEL_TIMER_MAVEN_ARTIFACT, CAMEL_VERSION);
+            CAMEL_FTP_MAVEN_ARTIFACT = String.format(CAMEL_FTP_MAVEN_ARTIFACT, CAMEL_VERSION);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
