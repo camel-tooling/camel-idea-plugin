@@ -12,6 +12,10 @@
       v.1.4.4
       <ul>
         <li>Only IDEA 2025 onwards is supported</li>
+        <li>
+          References from endpoint uri to corresponding setters in camel classes, e.g. from the <code>synchronous</code> substring in endpoint uri <code>"direct:abc?synchronous=true"</code>
+          to <code>DirectEndpoint#setSynchronous</code>
+        </li>
       </ul>
     ]]>
   </change-notes>
@@ -148,6 +152,9 @@
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.propertyplaceholder.CamelPropertyPlaceholderReferenceContributor"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.propertyplaceholder.GenericXmlPropertyPlaceholderReferenceContributor" language="XML"/>
     <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.propertyplaceholder.ConfigPropertyPlaceholderReferenceContributor" language="JAVA"/>
+    <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.endpoint.parameter.CamelEndpointParameterReferenceContributor" language="JAVA" />
+    <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.endpoint.parameter.CamelEndpointParameterReferenceContributor" language="XML" />
+    <psi.referenceContributor implementation="com.github.cameltooling.idea.reference.endpoint.parameter.CamelEndpointParameterReferenceContributor" language="yaml" />
     <renameHandler implementation="com.github.cameltooling.idea.reference.CamelBeanReferenceRenameHandler"/>
     <postFormatProcessor implementation="com.github.cameltooling.idea.formatter.CamelPostFormatProcessor"/>
 
