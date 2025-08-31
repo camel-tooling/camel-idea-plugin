@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-tooling/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
-  <version>1.4.3</version>
+  <version>1.4.4</version>
   <vendor email="users@apache.camel.org" url="https://github.com/camel-tooling/camel-idea-plugin">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -9,12 +9,9 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.1.4.3
+      v.1.4.4
       <ul>
         <li>Only IDEA 2025 onwards is supported</li>
-        <li>Support endpoint references for bean methods annotated with @Consume</li>
-        <li>Support blueprint style property placeholders in blueprint XMLs, e.g. ${my.property}</li>
-        <li>Allow configuring custom property placeholder types for XML files in plugin properties</li>
       </ul>
     ]]>
   </change-notes>
