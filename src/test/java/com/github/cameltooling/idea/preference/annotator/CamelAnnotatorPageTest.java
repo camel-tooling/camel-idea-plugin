@@ -150,6 +150,17 @@ public class CamelAnnotatorPageTest extends CamelLightCodeInsightFixtureTestCase
         assertFalse(preferenceService.isRealTimeJSonPathValidation());
     }
 
+    public void testShouldChangeStateOfRealTimeJQValidationCatalogCheckBox() {
+        JBCheckBox checkBox = annotatorPage.getRealTimeJQValidationCatalogCheckBox();
+        assertTrue(checkBox.isSelected());
+        final CamelPreferenceService preferenceService = CamelPreferenceService.getService();
+        assertTrue(preferenceService.isRealTimeJQValidation());
+        checkBox.setSelected(false);
+        annotatorPage.apply();
+        assertFalse(checkBox.isSelected());
+        assertFalse(preferenceService.isRealTimeJQValidation());
+    }
+
     public void testShouldChangeStateOfRealTimeBeanMethodValidationCheckBox() {
         JBCheckBox checkBox = annotatorPage.getRealTimeBeanMethodValidationCheckBox();
         assertTrue(checkBox.isSelected());
