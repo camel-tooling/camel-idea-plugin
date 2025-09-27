@@ -103,6 +103,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private static final String BACKLOG_DEBUGGER_LOGGING_LEVEL = "TRACE";
     private static final long FALLBACK_TIMEOUT = Long.MAX_VALUE - 1;
     private static final String MAIN_RESOURCES_RELATIVE_PATH = "src/main/resources/";
+    private static final String SOURCE_PREFIX = "source:";
     /**
      * All breakpoints to add that are kept in memory to register them on connect or re-connect.
      */
@@ -895,6 +896,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             } else {
                 sourceLocations = new ArrayList<>();
                 sourceLocations.add(psiClass.getQualifiedName());
+                sourceLocations.add(SOURCE_PREFIX + psiClass.getQualifiedName());
                 String basePath = getProject().getBasePath();
                 String path = virtualFile.getPath();
                 String relativePath;
@@ -954,6 +956,10 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         }
 
         String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+
+        if (fileName.startsWith(SOURCE_PREFIX)) {
+            fileName = fileName.substring(SOURCE_PREFIX.length());
+        }
 
         if (!filePath.startsWith("file:") && !filePath.startsWith("classpath:")) { //This is Java class
             final VirtualFile virtualFile;
