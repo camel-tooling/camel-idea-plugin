@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import com.github.cameltooling.idea.reference.endpoint.CamelEndpoint;
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.ElementManipulator;
@@ -29,13 +30,19 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
+import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.util.IncorrectOperationException;
+import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * A reference from usage of a direct endpoint (e.g. <to uri="direct:abc"/>) to its declaration (e.g. <from uri="direct:abc"/>)
  */
 public class DirectEndpointReference extends PsiPolyVariantReferenceBase<PsiElement> {
+
+    private static final Logger LOG = Logger.getInstance(DirectEndpointReference.class);
 
     private final CamelEndpoint endpoint;
 
@@ -51,11 +58,18 @@ public class DirectEndpointReference extends PsiPolyVariantReferenceBase<PsiElem
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        return Optional.ofNullable(ModuleUtilCore.findModuleForPsiElement(myElement))
-            .map(module -> CamelIdeaUtils.getService().findEndpointDeclarations(module, endpoint))
-            .map(this::wrapAsDirectEndpointPsiElements)
-            .map(PsiElementResolveResult::createResults)
-            .orElse(ResolveResult.EMPTY_ARRAY);
+        return CachedValuesManager.getCachedValue(myElement, () -> {
+            StopWatch sw = StopWatch.createStarted();
+            var result = Optional.ofNullable(ModuleUtilCore.findModuleForPsiElement(myElement))
+                    .map(module -> CamelIdeaUtils.getService().findEndpointDeclarations(module, endpoint))
+                    .map(this::wrapAsDirectEndpointPsiElements)
+                    .map(PsiElementResolveResult::createResults)
+                    .orElse(ResolveResult.EMPTY_ARRAY);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Resolving direct endpoint " + endpoint.getUri() + " references took " + sw.formatTime());
+            }
+            return CachedValueProvider.Result.create(result, PsiModificationTracker.MODIFICATION_COUNT);
+        });
     }
 
     @NotNull
