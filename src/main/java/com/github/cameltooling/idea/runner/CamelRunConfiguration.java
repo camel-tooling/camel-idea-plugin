@@ -17,12 +17,17 @@
 package com.github.cameltooling.idea.runner;
 
 import com.github.cameltooling.idea.runner.ui.CamelSettingsEditor;
+import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.idea.maven.execution.MavenRunConfiguration;
+import org.jetbrains.idea.maven.execution.run.MavenCommandLineState;
+import org.jetbrains.idea.maven.execution.run.MavenShCommandLineState;
 
 public class CamelRunConfiguration extends MavenRunConfiguration {
     protected CamelRunConfiguration(Project project, ConfigurationFactory factory, String name) {
@@ -34,4 +39,14 @@ public class CamelRunConfiguration extends MavenRunConfiguration {
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
         return new CamelSettingsEditor(this);
     }
+
+    /**
+     * Overridden, because in 2025.2 the default value of 'maven.use.scripts' registry changed to true. Our run configurations
+     * depend on the app being run as a java application, so we force {@link MavenCommandLineState} instead of {@link MavenShCommandLineState}.
+     */
+    @Override
+    public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) {
+        return new MavenCommandLineState(env, this);
+    }
+
 }
