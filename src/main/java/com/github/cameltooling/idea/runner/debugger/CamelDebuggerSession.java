@@ -260,7 +260,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                          @Nullable String outputMediaType) {
 
         XSourcePosition position = xDebugSession.getCurrentPosition();
-        Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
+        BreakpointElement breakpointElement = createBreakpointElementFromPosition(position);
 
         if (breakpointElement == null) {
             if (LOG.isDebugEnabled()) {
@@ -268,7 +268,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             }
             return;
         }
-        String breakpointId = breakpointElement.keySet().iterator().next();
+        String breakpointId = breakpointElement.id();
 
         //First evaluate expression
         Map<String, String> params = new HashMap<>();
@@ -309,7 +309,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     public Object evaluateExpression(String script, String language, @Nullable Map<String, String> params) {
         if (isConnected()) {
             XSourcePosition position = xDebugSession.getCurrentPosition();
-            Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
+            BreakpointElement breakpointElement = createBreakpointElementFromPosition(position);
 
             if (breakpointElement == null) {
                 if (LOG.isDebugEnabled()) {
@@ -317,7 +317,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 }
                 return null;
             }
-            String breakpointId = breakpointElement.keySet().iterator().next();
+            String breakpointId = breakpointElement.id();
 
             String stringClassName = String.class.getName();
             try {
@@ -372,7 +372,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
     public void stepOut(XSourcePosition position) {
         try {
-            Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
+            BreakpointElement breakpointElement = createBreakpointElementFromPosition(position);
 
             if (breakpointElement == null) {
                 if (LOG.isDebugEnabled()) {
@@ -380,7 +380,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 }
                 return;
             }
-            String breakpointId = breakpointElement.keySet().iterator().next();
+            String breakpointId = breakpointElement.id();
 
             //Get the route of the current tag
             Element routeElement = getParentRouteId(breakpointId);
@@ -417,24 +417,23 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     public void runToPosition(XSourcePosition fromPosition, XSourcePosition toPosition) {
-        Map<String, PsiElement> fromBreakpointElement = createBreakpointElementFromPosition(fromPosition);
-        Map<String, PsiElement> toBreakpointElement = createBreakpointElementFromPosition(toPosition);
+        BreakpointElement fromBreakpoint = createBreakpointElementFromPosition(fromPosition);
+        BreakpointElement toBreakpoint = createBreakpointElementFromPosition(toPosition);
 
-        if (toBreakpointElement == null) { //this is not a tag
+        if (toBreakpoint == null || fromBreakpoint == null) { //this is not a tag
             if (LOG.isDebugEnabled()) {
-                LOG.debug("The breakpoint element could not be created from the position " + toPosition);
+                LOG.debug("The breakpoint element could not be created for the from/to positions " + fromPosition + "/" + toPosition);
             }
             return;
         }
 
-        String toBreakpointId = toBreakpointElement.keySet().iterator().next();
-        String fromBreakpointId = fromBreakpointElement.keySet().iterator().next();
+        String toBreakpointId = toBreakpoint.id();
 
-        breakpoints.put(toBreakpointId, new CamelBreakpoint(toBreakpointId, toBreakpointElement.get(toBreakpointId), toPosition));
+        breakpoints.put(toBreakpointId, new CamelBreakpoint(toBreakpointId, toBreakpoint.element(), toPosition));
 
         backlogDebugger.addBreakpoint(toBreakpointId);
         //Run to that breakpoint
-        backlogDebugger.resumeBreakpoint(fromBreakpointId);
+        backlogDebugger.resumeBreakpoint(fromBreakpoint.id());
         if (temporaryBreakpointId != null && !explicitBreakpointIDs.contains(temporaryBreakpointId) && !toBreakpointId.equals(temporaryBreakpointId)) { //Remove previous temporary breakpoint
             backlogDebugger.removeBreakpoint(temporaryBreakpointId);
         }
@@ -442,7 +441,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     private void nextStep(XSourcePosition position, boolean isOver) {
-        Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
+        BreakpointElement breakpointElement = createBreakpointElementFromPosition(position);
 
         if (breakpointElement == null) {
             if (LOG.isDebugEnabled()) {
@@ -450,8 +449,8 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             }
             return;
         }
-        String breakpointId = breakpointElement.keySet().iterator().next();
-        PsiElement breakpointTag = breakpointElement.get(breakpointId);
+        String breakpointId = breakpointElement.id();
+        PsiElement breakpointTag = breakpointElement.element();
         breakpoints.put(breakpointId, new CamelBreakpoint(breakpointId, breakpointTag, position));
 
         String name = breakpointTag instanceof XmlTag ? ((XmlTag) breakpointTag).getLocalName() : breakpointTag.getText();
@@ -667,14 +666,14 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
 
     private boolean toggleBreakpoint(@NotNull XLineBreakpoint<XBreakpointProperties<?>> xBreakpoint, boolean toggleOn) {
         XSourcePosition position = xBreakpoint.getSourcePosition();
-        Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
+        BreakpointElement breakpointElement = createBreakpointElementFromPosition(position);
 
         if (breakpointElement != null) {
-            String breakpointId = breakpointElement.keySet().iterator().next();
-            PsiElement psiElement = breakpointElement.get(breakpointId);
+            String breakpointId = breakpointElement.id();
+            PsiElement psiElement = breakpointElement.element();
             if (toggleOn) {
                 XExpression condition = xBreakpoint.getConditionExpression();
-                if (condition == null) {
+                if (condition == null || condition.getLanguage() == null) {
                     backlogDebugger.addBreakpoint(breakpointId);
                 } else {
                     backlogDebugger.addConditionalBreakpoint(breakpointId, condition.getLanguage().getID(), condition.getExpression());
@@ -976,11 +975,21 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 virtualFile = virtualFiles.iterator().next();
             } else {
                 PsiClass psiClass = JavaPsiFacade.getInstance(project).findClass(fileName, GlobalSearchScope.everythingScope(project));
-                virtualFile = psiClass.getContainingFile().getVirtualFile();
+                if (psiClass != null) {
+                    virtualFile = psiClass.getContainingFile().getVirtualFile();
+                } else {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(String.format("The clas %s could not be found in the project", fileName));
+                    }
+                    return null;
+                }
             }
-            XSourcePosition position = XDebuggerUtil.getInstance().createPosition(virtualFile, Integer.valueOf(lineNumber) - 1);
-            Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
-            return new CamelBreakpoint(id, breakpointElement.get(id), position);
+            XSourcePosition position = XDebuggerUtil.getInstance().createPosition(virtualFile, Integer.parseInt(lineNumber) - 1);
+            BreakpointElement breakpointElement = createBreakpointElementFromPosition(position);
+            if (breakpointElement == null) {
+                return null;
+            }
+            return new CamelBreakpoint(id, breakpointElement.element(), position);
         } else {
             Collection<VirtualFile> virtualFiles = FilenameIndex.getVirtualFilesByName(
                 fileName, GlobalSearchScope.everythingScope(project)
@@ -1026,8 +1035,11 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 if (potentialURLs.contains(filePath)) {
                     //We found our file, let's get a source position
                     XSourcePosition position = XDebuggerUtil.getInstance().createPosition(virtualFile, Integer.parseInt(lineNumber) - 1);
-                    Map<String, PsiElement> breakpointElement = createBreakpointElementFromPosition(position);
-                    return new CamelBreakpoint(id, breakpointElement.get(id), position);
+                    BreakpointElement breakpointElement = createBreakpointElementFromPosition(position);
+                    if (breakpointElement == null) {
+                        return null;
+                    }
+                    return new CamelBreakpoint(id, breakpointElement.element(), position);
                 }
             }
         }
@@ -1036,8 +1048,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     @Nullable
-    private Map<String, PsiElement> createBreakpointElementFromPosition(XSourcePosition position) {
-        Map<String, PsiElement> breakpointElement = null;
+    private BreakpointElement createBreakpointElementFromPosition(XSourcePosition position) {
         String breakpointId;
         PsiElement psiElement = null;
         if (position == null) {
@@ -1045,29 +1056,29 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         }
         VirtualFile file = position.getFile();
         switch (file.getFileType().getName()) {
-        case "XML":
-            psiElement = IdeaUtils.getXmlTagAt(project, position);
-            break;
-        case "JAVA":
-            psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
-            break;
-        case "YAML":
-            psiElement = IdeaUtils.getYamlKeyValueAt(project, position);
-            if (psiElement != null) {
-                psiElement = ((YAMLKeyValue) psiElement).getKey();
-            }
-            break;
-        default: // noop
+            case "XML":
+                psiElement = IdeaUtils.getXmlTagAt(project, position);
+                break;
+            case "JAVA":
+                psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
+                break;
+            case "YAML":
+                psiElement = IdeaUtils.getYamlKeyValueAt(project, position);
+                if (psiElement != null) {
+                    psiElement = ((YAMLKeyValue) psiElement).getKey();
+                }
+                break;
+            default: // noop
         }
 
         if (psiElement != null) {
             breakpointId = getBreakpointId(psiElement);
             if (breakpointId != null) {
-                breakpointElement = Collections.singletonMap(breakpointId, psiElement);
+                return new BreakpointElement(breakpointId, psiElement);
             }
         }
 
-        return breakpointElement;
+        return null;
     }
 
     @Nullable
@@ -1106,4 +1117,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         }
         return null;
     }
+
+    private record BreakpointElement(String id, PsiElement element) {}
+
 }
