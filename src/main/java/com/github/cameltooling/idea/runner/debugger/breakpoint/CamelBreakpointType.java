@@ -115,12 +115,6 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
         if (position == null) {
             return null;
         }
-
-        final PsiFile file = PsiManager.getInstance(project).findFile(position.getFile());
-        if (file == null) {
-            return null;
-        }
-
         return new CamelDebuggerEditorsProvider();
     }
 
