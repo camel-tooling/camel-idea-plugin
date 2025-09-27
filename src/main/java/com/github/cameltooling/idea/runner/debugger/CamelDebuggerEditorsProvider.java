@@ -48,7 +48,9 @@ public class CamelDebuggerEditorsProvider extends XDebuggerEditorsProvider {
     public Document createDocument(@NotNull Project project, @NotNull XExpression expression, @Nullable XSourcePosition xSourcePosition, @NotNull EvaluationMode evaluationMode) {
         final PsiFile psiFile = PsiFileFactory.getInstance(project)
                 .createFileFromText("camelExpr." + getFileType().getDefaultExtension(), getFileType(), expression.getExpression(), LocalTimeCounter.currentTime(), true);
-        return PsiDocumentManager.getInstance(project).getDocument(psiFile);
+        Document document = PsiDocumentManager.getInstance(project).getDocument(psiFile);
+        assert document != null;
+        return document;
     }
 
     @NotNull
