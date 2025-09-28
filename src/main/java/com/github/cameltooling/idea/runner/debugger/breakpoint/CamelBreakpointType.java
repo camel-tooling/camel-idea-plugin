@@ -20,17 +20,12 @@ import com.github.cameltooling.idea.runner.debugger.CamelDebuggerEditorsProvider
 import com.github.cameltooling.idea.util.CamelIdeaUtils;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.intellij.openapi.application.ApplicationNamesInfo;
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.IndexNotReadyException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiDocumentManager;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
+import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.XSourcePosition;
@@ -70,42 +65,67 @@ public class CamelBreakpointType extends XLineBreakpointType<XBreakpointProperti
 
     @Override
     public boolean canPutAt(@NotNull VirtualFile file, int line, @NotNull Project project) {
-        XSourcePosition position = XDebuggerUtil.getInstance().createPosition(file, line);
-        String eipName = "";
-
-        final Document document = FileDocumentManager.getInstance().getDocument(file);
-        final PsiFile psiFile = document != null ? PsiDocumentManager.getInstance(project).getPsiFile(document) : null;
-
-        switch (file.getFileType().getName()) {
-        case "XML":
-            XmlTag tag = IdeaUtils.getXmlTagAt(project, position);
-            if (tag == null) {
-                return false;
-            }
-            eipName = tag.getLocalName();
-            break;
-        case "JAVA":
-            PsiElement psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
-            if (psiElement == null) {
-                return false;
-            }
-            eipName = psiElement.getText();
-            break;
-        case "YAML":
-            YAMLKeyValue keyValue = IdeaUtils.getYamlKeyValueAt(project, position);
-            if (keyValue != null) {
-                eipName = keyValue.getKeyText();
-            }
-            break;
-        default: // noop
+        if (DumbService.isDumb(project)) { // let's not bother user with notifications when project is opening
+            return true;
         }
 
         try {
-            return !NO_BREAKPOINTS_AT.contains(eipName) && CamelIdeaUtils.getService().isCamelFile(psiFile);
+            PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
+            if (!CamelIdeaUtils.getService().isCamelFile(psiFile)) {
+                return false;
+            }
         } catch (IndexNotReadyException e) {
             DumbService.getInstance(project).showDumbModeNotification("Toggling breakpoints is disabled while " + ApplicationNamesInfo.getInstance().getProductName() + " is updating indices");
             return false;
         }
+
+        XSourcePosition position = XDebuggerUtil.getInstance().createPosition(file, line);
+        if (position == null) {
+            return false;
+        }
+
+        PsiElement element = null;
+        String eipName = "";
+
+        switch (file.getFileType().getName()) {
+            case "XML":
+                XmlTag tag = IdeaUtils.getXmlTagAt(project, position);
+                if (tag == null) {
+                    return false;
+                }
+                element = tag;
+                eipName = tag.getLocalName();
+                break;
+            case "JAVA":
+                PsiElement psiElement = XDebuggerUtil.getInstance().findContextElement(file, position.getOffset(), project, false);
+                if (psiElement == null) {
+                    return false;
+                }
+                element = psiElement;
+                eipName = psiElement.getText();
+                break;
+            case "YAML":
+                YAMLKeyValue keyValue = IdeaUtils.getYamlKeyValueAt(project, position);
+                if (keyValue != null) {
+                    eipName = keyValue.getKeyText();
+                    element = keyValue;
+                }
+                break;
+            default: // noop
+        }
+
+        if (element == null || !CamelIdeaUtils.getService().isInsideCamelRoute(element, true) || isEndOfLambdaExpression(element)) {
+            return false;
+        }
+
+        return !NO_BREAKPOINTS_AT.contains(eipName);
+    }
+
+    private boolean isEndOfLambdaExpression(PsiElement element) {
+        return element instanceof PsiJavaToken &&
+                ((PsiJavaToken) element).getTokenType() == JavaTokenType.RPARENTH &&
+                element.getParent() instanceof PsiExpressionList &&
+                element.getPrevSibling() instanceof PsiLambdaExpression;
     }
 
     @Override
