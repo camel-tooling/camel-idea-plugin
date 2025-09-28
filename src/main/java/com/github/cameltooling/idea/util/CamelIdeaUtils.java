@@ -84,6 +84,11 @@ public final class CamelIdeaUtils implements Disposable {
             .anyMatch(extension -> extension.isCamelRouteStart(element));
     }
 
+    public boolean isInsideCamelRoute(PsiElement element, boolean excludeRouteStart) {
+        return enabledExtensions.stream()
+                .anyMatch(extension -> extension.isInsideCamelRoute(element, excludeRouteStart));
+    }
+
     /**
      * Returns a leaf element to be used as a line marker (according to javadoc of {@link com.intellij.codeInsight.daemon.LineMarkerProvider#getLineMarkerInfo(PsiElement)})
      */
