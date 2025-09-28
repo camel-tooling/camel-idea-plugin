@@ -228,7 +228,9 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         breakpointsAdd.remove(xBreakpoint);
         breakpointsRemove.add(xBreakpoint);
         if (isConnected()) {
-            toggleBreakpoint(xBreakpoint, false);
+            ApplicationManager.getApplication().runReadAction(() -> {
+                toggleBreakpoint(xBreakpoint, false);
+            });
         }
     }
 
