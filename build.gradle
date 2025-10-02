@@ -24,7 +24,7 @@ apply plugin: 'java'
 apply plugin: 'maven-publish'
 
 group = 'com.github.camel-tooling'
-version = '1.4.4'
+version = '1.4.5'
 
 repositories {
     mavenLocal()
