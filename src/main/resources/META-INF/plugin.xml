@@ -12,6 +12,7 @@
       v.1.4.4
       <ul>
         <li>Only IDEA 2025 onwards is supported</li>
+        <li>Upgraded to Camel 4.14.1</li>
         <li>
           References from endpoint uri to corresponding setters in camel classes, e.g. from the <code>synchronous</code> substring in endpoint uri <code>"direct:abc?synchronous=true"</code>
           to <code>DirectEndpoint#setSynchronous</code>
