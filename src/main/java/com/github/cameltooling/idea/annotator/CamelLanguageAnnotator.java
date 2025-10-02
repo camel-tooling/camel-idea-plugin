@@ -33,49 +33,51 @@ import org.apache.camel.catalog.LanguageValidationResult;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Validate JSonPath expression and annotated the specific jsonpath expression to highlight the error in the editor
+ * Validate language expression such as JSonPath/JQ to highlight the error in the editor
  */
-public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
+public class CamelLanguageAnnotator extends AbstractCamelAnnotator {
 
     private static final Logger LOG = Logger.getInstance(CamelEndpointAnnotator.class);
 
     @Override
     boolean isEnabled() {
-        return CamelPreferenceService.getService().isRealTimeJSonPathValidation();
+        return CamelPreferenceService.getService().isRealTimeJSonPathValidation() || CamelPreferenceService.getService().isRealTimeJQValidation();
     }
 
     /**
-     * Validate jsonpath expression. eg jsonpath("$.store.book[?(@.price < 10)]")
-     * if the expression is not valid a error annotation is created and highlight the invalid value.
+     * Validate language expression, such as jsonpath("$.store.book[?(@.price < 10)]")
+     * if the expression is not valid an error annotation is created and highlight the invalid value.
      */
     void validateText(@NotNull PsiElement element, @NotNull AnnotationHolder holder, @NotNull String text) {
-
         final CamelIdeaUtils camelIdeaUtils = CamelIdeaUtils.getService();
-        // only validate if the element is jsonpath element
-        if (camelIdeaUtils.isCamelExpression(element, "jsonpath")) {
+
+        boolean json = CamelPreferenceService.getService().isRealTimeJSonPathValidation() && camelIdeaUtils.isCamelExpression(element, "jsonpath");
+        boolean jq = CamelPreferenceService.getService().isRealTimeJQValidation() && camelIdeaUtils.isCamelExpression(element, "jq");
+        if (json || jq) {
             Project project = element.getProject();
             CamelCatalog catalogService = project.getService(CamelCatalogService.class).get();
             CamelService camelService = project.getService(CamelService.class);
 
-            // must have camel-json library
-            boolean jsonLib = camelService.containsLibrary("camel-jsonpath", false);
-            if (!jsonLib) {
-                camelService.showMissingJSonPathJarNotification();
+            // must have the supporting library
+            String lib = json ? "camel-jsonpath" : "camel-jq";
+            if (!camelService.containsLibrary(lib, false)) {
+                camelService.showMissingLanguageJarNotification(lib);
                 return;
             }
 
+            String lan = json ? "jsonpath" : "jq";
             try {
                 // need to use the classloader that can load classes from the project
                 ClassLoader loader = camelService.getProjectClassloader();
                 if (loader != null) {
                     LanguageValidationResult result;
-                    boolean predicate = camelIdeaUtils.isCamelExpressionUsedAsPredicate(element, "jsonpath");
+                    boolean predicate = camelIdeaUtils.isCamelExpressionUsedAsPredicate(element, lan);
                     if (predicate) {
-                        LOG.debug("Inspecting jsonpath predicate: " + text);
-                        result = catalogService.validateLanguagePredicate(loader, "jsonpath", text);
+                        LOG.debug("Inspecting " + lan + " predicate: " + text);
+                        result = catalogService.validateLanguagePredicate(loader, lan, text);
                     } else {
-                        LOG.debug("Inspecting jsonpath expression: " + text);
-                        result = catalogService.validateLanguageExpression(loader, "jsonpath", text);
+                        LOG.debug("Inspecting " + lan + " expression: " + text);
+                        result = catalogService.validateLanguageExpression(loader, lan, text);
                     }
                     if (!result.isSuccess()) {
                         String error = result.getShortError();
@@ -95,7 +97,7 @@ public class CamelJSonPathAnnotator extends AbstractCamelAnnotator {
                     }
                 }
             } catch (Throwable e) {
-                LOG.warn("Error inspecting Camel jsonpath: " + text, e);
+                LOG.warn("Error inspecting Camel " + lan + ": " + text, e);
             }
         }
     }
