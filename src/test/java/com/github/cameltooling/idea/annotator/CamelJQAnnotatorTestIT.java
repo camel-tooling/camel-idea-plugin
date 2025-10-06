@@ -39,7 +39,7 @@ import java.io.IOException;
  */
 public class CamelJQAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
-    public static final String CAMEL_JQ_MAVEN_ARTIFACT = "org.apache.camel:camel-jq:4.14.0";
+    public static final String CAMEL_JQ_MAVEN_ARTIFACT = "org.apache.camel:camel-jq:4.14.1";
 
     public CamelJQAnnotatorTestIT() {
         setIgnoreCamelCoreLib(true);
