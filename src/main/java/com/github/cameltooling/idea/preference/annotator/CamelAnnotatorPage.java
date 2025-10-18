@@ -38,6 +38,7 @@ public class CamelAnnotatorPage implements SearchableConfigurable, Configurable.
     private JBCheckBox realTimeSimpleValidationCatalogCheckBox;
     private JBCheckBox realTimeJSonPathValidationCatalogCheckBox;
     private JBCheckBox realTimeJQValidationCatalogCheckBox;
+    private JBCheckBox realTimeXPathValidationCatalogCheckBox;
     private JBCheckBox realTimeIdReferenceTypeValidationCheckBox;
     private JBCheckBox realTimeBeanMethodValidationCheckBox;
     private JPanel result;
@@ -54,6 +55,7 @@ public class CamelAnnotatorPage implements SearchableConfigurable, Configurable.
         realTimeSimpleValidationCatalogCheckBox = new JBCheckBox("Real time validation of Camel simple language in editor");
         realTimeJSonPathValidationCatalogCheckBox = new JBCheckBox("Real time validation of Camel JSonPath language in editor");
         realTimeJQValidationCatalogCheckBox = new JBCheckBox("Real time validation of Camel JQ language in editor");
+        realTimeXPathValidationCatalogCheckBox = new JBCheckBox("Real time validation of Camel XPath language in editor");
         realTimeIdReferenceTypeValidationCheckBox = new JBCheckBox("Real time type validation when referencing beans");
         realTimeBeanMethodValidationCheckBox = new JBCheckBox("Real time validation of call bean method in editor");
 
@@ -66,6 +68,7 @@ public class CamelAnnotatorPage implements SearchableConfigurable, Configurable.
         jPanel.add(realTimeSimpleValidationCatalogCheckBox, "span 2");
         jPanel.add(realTimeJSonPathValidationCatalogCheckBox, "span 2");
         jPanel.add(realTimeJQValidationCatalogCheckBox, "span 2");
+        jPanel.add(realTimeXPathValidationCatalogCheckBox, "span 2");
         jPanel.add(realTimeIdReferenceTypeValidationCheckBox, "span 2");
         jPanel.add(realTimeBeanMethodValidationCheckBox, "span 2");
 
@@ -83,6 +86,7 @@ public class CamelAnnotatorPage implements SearchableConfigurable, Configurable.
         camelPreferenceService.setRealTimeSimpleValidation(realTimeSimpleValidationCatalogCheckBox.isSelected());
         camelPreferenceService.setRealTimeJSonPathValidation(realTimeJSonPathValidationCatalogCheckBox.isSelected());
         camelPreferenceService.setRealTimeJQValidation(realTimeJQValidationCatalogCheckBox.isSelected());
+        camelPreferenceService.setRealTimeXPathValidation(realTimeXPathValidationCatalogCheckBox.isSelected());
         camelPreferenceService.setRealTimeIdReferenceTypeValidation(realTimeIdReferenceTypeValidationCheckBox.isSelected());
         camelPreferenceService.setRealTimeBeanMethodValidationCheckBox(realTimeBeanMethodValidationCheckBox.isSelected());
     }
@@ -96,6 +100,7 @@ public class CamelAnnotatorPage implements SearchableConfigurable, Configurable.
             || camelPreferenceService.isRealTimeSimpleValidation() != realTimeSimpleValidationCatalogCheckBox.isSelected()
             || camelPreferenceService.isRealTimeJSonPathValidation() != realTimeJSonPathValidationCatalogCheckBox.isSelected()
             || camelPreferenceService.isRealTimeJQValidation() != realTimeJQValidationCatalogCheckBox.isSelected()
+            || camelPreferenceService.isRealTimeXPathValidation() != realTimeXPathValidationCatalogCheckBox.isSelected()
             || camelPreferenceService.isRealTimeIdReferenceTypeValidation() != realTimeIdReferenceTypeValidationCheckBox.isSelected()
             || camelPreferenceService.isRealTimeBeanMethodValidationCheckBox() != realTimeBeanMethodValidationCheckBox.isSelected();
         return b1;
@@ -109,6 +114,7 @@ public class CamelAnnotatorPage implements SearchableConfigurable, Configurable.
         realTimeSimpleValidationCatalogCheckBox.setSelected(camelPreferenceService.isRealTimeSimpleValidation());
         realTimeJSonPathValidationCatalogCheckBox.setSelected(camelPreferenceService.isRealTimeJSonPathValidation());
         realTimeJQValidationCatalogCheckBox.setSelected(camelPreferenceService.isRealTimeJQValidation());
+        realTimeXPathValidationCatalogCheckBox.setSelected(camelPreferenceService.isRealTimeXPathValidation());
         realTimeIdReferenceTypeValidationCheckBox.setSelected(camelPreferenceService.isRealTimeIdReferenceTypeValidation());
         realTimeBeanMethodValidationCheckBox.setSelected(camelPreferenceService.isRealTimeBeanMethodValidationCheckBox());
     }
@@ -120,6 +126,7 @@ public class CamelAnnotatorPage implements SearchableConfigurable, Configurable.
         realTimeSimpleValidationCatalogCheckBox = null;
         realTimeJSonPathValidationCatalogCheckBox = null;
         realTimeJQValidationCatalogCheckBox = null;
+        realTimeXPathValidationCatalogCheckBox = null;
         realTimeIdReferenceTypeValidationCheckBox = null;
         realTimeBeanMethodValidationCheckBox = null;
 
@@ -159,6 +166,10 @@ public class CamelAnnotatorPage implements SearchableConfigurable, Configurable.
 
     public JBCheckBox getRealTimeJQValidationCatalogCheckBox() {
         return realTimeJQValidationCatalogCheckBox;
+    }
+
+    public JBCheckBox getRealTimeXPathValidationCatalogCheckBox() {
+        return realTimeXPathValidationCatalogCheckBox;
     }
 
     JBCheckBox getRealTimeIdReferenceTypeValidationCheckBox() {

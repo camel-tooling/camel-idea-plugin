@@ -126,6 +126,8 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest-all:1.3'
     testImplementation 'org.opentest4j:opentest4j:1.3.0'
     testImplementation "org.apache.camel:camel-jsonpath:${camelVersion}"
+    testImplementation "org.apache.camel:camel-jq:${camelVersion}"
+    testImplementation "org.apache.camel:camel-xpath:${camelVersion}"
     testImplementation 'junit:junit:4.13.2'
 }
 

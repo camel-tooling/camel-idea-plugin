@@ -67,6 +67,7 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
     private boolean realTimeSimpleValidation = true;
     private boolean realTimeJSonPathValidation = true;
     private boolean realTimeJQValidation = true;
+    private boolean realTimeXPathValidation = true;
     private boolean realTimeIdReferenceTypeValidation = true;
     private boolean realTimeBeanMethodValidationCheckBox = true;
     private boolean highlightCustomOptions = true;
@@ -131,6 +132,14 @@ public class CamelPreferenceService implements PersistentStateComponent<CamelPre
 
     public void setRealTimeJQValidation(boolean realTimeJQValidation) {
         this.realTimeJQValidation = realTimeJQValidation;
+    }
+
+    public boolean isRealTimeXPathValidation() {
+        return realTimeXPathValidation;
+    }
+
+    public void setRealTimeXPathValidation(boolean realTimeXPathValidation) {
+        this.realTimeXPathValidation = realTimeXPathValidation;
     }
 
     public boolean isRealTimeIdReferenceTypeValidation() {
