@@ -248,6 +248,8 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             methods = new String[]{"jsonpath"};
         } else if ("jq".equals(language)) {
             methods = new String[]{"jq"};
+        } else if ("xpath".equals(language)) {
+            methods = new String[]{"xpath"};
         }
         if (methods != null) {
             return IdeaUtils.getService().isFromJavaMethodCall(element, true, methods);

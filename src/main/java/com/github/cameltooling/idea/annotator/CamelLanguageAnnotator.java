@@ -41,7 +41,7 @@ public class CamelLanguageAnnotator extends AbstractCamelAnnotator {
 
     @Override
     boolean isEnabled() {
-        return CamelPreferenceService.getService().isRealTimeJSonPathValidation() || CamelPreferenceService.getService().isRealTimeJQValidation();
+        return CamelPreferenceService.getService().isRealTimeJSonPathValidation() || CamelPreferenceService.getService().isRealTimeJQValidation() || CamelPreferenceService.getService().isRealTimeXPathValidation();
     }
 
     /**
@@ -53,19 +53,30 @@ public class CamelLanguageAnnotator extends AbstractCamelAnnotator {
 
         boolean json = CamelPreferenceService.getService().isRealTimeJSonPathValidation() && camelIdeaUtils.isCamelExpression(element, "jsonpath");
         boolean jq = CamelPreferenceService.getService().isRealTimeJQValidation() && camelIdeaUtils.isCamelExpression(element, "jq");
-        if (json || jq) {
+        boolean xpath = CamelPreferenceService.getService().isRealTimeXPathValidation() && camelIdeaUtils.isCamelExpression(element, "xpath");
+        if (json || jq || xpath) {
             Project project = element.getProject();
             CamelCatalog catalogService = project.getService(CamelCatalogService.class).get();
             CamelService camelService = project.getService(CamelService.class);
 
             // must have the supporting library
-            String lib = json ? "camel-jsonpath" : "camel-jq";
+            String lib = null;
+            String lan = null;
+            if (json) {
+                lib = "camel-jsonpath";
+                lan = "jsonpath";
+            } else if (jq) {
+                lib = "camel-jq";
+                lan = "jq";
+            } else if (xpath) {
+                lib = "camel-xpath";
+                lan = "xpath";
+            }
             if (!camelService.containsLibrary(lib, false)) {
                 camelService.showMissingLanguageJarNotification(lib);
                 return;
             }
 
-            String lan = json ? "jsonpath" : "jq";
             try {
                 // need to use the classloader that can load classes from the project
                 ClassLoader loader = camelService.getProjectClassloader();

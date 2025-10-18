@@ -247,7 +247,7 @@ public class CamelService implements Disposable {
         boolean answer = processedLibraries.contains(lib);
         if (!answer && !quickCheck) {
             for (ArtifactCoordinates coordinates : projectLibraries.values()) {
-                if (coordinates.getArtifactId().equals(lib)) {
+                if (coordinates.getArtifactId().contains(lib)) {
                     answer = true;
                     break;
                 }

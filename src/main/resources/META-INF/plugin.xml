@@ -12,6 +12,7 @@
       v.1.4.5
       <ul>
         <li>Only IDEA 2025 onwards is supported</li>
+        <li>Added real-time validation of XPath expressions<li>
       </ul>
     ]]>
   </change-notes>
