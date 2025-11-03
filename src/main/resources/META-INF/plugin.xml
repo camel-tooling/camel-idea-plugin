@@ -9,12 +9,9 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.1.4.5
+      v.1.4.6
       <ul>
         <li>Only IDEA 2025 onwards is supported</li>
-        <li>Added real-time validation of XPath expressions<li>
-        <li>Updated to IDEA 2025.2.4</li>  
-        <li>Updated to Camel 4.14.2</li>
       </ul>
     ]]>
   </change-notes>
