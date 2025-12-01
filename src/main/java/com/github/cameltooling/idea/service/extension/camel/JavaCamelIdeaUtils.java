@@ -97,7 +97,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     private static final Set<String> ADD_INDENT = Set.of("choice", "doTry", "pipeline", "multicast", "split",
         "circuitBreaker", "intercept", "interceptFrom", "interceptSendToEndpoint", "aggregate", "loadBalance", "loop",
         "kamelet", "step", "transacted", "saga", "route", "resequence", "policy", "onException", "onCompletion",
-        "from", "rest", "restConfiguration");
+        "from", "rest", "restConfiguration", "routeTemplate");
     /**
      * Name of the methods corresponding to the root element of sub DSL.
      */
@@ -482,13 +482,20 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             Collection<PsiClass> allClasses = AllClassesSearch.search(scope, project).findAll();
             for (PsiClass aClass : allClasses) {
                 boolean insideRouteBuilder = aClass.isInheritorDeep(routeBuilderClass, null);
-                Collection<PsiLiteralExpression> literals = PsiTreeUtil.findChildrenOfType(aClass, PsiLiteralExpression.class);
-                for (PsiLiteralExpression literal : literals) {
-                    if (insideRouteBuilder || isConsumerEndpoint(literal) || isProducerEndpoint(literal)) {
-                        Object val = literal.getValue();
-                        if (val instanceof String endpointUri) {
-                            if (uriCondition.test(endpointUri) && elementCondition.test(literal)) {
-                                results.add(literal);
+                Collection<PsiExpression> expressions = PsiTreeUtil.findChildrenOfType(aClass, PsiExpression.class);
+                for (PsiExpression expression : expressions) {
+                    if (insideRouteBuilder || isConsumerEndpoint(expression) || isProducerEndpoint(expression)) {
+                        if (expression instanceof PsiLiteralExpression literalExpression) {
+                            Object val = literalExpression.getValue();
+                            if (val instanceof String endpointUri) {
+                                if (uriCondition.test(endpointUri) && elementCondition.test(literalExpression)) {
+                                    results.add(expression);
+                                }
+                            }
+                        } else if (expression instanceof PsiMethodCallExpression methodCallExpression) {
+                            if (isCamelRouteStartExpression(methodCallExpression)
+                                    && !List.of("kamelet", "templateParameter").contains(methodCallExpression.getMethodExpression().getReferenceName())) {
+                                results.add(methodCallExpression);
                             }
                         }
                     }
@@ -846,7 +853,9 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             // By default, it is accepted
             return true;
         }
-        return !"org.apache.camel.builder.ValueBuilder".equals(returnType) || "expression".equals(methodName);
+        return (!"org.apache.camel.builder.ValueBuilder".equals(returnType)
+                && !returnType.startsWith("org.apache.camel.builder.endpoint.dsl"))
+                || "expression".equals(methodName);
     }
 
     /**
