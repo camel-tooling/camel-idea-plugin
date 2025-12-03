@@ -22,7 +22,6 @@ import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.testFramework.DumbModeTestUtils;
 import com.intellij.testFramework.PlatformTestUtil;
@@ -49,6 +48,20 @@ public class CamelPostFormatProcessorIT extends CamelLightCodeInsightFixtureTest
      */
     public void testRouteWithDataFormatDSL() {
         doTest("RouteWithDataFormatDSL", null);
+    }
+
+    /**
+     * Ensures that a route using only the Java DSL is supported.
+     */
+    public void testRouteWithOnlyJavaDSL() {
+        doTest("RouteWithOnlyJavaDSL", null);
+    }
+
+    /**
+     * Ensures that a route template is supported.
+     */
+    public void testRouteTemplate() {
+        doTest("RouteTemplate", null);
     }
 
     /**
