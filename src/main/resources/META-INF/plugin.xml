@@ -13,6 +13,7 @@
       <ul>
         <li>Only IDEA 2025 onwards is supported</li>
         <li>Updated to Camel 4.16.0</li>
+        <li>Java DSL code formatter fixes</li>
       </ul>
     ]]>
   </change-notes>
