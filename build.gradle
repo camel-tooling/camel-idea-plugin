@@ -116,7 +116,7 @@ dependencies {
     implementation "org.apache.maven.resolver:maven-resolver-api:${mavenResolverVersion}"
     implementation "org.apache.maven.resolver:maven-resolver-impl:${mavenResolverVersion}"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.1"
-    implementation "io.fabric8:kubernetes-model-apiextensions:7.4.0"
+    implementation "io.fabric8:kubernetes-model-apiextensions:7.5.0"
 
     testImplementation "org.apache.camel:camel-core:${camelVersion}"
     testImplementation "org.apache.camel.springboot:camel-spring-boot:${camelVersion}"
