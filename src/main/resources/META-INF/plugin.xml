@@ -12,6 +12,7 @@
       v.1.4.7
       <ul>
         <li>Only IDEA 2025 onwards is supported</li>
+        <li>Upgraded to Camel 4.17.0</li>
       </ul>
     ]]>
   </change-notes>
