@@ -48,13 +48,17 @@ public class BlueprintJavaClassReferenceTest extends CamelLightCodeInsightFixtur
     }
 
     public void testCompletion() {
-        myFixture.configureByFiles("blueprint-java-class-completion-test.xml", "TestClass1.java", "TestClass2.java");
+        myFixture.configureByFiles("blueprint-java-class-completion-test.xml",
+                "my/test/classes/TestClass1.java",
+                "my/test/classes/TestClass2.java");
         List<String> strings = getCompletionResults();
         assertContainsElements(strings, "TestClass1", "TestClass2");
     }
 
     public void testCompletionWithNoResults() {
-        myFixture.configureByFiles("blueprint-java-class-completion-test_no-results.xml", "TestClass1.java", "TestClass2.java");
+        myFixture.configureByFiles("blueprint-java-class-completion-test_no-results.xml",
+                "my/test/classes/TestClass1.java",
+                "my/test/classes/TestClass2.java");
         List<String> strings = getCompletionResults();
         assertEmpty(strings);
     }
