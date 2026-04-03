@@ -85,8 +85,6 @@ However with some trial and run you can find out bit by bit.
 Importing the project into IntelliJ as plug-in only require you choose ìmport from external model` and select gradle
 
 
-> Important : if you are using the Ultimate version you can set a gradle property in your gradle.properties `intellij_type=IU`
-
 > - Open your IDEA
 > - Create a new project from existing source
 > - Select the "camel-idea-plugin" location
