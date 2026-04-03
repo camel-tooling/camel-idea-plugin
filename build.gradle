@@ -61,9 +61,11 @@ publishing {
 }
 
 test {
-    afterTest { desc, result ->
-        logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
-    }
+    addTestListener(new TestListener() {
+        void afterTest(TestDescriptor desc, TestResult result) {
+            logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+        }
+    })
 }
 
 tasks.withType(JavaCompile).configureEach {
