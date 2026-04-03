@@ -437,13 +437,13 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     @Override
     public List<PsiElement> findEndpointUsages(Module module, Predicate<String> uriCondition) {
         var scope = module.getModuleWithDependentsScope();
-        return findEndpoints(module.getProject(), scope, uriCondition, e -> !isCamelRouteStart(e));
+        return findEndpointsWithMatchingUri(module.getProject(), scope, uriCondition, e -> !isCamelRouteStart(e));
     }
 
     @Override
     public List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition) {
         var scope = module.getModuleWithDependenciesScope();
-        return findEndpoints(module.getProject(), scope, uriCondition, this::isCamelRouteStart);
+        return findEndpointsWithMatchingUri(module.getProject(), scope, uriCondition, this::isCamelRouteStart);
     }
 
     @Override
@@ -473,7 +473,19 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             .findFirst();
     }
 
-    private List<PsiElement> findEndpoints(Project project, SearchScope scope, Predicate<String> uriCondition, Predicate<PsiLiteral> elementCondition) {
+    private List<PsiElement> findEndpointsWithMatchingUri(Project project, SearchScope scope, Predicate<String> uriCondition, Predicate<PsiLiteral> elementCondition) {
+        return findEndpoints(project, scope, expression -> {
+            if (expression instanceof PsiLiteralExpression literalExpression) {
+                Object val = literalExpression.getValue();
+                if (val instanceof String endpointUri) {
+                    return uriCondition.test(endpointUri) && elementCondition.test(literalExpression);
+                }
+            }
+            return false;
+        });
+    }
+
+    private List<PsiElement> findEndpoints(Project project, SearchScope scope, Predicate<PsiExpression> elementCondition) {
         PsiManager manager = PsiManager.getInstance(project);
         PsiClass routeBuilderClass = findRouteBuilderClass(manager);
 
@@ -485,24 +497,28 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
                 Collection<PsiExpression> expressions = PsiTreeUtil.findChildrenOfType(aClass, PsiExpression.class);
                 for (PsiExpression expression : expressions) {
                     if (insideRouteBuilder || isConsumerEndpoint(expression) || isProducerEndpoint(expression)) {
-                        if (expression instanceof PsiLiteralExpression literalExpression) {
-                            Object val = literalExpression.getValue();
-                            if (val instanceof String endpointUri) {
-                                if (uriCondition.test(endpointUri) && elementCondition.test(literalExpression)) {
-                                    results.add(expression);
-                                }
-                            }
-                        } else if (expression instanceof PsiMethodCallExpression methodCallExpression) {
-                            if (isCamelRouteStartExpression(methodCallExpression)
-                                    && !List.of("kamelet", "templateParameter").contains(methodCallExpression.getMethodExpression().getReferenceName())) {
-                                results.add(methodCallExpression);
-                            }
+                        if (elementCondition.test(expression)) {
+                            results.add(expression);
                         }
                     }
                 }
             }
         }
         return results;
+    }
+
+    private List<PsiElement> findEndpointDeclarations(Module module) {
+        var scope = module.getModuleWithDependenciesScope();
+        return findEndpoints(module.getProject(), scope, expression -> {
+            if (expression instanceof PsiLiteralExpression literalExpression) {
+                return isCamelRouteStart(literalExpression);
+            } else if (expression instanceof PsiMethodCallExpression methodCallExpression) {
+                return isCamelRouteStartExpression(methodCallExpression)
+                        && !List.of("kamelet", "templateParameter").contains(methodCallExpression.getMethodExpression().getReferenceName());
+            } else {
+                return false;
+            }
+        });
     }
 
     private PsiClass findRouteBuilderClass(PsiManager manager) {
@@ -570,7 +586,10 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     private void formatText(PsiFile file, Document document, int startOffset, int endOffset,
                             CodeStyleSettings settings) {
         Module module = ModuleUtilCore.findModuleForPsiElement(file.getOriginalElement());
-        List<PsiElement> endpointDeclarations = findEndpointDeclarations(module, e -> true)
+        if (module == null) {
+            return;
+        }
+        List<PsiElement> endpointDeclarations = findEndpointDeclarations(module)
             .stream()
             .filter(e -> file.equals(e.getContainingFile()))
             .sorted(Comparator.comparingInt(PsiElement::getTextOffset))
