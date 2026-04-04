@@ -30,9 +30,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementResolveResult;
 import com.intellij.psi.PsiPolyVariantReferenceBase;
 import com.intellij.psi.ResolveResult;
-import com.intellij.psi.util.CachedValueProvider;
-import com.intellij.psi.util.CachedValuesManager;
-import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.util.IncorrectOperationException;
 import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
@@ -58,18 +55,16 @@ public class DirectEndpointReference extends PsiPolyVariantReferenceBase<PsiElem
     @NotNull
     @Override
     public ResolveResult[] multiResolve(boolean incompleteCode) {
-        return CachedValuesManager.getCachedValue(myElement, () -> {
-            StopWatch sw = StopWatch.createStarted();
-            var result = Optional.ofNullable(ModuleUtilCore.findModuleForPsiElement(myElement))
-                    .map(module -> CamelIdeaUtils.getService().findEndpointDeclarations(module, endpoint))
-                    .map(this::wrapAsDirectEndpointPsiElements)
-                    .map(PsiElementResolveResult::createResults)
-                    .orElse(ResolveResult.EMPTY_ARRAY);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Resolving direct endpoint " + endpoint.getUri() + " references took " + sw.formatTime());
-            }
-            return CachedValueProvider.Result.create(result, PsiModificationTracker.MODIFICATION_COUNT);
-        });
+        StopWatch sw = StopWatch.createStarted();
+        var result = Optional.ofNullable(ModuleUtilCore.findModuleForPsiElement(myElement))
+                .map(module -> CamelIdeaUtils.getService().findEndpointDeclarations(module, endpoint))
+                .map(this::wrapAsDirectEndpointPsiElements)
+                .map(PsiElementResolveResult::createResults)
+                .orElse(ResolveResult.EMPTY_ARRAY);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Resolving direct endpoint " + endpoint.getUri() + " references took " + sw.formatTime());
+        }
+        return result;
     }
 
     @NotNull
