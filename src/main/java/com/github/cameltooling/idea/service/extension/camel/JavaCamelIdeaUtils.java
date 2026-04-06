@@ -32,8 +32,10 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.patterns.ElementPattern;
 import com.intellij.patterns.PsiJavaPatterns;
+import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.JavaResolveResult;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiAnnotationMemberValue;
 import com.intellij.psi.PsiCallExpression;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDocumentManager;
@@ -47,7 +49,6 @@ import com.intellij.psi.PsiJavaCodeReferenceElement;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiLiteral;
 import com.intellij.psi.PsiLiteralExpression;
-import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiReferenceExpression;
@@ -57,28 +58,35 @@ import com.intellij.psi.PsiTypeParameter;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
 import com.intellij.psi.impl.source.PostprocessReformattingAspect;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.SearchScope;
-import com.intellij.psi.search.searches.AllClassesSearch;
-import com.intellij.psi.util.ClassUtil;
+import com.intellij.psi.search.searches.AnnotatedElementsSearch;
+import com.intellij.psi.search.searches.ClassInheritorsSearch;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.psi.util.InheritanceUtil;
+import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiUtil;
 import com.intellij.testFramework.LightVirtualFile;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
 
@@ -144,6 +152,8 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         "jakarta.enterprise.context.ConversationScoped",
         "jakarta.enterprise.context.RequestScoped"
     );
+    private static final String ANNOTATION_CAMEL_CONSUME = "org.apache.camel.Consume";
+    private static final String ANNOTATION_CAMEL_PRODUCE = "org.apache.camel.Produce";
 
     @Override
     public boolean isCamelFile(PsiFile file) {
@@ -317,7 +327,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     private boolean isInsideConsumeAnnotation(PsiElement element) {
         PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
         if (annotation != null && annotation.getQualifiedName() != null) {
-            return annotation.getQualifiedName().equals("org.apache.camel.Consume");
+            return annotation.getQualifiedName().equals(ANNOTATION_CAMEL_CONSUME);
         }
         return false;
     }
@@ -330,7 +340,7 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
         // annotation
         PsiAnnotation annotation = PsiTreeUtil.getParentOfType(element, PsiAnnotation.class);
         if (annotation != null && annotation.getQualifiedName() != null) {
-            return annotation.getQualifiedName().equals("org.apache.camel.Produce");
+            return annotation.getQualifiedName().equals(ANNOTATION_CAMEL_PRODUCE);
         }
         return false;
     }
@@ -437,13 +447,13 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     @Override
     public List<PsiElement> findEndpointUsages(Module module, Predicate<String> uriCondition) {
         var scope = module.getModuleWithDependentsScope();
-        return findEndpoints(module.getProject(), scope, uriCondition, e -> !isCamelRouteStart(e));
+        return findEndpointsWithMatchingUri(module.getProject(), scope, uriCondition, e -> !isCamelRouteStart(e));
     }
 
     @Override
     public List<PsiElement> findEndpointDeclarations(Module module, Predicate<String> uriCondition) {
         var scope = module.getModuleWithDependenciesScope();
-        return findEndpoints(module.getProject(), scope, uriCondition, this::isCamelRouteStart);
+        return findEndpointsWithMatchingUri(module.getProject(), scope, uriCondition, this::isCamelRouteStart);
     }
 
     @Override
@@ -473,45 +483,90 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             .findFirst();
     }
 
-    private List<PsiElement> findEndpoints(Project project, SearchScope scope, Predicate<String> uriCondition, Predicate<PsiLiteral> elementCondition) {
-        PsiManager manager = PsiManager.getInstance(project);
-        PsiClass routeBuilderClass = findRouteBuilderClass(manager);
-
-        List<PsiElement> results = new ArrayList<>();
-        if (routeBuilderClass != null) {
-            Collection<PsiClass> allClasses = AllClassesSearch.search(scope, project).findAll();
-            for (PsiClass aClass : allClasses) {
-                boolean insideRouteBuilder = aClass.isInheritorDeep(routeBuilderClass, null);
-                Collection<PsiExpression> expressions = PsiTreeUtil.findChildrenOfType(aClass, PsiExpression.class);
-                for (PsiExpression expression : expressions) {
-                    if (insideRouteBuilder || isConsumerEndpoint(expression) || isProducerEndpoint(expression)) {
-                        if (expression instanceof PsiLiteralExpression literalExpression) {
-                            Object val = literalExpression.getValue();
-                            if (val instanceof String endpointUri) {
-                                if (uriCondition.test(endpointUri) && elementCondition.test(literalExpression)) {
-                                    results.add(expression);
-                                }
-                            }
-                        } else if (expression instanceof PsiMethodCallExpression methodCallExpression) {
-                            if (isCamelRouteStartExpression(methodCallExpression)
-                                    && !List.of("kamelet", "templateParameter").contains(methodCallExpression.getMethodExpression().getReferenceName())) {
-                                results.add(methodCallExpression);
-                            }
-                        }
-                    }
+    private List<PsiElement> findEndpointsWithMatchingUri(Project project, SearchScope scope, Predicate<String> uriCondition, Predicate<PsiLiteral> elementCondition) {
+        return findEndpoints(project, scope, expression -> {
+            if (expression instanceof PsiLiteralExpression literalExpression) {
+                Object val = literalExpression.getValue();
+                if (val instanceof String endpointUri) {
+                    return uriCondition.test(endpointUri) && elementCondition.test(literalExpression);
                 }
             }
-        }
-        return results;
+            return false;
+        }).toList();
     }
 
-    private PsiClass findRouteBuilderClass(PsiManager manager) {
-        return JAVA_ROUTE_BUILDERS
-                .stream()
-                .map(fqn -> ClassUtil.findPsiClass(manager, fqn))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
+    private Stream<PsiElement> findEndpoints(Project project, SearchScope scope, Predicate<PsiExpression> elementCondition) {
+        return findPossibleEndpointElements(project, scope)
+                .filter(elementCondition)
+                .map(exp -> (PsiElement) exp);
+    }
+
+    private Stream<PsiExpression> findPossibleEndpointElements(Project project, SearchScope scope) {
+        return Stream.of(
+                findRouteBuilderImplementations(project, scope).stream()
+                        .flatMap(rb -> PsiTreeUtil.findChildrenOfType(rb, PsiExpression.class).stream()),
+                findEndpointElementsOnAnnotatedMethods(project, scope, ANNOTATION_CAMEL_PRODUCE),
+                findEndpointElementsOnAnnotatedMethods(project, scope, ANNOTATION_CAMEL_CONSUME)
+        ).flatMap(Function.identity());
+    }
+
+    private Stream<PsiExpression> findEndpointElementsOnAnnotatedMethods(Project project, SearchScope scope, String annotationFqn) {
+        PsiClass annotation = JavaPsiFacade.getInstance(project).findClass(annotationFqn, GlobalSearchScope.allScope(project));
+        if (annotation == null) {
+            return Stream.empty();
+        } else {
+            return AnnotatedElementsSearch.searchPsiMethods(annotation, scope)
+                    .findAll().stream() // would have used query.spliterator to create stream lazily, but it's deprecated
+                    .map(m -> m.getAnnotation(annotationFqn))
+                    .filter(Objects::nonNull)
+                    .map(m -> {
+                        PsiAnnotationMemberValue val = m.findAttributeValue("value");
+                        return val instanceof PsiExpression e ? e : null;
+                    })
+                    .filter(Objects::nonNull);
+        }
+    }
+
+
+    private Set<PsiClass> findRouteBuilderBaseClasses(Project project) {
+        return CachedValuesManager.getManager(project).getCachedValue(project, () -> {
+            JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
+            GlobalSearchScope globalScope = GlobalSearchScope.allScope(project);
+
+            Set<PsiClass> baseClasses = JAVA_ROUTE_BUILDERS.stream()
+                    .map(fqn -> javaPsiFacade.findClass(fqn, globalScope))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toUnmodifiableSet());
+
+            return CachedValueProvider.Result.create(baseClasses, PsiModificationTracker.MODIFICATION_COUNT);
+        });
+    }
+
+    /**
+     * Find all classes extending / implementing base RouteBuilder classes ({@link #JAVA_ROUTE_BUILDERS} in the given scope
+     */
+    private Collection<PsiClass> findRouteBuilderImplementations(Project project, SearchScope scope) {
+        Set<PsiClass> routeBuilderBaseClasses = findRouteBuilderBaseClasses(project);
+
+        Set<PsiClass> result = new HashSet<>();
+        for (PsiClass rbClass : routeBuilderBaseClasses) {
+            ClassInheritorsSearch.search(rbClass, scope, true)
+                    .forEach(result::add);
+        }
+        return result;
+    }
+
+    private Stream<PsiElement> findCamelRouteStarts(PsiFile file) {
+        return findEndpoints(file.getProject(), GlobalSearchScope.FilesScope.fileScope(file), expression -> {
+            if (expression instanceof PsiLiteralExpression literalExpression) {
+                return isCamelRouteStart(literalExpression);
+            } else if (expression instanceof PsiMethodCallExpression methodCallExpression) {
+                return isCamelRouteStartExpression(methodCallExpression)
+                        && !List.of("kamelet", "templateParameter").contains(methodCallExpression.getMethodExpression().getReferenceName());
+            } else {
+                return false;
+            }
+        });
     }
 
     private String getStaticBeanName(PsiJavaCodeReferenceElement referenceElement, String beanName) {
@@ -570,9 +625,10 @@ public class JavaCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
     private void formatText(PsiFile file, Document document, int startOffset, int endOffset,
                             CodeStyleSettings settings) {
         Module module = ModuleUtilCore.findModuleForPsiElement(file.getOriginalElement());
-        List<PsiElement> endpointDeclarations = findEndpointDeclarations(module, e -> true)
-            .stream()
-            .filter(e -> file.equals(e.getContainingFile()))
+        if (module == null) {
+            return;
+        }
+        List<PsiElement> endpointDeclarations = findCamelRouteStarts(file)
             .sorted(Comparator.comparingInt(PsiElement::getTextOffset))
             .toList();
         Deque<Consumer<Document>> changes = new ArrayDeque<>();

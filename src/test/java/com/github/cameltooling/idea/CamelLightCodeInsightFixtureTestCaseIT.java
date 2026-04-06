@@ -92,6 +92,8 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        allowTestDataAccess();
+
         if (!ignoreCamelCoreLib) {
             PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myFixture.getModule(), "Maven: " + CAMEL_CORE_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
         }
@@ -109,12 +111,12 @@ public abstract class CamelLightCodeInsightFixtureTestCaseIT extends LightJavaCo
 
         project.getService(CamelService.class).setCamelPresent(true);
 
-        allowTestDataAccess();
     }
 
     private void allowTestDataAccess() {
         Path path = Paths.get(TEST_DATA_BASE);
         VfsRootAccess.allowRootAccess(getTestRootDisposable(), path.toAbsolutePath().toString());
+        VfsRootAccess.allowRootAccess(getTestRootDisposable(), mavenArtifacts[0].getParent());
     }
 
     @Override

@@ -17,6 +17,9 @@
 package com.github.cameltooling.idea;
 
 import com.github.cameltooling.idea.service.CamelService;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.roots.ModuleRootEvent;
@@ -42,7 +45,12 @@ public class CamelPluginStartup implements ProjectManagerListener, ModuleRootLis
     public void rootsChanged(@NotNull ModuleRootEvent event) {
         // A roots change has been detected, Camel could have been removed, added or modified thus a new project scan
         // is needed
-        scanForCamelProject(event.getProject());
+        ProgressManager.getInstance().run(new Task.Backgroundable(event.getProject(), "Scanning for Camel project") {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                scanForCamelProject(event.getProject());
+            }
+        });
     }
 
     /**

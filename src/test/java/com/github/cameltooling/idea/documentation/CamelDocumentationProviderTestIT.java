@@ -120,15 +120,7 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
     public void testGenerateOptionDoc() {
         myFixture.configureByText("test-option.properties", getPropertiesTestDataWithCursorInPropertyName());
 
-        final PsiElement originalElement = myFixture.getElementAtCaret();
-        PsiElement element = DocumentationManager
-            .getInstance(getProject())
-            .findTargetElement(myFixture.getEditor(), originalElement.getContainingFile(), originalElement);
-
-        if (element == null) {
-            element = originalElement;
-        }
-
+        PsiElement element = myFixture.getElementAtCaret();
         PsiManager manager = myFixture.getPsiManager();
 
         BaseOptionModel option = new BaseOptionModel() {
@@ -153,15 +145,7 @@ public class CamelDocumentationProviderTestIT extends CamelLightCodeInsightFixtu
     public void testGenerateSimpleDoc() {
         myFixture.configureByText("test-option.properties", getPropertiesTestDataWithCursorInGroupName());
 
-        final PsiElement originalElement = myFixture.getElementAtCaret();
-        PsiElement element = DocumentationManager
-            .getInstance(getProject())
-            .findTargetElement(myFixture.getEditor(), originalElement.getContainingFile(), originalElement);
-
-        if (element == null) {
-            element = originalElement;
-        }
-
+        PsiElement element = myFixture.getElementAtCaret();
         PsiManager manager = myFixture.getPsiManager();
 
         SimpleSuggestion lookup = new SimpleSuggestion("Some Name", () -> "Some Description", "camel.main.");
