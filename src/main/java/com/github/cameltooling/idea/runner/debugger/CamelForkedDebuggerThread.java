@@ -42,9 +42,9 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.impl.EditorHyperlinkSupport;
-import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
+import com.intellij.execution.process.ProcessListener;
 import com.intellij.execution.remote.RemoteConfiguration;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
@@ -103,7 +103,7 @@ class CamelForkedDebuggerThread extends Thread {
         myMainExecutionEnvironment = mainExecutionEnvironment;
         myMainRunnableState = mainRunnableState;
 
-        myMainProcessHandler.addProcessListener(new ProcessAdapter() {
+        myMainProcessHandler.addProcessListener(new ProcessListener() {
             @Override
             public void processTerminated(@NotNull ProcessEvent event) {
                 closeSocket();
@@ -171,7 +171,7 @@ class CamelForkedDebuggerThread extends Thread {
             return;
         }
 
-        myMainProcessHandler.addProcessListener(new ProcessAdapter() {
+        myMainProcessHandler.addProcessListener(new ProcessListener() {
             @Override
             public void processTerminated(@NotNull ProcessEvent event) {
                 StreamUtil.closeStream(stream);
@@ -239,7 +239,7 @@ class CamelForkedDebuggerThread extends Thread {
 
     private void stopForkedProcessWhenMainProcessTerminated(@Nullable ProcessHandler processHandler) {
         if (processHandler != null) {
-            myMainProcessHandler.addProcessListener(new ProcessAdapter() {
+            myMainProcessHandler.addProcessListener(new ProcessListener() {
                 @Override
                 public void processWillTerminate(@NotNull ProcessEvent event, boolean willBeDestroyed) {
                     myMainProcessHandler.removeProcessListener(this);
@@ -252,7 +252,7 @@ class CamelForkedDebuggerThread extends Thread {
     private void removeRunContentWhenProcessIsTerminated(@NotNull RunContentDescriptor descriptor) {
         ProcessHandler processHandler = descriptor.getProcessHandler();
         if (processHandler != null) {
-            processHandler.addProcessListener(new ProcessAdapter() {
+            processHandler.addProcessListener(new ProcessListener() {
                 @Override
                 public void processTerminated(@NotNull ProcessEvent event) {
                     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
@@ -278,7 +278,7 @@ class CamelForkedDebuggerThread extends Thread {
 
     private void initTerminateForkedProcessHandler(@Nullable ProcessHandler processHandler) {
         if (processHandler != null) {
-            processHandler.addProcessListener(new ProcessAdapter() {
+            processHandler.addProcessListener(new ProcessListener() {
                 @Override
                 public void processWillTerminate(@NotNull ProcessEvent event, boolean willBeDestroyed) {
                     if (!willBeDestroyed) {
@@ -336,7 +336,7 @@ class CamelForkedDebuggerThread extends Thread {
         }
     }
 
-    private class MyForkedProcessListener extends ProcessAdapter {
+    private class MyForkedProcessListener implements ProcessListener {
         @NotNull private final RunContentDescriptor myDescriptor;
         @NotNull private final String myProcessName;
         @Nullable private RangeHighlighter myHyperlink;
