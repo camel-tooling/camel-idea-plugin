@@ -81,10 +81,10 @@ tasks.withType(Test).configureEach {
 
 intellijPlatform {
     pluginConfiguration {
-        // to support IDEA 2025 onwards
+        // to support IDEA 2026 onwards
         // http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html
         ideaVersion {
-            sinceBuild = "251"
+            sinceBuild = "261"
         }
     }
     pluginVerification {

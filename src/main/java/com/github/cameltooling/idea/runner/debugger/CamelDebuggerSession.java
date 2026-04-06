@@ -68,7 +68,6 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -687,6 +686,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             }
 
             breakpoints.put(breakpointId, new CamelBreakpoint(breakpointId, psiElement, position));
+            xDebugSession.setBreakpointVerified(xBreakpoint);
 
             return true;
         }

@@ -45,6 +45,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
+import com.intellij.xdebugger.XDebugSessionBuilder;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import org.jetbrains.annotations.NonNls;
@@ -71,9 +72,8 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
             // see https://github.com/camel-tooling/camel-idea-plugin/issues/824
             return false;
         }
-        if (profile instanceof RunConfigurationBase) {
+        if (profile instanceof RunConfigurationBase<?> base) {
             try {
-                final RunConfigurationBase<?> base = (RunConfigurationBase<?>) profile;
                 final Project project = base.getProject();
                 if (!CamelProjectPreferenceService.getService(project).isEnableCamelDebugger()) {
                     return false;
@@ -156,14 +156,18 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
                 debugProcess.putUserData(BatchEvaluator.REMOTE_SESSION_KEY, Boolean.TRUE);
             }
 
-            return XDebuggerManager.getInstance(project).startSession(env, new XDebugProcessStarter() {
-                @NotNull
-                public XDebugProcess start(@NotNull XDebugSession session) {
-                    final XDebugSessionImpl sessionImpl = (XDebugSessionImpl) session;
-                    final ExecutionResult executionResult = debugProcess.getExecutionResult();
-                    return ContextAwareDebugProcess.createDebugProcess(session, project, debuggerSession, sessionImpl, executionResult);
-                }
-            }).getRunContentDescriptor();
+            return XDebuggerManager.getInstance(project)
+                    .newSessionBuilder(new XDebugProcessStarter() {
+                        @NotNull
+                        public XDebugProcess start(@NotNull XDebugSession session) {
+                            final XDebugSessionImpl sessionImpl = (XDebugSessionImpl) session;
+                            final ExecutionResult executionResult = debugProcess.getExecutionResult();
+                            return ContextAwareDebugProcess.createDebugProcess(session, project, debuggerSession, sessionImpl, executionResult);
+                        }
+                    })
+                    .environment(env)
+                    .startSession()
+                    .getRunContentDescriptor();
         } else {
             debuggerSession.dispose();
             return null;
