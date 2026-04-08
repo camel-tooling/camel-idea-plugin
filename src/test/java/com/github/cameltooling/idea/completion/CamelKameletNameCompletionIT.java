@@ -69,6 +69,20 @@ public class CamelKameletNameCompletionIT extends CamelLightCodeInsightFixtureTe
         assertFalse(strings.containsAll(Arrays.asList("log-sink", "avro-deserialize-action", "aws-s3-source")));
     }
 
+    public void testBindingBySink() {
+        myFixture.configureByFiles("binding-sink.yaml");
+        myFixture.completeBasic();
+        List<String> strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertTrue(strings.containsAll(Arrays.asList("log-sink", "avro-deserialize-action")));
+        assertFalse(strings.containsAll(Arrays.asList("timer-source", "aws-s3-source")));
+        myFixture.type("av");
+        strings = myFixture.getLookupElementStrings();
+        assertNotNull(strings);
+        assertTrue(strings.contains("avro-deserialize-action"));
+        assertFalse(strings.containsAll(Arrays.asList("log-sink", "timer-source", "aws-s3-source")));
+    }
+
     public void testBindingBySteps() {
         myFixture.configureByFiles("binding-steps.yaml");
         myFixture.completeBasic();
