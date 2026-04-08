@@ -54,6 +54,8 @@ public class CamelDirectEndpointReferenceTest extends CamelLightCodeInsightFixtu
                         .to("direct:test");
                     from("direct:test")
                         .to("direct:def");
+                    from(direct("extraDirectJavaDSLEndpointShouldNotBreakAnything"))
+                        .to("direct:xxx");
                 }
             }
             """;

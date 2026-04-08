@@ -17,7 +17,7 @@
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
-    id 'org.jetbrains.intellij.platform' version '2.9.0'
+    id 'org.jetbrains.intellij.platform' version '2.13.1'
 }
 
 apply plugin: 'java'
@@ -61,9 +61,11 @@ publishing {
 }
 
 test {
-    afterTest { desc, result ->
-        logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
-    }
+    addTestListener(new TestListener() {
+        void afterTest(TestDescriptor desc, TestResult result) {
+            logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+        }
+    })
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -87,17 +89,23 @@ intellijPlatform {
     }
     pluginVerification {
         ides {
-            ide "${ideaVersion}"
+            recommended()
         }
     }
 }
 
 dependencies {
     intellijPlatform {
-        create(project.hasProperty('intellij_type') ? project.intellij_type : 'IC', ideaVersion)
+        intellijIdea "${ideaVersion}"
         pluginVerifier()
-        instrumentationTools()
-        bundledPlugins 'com.intellij.java', 'com.intellij.java-i18n', 'com.intellij.properties', 'com.intellij.modules.json', 'org.jetbrains.plugins.yaml', 'org.jetbrains.idea.maven', 'com.intellij.gradle'
+        bundledPlugins 'com.intellij.java',
+                'com.intellij.java-i18n',
+                'com.intellij.properties',
+                'com.intellij.modules.json',
+                'org.jetbrains.plugins.yaml',
+                'org.jetbrains.idea.reposearch',
+                'org.jetbrains.idea.maven',
+                'com.intellij.gradle'
         testFramework TestFrameworkType.Plugin.Java.INSTANCE
         testFramework TestFrameworkType.Platform.INSTANCE
     }
