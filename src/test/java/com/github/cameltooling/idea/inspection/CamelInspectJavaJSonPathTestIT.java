@@ -16,9 +16,9 @@
  */
 package com.github.cameltooling.idea.inspection;
 
+import com.github.cameltooling.idea.CamelTestDependencyUtil;
 import com.intellij.codeInspection.ex.LocalInspectionToolWrapper;
 import com.intellij.testFramework.PsiTestUtil;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 import java.io.File;
 
@@ -28,7 +28,7 @@ public class CamelInspectJavaJSonPathTestIT extends CamelInspectionTestHelper {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        File[] mavenArtifacts = Maven.resolver().resolve(CAMEL_JSONPATH_MAVEN_ARTIFACT).withTransitivity().asFile();
+        File[] mavenArtifacts = CamelTestDependencyUtil.getMavenArtifactsWithTransitively(CAMEL_JSONPATH_MAVEN_ARTIFACT);
         PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myFixture.getModule(), "Maven: " + CAMEL_JSONPATH_MAVEN_ARTIFACT, mavenArtifacts[0].getParent(), mavenArtifacts[0].getName());
     }
 
