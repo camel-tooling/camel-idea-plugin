@@ -20,11 +20,33 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
+import com.intellij.ide.plugins.PluginManagerCore;
+import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
+
+import static com.github.cameltooling.idea.Constants.PLUGIN_ID;
 
 /**
  * Testing basic completion with Kamelet name in a Camel Kamelet binding.
  */
 public class CamelKameletNameCompletionIT extends CamelLightCodeInsightFixtureTestCaseIT {
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        allowPluginLibDirVfsRootAccess();
+    }
+
+    /**
+     * See {@link com.github.cameltooling.idea.service.KameletService#findEmbeddedKameletsJar()},
+     * we need to allow this access in tests
+     */
+    private void allowPluginLibDirVfsRootAccess() {
+        IdeaPluginDescriptor plugin = PluginManagerCore.getPlugin(PluginId.getId(PLUGIN_ID));
+        assertNotNull(plugin);
+        VfsRootAccess.allowRootAccess(getTestRootDisposable(), plugin.getPluginPath().resolve("lib").toAbsolutePath().toString());
+    }
 
     @Override
     protected String getTestDataPath() {
