@@ -19,11 +19,11 @@ package com.github.cameltooling.idea.util;
 import java.util.stream.Stream;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import com.github.cameltooling.idea.CamelTestDependencyUtil;
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.testFramework.PsiTestUtil;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 public class IdeaUtilsSkipEndpointValidationTestIT extends CamelLightCodeInsightFixtureTestCaseIT {
 
@@ -55,8 +55,7 @@ public class IdeaUtilsSkipEndpointValidationTestIT extends CamelLightCodeInsight
         super.setUp();
         myFixture.getProject().getService(CamelService.class).setCamelPresent(true);
         Stream.of(
-            Maven.resolver().resolve(ACTIVEMQ_ARTIFACT, QPID_ARTIFACT)
-                .withTransitivity().asFile()
+                CamelTestDependencyUtil.getMavenArtifactsWithTransitively(ACTIVEMQ_ARTIFACT, QPID_ARTIFACT)
         ).forEach(f -> PsiTestUtil.addLibrary(myFixture.getProjectDisposable(), myFixture.getModule(), f.getName(), f.getParentFile().getAbsolutePath(), f.getName()));
     }
 

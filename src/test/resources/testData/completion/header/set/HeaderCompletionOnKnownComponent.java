@@ -23,7 +23,7 @@ public final class SingleEndpointSuggestions extends RouteBuilder {
     @Override
     public void configure() {
         from("jms:queue")
-            .setHeader(FileConstants.FILE_LOCAL_WORK_PATH, )
+            .setHeader(FileConstants.FILE_CHECKSUM, )
             .to("file:outbox");
     }
 }

@@ -17,6 +17,7 @@
 package com.github.cameltooling.idea.annotator;
 
 import com.github.cameltooling.idea.CamelLightCodeInsightFixtureTestCaseIT;
+import com.github.cameltooling.idea.CamelTestDependencyUtil;
 import com.github.cameltooling.idea.service.CamelCatalogService;
 import com.github.cameltooling.idea.service.CamelService;
 import com.intellij.openapi.application.ApplicationManager;
@@ -27,10 +28,8 @@ import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Test Camel JQ validation and the expected value is highlighted
@@ -48,7 +47,7 @@ public class CamelJQAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCase
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        File[] mavenArtifacts = getMavenArtifacts(CAMEL_JQ_MAVEN_ARTIFACT);
+        File[] mavenArtifacts = CamelTestDependencyUtil.getMavenArtifactsWithTransitively(CAMEL_JQ_MAVEN_ARTIFACT);
         for (File file : mavenArtifacts) {
             final VirtualFile virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file);
             final LibraryTable projectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(getModule().getProject());
@@ -74,11 +73,6 @@ public class CamelJQAnnotatorTestIT extends CamelLightCodeInsightFixtureTestCase
         } catch (Throwable e) {
             // ignore
         }
-    }
-
-    protected static File[] getMavenArtifacts(String... mavenAritfiact) throws IOException {
-        File[] libs = Maven.resolver().resolve(mavenAritfiact).withTransitivity().asFile();
-        return libs;
     }
 
     @Override

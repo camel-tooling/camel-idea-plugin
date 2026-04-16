@@ -2,10 +2,12 @@ package com.github.cameltooling.idea;
 
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.testFramework.PsiTestUtil;
-import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.apache.camel.tooling.maven.MavenArtifact;
+import org.apache.camel.tooling.maven.MavenDownloaderImpl;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.List;
 
 public class CamelTestDependencyUtil {
 
@@ -33,11 +35,25 @@ public class CamelTestDependencyUtil {
      * @param mavenArtifact - Array of maven artifact to resolve
      * @return Array of artifact files
      */
-    protected static File[] getMavenArtifacts(String... mavenArtifact) {
-        return Maven.configureResolver()
-                .withRemoteRepo("snapshot", "https://repository.apache.org/snapshots/", "default")
-                .resolve(mavenArtifact)
-                .withoutTransitivity().asFile();
+    public static File[] getMavenArtifacts(String... mavenArtifact) {
+        return downloadArtifacts(false, mavenArtifact);
     }
+
+    public static File[] getMavenArtifactsWithTransitively(String... mavenArtifact) {
+        return downloadArtifacts(true, mavenArtifact);
+    }
+
+    private static File[] downloadArtifacts(boolean transitively, String... mavenArtifact){
+        try (MavenDownloaderImpl impl = new MavenDownloaderImpl()) {
+            impl.setMavenApacheSnapshotEnabled(true);
+            impl.start();
+            var files = impl.resolveArtifacts(List.of(mavenArtifact), null, transitively, true)
+                    .stream().map(MavenArtifact::getFile);
+            return files.toList().toArray(new File[0]);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 }
