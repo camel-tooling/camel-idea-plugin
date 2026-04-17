@@ -33,7 +33,7 @@ public class CamelEvaluateAction extends XDebuggerActionBase {
 
     @Override
     @NotNull
-    protected DebuggerActionHandler getHandler(@NotNull final DebuggerSupport debuggerSupport) {
+    protected DebuggerActionHandler getHandler() {
         return evaluateActionHandler;
     }
 
