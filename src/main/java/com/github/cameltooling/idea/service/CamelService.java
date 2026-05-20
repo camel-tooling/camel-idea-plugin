@@ -361,18 +361,27 @@ public class CamelService implements Disposable {
      */
     public void scanForCamelProject() {
         final List<String> missingJSonSchemas = new ArrayList<>();
-        synchronized (this) {
-            reset();
-            for (Module module : ModuleManager.getInstance(project).getModules()) {
-                scanForCamelProject(module);
-                // if it is a Camel project then scan for additional Camel components
-                if (isCamelPresent()) {
-                    missingJSonSchemas.addAll(scanForCamelDependencies(module));
+        final Module[] modules = ModuleManager.getInstance(project).getModules();
+        if (isCamelPresentInModules(modules)) {
+            final CamelCatalog camelCatalog = getCamelCatalogService().get();
+            synchronized (this) {
+                for (Module module : modules) {
+                    if (isCamelPresent()) {
+                        missingJSonSchemas.addAll(scanForCamelDependencies(module, camelCatalog));
+                    }
                 }
             }
         }
         loadCamelCatalog();
         notifyForMissingJsonSchemas(missingJSonSchemas);
+    }
+
+    private synchronized boolean isCamelPresentInModules(Module[] modules) {
+        reset();
+        for (Module module : modules) {
+            scanForCamelProject(module);
+        }
+        return isCamelPresent();
     }
 
     /**
@@ -546,13 +555,11 @@ public class CamelService implements Disposable {
      *
      * @return the list of missing JSon schemas
      */
-    private List<String> scanForCamelDependencies(@NotNull Module module) {
+    private List<String> scanForCamelDependencies(@NotNull Module module, @NotNull CamelCatalog camelCatalog) {
         final boolean thirdParty = CamelPreferenceService.getService().isScanThirdPartyComponents();
-        final CamelCatalog camelCatalog = getCamelCatalogService().get();
         final List<String> missingJSonSchemas = new ArrayList<>();
         for (OrderEntry entry : ModuleRootManager.getInstance(module).getOrderEntries()) {
-            if (entry instanceof LibraryOrderEntry) {
-                LibraryOrderEntry libraryOrderEntry = (LibraryOrderEntry) entry;
+            if (entry instanceof LibraryOrderEntry libraryOrderEntry) {
 
                 if (libraryOrderEntry.getScope().isForProductionCompile() || libraryOrderEntry.getScope().isForProductionRuntime()) {
                     final Library library = libraryOrderEntry.getLibrary();
