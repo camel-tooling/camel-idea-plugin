@@ -55,14 +55,17 @@ public class CamelCatalogService implements Disposable {
      * defined in the preferences.
      */
     public CamelCatalog get() {
-        if (instance == null) {
+        CamelCatalog result = instance;
+        if (result == null) {
+            final CamelCatalog catalog = CamelProjectPreferenceService.getService(project).getCamelCatalogProvider().get(project);
             synchronized (this) {
                 if (instance == null) {
-                    this.instance = CamelProjectPreferenceService.getService(project).getCamelCatalogProvider().get(project);
+                    instance = catalog;
                 }
+                result = instance;
             }
         }
-        return instance;
+        return result;
     }
 
     boolean isInstantiated() {
