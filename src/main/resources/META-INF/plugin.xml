@@ -12,6 +12,7 @@
       v.1.5.1
       <ul>
         <li>Only IDEA 2026 onwards is supported</li>
+        <li>Updated to Camel 4.20</li>
       </ul>
     ]]>
   </change-notes>
