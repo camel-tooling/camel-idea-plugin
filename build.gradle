@@ -123,9 +123,8 @@ dependencies {
     // Needed to avoid conflicts with the version of the maven resolver used by IntelliJ
     implementation "org.apache.maven.resolver:maven-resolver-api:${mavenResolverVersion}"
     implementation "org.apache.maven.resolver:maven-resolver-impl:${mavenResolverVersion}"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.21.3"
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.22.0"
     implementation "io.fabric8:kubernetes-model-apiextensions:7.8.0"
-
     testImplementation "org.apache.camel:camel-core:${camelVersion}"
     testImplementation "org.apache.camel.springboot:camel-spring-boot:${camelVersion}"
     testImplementation "org.apache.camel.springboot:camel-file-starter:${camelVersion}"
