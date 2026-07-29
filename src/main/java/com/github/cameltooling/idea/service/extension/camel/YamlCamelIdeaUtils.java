@@ -40,7 +40,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.yaml.YAMLElementTypes;
-import org.jetbrains.yaml.YAMLFileType;
 import org.jetbrains.yaml.YAMLTokenTypes;
 import org.jetbrains.yaml.psi.YAMLDocument;
 import org.jetbrains.yaml.psi.YAMLFile;
@@ -48,17 +47,21 @@ import org.jetbrains.yaml.psi.YAMLKeyValue;
 import org.jetbrains.yaml.psi.YAMLMapping;
 import org.jetbrains.yaml.psi.YAMLScalar;
 import org.jetbrains.yaml.psi.YAMLSequence;
-import org.jetbrains.yaml.psi.YAMLSequenceItem;
 import org.jetbrains.yaml.psi.YAMLValue;
 
 public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtilsExtension {
 
+    /**
+     * Top-level keys of the Camel YAML DSL that mark a file as a Camel file.
+     * {@code templatedRoute} is deliberately omitted: it only instantiates a template
+     * (route template ref + parameters, no steps), so a file containing nothing else
+     * has nothing to validate or debug.
+     */
     private static final List<String> YAML_ROUTES = Arrays.asList(
         "from",
-        "routes",
-        "routeConfigurations",
         "route",
-        "routeConfiguration");
+        "routeConfiguration",
+        "routeTemplate");
     /**
      * All keys representing the potential producers.
      */
@@ -189,35 +192,24 @@ public class YamlCamelIdeaUtils extends CamelIdeaUtils implements CamelIdeaUtils
             return yamlDocuments.stream().anyMatch(document -> {
                 YAMLValue value = document.getTopLevelValue();
 
-                Collection<YAMLKeyValue> keysValues;
-                switch (value) {
-                    case YAMLMapping mapping:
-                        keysValues = mapping.getKeyValues();
-                        break;
-                    case YAMLSequence sequence:
-                        List<YAMLSequenceItem> sequenceItems = sequence.getItems();
-                        if (sequenceItems.isEmpty()) {
-                            return false;
-                        }
-                        YAMLSequenceItem firstItem = sequenceItems.getFirst();
-                        keysValues = firstItem.getKeysValues();
-                        break;
-                    case null, default:
-                        return false;
-                }
-
-                if (keysValues.isEmpty()) {
-                    return false;
-                }
-                YAMLKeyValue firstKeyValue = keysValues.iterator().next();
-                if (firstKeyValue == null) {
-                    return false;
-                }
-                return YAML_ROUTES.contains(firstKeyValue.getKeyText());
+                return switch (value) {
+                    case YAMLMapping mapping -> hasCamelRouteKey(mapping.getKeyValues());
+                    case YAMLSequence sequence -> sequence.getItems().stream()
+                        .anyMatch(item -> hasCamelRouteKey(item.getKeysValues()));
+                    case null, default -> false;
+                };
             });
         }
 
         return false;
+    }
+
+    private static boolean hasCamelRouteKey(Collection<YAMLKeyValue> keysValues) {
+        if (keysValues.isEmpty()) {
+            return false;
+        }
+        YAMLKeyValue firstKeyValue = keysValues.iterator().next();
+        return firstKeyValue != null && YAML_ROUTES.contains(firstKeyValue.getKeyText());
     }
 
     @Override
