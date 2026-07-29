@@ -24,9 +24,7 @@ import com.github.cameltooling.idea.runner.debugger.util.DebuggerUtils;
 import com.github.cameltooling.idea.service.CamelRuntime;
 import com.github.cameltooling.idea.util.IdeaUtils;
 import com.github.cameltooling.idea.util.StringUtils;
-import com.intellij.execution.process.OSProcessUtil;
 import com.intellij.execution.process.ProcessHandler;
-import com.intellij.execution.process.ProcessInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ApplicationNamesInfo;
 import com.intellij.openapi.diagnostic.Logger;
@@ -48,7 +46,6 @@ import com.intellij.xdebugger.XExpression;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint;
-import com.sun.tools.attach.VirtualMachine;
 import org.apache.camel.api.management.mbean.ManagedBacklogDebuggerMBean;
 import org.apache.camel.api.management.mbean.ManagedCamelContextMBean;
 import org.jetbrains.annotations.NotNull;
@@ -65,8 +62,6 @@ import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -98,7 +93,6 @@ import static com.github.cameltooling.idea.runner.debugger.CamelDebuggerTarget.M
 public class CamelDebuggerSession implements AbstractDebuggerSession {
     private static final Logger LOG = Logger.getInstance(CamelDebuggerSession.class);
 
-    private static final int MAX_RETRIES = 30;
     private static final String BACKLOG_DEBUGGER_LOGGING_LEVEL = "TRACE";
     private static final long FALLBACK_TIMEOUT = Long.MAX_VALUE - 1;
     private static final String MAIN_RESOURCES_RELATIVE_PATH = "src/main/resources/";
@@ -129,25 +123,43 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private volatile String temporaryBreakpointId;
 
     private final XDebugSession xDebugSession;
-    @Nullable
-    private final ProcessHandler javaProcessHandler;
     private final String jmxHost;
     private final int jmxPort;
+
+    /**
+     * Strategy deciding how long it is worth retrying a failed connection and what to do once that stops being
+     * explainable by the debugged application still starting up, chosen once at construction time depending on
+     * what is actually being watched: a locally launched process, or, in the case of a genuinely remote attach, the
+     * {@link XDebugSession} itself since there is no local process to watch.
+     */
+    private final ConnectionRetryPolicy connectionRetryPolicy;
+
+    /**
+     * Strategy used to obtain a {@link JMXConnector}, chosen once at construction time
+     * depending on how the debugged
+     * Camel application is being run.
+     */
+    private final JmxConnectorProvider jmxConnectorProvider;
 
     public CamelDebuggerSession(Project project, XDebugSession session, @NotNull ProcessHandler javaProcessHandler) {
         this.project = project;
         this.xDebugSession = session;
-        this.javaProcessHandler = javaProcessHandler;
         this.jmxHost = "localhost";
         this.jmxPort = 1099;
+        this.connectionRetryPolicy = new ProcessHandlerRetryPolicy(javaProcessHandler, session);
+        JmxConnectorProvider serviceUrlProvider = new ServiceUrlJmxConnectorProvider(getJMXServiceURL());
+        this.jmxConnectorProvider = requiresServiceUrlConnector()
+            ? serviceUrlProvider
+            : new LocalProcessJmxConnectorProvider(javaProcessHandler, serviceUrlProvider);
     }
 
     public CamelDebuggerSession(Project project, XDebugSession session, String jmxHost, int jmxPort) {
         this.project = project;
         this.xDebugSession = session;
-        this.javaProcessHandler = null;
         this.jmxHost = jmxHost;
         this.jmxPort = jmxPort;
+        this.connectionRetryPolicy = new SessionRetryPolicy(session);
+        this.jmxConnectorProvider = new ServiceUrlJmxConnectorProvider(getJMXServiceURL());
     }
 
     public String getJMXServiceURL() {
@@ -160,7 +172,7 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
             isConnected = backlogDebugger != null && backlogDebugger.isEnabled();
         } catch (Exception e) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Unable to know if the BacklogDebugger is enabled: {}", e.getMessage());
+                LOG.debug("Could not know if the BacklogDebugger is enabled: {}", e.getMessage());
             }
         }
         return isConnected;
@@ -201,6 +213,21 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
                 backlogDebugger = null;
             }
         }
+        closeConnector();
+    }
+
+    /**
+     * Drops a half-open or lost connection so that the next attempt starts from scratch, closing the underlying
+     * {@link JMXConnector} without attempting any further remote call on the connection that just failed (unlike
+     * {@link #disconnect()}, which first tries to gracefully detach and disable the debugger).
+     */
+    private void resetConnection() {
+        backlogDebugger = null;
+        debuggerMBeanObjectName = null;
+        closeConnector();
+    }
+
+    private void closeConnector() {
         if (connector != null) {
             try {
                 connector.close();
@@ -483,17 +510,47 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     }
 
     /**
-     * Tries to connect to the JMX connector server. In case of failure, it retries every 2 seconds several times, and if
-     * after {@link #MAX_RETRIES}, it still cannot connect, it stops trying.
+     * Tries to connect to the JMX connector server, retrying every 2 seconds
+     * for as long as {@link ConnectionRetryPolicy#canRetry()} says it is still worth it.
+     * Failures within the policy's {@link ConnectionRetryPolicy#gracePeriodAttempts()}
+     * are considered normal (the target may still be starting up) and are only logged at debug level.
+     * Every failure past that grace period is reported to {@link ConnectionRetryPolicy#onGracePeriodExceeded(int, String)},
+     * which decides how often that is actually surfaced to the user.
      *
      * @return {@code true} if it could connect to the JMX connector server, {@code false} otherwise.
      */
     private boolean tryToConnect() {
-        for (int i = 0; i < MAX_RETRIES && canConnect(); i++) {
+        int consecutiveFailedAttempts = 0;
+        while (connectionRetryPolicy.canRetry()) {
             LOG.debug("Trying to connect to the JMX connector server");
-            if (doConnect()) {
+            try {
+                doConnect();
                 LOG.debug("Connected with success to the JMX connector server");
                 return true;
+            } catch (CamelDebuggerConnectionException failure) {
+                switch (failure) {
+                    case CamelDebuggerConnectionException.Permanent e -> {
+                        // Retrying cannot help: surface the failure and give up for good.
+                        connectionRetryPolicy.onPermanentFailure(e.getMessage());
+                        return false;
+                    }
+                    case CamelDebuggerConnectionException.Recoverable e -> {
+                        // A connection was established but then lost: drop the stale one before reconnecting.
+                        LOG.warn("Lost the connection while initializing the Camel Debugger, reconnecting", e);
+                        resetConnection();
+                        consecutiveFailedAttempts++;
+                        if (consecutiveFailedAttempts >= connectionRetryPolicy.gracePeriodAttempts()) {
+                            connectionRetryPolicy.onGracePeriodExceeded(consecutiveFailedAttempts, e.getMessage());
+                        }
+                    }
+                    case CamelDebuggerConnectionException.Transient e -> {
+                        // The target may still be starting up: keep retrying, patiently within the grace period.
+                        consecutiveFailedAttempts++;
+                        if (consecutiveFailedAttempts >= connectionRetryPolicy.gracePeriodAttempts()) {
+                            connectionRetryPolicy.onGracePeriodExceeded(consecutiveFailedAttempts, e.getMessage());
+                        }
+                    }
+                }
             }
             try {
                 Thread.sleep(1000L * 2);
@@ -505,164 +562,109 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
         return false;
     }
 
-    private boolean canConnect() {
-        if (javaProcessHandler == null) {
-            return !xDebugSession.isStopped();
-        }
-        return !javaProcessHandler.isProcessTerminated() && !javaProcessHandler.isProcessTerminating();
-    }
-
-    private boolean doConnect() {
+    /**
+     * Performs a single connection attempt to the JMX connector server and initializes the debugger.
+     *
+     * @throws CamelDebuggerConnectionException classifying the failure so the caller can decide whether, and how
+     *                                          patiently, it is worth retrying.
+     */
+    private void doConnect() throws CamelDebuggerConnectionException {
         final ClassLoader current = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(ClasspathUtils.getProjectClassLoader(project, this.getClass().getClassLoader()));
 
-            this.connector = getJMXConnector();
-            if (connector == null) {
-                return false;
-            } else {
-                this.serverConnection = connector.getMBeanServerConnection();
-            }
+            this.connector = jmxConnectorProvider.getJMXConnector();
+            this.serverConnection = connector.getMBeanServerConnection();
             //init debugger
             // org.apache.camel:context=camel-1,type=tracer,name=BacklogDebugger
             ObjectName objectName = new ObjectName("org.apache.camel:context=*,type=tracer,name=BacklogDebugger");
 
             Set<ObjectName> names = serverConnection.queryNames(objectName, null);
+            if (names == null || names.isEmpty()) {
+                // The connection is healthy but the MBean is not there: it may simply not be registered yet, or the
+                // Camel Debugger may be missing altogether. The two cannot be told apart at a single point in time,
+                // so this is treated as transient and left to the retry policy to eventually give up on.
+                throw CamelDebuggerConnectionException.Transient.noBacklogDebuggerMBeanFound(objectName.toString());
+            }
+            this.debuggerMBeanObjectName = names.iterator().next();
+            backlogDebugger = JMX.newMBeanProxy(serverConnection, debuggerMBeanObjectName, ManagedBacklogDebuggerMBean.class);
+            backlogDebugger.enableDebugger();
+            backlogDebugger.setLoggingLevel(BACKLOG_DEBUGGER_LOGGING_LEVEL); //By default it's INFO and a bit too noisy
+            backlogDebugger.setFallbackTimeout(FALLBACK_TIMEOUT);
+            //Lookup camel context
+            objectName = new ObjectName("org.apache.camel:context=*,type=context,name=*");
+            names = serverConnection.queryNames(objectName, null);
             if (names != null && !names.isEmpty()) {
-                this.debuggerMBeanObjectName = names.iterator().next();
-                backlogDebugger = JMX.newMBeanProxy(serverConnection, debuggerMBeanObjectName, ManagedBacklogDebuggerMBean.class);
-                backlogDebugger.enableDebugger();
-                backlogDebugger.setLoggingLevel(BACKLOG_DEBUGGER_LOGGING_LEVEL); //By default it's INFO and a bit too noisy
-                backlogDebugger.setFallbackTimeout(FALLBACK_TIMEOUT);
-                //Lookup camel context
-                objectName = new ObjectName("org.apache.camel:context=*,type=context,name=*");
-                names = serverConnection.queryNames(objectName, null);
-                if (names != null && !names.isEmpty()) {
-                    ObjectName mbeanName = names.iterator().next();
-                    ManagedCamelContextMBean camelContext = JMX.newMBeanProxy(serverConnection, mbeanName, ManagedCamelContextMBean.class);
+                ObjectName mbeanName = names.iterator().next();
+                ManagedCamelContextMBean camelContext = JMX.newMBeanProxy(serverConnection, mbeanName, ManagedCamelContextMBean.class);
 
-                    while (!"Started".equals(camelContext.getState())) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Waiting for the context to start");
-                        }
-                        Thread.onSpinWait();
+                while (!"Started".equals(camelContext.getState())) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Waiting for the context to start");
                     }
-
-                    //Init DOM Documents
-                    String routes = camelContext.dumpRoutesAsXml(false);
-                    DocumentBuilder documentBuilder = DebuggerUtils.createDocumentBuilder();
-                    InputStream targetStream = new ByteArrayInputStream(routes.getBytes());
-                    this.routesDOMDocument = documentBuilder.parse(targetStream);
-
-                    //TODO get list of loaded expression languages
-
+                    Thread.onSpinWait();
                 }
 
-                //Toggle all pending breakpoints
-                for (XLineBreakpoint<XBreakpointProperties<?>> breakpoint : breakpointsRemove) {
-                    ApplicationManager.getApplication().runReadAction(() -> {
-                        try {
-                            toggleBreakpoint(breakpoint, false);
-                        } catch (Exception e) {
-                            LOG.error(e);
-                        }
-                    });
-                }
-                for (XLineBreakpoint<XBreakpointProperties<?>> breakpoint : breakpointsAdd) {
-                    ApplicationManager.getApplication().runReadAction(() -> {
-                        try {
-                            toggleBreakpoint(breakpoint, true);
-                        } catch (Exception e) {
-                            LOG.error(e);
-                        }
-                    });
-                }
-                try {
-                    backlogDebugger.attach();
-                } catch (Exception e) {
-                    LOG.warn("Could not attach the debugger: " + e.getMessage());
-                }
-                return true;
+                //Init DOM Documents
+                String routes = camelContext.dumpRoutesAsXml(false);
+                DocumentBuilder documentBuilder = DebuggerUtils.createDocumentBuilder();
+                InputStream targetStream = new ByteArrayInputStream(routes.getBytes());
+                this.routesDOMDocument = documentBuilder.parse(targetStream);
+
+                //TODO get list of loaded expression languages
+
             }
-            return false;
+
+            //Toggle all pending breakpoints
+            for (XLineBreakpoint<XBreakpointProperties<?>> breakpoint : breakpointsRemove) {
+                ApplicationManager.getApplication().runReadAction(() -> {
+                    try {
+                        toggleBreakpoint(breakpoint, false);
+                    } catch (Exception e) {
+                        LOG.error(e);
+                    }
+                });
+            }
+            for (XLineBreakpoint<XBreakpointProperties<?>> breakpoint : breakpointsAdd) {
+                ApplicationManager.getApplication().runReadAction(() -> {
+                    try {
+                        toggleBreakpoint(breakpoint, true);
+                    } catch (Exception e) {
+                        LOG.error(e);
+                    }
+                });
+            }
+            // Best-effort: attach() is a no-op unless the target runs in suspend mode, and the debugger itself is
+            // already enabled above, so a failure here must not tear down an otherwise working connection.
+            // Caveat: if the target IS in suspend mode, a failed attach() leaves the application holding all
+            // messages until a debugger attaches, which this swallow does not recover from.
+            try {
+                backlogDebugger.attach();
+            } catch (Exception e) {
+                LOG.warn("Could not attach the debugger: " + e.getMessage());
+            }
+        } catch (CamelDebuggerConnectionException e) {
+            throw e; // Already classified (from the connector provider or the missing MBean): do not re-wrap it.
         } catch (Exception e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Could not initialize the BackLogDebugger", e);
-            }
-            return false;
+            // The JMX handshake had succeeded, so a failure here means the connection was established and then lost
+            // while setting the debugger up (e.g. the application was restarted or redeployed): recoverable.
+            throw new CamelDebuggerConnectionException.Recoverable("Could not initialize the BacklogDebugger: " + e.getMessage(), e);
         } finally {
             Thread.currentThread().setContextClassLoader(current);
         }
     }
 
     /**
-     * @return the {@link JMXConnector} corresponding to the Java process. In case the process id
-     * cannot be found, it calls {@link #getJMXConnectorFromServiceURL()} as fallback.
-     */
-    private JMXConnector getJMXConnectorFromLocalJavaProcess() {
-        final String javaProcessPID = getPID(javaProcessHandler);
-        if (javaProcessPID == null) {
-            return getJMXConnectorFromServiceURL();
-        }
-        try {
-            final VirtualMachine vm = VirtualMachine.attach(javaProcessPID);
-            vm.startLocalManagementAgent();
-            final String connectorAddress = vm.getAgentProperties().getProperty("com.sun.management.jmxremote.localConnectorAddress");
-            vm.detach();
-            return JMXConnectorFactory.connect(new JMXServiceURL(connectorAddress));
-        } catch (Exception e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Could not retrieve the JMX API connector of the java process " + javaProcessPID, e);
-            }
-        }
-        return null;
-    }
-
-    /**
-     * @return the {@link JMXConnector} that matches the best with the current context.
-     */
-    private JMXConnector getJMXConnector() {
-        if (remoteAccess()) {
-            return getJMXConnectorFromServiceURL();
-        }
-        return getJMXConnectorFromLocalJavaProcess();
-    }
-
-    /**
-     * Indicates whether the {@link JMXConnector} should be built from a JMX Service URL.
+     * Indicates whether the {@link JMXConnector} must be built from a JMX Service URL rather than from a local
+     * process id attach.
      *
-     * @return {@code true} if it is a remote access, {@code false} otherwise.
+     * @return {@code true} if it is a forked or remote process, {@code false} otherwise.
      */
-    private boolean remoteAccess() {
+    private boolean requiresServiceUrlConnector() {
         // In case of Quarkus and Camel SpringBoot 4, the application runs in a forked process such
         // that the JMXConnector needs to be retrieved from a URL corresponding to a remote process
         CamelRuntime camelRuntime = CamelRuntime.getCamelRuntime(project);
         return camelRuntime == CamelRuntime.QUARKUS || camelRuntime == CamelRuntime.SPRING_BOOT;
-    }
-
-    @Nullable
-    private JMXConnector getJMXConnectorFromServiceURL() {
-        try {
-            return JMXConnectorFactory.connect(new JMXServiceURL(getJMXServiceURL()));
-        } catch (Exception e) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Could not retrieve the JMX API connector", e);
-            }
-        }
-        return null;
-    }
-
-    private static String getPID(ProcessHandler handler) {
-        if (handler == null) {
-            return null;
-        }
-        String cmdLine = handler.toString();
-        for (ProcessInfo info : OSProcessUtil.getProcessList()) {
-            if (info.getCommandLine().equals(cmdLine)) {
-                return String.valueOf(info.getPid());
-            }
-        }
-        return null;
     }
 
     private boolean toggleBreakpoint(@NotNull XLineBreakpoint<XBreakpointProperties<?>> xBreakpoint, boolean toggleOn) {
