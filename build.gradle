@@ -61,11 +61,11 @@ publishing {
 }
 
 test {
-    addTestListener(new TestListener() {
-        void afterTest(TestDescriptor desc, TestResult result) {
-            logger.quiet "Executing test ${desc.name} [${desc.className}] with result: ${result.resultType}"
-        }
-    })
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams = true
+        exceptionFormat = 'full'
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
