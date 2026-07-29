@@ -18,13 +18,26 @@ package com.github.cameltooling.idea.runner;
 
 import java.util.Objects;
 
+import com.github.cameltooling.idea.runner.debugger.JmxProtocol;
 import com.intellij.execution.configurations.RunConfigurationOptions;
 import com.intellij.openapi.components.StoredProperty;
 
 public class CamelRemoteRunConfigurationOptions extends RunConfigurationOptions {
 
-    private final StoredProperty<String> host = string("localhost").provideDelegate(this, "host");
-    private final StoredProperty<Integer> port = property(1099).provideDelegate(this, "port");
+    private final StoredProperty<String> host = string("").provideDelegate(this, "host");
+    private final StoredProperty<Integer> port = property(0).provideDelegate(this, "port");
+    private final StoredProperty<JmxProtocol> protocol = doEnum(JmxProtocol.getDefault(), JmxProtocol.class).provideDelegate(this, "protocol");
+
+    /**
+     * Whether the Jolokia endpoint is reached over TLS. Meaningful only when {@link #getProtocol()} is
+     * {@link JmxProtocol#JOLOKIA}; ignored for the other protocols.
+     */
+    private final StoredProperty<Boolean> ssl = property(false).provideDelegate(this, "ssl");
+
+    /**
+     * The user-supplied JMX service URL, meaningful only when {@link #getProtocol()} is {@link JmxProtocol#CUSTOM}.
+     */
+    private final StoredProperty<String> serviceUrl = string("").provideDelegate(this, "serviceUrl");
 
     public String getHost() {
         return host.getValue(this);
@@ -34,12 +47,60 @@ public class CamelRemoteRunConfigurationOptions extends RunConfigurationOptions 
         this.host.setValue(this, host);
     }
 
+    public String getResolvedHost() {
+        String h = getHost();
+        return h == null || h.isEmpty() ? "localhost" : h;
+    }
+
     public Integer getPort() {
         return port.getValue(this);
     }
 
     public void setPort(Integer port) {
         this.port.setValue(this, port);
+    }
+
+    public JmxProtocol getProtocol() {
+        return protocol.getValue(this);
+    }
+
+    public void setProtocol(JmxProtocol protocol) {
+        this.protocol.setValue(this, protocol);
+    }
+
+    public int getResolvedPort() {
+        int p = getPort();
+        return p > 0 ? p : getProtocol().getDefaultPort(isSsl());
+    }
+
+    public boolean isSsl() {
+        return ssl.getValue(this);
+    }
+
+    public void setSsl(boolean ssl) {
+        this.ssl.setValue(this, ssl);
+    }
+
+    public String getServiceUrl() {
+        return serviceUrl.getValue(this);
+    }
+
+    public void setServiceUrl(String serviceUrl) {
+        this.serviceUrl.setValue(this, serviceUrl == null ? "" : serviceUrl);
+    }
+
+    /**
+     * @return {@link #getServiceUrl()} if {@link #getProtocol()} is {@link JmxProtocol#CUSTOM},
+     * otherwise the JMX service URL derived from
+     * {@link #getProtocol()}, {@link #getHost()} and {@link #getPort()}.
+     */
+    public String getEffectiveServiceUrl() {
+        if (getProtocol() != JmxProtocol.CUSTOM) {
+            Boolean useSsl = getProtocol() == JmxProtocol.JOLOKIA ? isSsl() : null;
+            return JmxProtocol.buildServiceUrl(getProtocol(), getResolvedHost(), getResolvedPort(), useSsl);
+        } else {
+            return getServiceUrl();
+        }
     }
 
     @Override
@@ -54,11 +115,15 @@ public class CamelRemoteRunConfigurationOptions extends RunConfigurationOptions 
             return false;
         }
         CamelRemoteRunConfigurationOptions that = (CamelRemoteRunConfigurationOptions) o;
-        return Objects.equals(host, that.host) && Objects.equals(port, that.port);
+        return Objects.equals(host, that.host)
+            && Objects.equals(port, that.port)
+            && Objects.equals(protocol, that.protocol)
+            && Objects.equals(ssl, that.ssl)
+            && Objects.equals(serviceUrl, that.serviceUrl);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), host, port);
+        return Objects.hash(super.hashCode(), host, port, protocol, ssl, serviceUrl);
     }
 }

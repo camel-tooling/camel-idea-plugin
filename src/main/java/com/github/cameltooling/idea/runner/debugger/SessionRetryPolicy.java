@@ -56,7 +56,7 @@ class SessionRetryPolicy implements ConnectionRetryPolicy {
     public void onGracePeriodExceeded(int consecutiveFailedAttempts, String reason) {
         // Stopping the session makes canRetry() return false right after, so this only ever runs once.
         LOG.warn(reason);
-        xDebugSession.reportError(reason);
+        ConnectionRetryPolicy.reportError(xDebugSession, reason);
         xDebugSession.stop();
     }
 

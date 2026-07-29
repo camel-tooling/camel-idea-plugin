@@ -123,47 +123,40 @@ public class CamelDebuggerSession implements AbstractDebuggerSession {
     private volatile String temporaryBreakpointId;
 
     private final XDebugSession xDebugSession;
-    private final String jmxHost;
-    private final int jmxPort;
+    private final String jmxServiceUrl;
 
     /**
      * Strategy deciding how long it is worth retrying a failed connection and what to do once that stops being
      * explainable by the debugged application still starting up, chosen once at construction time depending on
-     * what is actually being watched: a locally launched process, or, in the case of a genuinely remote attach, the
-     * {@link XDebugSession} itself since there is no local process to watch.
+     * what is actually being watched: a locally launched process, or, in the case of a genuinely remote attach,
+     * the {@link XDebugSession} itself since there is no local process to watch.
      */
     private final ConnectionRetryPolicy connectionRetryPolicy;
 
     /**
      * Strategy used to obtain a {@link JMXConnector}, chosen once at construction time
-     * depending on how the debugged
-     * Camel application is being run.
+     * depending on
+     * how the debugged Camel application is being run.
      */
     private final JmxConnectorProvider jmxConnectorProvider;
 
     public CamelDebuggerSession(Project project, XDebugSession session, @NotNull ProcessHandler javaProcessHandler) {
         this.project = project;
         this.xDebugSession = session;
-        this.jmxHost = "localhost";
-        this.jmxPort = 1099;
+        this.jmxServiceUrl = JmxProtocol.buildServiceUrl(JmxProtocol.RMI, "localhost", 1099, null);
         this.connectionRetryPolicy = new ProcessHandlerRetryPolicy(javaProcessHandler, session);
-        JmxConnectorProvider serviceUrlProvider = new ServiceUrlJmxConnectorProvider(getJMXServiceURL());
+        JmxConnectorProvider serviceUrlProvider = new ServiceUrlJmxConnectorProvider(jmxServiceUrl);
         this.jmxConnectorProvider = requiresServiceUrlConnector()
             ? serviceUrlProvider
             : new LocalProcessJmxConnectorProvider(javaProcessHandler, serviceUrlProvider);
     }
 
-    public CamelDebuggerSession(Project project, XDebugSession session, String jmxHost, int jmxPort) {
+    public CamelDebuggerSession(Project project, XDebugSession session, String jmxServiceUrl) {
         this.project = project;
         this.xDebugSession = session;
-        this.jmxHost = jmxHost;
-        this.jmxPort = jmxPort;
+        this.jmxServiceUrl = jmxServiceUrl;
         this.connectionRetryPolicy = new SessionRetryPolicy(session);
-        this.jmxConnectorProvider = new ServiceUrlJmxConnectorProvider(getJMXServiceURL());
-    }
-
-    public String getJMXServiceURL() {
-        return "service:jmx:rmi:///jndi/rmi://%s:%d/jmxrmi/camel".formatted(jmxHost, jmxPort);
+        this.jmxConnectorProvider = new ServiceUrlJmxConnectorProvider(jmxServiceUrl);
     }
 
     public boolean isConnected() {

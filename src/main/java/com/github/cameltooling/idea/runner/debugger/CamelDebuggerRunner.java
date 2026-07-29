@@ -192,7 +192,7 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
                 @NotNull
                 public XDebugProcess start(@NotNull XDebugSession session) {
                     CamelRemoteRunConfigurationOptions options = state.getConfiguration().getOptions();
-                    return ContextAwareDebugProcess.createRemoteDebugProcess(session, project, options.getHost(), options.getPort());
+                    return ContextAwareDebugProcess.createRemoteDebugProcess(session, project, options.getEffectiveServiceUrl());
                 }
             })
             .environment(env)

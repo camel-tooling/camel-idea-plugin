@@ -74,7 +74,7 @@ class ProcessHandlerRetryPolicy implements ConnectionRetryPolicy {
         int attemptsPastGracePeriod = consecutiveFailedAttempts - GRACE_PERIOD_ATTEMPTS;
         if (attemptsPastGracePeriod % REMINDER_INTERVAL_ATTEMPTS == 0) {
             LOG.warn(reason);
-            xDebugSession.reportError(reason);
+            ConnectionRetryPolicy.reportError(xDebugSession, reason);
         }
         // The local process is still running: keep retrying in the background, it might still catch up.
     }

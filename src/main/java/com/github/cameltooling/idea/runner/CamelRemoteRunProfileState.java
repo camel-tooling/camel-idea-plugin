@@ -25,7 +25,7 @@ public class CamelRemoteRunProfileState extends RemoteStateState {
     private final CamelRemoteRunConfiguration configuration;
 
     CamelRemoteRunProfileState(Project project, CamelRemoteRunConfiguration configuration) {
-        super(project, new RemoteConnection(true, configuration.getOptions().getHost(), Integer.toString(configuration.getOptions().getPort()), false));
+        super(project, new RemoteConnection(true, configuration.getOptions().getResolvedHost(), Integer.toString(configuration.getOptions().getResolvedPort()), false));
         this.configuration = configuration;
     }
 
