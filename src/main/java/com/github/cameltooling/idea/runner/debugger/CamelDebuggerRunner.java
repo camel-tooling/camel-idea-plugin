@@ -18,7 +18,9 @@ package com.github.cameltooling.idea.runner.debugger;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.github.cameltooling.idea.runner.CamelJBangRunConfiguration;
 import com.github.cameltooling.idea.runner.CamelJBangRunProfileState;
+import com.github.cameltooling.idea.runner.CamelRemoteRunConfiguration;
 import com.github.cameltooling.idea.runner.CamelRemoteRunConfigurationOptions;
 import com.github.cameltooling.idea.runner.CamelRemoteRunProfileState;
 import com.github.cameltooling.idea.runner.debugger.breakpoint.CamelBreakpointHandler;
@@ -67,6 +69,13 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
 
     @Override
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
+        if (profile instanceof CamelRemoteRunConfiguration || profile instanceof CamelJBangRunConfiguration) {
+            // The plugin's own configurations can only be debugged by this runner (their Run action is either
+            // suppressed or handled elsewhere), so they must not be gated on the Camel project detection and
+            // pre-existing Camel breakpoints used below to decide whether to hijack generic configurations.
+            // Without this, the Debug button stays disabled until at least one Camel breakpoint is set.
+            return executorId.equals(DefaultDebugExecutor.EXECUTOR_ID);
+        }
         if (profile instanceof GradleRunConfiguration) {
             // GradleRunConfiguration must be excluded otherwise it won't be possible to debug a gradle task
             // see https://github.com/camel-tooling/camel-idea-plugin/issues/824
@@ -178,12 +187,16 @@ public class CamelDebuggerRunner extends GenericDebuggerRunner {
             throws ExecutionException {
         LOG.debug("Attaching Remote Server...");
         Project project = env.getProject();
-        return XDebuggerManager.getInstance(project).startSession(env, new XDebugProcessStarter() {
-            @NotNull
-            public XDebugProcess start(@NotNull XDebugSession session) {
-                CamelRemoteRunConfigurationOptions options = state.getConfiguration().getOptions();
-                return ContextAwareDebugProcess.createRemoteDebugProcess(session, project, options.getHost(), options.getPort());
-            }
-        }).getRunContentDescriptor();
+        return XDebuggerManager.getInstance(project)
+            .newSessionBuilder(new XDebugProcessStarter() {
+                @NotNull
+                public XDebugProcess start(@NotNull XDebugSession session) {
+                    CamelRemoteRunConfigurationOptions options = state.getConfiguration().getOptions();
+                    return ContextAwareDebugProcess.createRemoteDebugProcess(session, project, options.getEffectiveServiceUrl());
+                }
+            })
+            .environment(env)
+            .startSession()
+            .getRunContentDescriptor();
     }
 }
