@@ -12,6 +12,8 @@
       v.1.5.1
       <ul>
         <li>Only IDEA 2026 onwards is supported</li>
+        <li>Add JMX-over-Jolokia support to the remote Camel debugger</li>
+        <li>Fix YAML Camel file detection</li>
         <li>Upgraded to Camel 4.22</li>
       </ul>
     ]]>
