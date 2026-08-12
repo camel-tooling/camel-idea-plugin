@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/camel-tooling/camel-idea-plugin">
   <id>org.apache.camel</id>
   <name>Apache Camel</name>
-  <version>1.5.1</version>
+  <version>1.5.2</version>
   <vendor email="users@apache.camel.org" url="https://github.com/camel-tooling/camel-idea-plugin">Apache Camel</vendor>
 
   <description><![CDATA[
@@ -9,12 +9,10 @@
     ]]></description>
 
   <change-notes><![CDATA[
-      v.1.5.1
+      v.1.5.2
       <ul>
         <li>Only IDEA 2026 onwards is supported</li>
         <li>Add JMX-over-Jolokia support to the remote Camel debugger</li>
-        <li>Fix YAML Camel file detection</li>
-        <li>Upgraded to Camel 4.22</li>
       </ul>
     ]]>
   </change-notes>
