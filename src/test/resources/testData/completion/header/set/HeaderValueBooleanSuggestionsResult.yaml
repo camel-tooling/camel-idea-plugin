@@ -18,7 +18,7 @@
     from:
       uri: jms:queue
       steps:
-        - set-header:
+        - setHeader:
             name: "CamelAwsAthenaIncludeTrace"
             expression:
               constant: true

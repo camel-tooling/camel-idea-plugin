@@ -21,10 +21,10 @@
 
     <route>
         <from uri="jms:queue"/>
-        <setHeader name="CamelGrapeCommand">
-            <constant>listPatches</constant>
+        <setHeader name="CamelGoogleSecretManagerOperation">
+            <constant>listSecrets</constant>
         </setHeader>
-        <to uri="grape:defaultCoordinates"/>
+        <to uri="google-secret-manager:test"/>
     </route>
 
 </routes>

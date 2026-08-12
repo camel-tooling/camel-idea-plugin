@@ -18,7 +18,7 @@
     from:
       uri: jms:queue
       steps:
-        - set-body:
+        - setBody:
             header: <caret>
         - to: ftp:foo
         - to: "file:outbox"

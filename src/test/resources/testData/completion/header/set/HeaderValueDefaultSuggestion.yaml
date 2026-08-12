@@ -18,7 +18,7 @@
     from:
       uri: jms:queue
       steps:
-        - set-header:
+        - setHeader:
             name: CamelHttpProtocolVersion
             expression:<caret>
         - to: "netty-http:http://localhost:8080/admin"

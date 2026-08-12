@@ -22,7 +22,7 @@ public final class HeaderValueEnumSuggestionsUnknownComponent extends RouteBuild
     @Override
     public void configure() {
         from("jms:queue")
-            .setHeader("CamelGrapeCommand", <caret>)
-            .to("grape:defaultCoordinates");
+            .setHeader("CamelGoogleSecretManagerOperation", <caret>)
+            .to("google-secret-manager:test");
     }
 }

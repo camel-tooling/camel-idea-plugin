@@ -22,7 +22,7 @@ public final class HeaderValueEnumSuggestionsWithFullyQualifiedConstantAsName ex
     @Override
     public void configure() {
         from("jms:queue")
-            .setHeader(org.apache.camel.component.grape.GrapeConstants.GRAPE_COMMAND, constant(org.apache.camel.component.grape.GrapeCommand.listPatches))
-            .to("grape:defaultCoordinates");
+            .setHeader(org.apache.camel.component.google.secret.manager.GoogleSecretManagerConstants.OPERATION, constant(org.apache.camel.component.google.secret.manager.GoogleSecretManagerOperations.listSecrets))
+            .to("google-secret-manager:test");
     }
 }

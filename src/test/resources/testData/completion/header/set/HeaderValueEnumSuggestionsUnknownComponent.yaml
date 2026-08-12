@@ -18,7 +18,7 @@
     from:
       uri: jms:queue
       steps:
-        - set-header:
-            name: "CamelGrapeCommand"
+        - setHeader:
+            name: "CamelGoogleSecretManagerOperation"
             expression:<caret>
-        - to: "grape:defaultCoordinates"
+        - to: "google-secret-manager:test"

@@ -224,7 +224,7 @@ public class JavaHeaderValueCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.type("list");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertTrue("Should contain 'listPatches'", strings.stream().anyMatch(s -> s.contains("listPatches")));
+        assertTrue("Should contain 'listSecrets'", strings.stream().anyMatch(s -> s.contains("listSecrets")));
         myFixture.type('\n');
         myFixture.checkResultByFile(type.getFilePath("HeaderValueEnumSuggestionsUnknownComponentResult"));
     }
@@ -240,7 +240,7 @@ public class JavaHeaderValueCompletionTestIT extends CamelLightCodeInsightFixtur
         myFixture.type("list");
         List<String> strings = myFixture.getLookupElementStrings();
         assertNotNull(strings);
-        assertTrue("Should contain 'listPatches'", strings.stream().anyMatch(s -> s.contains("listPatches")));
+        assertTrue("Should contain 'listSecrets'", strings.stream().anyMatch(s -> s.contains("listSecrets")));
         myFixture.type('\n');
         myFixture.checkResultByFile(type.getFilePath("HeaderValueEnumSuggestionsWithFullyQualifiedConstantAsNameResult"));
     }
