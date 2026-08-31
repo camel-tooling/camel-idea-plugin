@@ -34,6 +34,7 @@ import org.apache.camel.tooling.maven.MavenDownloader;
 import org.apache.camel.tooling.maven.MavenDownloaderImpl;
 import org.apache.camel.tooling.maven.MavenGav;
 import org.apache.camel.tooling.maven.MavenResolutionException;
+import org.jspecify.annotations.NonNull;
 
 import static com.github.cameltooling.idea.maven.MavenUtil.scanThirdPartyMavenRepositories;
 
@@ -49,8 +50,22 @@ public class MavenArtifactRetrieverContext implements Closeable {
     private final Map<ArtifactCoordinates, URL> allArtifacts = new HashMap<>();
 
     public MavenArtifactRetrieverContext() {
-        this.downloader = new MavenDownloaderImpl();
-        ((MavenDownloaderImpl) downloader).build();
+        this.downloader = initDownloader();
+    }
+
+    private static @NonNull MavenDownloaderImpl initDownloader() {
+        MavenDownloaderImpl downloaderImpl = new MavenDownloaderImpl();
+        // MIMA locates its Runtime implementation with ServiceLoader.load(Runtime.class), which uses the thread
+        // context class loader. On background threads the IDE pins it to the platform class loader, which cannot
+        // see the runtime bundled with this plugin, so it has to be swapped for the duration of the build.
+        final ClassLoader current = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(MavenArtifactRetrieverContext.class.getClassLoader());
+            downloaderImpl.build();
+        } finally {
+            Thread.currentThread().setContextClassLoader(current);
+        }
+        return downloaderImpl;
     }
 
     public MavenArtifactRetrieverContext(Project project) {
